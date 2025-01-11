@@ -4,3 +4,5 @@ import { AppComponent } from './app/app.component';
 
 bootstrapApplication(AppComponent, appConfig)
   .catch((err) => console.error(err));
+  import '@popperjs/core';
+  import 'bootstrap/dist/js/bootstrap.bundle.min.js';
