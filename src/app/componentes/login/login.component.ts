@@ -17,18 +17,21 @@ export class LoginComponent {
 
   code: string = '';
   email: string = '';
+  username: string = '';
+  telefono: string = '';
+  provincia:string = '';
   isAuthenticated: boolean = false;
 
   password: string = '';
   isContentVisible: boolean = false;
   websiteUrl: string = "https://wa.link/9lbeyq";
-  contraseñas: string[] = ['password1', 'password2'];
-  contraseñas_promocionales: string[] = ['promo1', 'promo2'];
+
   errorMessage: string = '';
   successMessage: string = '';
   modal:boolean = false;
   isFormValid: boolean = false;
   @ViewChild('exampleModal') exampleModal!: ElementRef;
+
 constructor(private authService: AuthService, private route:Router, private renderer: Renderer2, private toastr: ToastrService ){}
 
 
@@ -50,6 +53,10 @@ constructor(private authService: AuthService, private route:Router, private rend
                   this.route.navigate(['dashboard']);
                   console.log(this.successMessage, response.email);
                   this.toastr.success(this.successMessage, 'Éxito');
+                  console.log('Datos del usuario:', { code: this.code, email: this.email });
+                  localStorage.setItem('userCode', this.code);
+                  localStorage.setItem('userEmail', this.email);
+
                 } else {
                   this.errorMessage = response.email || 'Error al iniciar sesión';
                   this.successMessage = '';
@@ -67,7 +74,7 @@ constructor(private authService: AuthService, private route:Router, private rend
 
 
 
-     register(): void {
+     register1(): void {
       this.authService.assignEmail({ code: this.code, email: this.email }).subscribe(
         response => {
         if (response.message === 'Email asignado con éxito') {
@@ -90,10 +97,42 @@ constructor(private authService: AuthService, private route:Router, private rend
     }
 
 
+    register(): void {
+      this.authService.assignEmail({
+        code: this.code,
+        email: this.email,
+        username: this.username,
+        telefono: this.telefono,
+        provincia: this.provincia
+      }).subscribe(
+        response => {
+          if (response.message === 'Datos asignados con éxito') {
+            this.successMessage = response.message;
+            this.errorMessage = '';
+            console.log(this.successMessage);
+            this.toastr.success(this.successMessage, 'Éxito');
+          } else {
+            this.errorMessage = response.message;
+            this.successMessage = '';
+            console.log(this.errorMessage);
+            this.toastr.error(this.errorMessage, 'Error');
+          }
+        }, error => {
+          this.errorMessage = error.message;
+          this.successMessage = '';
+          console.log('Register error:', this.errorMessage);
+          this.toastr.error(this.errorMessage, 'Error');
+        }
+      );
+    }
+
+    validateForm(): void {
+      this.isFormValid = this.code.trim().length > 0 && this.email.trim().length > 0 && this.username.trim().length > 0 && this.telefono.trim().length > 0 && this.provincia.trim().length > 0;
+    }
 
 
 
-     validateForm(): void {
+     validateForm1(): void {
       this.isFormValid = this.code.trim().length > 0 && this.email.trim().length > 0;
     }
 

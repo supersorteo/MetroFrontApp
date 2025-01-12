@@ -1,1 +1,373 @@
-<p>dashboard works!</p>
+
+<!--body>
+  <div  class="container" style="box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); max-width: 800px;">
+    <div class="" id="listas" (click)="mostrarCodigo2()" style="text-align: center;">
+      <h6>ver LISTA PRESUPUESTO VIVIENDA</h6>
+    </div>
+    <hr>
+    <div id="codigo" class="container" style="padding: 8px; text-align: center; border-radius: 10px; align-items: center; background-color: #c0e4f354; display: none; flex-direction: column; margin-bottom: 5px;">
+      <button (click)="abrirGoogleSheets2()" id="mano-de-obra-button2" style="background-color: #1198ce; padding: 10px; color: white; margin: 3px; font-size: 30px; border: none; cursor: pointer; border-radius: 12px; box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;"> ver pdf valor vivienda NOV/2024 </button>
+    </div>
+    <div class="col" style="height: 50px; font-size: 30px; text-align: start; margin-left: 20px; display: flex; align-items: center;">
+       <div id="fixedIconContainer" style="position: fixed; top: 10px; right: 30px; width: 70px; height: 70px; background-color: #076cdf8a; border-radius: 50%; box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px; justify-content: center; align-items: center;">
+      <img id="fixedImageIcon" src="" alt="Icono Empresa" style="max-width: 100%; max-height: 100%; border-radius: 50%; display: none; padding: 5px;" />
+    </div>
+  </div>
+
+
+  <div class="card mb-4" style="border-radius: 10px;">
+    <div class="col" style="height: 50px; font-size: 30px; text-align: start; margin-left: 20px; display: flex; align-items: center;">
+
+      <div id="fixedIconContainer" style="position: fixed; top: 10px; right: 30px; width: 70px; height: 70px; background-color: #076cdf8a; border-radius: 50%; box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px; justify-content: center; align-items: center;">
+        <img id="fixedImageIcon" src="" alt="Icono Empresa" style="max-width: 100%; max-height: 100%; border-radius: 50%; display: none; padding: 5px;" />
+      </div>
+    </div>
+
+    <br>
+
+
+
+      <button class="btn btn-primary btn-block" type="button" data-bs-toggle="modal" data-bs-target="#empresaModal">
+        DATOS DE TU EMPRESA
+      </button>
+
+
+      <div class="modal fade" id="empresaModal" tabindex="-1" aria-labelledby="empresaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="empresaModalLabel">Agregar datos de tu Empresa</h5>
+            </div>
+            <div class="modal-body" style="padding: 10px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;">
+
+              <p style="text-align: center; font-size: 12px;">
+                Podés editar estos datos las veces que quieras.
+              </p>
+              <div class="form-group">
+                <label for="empresaName">Tu Empresa</label>
+                <input type="text" class="form-control" id="empresaName" [(ngModel)]="empresaName" placeholder="¿Cómo se llama?">
+              </div>
+              <div class="form-group">
+                <label for="empresaPhone">Teléfono:</label>
+                <input type="text" class="form-control" id="empresaPhone" [(ngModel)]="empresaPhone" placeholder="Teléfono de tu empresa">
+              </div>
+              <div class="form-group">
+                <label for="empresaEmail">Email:</label>
+                <input type="email" class="form-control" id="empresaEmail" [(ngModel)]="empresaEmail" placeholder="Email de tu empresa">
+              </div>
+              <div class="form-group">
+                <label for="additionalDetailsempresa">Descripción de tu empresa:</label>
+                <textarea class="form-control" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de qué se trata tu empresa"></textarea>
+              </div>
+
+              <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#imageModal">
+                Subir imagen
+              </button>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveFormData()">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="imageModalLabel">Subir Imagen</h5>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+
+              <div id="imageCircle" style="display: flex; justify-content: center;">
+                <img id="modalImagePreview" class="img-fluid" src="#" alt="Previsualización de la imagen" style="display: none; width: 80%; height: 80%;">
+              </div>
+              <p id="uploadMessage" style="margin-top: 10px; color: rgb(6, 113, 254); display: none;">Imagen subida</p>
+              <input type="file" id="imageInput" accept="image/*" class="form-control" style="margin-top: 10px;">
+              <p>formato cuadrado, 1080x1080px</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="uploadImage()">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="successAlert" class="alert alert-success" role="alert" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050;">
+        Datos guardados con éxito.
+      </div>
+
+      <hr>
+
+
+      <button class="btn btn-primary btn-block" type="button" data-bs-toggle="modal" data-bs-target="#clientModal">
+        DATOS DEL CLIENTE
+      </button>
+
+
+      <div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="clientModalLabel">Formulario de Datos del Cliente</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+              <h2 id="confirmationMessage" style="display: none; color: green; text-align: center;">Datos guardados</h2>
+
+              <div class="form-group">
+                <label for="clientName">Nombre:</label>
+                <input type="text" class="form-control" id="clientName" [(ngModel)]="clientName" placeholder="Nombre del cliente">
+              </div>
+              <div class="form-group">
+                <label for="contact">Contacto:</label>
+                <input type="text" class="form-control" id="contact" [(ngModel)]="clientContact" placeholder="Información de contacto">
+              </div>
+              <div class="form-group">
+                <label for="budgetDate">Fecha del Presupuesto:</label>
+                <input type="date" class="form-control" id="budgetDate" [(ngModel)]="budgetDate" required>
+              </div>
+              <div class="form-group">
+                <label for="additionalDetails">Detalles Adicionales:</label>
+                <textarea class="form-control" id="additionalDetails" [(ngModel)]="additionalDetailsClient" rows="3" placeholder="Detalles opcionales"></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveClientData()">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body-->
+<button class="btn btn-secondary logout-button" (click)="logout()">Logout</button>
+
+<div class="dashboard-container">
+  <div class="card dashboard-card">
+    <button class="btn btn-info btn-block dashboard-btn-white" (click)="mostrarCodigo2()"  id="mano-de-obra-button2" >
+      Ver Lista de Presupuesto de Vivienda
+    </button>
+    <div id="codigo" class="container" style="padding: 8px; text-align: center; border-radius: 10px; align-items: center; background-color: #c0e4f354; display: none; flex-direction: column; margin-bottom: 5px;">
+      <button (click)="abrirGoogleSheets2()" id="mano-de-obra-button2" class="btn btn-primary btn-block animate" > ver pdf valor vivienda NOV/2024 </button>
+    </div>
+    <button class="btn btn-primary btn-block dashboard-btn-blue" data-bs-toggle="modal" data-bs-target="#exampleModal" >
+      DATOS DE TU EMPRESA
+    </button>
+    <button class="btn btn-primary btn-block dashboard-btn-blue" data-bs-toggle="modal" data-bs-target="#clientModal" >
+      DATOS DEL CLIENTE
+    </button>
+    <h4 class="text-start">Nuevo Presupuesto</h4>
+    <div class="card table-card mt-2 mb-3">
+      <div class="card-body">
+        <h5 class="mb-3">Lista de tareas</h5>
+        <!--input type="text" class="form-control mb-3" placeholder="Buscar..."-->
+        <div class="containerbuscar">
+          <div class="search-container">
+            <input class="input form-control" placeholder="Buscar tarea..." type="text" id="busqueda" onkeyup="buscar()">
+
+          </div>
+          </div>
+          <p style="text-align: center; "> SI NO ENCUENTRAS LA TAREA QUE NECESITAS BUSCA: TAREA GENERICA,  Y AGREGA DESCRIPCION Y PRECIO.</p>
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th class="col-80">Tarea Generica</th>
+                  <th class="col-20">Precio</th>
+
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Dato 1</td>
+                  <td>Dato 2</td>
+
+                </tr>
+                <tr>
+                  <td>Dato 4</td>
+                  <td>Dato 5</td>
+
+                </tr>
+                <tr>
+                  <td>Dato 4</td>
+                  <td>Dato 5</td>
+
+                </tr>
+                <tr>
+                  <td>Dato 4</td>
+                  <td>Dato 5</td>
+
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+
+
+        <div class="row mt-4">
+          <div class="col">
+            <div class="input-group" style="padding:5px; margin: 2px; z-index: 0;">
+              <input type="text" class="form-control" placeholder="%" [(ngModel)]="porcentajeBajar">
+              <div class="input-group-append">
+                <button class="btn btn-danger w-100" (click)="disminuirPrecios()">BAJAR</button>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="input-group" style="padding:5px; margin: 2px; z-index: 0;">
+              <input type="text" class="form-control" placeholder="%" [(ngModel)]="porcentajeSubir">
+              <div class="input-group-append">
+                <button class="btn btn-success w-100" (click)="ajustarPrecios()">SUBIR</button>
+              </div>
+            </div>
+          </div>
+      </div>
+    </div>
+
+  </div>
+  <button class="btn btn-primary btn-block  dashboard-btn-animate" > Ver Presupuesto </button>
+
+</div>
+
+</div>
+
+<div class="modal fade" id="empresaModal" tabindex="-1" aria-labelledby="empresaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="empresaModalLabel">Agregar datos de tu Empresa</h5>
+      </div>
+      <div class="modal-body" style="padding: 10px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;">
+
+        <p style="text-align: center; font-size: 12px;">
+          Podés editar estos datos las veces que quieras.
+        </p>
+        <div class="form-group">
+          <label for="empresaName">Tu Empresa</label>
+          <input type="text" class="form-control" id="empresaName" [(ngModel)]="empresaName" placeholder="¿Cómo se llama?">
+        </div>
+        <div class="form-group">
+          <label for="empresaPhone">Teléfono:</label>
+          <input type="text" class="form-control" id="empresaPhone" [(ngModel)]="empresaPhone" placeholder="Teléfono de tu empresa">
+        </div>
+        <div class="form-group">
+          <label for="empresaEmail">Email:</label>
+          <input type="email" class="form-control" id="empresaEmail" [(ngModel)]="empresaEmail" placeholder="Email de tu empresa">
+        </div>
+        <div class="form-group">
+          <label for="additionalDetailsempresa">Descripción de tu empresa:</label>
+          <textarea class="form-control" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de qué se trata tu empresa"></textarea>
+        </div>
+
+        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#imageModal">
+          Subir imagen
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveFormData()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="clientModalLabel">Formulario de Datos del Cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <h2 id="confirmationMessage" style="display: none; color: green; text-align: center;">Datos guardados</h2>
+
+        <div class="form-group">
+          <label for="clientName">Nombre:</label>
+          <input type="text" class="form-control" id="clientName" [(ngModel)]="clientName" placeholder="Nombre del cliente">
+        </div>
+        <div class="form-group">
+          <label for="contact">Contacto:</label>
+          <input type="text" class="form-control" id="contact" [(ngModel)]="clientContact" placeholder="Información de contacto">
+        </div>
+        <div class="form-group">
+          <label for="budgetDate">Fecha del Presupuesto:</label>
+          <input type="date" class="form-control" id="budgetDate" [(ngModel)]="budgetDate" required>
+        </div>
+        <div class="form-group">
+          <label for="additionalDetails">Detalles Adicionales:</label>
+          <textarea class="form-control" id="additionalDetails" [(ngModel)]="additionalDetailsClient" rows="3" placeholder="Detalles opcionales"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveClientData()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">Subir Imagen</h5>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+
+        <div id="imageCircle" style="display: flex; justify-content: center;">
+          <img id="modalImagePreview" class="img-fluid" src="#" alt="Previsualización de la imagen" style="display: none; width: 80%; height: 80%;">
+        </div>
+        <p id="uploadMessage" style="margin-top: 10px; color: rgb(6, 113, 254); display: none;">Imagen subida</p>
+        <input type="file" id="imageInput" accept="image/*" class="form-control" style="margin-top: 10px;">
+        <p>formato cuadrado, 1080x1080px</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="uploadImage()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+
+        <h5 class="modal-title" id="exampleModalLabel">Agregar datos de tu Empresa</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="padding: 10px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;">
+
+        <p style="text-align: center; font-size: 12px;">
+          Podés editar estos datos las veces que quieras.
+        </p>
+        <div class="form-group mb-3">
+          <label for="empresaName">Tu Empresa</label>
+          <input type="text" class="form-control" id="empresaName" [(ngModel)]="empresaName" placeholder="¿Cómo se llama?">
+        </div>
+        <div class="form-group mb-3">
+          <label for="empresaPhone">Teléfono:</label>
+          <input type="text" class="form-control" id="empresaPhone" [(ngModel)]="empresaPhone" placeholder="Teléfono de tu empresa">
+        </div>
+        <div class="form-group mb-3">
+          <label for="empresaEmail">Email:</label>
+          <input type="email" class="form-control" id="empresaEmail" [(ngModel)]="empresaEmail" placeholder="Email de tu empresa">
+        </div>
+        <div class="form-group mb-3">
+          <label for="additionalDetailsempresa">Descripción de tu empresa:</label>
+          <textarea class="form-control" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de qué se trata tu empresa"></textarea>
+        </div>
+
+        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#imageModal">
+          Subir imagen
+        </button>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveFormData()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>

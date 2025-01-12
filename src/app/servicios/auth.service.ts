@@ -1,5 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { catchError, Observable, of, throwError } from 'rxjs';
 
 /*interface AccessCode {
@@ -7,15 +8,32 @@ import { catchError, Observable, of, throwError } from 'rxjs';
   code: string;
 }*/
 
-interface AccessCode {
+interface AccessCode1 {
   code: string;
   email: string;
 }
 
-interface AuthResponse {
+interface AuthResponse1 {
   message: string;
   code?: string;
   email?: string;
+}
+
+export interface AccessCode {
+  code: string;
+  email: string;
+  username?: string;
+  telefono?: string;
+  provincia?: string;
+}
+
+export interface AuthResponse {
+  message: string;
+  code: string;
+  email: string;
+  username: string;
+  telefono: string;
+  provincia: string
 }
 
 @Injectable({
@@ -24,17 +42,9 @@ interface AuthResponse {
 export class AuthService {
   private apiUrl = 'http://localhost:8080/auth';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private router: Router) { }
 
-      login1(code: string): Observable<AuthResponse> {
-        const headers = new HttpHeaders({
-          'Content-Type': 'application/json'
-        }); return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { code }, { headers })
-        .pipe( catchError( this.handleError<AuthResponse>('login', {
-          email: 'Error',
-          message: ''
-        }) ) );
-      }
+
 
       login(code: string): Observable<AuthResponse> {
         const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
@@ -43,27 +53,23 @@ export class AuthService {
         );
        }
 
-
-
-    private handleError<T>(operation = 'operation', result?: T) {
-      return (error: any): Observable<T> => {
-        console.error(`${operation} failed: ${error.message}`);
-        return of(result as T);
-      };
-    }
+       isLoggedIn(): boolean {  const userCode = localStorage.getItem('userCode'); const userEmail = localStorage.getItem('userEmail'); return !!userCode && !!userEmail; }
 
     assignEmail(accessCode: AccessCode): Observable<AuthResponse> {
       const headers = new HttpHeaders({
         'Content-Type': 'application/json'
       });
-      return this.http.post<AuthResponse>(`${this.apiUrl}/assign-email`, accessCode, { headers }) .pipe(
+      return this.http.post<AuthResponse>(`${this.apiUrl}/codes`, accessCode, { headers }) .pipe(
         catchError(
           this.handleError1
         )
       );
     }
 
-
+    logout(): void {
+      localStorage.removeItem('userCode');
+      localStorage.removeItem('userEmail');
+    }
 
   private handleError1(error: HttpErrorResponse): Observable<never> {
     const errorMessage = error.error.message || 'Error desconocido';
@@ -86,9 +92,20 @@ export class AuthService {
       } return throwError(() => new Error(errorMessage));
     }
 
+    agregarCode(accessCode: AccessCode): Observable<AuthResponse> {
+      const headers = new HttpHeaders({
+        'Content-Type': 'application/json'
+      });
+      return this.http.post<AuthResponse>(`${this.apiUrl}/agg-codes`, accessCode, { headers }) .pipe(
+        catchError(this.handleError1)
+      );
+    }
+
   getAllCodes(): Observable<AccessCode[]> { return this.http.get<AccessCode[]>(`${this.apiUrl}/codes`); }
 
-  addCode(accessCode: AccessCode): Observable<AccessCode> { return this.http.post<AccessCode>(`${this.apiUrl}/code`, accessCode); }
+  addCode(accessCode: AccessCode): Observable<AccessCode> { return this.http.post<AccessCode>(`${this.apiUrl}/codes`, accessCode); }
 
-  deleteCode(id: number): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/code/${id}`); }
+  deleteCode1(code: string): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/codes/${code}`); }
+
+  deleteCode(code: string): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/codes/${code}`) .pipe( catchError(this.handleError1) ); }
 }

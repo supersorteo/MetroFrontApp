@@ -1,106 +1,3 @@
-<!--body>
-<div class="container" style="box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); max-width: 800px;">
-
-  <div class="program-title" id="portada" style="border-radius: 10px;">
-    <h6 style="font-size: 12px; margin-bottom: 0px;">Orbita software</h6>
-  </div>
-
-  <div id="ingreso"
-    style="border-radius: 10px; padding-bottom: 10px; background-color: #ffffff; align-items: center; justify-content: center; margin: auto; padding: 30px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.897);">
-
-    <div id="ingreso6" style="border-radius: 10px; padding-bottom: 10px; ">
-      <div>
-        <H6 style="text-align: center;"> PRECIOS DE DICIEMBRE ACTUALIZADOS</H6>
-        <p style="text-align: center;">
-          Obtimizá tu manera de trabajar. Realizá automaticamente tus presupuestos directamente desde la aplicacion
-          con la lista de precios actualizados cada mes. Ahorrá tiempo. Mostrate profesional.
-        </p>
-
-      </div>
-    </div>
-
-    <div class="imagen-container">
-      <img src="https://www.metroapp.site/metrologo.jpg" class="w-10rem" alt="">
-    </div>
-    <div class="text-center" style=" text-align: center; display: flex; flex-direction: column; border-radius: 10px;padding-bottom: 20px;   background: linear-gradient(0deg, rgba(206, 235, 251, 0.41rgba(207, 218, 232, 0.346),232,1) 51%, rgba(115, 201, 238, 0.42) 100%);
-    ">
-
-
-
-      <br>
-      <h3>Bienvenido</h3>
-      <div class="form-group" id="ingreso-codigo" style="font-size: 20px;">
-        <label for="password">Ingrese su código:</label>
-        <input type="text" id="password" class="form-control" autocomplete="current-password"
-          style="font-size: 30px; text-align: center;">
-      </div>
-      <button onclick="mostrarContenido()" class="btn btn-primary" style="
-      font-size: 18px;
-      font-weight: bold;
-      width:100%;
-      height:60px;
-      margin-top: 20px;
-      display: block;">ENTRAR</button>
-
-      <br>
-      <button class="btn btn-primary" style="text-decoration: bold;
-      font-size: 16px;
-      font-weight: bold;
-      margin:  auto;
-      width: 100%;
-      height: 50px;
-      margin-top: 20px;
-      display: block;" id="mercadoPagoButton" onclick="ocltarContenido()">PROBÁ EL SISTEMA</button>
-    </div>
-    <div>
-      <a href="https://metroapp.site/calculadora_materiales.html" target="_blank"
-        style="text-decoration: bold;
-  font-size: 18px;
-  font-weight: bold;
-  width:100%;
-  height:60px;
-  padding: 9px;
-  color: #ffffff;
-  margin-top: 20px;
-  display: flex;
-    justify-content: center;
-    border-radius: 10px;
-    align-items: center;
-    background-image: linear-gradient(to right top, #ff8b00, #fe9c00, #fcad00, #f9bd00, #f5cd13);
-                box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, #ffffff14 0px 1px 0px inset;">CALCULADORA DE MATERIALES</a>
-    </div>
-
-    <div id="container" style="margin-bottom:10px;
-
-    ; border-radius: 10px;padding-top: 10px;margin-top: 10px; max-width: 100%;">
-
-
-      <br>
-
-      <p style=" color:#ffffff;   text-align: center; margin-bottom: 10px;  margin-bottom:auto; border-radius: 5px; background-image: linear-gradient(to left top, #00832a, #36a04a, #58be69, #79dc8a, #99fbab);; padding:10px ; font-size: 12px; box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.08) 0px 1px 0px inset;"
-        onclick="openWebsite()"> comprár un código por whatsapp
-      </p>
-      <br>
-      <p style="text-align: center;font-size: 12px;  "> valor, $3.800 arg. te dura 3 meses y tenés acceso a la
-        calculadora de materiales </p>
-      <br>
-
-
-
-
-
-      <div style="margin: 10px;text-align: center;">
-        <button id="whatsapp-share">Compartir en WhatsApp</button>
-
-      </div>
-
-
-    </div>
-  </div>
-</div>
-</body-->
-
-
 <body>
 
   <div class="container" style="box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); max-width: 800px;">
@@ -160,6 +57,18 @@
                   <label for="email" class="col-form-label">Email:</label>
                   <input type="email" class="form-control" id="email" [(ngModel)]="email" name="email" (input)="validateForm()">
                 </div>
+                <div class="mb-3">
+                  <label for="username" class="col-form-label">Username:</label>
+                  <input type="text" class="form-control" id="username" [(ngModel)]="username" name="username" (input)="validateForm()">
+                </div>
+                <div class="mb-3">
+                  <label for="telefono" class="col-form-label">Teléfono:</label>
+                  <input type="text" class="form-control" id="telefono" [(ngModel)]="telefono" name="telefono" (input)="validateForm()">
+                </div>
+                <div class="mb-3">
+                  <label for="provincia" class="col-form-label">Provincia:</label>
+                  <input type="text" class="form-control" id="provincia" [(ngModel)]="provincia" name="provincia" (input)="validateForm()">
+                </div>
               </form>
             </div>
             <div class="modal-footer">
@@ -169,6 +78,7 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -177,4 +87,3 @@
 
 
 </body>
-
