@@ -1,10 +1,25 @@
-body {
+.dashboard-container {
   background: linear-gradient(0deg, rgba(233, 238, 244, 1) 0%, rgba(68, 148, 242, 0.5858718487394958) 49%, rgba(233, 235, 238, 0.5858718487394958) 100%);
   text-decoration: bold;
   font-weight: bold;
   color: rgb(44, 121, 208);
+
 }
 
+/*.dashboard-container {
+  height: 100vh;
+  display: flex;
+  font-weight: bold;
+  color: rgb(44, 121, 208);
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(0deg, rgba(233, 238, 244, 1) 0%, rgba(68, 148, 242, 0.5858718487394958) 49%, rgba(233, 235, 238, 0.5858718487394958) 100%);
+}*/
+
+element.style {
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.897);
+}
 
 .container {
   text-decoration: bold;
@@ -16,6 +31,24 @@ body {
   background-image: linear-gradient(to right top, #f5f8fe, #e8f4ff, #ffffff, #e6f6fd, #e8e8e8);
   border-radius: 10px;
   box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
+  overflow: auto;
+  height: 100%;
+  padding: 20px;
+}
+
+.container1 {
+  width: 100%;
+  height: 100%;
+  max-width: 800px;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  overflow: auto;
 }
 
 .program-title {
@@ -39,6 +72,9 @@ body {
   background-size: cover;
   display: block;
   padding: 20px;
+  element.style {
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.897);
+}
 }
 
 .imagen-container {

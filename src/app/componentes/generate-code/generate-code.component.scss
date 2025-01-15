@@ -27,10 +27,12 @@
   padding: 10px;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
+
 }
 
 .card-body {
   padding: 20px;
+  overflow-x: auto;
 }
 
 .btn-primary {
@@ -77,4 +79,28 @@
 .flex {
   display: flex;
   justify-content: center;
+  gap: 5px;
 }
+
+.table {
+  width: 100%;
+  min-width: 600px;
+}
+
+.modal-body {
+  padding: 1rem;
+  //max-height: 70vh;
+  overflow-y: auto;
+}
+
+
+.table1 {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.table1 th, .table1 td {
+  word-wrap: break-word;
+}
+
+

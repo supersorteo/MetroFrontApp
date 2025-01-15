@@ -1,10 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, Renderer2, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { ProvinciaService } from '../../servicios/provincia.service';
 declare var bootstrap: any;
+
+interface Provincia {
+  id: number;
+  nombre: string;
+}
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -13,7 +20,7 @@ declare var bootstrap: any;
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit{
 
   code: string = '';
   email: string = '';
@@ -30,9 +37,20 @@ export class LoginComponent {
   successMessage: string = '';
   modal:boolean = false;
   isFormValid: boolean = false;
+  provincias: Provincia[] = [];
+
   @ViewChild('exampleModal') exampleModal!: ElementRef;
 
-constructor(private authService: AuthService, private route:Router, private renderer: Renderer2, private toastr: ToastrService ){}
+constructor(private authService: AuthService,
+  private route:Router,
+  private renderer: Renderer2,
+  private toastr: ToastrService,
+  private provinciaService: ProvinciaService){}
+
+  ngOnInit(): void {
+   this.getProvincias();
+
+  }
 
 
 
@@ -72,31 +90,6 @@ constructor(private authService: AuthService, private route:Router, private rend
               });
             }
 
-
-
-     register1(): void {
-      this.authService.assignEmail({ code: this.code, email: this.email }).subscribe(
-        response => {
-        if (response.message === 'Email asignado con éxito') {
-          this.successMessage = response.message;
-          this.errorMessage = '';
-          console.log(this.successMessage);
-          this.toastr.success(this.successMessage, 'Éxito');
-        } else {
-          this.errorMessage = response.message;
-          this.successMessage = '';
-          console.log(this.errorMessage);
-          this.toastr.error(this.errorMessage, 'Error');
-        }
-      }, error => {
-        this.errorMessage = error.message;
-        this.successMessage = '';
-        console.log('Register error:', this.errorMessage);
-        this.toastr.error(this.errorMessage, 'Error');
-      } );
-    }
-
-
     register(): void {
       this.authService.assignEmail({
         code: this.code,
@@ -111,6 +104,7 @@ constructor(private authService: AuthService, private route:Router, private rend
             this.errorMessage = '';
             console.log(this.successMessage);
             this.toastr.success(this.successMessage, 'Éxito');
+           // this.clearForm();
           } else {
             this.errorMessage = response.message;
             this.successMessage = '';
@@ -127,18 +121,26 @@ constructor(private authService: AuthService, private route:Router, private rend
     }
 
     validateForm(): void {
-      this.isFormValid = this.code.trim().length > 0 && this.email.trim().length > 0 && this.username.trim().length > 0 && this.telefono.trim().length > 0 && this.provincia.trim().length > 0;
+      this.isFormValid = this.code.trim().length > 0 &&
+      this.email.trim().length > 0 &&
+      this.username.trim().length > 0 &&
+      this.telefono.trim().length > 0 &&
+      this.provincia.trim().length > 0;
     }
 
+    getProvincias(): void {
+      this.provinciaService.getAllProvincias().subscribe(
+        response => {
+          this.provincias = response;
+          console.log('provincias', response)
+        },
+        error => {
+          this.toastr.error('Error al cargar las provincias', 'Error');
+        } );
+      }
 
 
-     validateForm1(): void {
-      this.isFormValid = this.code.trim().length > 0 && this.email.trim().length > 0;
-    }
-
-
-
-        ocultarContenido(): void {
+    ocultarContenido(): void {
     this.isContentVisible = false;
   }
 
@@ -155,4 +157,6 @@ constructor(private authService: AuthService, private route:Router, private rend
       const text = `METRO, la app con precios de la construcción. Hacé tus presupuestos más fácil y rápido. ${url}`;
       const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(text)}`; window.location.href = whatsappUrl;
     }
+
+    clearForm(): void { this.code = ''; this.email = ''; this.username = ''; this.telefono = ''; this.provincia = ''; this.isFormValid = false; }
 }

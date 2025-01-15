@@ -1,11 +1,11 @@
-<body>
+<div class="dashboard-container">
 
   <div class="container" style="box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); max-width: 800px;">
     <div class="program-title" id="portada" style="border-radius: 10px;" *ngIf="!isContentVisible">
       <h6 style="font-size: 12px; margin-bottom: 0px;">Orbita software</h6>
     </div>
 
-    <div id="ingreso" class="ingreso" *ngIf="!isContentVisible">
+    <div id="ingreso" class="ingreso" style=" box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.897);" *ngIf="!isContentVisible">
       <div id="ingreso6" style="border-radius: 10px; padding-bottom: 10px;">
         <h6 class="text-center">PRECIOS DE DICIEMBRE ACTUALIZADOS</h6>
         <p class="text-center" style="font-size: 10px">
@@ -51,23 +51,27 @@
               <form>
                 <div class="mb-3">
                   <label for="code" class="col-form-label">Código:</label>
-                  <input type="text" class="form-control" id="code" [(ngModel)]="code" name="code" (input)="validateForm()">
+                  <input type="text" class="form-control" id="code" [(ngModel)]="code" placeholder="Ingrese su código" name="code" (input)="validateForm()">
                 </div>
                 <div class="mb-3">
                   <label for="email" class="col-form-label">Email:</label>
-                  <input type="email" class="form-control" id="email" [(ngModel)]="email" name="email" (input)="validateForm()">
+                  <input type="email" class="form-control" id="email" [(ngModel)]="email" placeholder="Ingrese su correo" name="email" (input)="validateForm()">
                 </div>
                 <div class="mb-3">
                   <label for="username" class="col-form-label">Username:</label>
-                  <input type="text" class="form-control" id="username" [(ngModel)]="username" name="username" (input)="validateForm()">
+                  <input type="text" class="form-control" id="username" [(ngModel)]="username" placeholder="Ingrese su nombre de usuario" name="username" (input)="validateForm()">
                 </div>
                 <div class="mb-3">
                   <label for="telefono" class="col-form-label">Teléfono:</label>
-                  <input type="text" class="form-control" id="telefono" [(ngModel)]="telefono" name="telefono" (input)="validateForm()">
+                  <input type="text" class="form-control" id="telefono" [(ngModel)]="telefono" placeholder="Telefono" name="telefono" (input)="validateForm()">
                 </div>
                 <div class="mb-3">
                   <label for="provincia" class="col-form-label">Provincia:</label>
-                  <input type="text" class="form-control" id="provincia" [(ngModel)]="provincia" name="provincia" (input)="validateForm()">
+                  <!--input type="text" class="form-control" id="provincia" [(ngModel)]="provincia" name="provincia" (input)="validateForm()"-->
+                  <select  class="form-select" id="provincia" [(ngModel)]="provincia" name="provincia"  (change)="validateForm()" >
+                    <option value="" disabled selected>Seleccione una provincia</option>
+                    <option *ngFor="let provincia of provincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
+                  </select>
                 </div>
               </form>
             </div>
@@ -81,9 +85,9 @@
 
     </div>
   </div>
+</div>
 
 
 
 
 
-</body>

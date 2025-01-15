@@ -19,13 +19,13 @@ interface AuthResponse1 {
   email?: string;
 }
 
-export interface AccessCode {
+/*export interface AccessCode {
   code: string;
   email: string;
   username?: string;
   telefono?: string;
   provincia?: string;
-}
+}*/
 
 export interface AuthResponse {
   message: string;
@@ -34,6 +34,16 @@ export interface AuthResponse {
   username: string;
   telefono: string;
   provincia: string
+}
+
+interface AccessCode {
+  code: string;
+  email: string;
+  username?: string;
+  telefono?: string;
+  provincia?: string;
+  fechaRegistro?: string;
+  fechaVencimiento?: string;
 }
 
 @Injectable({
@@ -53,7 +63,28 @@ export class AuthService {
         );
        }
 
-       isLoggedIn(): boolean {  const userCode = localStorage.getItem('userCode'); const userEmail = localStorage.getItem('userEmail'); return !!userCode && !!userEmail; }
+       isLoggedIn(): boolean {
+        const userCode = localStorage.getItem('userCode');
+        const userEmail = localStorage.getItem('userEmail');
+        return !!userCode && !!userEmail;
+      }
+
+      private handleError0(error: HttpErrorResponse): Observable<never> {
+        let errorMessage = 'Error desconocido';
+        if (error.error instanceof ErrorEvent) {
+           errorMessage = `Error: ${error.error.message}`;
+          } else {
+            if (error.error && error.error.message) {
+              errorMessage = error.error.message;
+            } else if (error.status === 401) {
+              errorMessage = 'Código no encontrado';
+            } else {
+              errorMessage = `Error ${error.status}: ${error.message}`;
+            }
+          } return throwError(() => new Error(errorMessage));
+        }
+
+
 
     assignEmail(accessCode: AccessCode): Observable<AuthResponse> {
       const headers = new HttpHeaders({
@@ -77,31 +108,27 @@ export class AuthService {
     return throwError(() => new Error(errorMessage));
   }
 
-  private handleError0(error: HttpErrorResponse): Observable<never> {
-    let errorMessage = 'Error desconocido';
-    if (error.error instanceof ErrorEvent) {
-       errorMessage = `Error: ${error.error.message}`;
-      } else {
-        if (error.error && error.error.message) {
-          errorMessage = error.error.message;
-        } else if (error.status === 401) {
-          errorMessage = 'Código no encontrado';
-        } else {
-          errorMessage = `Error ${error.status}: ${error.message}`;
-        }
-      } return throwError(() => new Error(errorMessage));
-    }
+
 
     agregarCode(accessCode: AccessCode): Observable<AuthResponse> {
       const headers = new HttpHeaders({
         'Content-Type': 'application/json'
       });
-      return this.http.post<AuthResponse>(`${this.apiUrl}/agg-codes`, accessCode, { headers }) .pipe(
+      return this.http.post<AuthResponse>(`${this.apiUrl}/agg-code`, accessCode, { headers }) .pipe(
+        catchError(this.handleError1)
+      );
+    }
+
+    agregarCodes(accessCodes: AccessCode[]): Observable<AuthResponse> {
+      const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+      return this.http.post<AuthResponse>(`${this.apiUrl}/agg-codes`, accessCodes, { headers }) .pipe(
         catchError(this.handleError1)
       );
     }
 
   getAllCodes(): Observable<AccessCode[]> { return this.http.get<AccessCode[]>(`${this.apiUrl}/codes`); }
+
+  getUserCode(code: string): Observable<AccessCode> { return this.http.get<AccessCode>(`${this.apiUrl}/codes/${code}`) .pipe( catchError(this.handleError1) ); }
 
   addCode(accessCode: AccessCode): Observable<AccessCode> { return this.http.post<AccessCode>(`${this.apiUrl}/codes`, accessCode); }
 

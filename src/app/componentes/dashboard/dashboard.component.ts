@@ -4,7 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+
 declare var bootstrap: any;
+
+interface AccessCode { code: string; email: string; username: string; telefono: string; provincia: string; fechaRegistro: string; fechaVencimiento: string; }
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -21,10 +24,12 @@ export class DashboardComponent implements OnInit{
   clientContact: string = '';
   budgetDate: string = '';
   additionalDetailsClient: string = '';
-porcentajeBajar!: number;
-porcentajeSubir!: number ;
+  porcentajeBajar!: number;
+  porcentajeSubir!: number ;
 
-
+  userCode: string = '';
+  userData: any | null = null;
+  remainingTime: string = '';
   @ViewChild('imageInput') imageInput!: ElementRef;
   @ViewChild('modalImagePreview') modalImagePreview!: ElementRef;
   @ViewChild('uploadMessage') uploadMessage!: ElementRef;
@@ -34,6 +39,18 @@ porcentajeSubir!: number ;
   ngOnInit() {
     this.loadFormData();
     this.loadImageFromLocalStorage();
+    this.loadUserCode()
+    /*setInterval(() => {
+      this.updateRemainingTime();
+    }, 60000);*/
+
+
+    setInterval(() => {
+      if (this.userData?.fechaVencimiento) {
+        this.calculateRemainingTime(this.userData.fechaVencimiento);
+      }
+    }, 1000);
+
   }
 
   logout(): void {
@@ -52,7 +69,10 @@ porcentajeSubir!: number ;
 
   }
 
-  abrirGoogleSheets2() { const url = "https://drive.google.com/file/d/1dZcSD_5lt3OsDE44SN91t5NcUyvQtl-N/view?usp=sharing"; window.open(url, "_blank"); }
+  abrirGoogleSheets2() {
+    const url = "https://drive.google.com/file/d/1dZcSD_5lt3OsDE44SN91t5NcUyvQtl-N/view?usp=sharing";
+    window.open(url, "_blank");
+  }
 
   loadFormData() {
     const empresaData = JSON.parse(localStorage.getItem('empresaData') || '{}');
@@ -168,4 +188,68 @@ porcentajeSubir!: number ;
         console.log("Aumentar precios en", this.porcentajeSubir, "%");
       }
 
-}
+
+      loadUserCode(): void {
+        this.userCode = localStorage.getItem('userCode') || '';
+        if (this.userCode) {
+          this.fetchUserData();
+        } else {
+          this.toastr.error('Código de usuario no encontrado en el localStorage', 'Error');
+        }
+      }
+
+
+
+
+      /*fetchUserData1(): void {
+        this.authService.getUserCode(this.userCode).subscribe(
+          response => {
+            this.userData = response;
+            console.log('Datos del usuario:', response);
+            this.updateRemainingTime();
+          },
+          error => {
+            this.toastr.error('Error al obtener los datos del usuario', 'Error');
+           } );
+          }*/
+
+          fetchUserData(): void {
+            this.authService.getUserCode(this.userCode).subscribe(
+              response => {
+                this.userData = response;
+                console.log('Datos del usuario:', response);
+                if (this.userData.fechaVencimiento) {
+                  this.calculateRemainingTime(this.userData.fechaVencimiento);
+                }
+              },
+              error => {
+                this.toastr.error('Error al obtener los datos del usuario', 'Error');
+              } );
+            }
+
+
+      calculateRemainingTime(fechaVencimiento: string): void {
+        if (!fechaVencimiento) {
+          this.remainingTime = 'Fecha de vencimiento no disponible';
+          return;
+        }
+        const now = new Date().getTime();
+        const expiryDate = new Date(fechaVencimiento).getTime();
+        if (isNaN(expiryDate)) {
+          this.remainingTime = 'Fecha inválida';
+          return;
+        }
+        const timeDiff = expiryDate - now;
+        if (timeDiff <= 0) {
+          this.remainingTime = 'Código expirado';
+          return;
+        }
+        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+        this.remainingTime = `${days}d ${hours}h ${minutes}m ${seconds}s restantes`;
+        //console.log('Tiempo restante:', this.remainingTime);
+      }
+
+    }

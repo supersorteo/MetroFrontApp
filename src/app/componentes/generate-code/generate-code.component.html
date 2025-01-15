@@ -9,10 +9,17 @@
           <label for="code" class="form-label">Código:</label>
           <input type="text" class="form-control" id="code" [(ngModel)]="code" name="code" required>
         </div>
-        <div class="btn-group w-100">
+        <!--div-- class="btn-group w-100">
           <button type="submit" class="btn btn-primary w-50">Generar Código</button>
           <button type="button" class="btn btn-secondary w-50" data-bs-toggle="modal" data-bs-target="#viewCodesModal">Ver Códigos</button>
+        </!--div-->
+        <div class="flex">
+          <button type="button" class="btn btn-primary w-50" data-bs-toggle="modal" data-bs-target="#generateCodesModal3">Códigos de 3 Meses</button>
+          <button type="button" class="btn btn-info w-50" data-bs-toggle="modal" data-bs-target="#generateCodesModal6">Códigos de 6 Meses</button>
+
         </div>
+
+        <button type="button" class="btn btn-secondary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#viewCodesModal">Ver Códigos</button>
       </form>
 
     </div>
@@ -40,25 +47,146 @@
 
               <th scope="col">Código</th>
               <th scope="col">Email</th>
+              <!--th-- scope="col">Tipo de Código</!--th-->
+              <!--th scope="col">Username</!--th-->
+              <!--th scope="col">Teléfono</!--th-->
+              <!--th scope="col">Provincia</!--th-->
+              <th scope="col">F.Registro</th>
+              <th scope="col">F.Vencimiento</th>
+              <th scope="col">Vigente</th>
+
               <th scope="col">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of filteredCodes">
+            <tr *ngFor="let item of getPaginatedCodes()">
 
               <td>{{ item.code }}</td>
               <td>{{ item.email }}</td>
+              <!--td>{{ item.tipo }}</td-->
+              <!--td>{{ item.username }}</!--td-->
+              <!--td>{{ item.telefono }}</!--td-->
+              <!--td>{{ item.provincia }}</!--td-->
+              <td>{{ item.fechaRegistro }}</td>
+              <td>{{ item.fechaVencimiento }}</td>
+              <!--td>{{ calculateRemainingTime(item.fechaVencimiento) }}</td-->
+              <td>{{item.remainingTime}}</td>
+
               <td >
                 <div class="flex gap-3">
                   <button type="button" class="btn btn-warning btn-sm" (click)="editCode(item)">Editar</button>
                   <button type="button" class="btn btn-danger btn-sm" (click)="confirmDeleteCode(item.code)">Eliminar</button>
+                  <!--button-- type="button" class="btn btn-primary btn-sm" (click)="copyToClipboard(item.code)">Copiar</!--button-->
                 </div>
 
               </td>
             </tr>
           </tbody>
         </table>
+
+
+      <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" [class.disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+            <a class="page-link">Previous</a>
+          </li>
+          <li class="page-item" *ngFor="let page of [].constructor(totalPages);
+          let i = index" [class.active]="currentPage === i + 1" (click)="changePage(i + 1)">
+          <a class="page-link">{{ i + 1 }}</a>
+        </li>
+        <li class="page-item" [class.disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+          <a class="page-link">Next</a>
+        </li>
+      </ul>
+    </nav>
+    <div class="text-center"> Página {{ currentPage }} de {{ totalPages }}
+
+    </div>
+
       </div>
     </div>
   </div>
 </div>
+
+
+<div class="modal fade" id="generateCodesModal3" tabindex="-1" aria-labelledby="generateCodesModal3Label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="generateCodesModal3Label">Generar Códigos de 3 Meses</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="codeCount3" class="col-form-label">Cantidad de Códigos:</label>
+            <input type="number" class="form-control" id="codeCount3" [(ngModel)]="codeCount3" name="codeCount3">
+          </div>
+          <div class="modal-footer">
+            <!--button-- type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</!--button-->
+            <button type="button" class="btn btn-primary" (click)="generateCodes(3)" data-bs-dismiss="modal" >Generar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="generateCodesModal6" tabindex="-1"  aria-labelledby="generateCodesModal6Label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="generateCodesModal6Label">Generar Códigos de 6 Meses</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="codeCount6" class="col-form-label">Cantidad de Códigos:</label>
+            <input type="number" class="form-control" id="codeCount6" [(ngModel)]="codeCount6" name="codeCount6">
+          </div>
+          <div class="modal-footer">
+            <!--button-- type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</!--button-->
+            <button type="button" class="btn btn-primary" (click)="generateCodes(6)" data-bs-dismiss="modal">Generar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal" tabindex="-1" id="showGeneratedCodesModal" [ngClass]="{ 'd-block': showGeneratedCodesModal }"  aria-labelledby="generateCodesModalLabel" aria-hidden="true" (click)="closeGeneratedCodesModal()">
+  <div class="modal-dialog" (click)="stopEventPropagation($event)">
+    <div class="modal-content" >
+      <div class="modal-header" id="generateCodesModalLabel">
+        <h5 class="modal-title">Códigos Generados</h5>
+        <!--button-- type="button" class="close" (click)="closeGeneratedCodesModal()">&times;</!--button-->
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"  (click)="closeGeneratedCodesModal()" ></button>
+      </div>
+      <div class="modal-body">
+        <table class="table1 table-striped">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th >Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let code of generatedCodes">
+              <td>{{ code.code }}</td>
+
+              <td>
+                <button type="button" class="btn btn-primary btn-sm" (click)="copyToClipboard(code.code)">Copiar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+

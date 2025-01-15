@@ -10,5 +10,5 @@ export const routes: Routes = [
   {path:'', redirectTo:'', pathMatch:'full'},
   {path:'dashboard', component:DashboardComponent, canActivate: [AuthGuard] },
 
-  {path:'admin-generate-code', component:GenerateCodeComponent, canActivate: [AuthGuard]}
+  {path:'admin-generate-code', component:GenerateCodeComponent, }
 ];
