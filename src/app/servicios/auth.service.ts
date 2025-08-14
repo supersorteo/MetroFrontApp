@@ -36,6 +36,9 @@ export interface AuthResponse {
   provincia: string
 }
 
+
+
+
 interface AccessCode {
   code: string;
   email: string;
@@ -62,6 +65,10 @@ export class AuthService {
           catchError(this.handleError0)
         );
        }
+
+
+
+
 
        isLoggedIn(): boolean {
         const userCode = localStorage.getItem('userCode');
@@ -97,10 +104,15 @@ export class AuthService {
       );
     }
 
-    logout(): void {
-      localStorage.removeItem('userCode');
-      localStorage.removeItem('userEmail');
-    }
+
+
+
+  logout(): void {
+  localStorage.removeItem('userCode');
+  localStorage.removeItem('userEmail');
+  localStorage.removeItem('userData'); // Añadir esta línea
+  //this.router.navigate(['/login']);
+}
 
   private handleError1(error: HttpErrorResponse): Observable<never> {
     const errorMessage = error.error.message || 'Error desconocido';
@@ -110,7 +122,7 @@ export class AuthService {
 
 
 
-    agregarCode(accessCode: AccessCode): Observable<AuthResponse> {
+    agregarCode(accessCode: any): Observable<AuthResponse> {
       const headers = new HttpHeaders({
         'Content-Type': 'application/json'
       });

@@ -67,7 +67,7 @@ export class GenerateCodeComponent implements OnInit {
   generateCode(): void {
     this.authService.agregarCode({
       code: this.code,
-      email: ''
+      email: null
     }).subscribe(
       response => {
         if (response.message === 'Código agregado con éxito') {

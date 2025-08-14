@@ -5,6 +5,7 @@ import { AuthService } from '../../servicios/auth.service';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ProvinciaService } from '../../servicios/provincia.service';
+import Swal from 'sweetalert2';
 declare var bootstrap: any;
 
 interface Provincia {
@@ -54,7 +55,7 @@ constructor(private authService: AuthService,
 
 
 
-  login(): void {
+  login0(): void {
      if (this.code.trim().length === 0) {
           this.errorMessage = 'Debe ingresar su código';
            this.successMessage = '';
@@ -90,7 +91,62 @@ constructor(private authService: AuthService,
               });
             }
 
-    register(): void {
+
+  login1(): void {
+  if (this.code.trim().length === 0) {
+    Swal.fire('Error', 'Debe ingresar su código', 'error');
+    return;
+  }
+  this.authService.login(this.code).subscribe(
+    response => {
+      if (response.email && response.email !== 'Código no encontrado' && response.email !== 'Código existe pero no asignado a un usuario') {
+        this.isAuthenticated = true;
+        this.email = response.email;
+        this.route.navigate(['dashboard']);
+        Swal.fire('Éxito', 'Login exitoso', 'success');
+        localStorage.setItem('userCode', this.code);
+        localStorage.setItem('userEmail', this.email);
+
+      } else {
+        Swal.fire('Error', response.email || 'Error al iniciar sesión', 'error');
+      }
+    },
+    error => {
+      const msg = error.error?.email || error.message || 'Error al iniciar sesión';
+      Swal.fire('Error', msg, 'error');
+    }
+  );
+}
+
+
+login(): void {
+  if (this.code.trim().length === 0) {
+    Swal.fire('Error', 'Debe ingresar su código', 'error');
+    return;
+  }
+  this.authService.login(this.code).subscribe(
+    response => {
+      if (response.email && response.email !== 'Código no encontrado' && response.email !== 'Código existe pero no asignado a un usuario') {
+        this.isAuthenticated = true;
+        this.email = response.email;
+        this.route.navigate(['dashboard']);
+        Swal.fire('Éxito', 'Login exitoso', 'success');
+        localStorage.setItem('userCode', this.code);
+        localStorage.setItem('userEmail', this.email);
+        localStorage.setItem('userData', JSON.stringify(response)); // Guardar objeto completo
+      } else {
+        Swal.fire('Error', response.email || 'Error al iniciar sesión', 'error');
+      }
+    },
+    error => {
+      const msg = error.error?.email || error.message || 'Error al iniciar sesión';
+      Swal.fire('Error', msg, 'error');
+    }
+  );
+}
+
+
+    register0(): void {
       this.authService.assignEmail({
         code: this.code,
         email: this.email,
@@ -120,6 +176,30 @@ constructor(private authService: AuthService,
       );
     }
 
+
+    register(): void {
+    this.authService.assignEmail({
+      code: this.code,
+      email: this.email,
+      username: this.username,
+      telefono: this.telefono,
+      provincia: this.provincia
+    }).subscribe(
+      response => {
+        if (response.message === 'Datos asignados con éxito') {
+          Swal.fire('Éxito', response.message, 'success');
+          console.log(response.message)
+           this.clearForm();
+        } else {
+          Swal.fire('Error', response.message, 'error');
+        }
+      },
+      error => {
+        Swal.fire('Error', error.message, 'error');
+      }
+    );
+  }
+
     validateForm(): void {
       this.isFormValid = this.code.trim().length > 0 &&
       this.email.trim().length > 0 &&
@@ -128,7 +208,7 @@ constructor(private authService: AuthService,
       this.provincia.trim().length > 0;
     }
 
-    getProvincias(): void {
+    getProvincias0(): void {
       this.provinciaService.getAllProvincias().subscribe(
         response => {
           this.provincias = response;
@@ -139,6 +219,18 @@ constructor(private authService: AuthService,
         } );
       }
 
+   getProvincias(): void {
+    this.provinciaService.getAllProvincias().subscribe(
+      response => {
+        this.provincias = response;
+        console.log('provincias', response)
+      },
+      error => {
+        Swal.fire('Error', 'Error al cargar las provincias', 'error');
+      }
+    );
+  }
+
 
     ocultarContenido(): void {
     this.isContentVisible = false;
@@ -148,9 +240,29 @@ constructor(private authService: AuthService,
     window.open('https://metroapp.site/calculadora_materiales.html', '_blank');
     }
 
-    openWebsite(): void {
+    openWebsite0(): void {
       window.open(this.websiteUrl, '_blank');
+
     }
+
+   openWebsite1(): void {
+  const phone = '54 9 11 2863-4744'; // Reemplaza con el número real asociado a https://wa.link/9lbeyq
+  const text = 'Hola! quiero una clave de membresía para "METRO"';
+  const whatsappUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
+  window.location.href = whatsappUrl;
+}
+
+openWebsite(): void {
+  const phone = '54 9 11 2863-4744'; // Reemplaza con el número real
+  const text = 'Hola! quiero una clave de membresía para "METRO"';
+  const whatsappUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
+  const fallbackUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
+  try {
+    window.location.href = whatsappUrl;
+  } catch {
+    window.location.href = fallbackUrl;
+  }
+}
 
     shareOnWhatsApp(): void {
       const url = 'www.metroapp.site';

@@ -1,206 +1,89 @@
 
-<!--body>
-  <div  class="container" style="box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); max-width: 800px;">
-    <div class="" id="listas" (click)="mostrarCodigo2()" style="text-align: center;">
-      <h6>ver LISTA PRESUPUESTO VIVIENDA</h6>
-    </div>
-    <hr>
-    <div id="codigo" class="container" style="padding: 8px; text-align: center; border-radius: 10px; align-items: center; background-color: #c0e4f354; display: none; flex-direction: column; margin-bottom: 5px;">
-      <button (click)="abrirGoogleSheets2()" id="mano-de-obra-button2" style="background-color: #1198ce; padding: 10px; color: white; margin: 3px; font-size: 30px; border: none; cursor: pointer; border-radius: 12px; box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;"> ver pdf valor vivienda NOV/2024 </button>
-    </div>
-    <div class="col" style="height: 50px; font-size: 30px; text-align: start; margin-left: 20px; display: flex; align-items: center;">
-       <div id="fixedIconContainer" style="position: fixed; top: 10px; right: 30px; width: 70px; height: 70px; background-color: #076cdf8a; border-radius: 50%; box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px; justify-content: center; align-items: center;">
-      <img id="fixedImageIcon" src="" alt="Icono Empresa" style="max-width: 100%; max-height: 100%; border-radius: 50%; display: none; padding: 5px;" />
-    </div>
+
+
+<button class="btn btn-primary floating-menu-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu">
+  <i class="bi bi-list"></i>
+</button>
+
+  <div class="fixed-image-container">
+    <img id="fixedImageIcon" class="fixed-image" src="#" alt="Logo Empresa" style="display: none;">
   </div>
 
 
-  <div class="card mb-4" style="border-radius: 10px;">
-    <div class="col" style="height: 50px; font-size: 30px; text-align: start; margin-left: 20px; display: flex; align-items: center;">
-
-      <div id="fixedIconContainer" style="position: fixed; top: 10px; right: 30px; width: 70px; height: 70px; background-color: #076cdf8a; border-radius: 50%; box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px; justify-content: center; align-items: center;">
-        <img id="fixedImageIcon" src="" alt="Icono Empresa" style="max-width: 100%; max-height: 100%; border-radius: 50%; display: none; padding: 5px;" />
-      </div>
-    </div>
-
-    <br>
-
-
-
-      <button class="btn btn-primary btn-block" type="button" data-bs-toggle="modal" data-bs-target="#empresaModal">
-        DATOS DE TU EMPRESA
-      </button>
-
-
-      <div class="modal fade" id="empresaModal" tabindex="-1" aria-labelledby="empresaModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="empresaModalLabel">Agregar datos de tu Empresa</h5>
-            </div>
-            <div class="modal-body" style="padding: 10px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;">
-
-              <p style="text-align: center; font-size: 12px;">
-                Podés editar estos datos las veces que quieras.
-              </p>
-              <div class="form-group">
-                <label for="empresaName">Tu Empresa</label>
-                <input type="text" class="form-control" id="empresaName" [(ngModel)]="empresaName" placeholder="¿Cómo se llama?">
-              </div>
-              <div class="form-group">
-                <label for="empresaPhone">Teléfono:</label>
-                <input type="text" class="form-control" id="empresaPhone" [(ngModel)]="empresaPhone" placeholder="Teléfono de tu empresa">
-              </div>
-              <div class="form-group">
-                <label for="empresaEmail">Email:</label>
-                <input type="email" class="form-control" id="empresaEmail" [(ngModel)]="empresaEmail" placeholder="Email de tu empresa">
-              </div>
-              <div class="form-group">
-                <label for="additionalDetailsempresa">Descripción de tu empresa:</label>
-                <textarea class="form-control" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de qué se trata tu empresa"></textarea>
-              </div>
-
-              <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#imageModal">
-                Subir imagen
-              </button>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveFormData()">Guardar</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="imageModalLabel">Subir Imagen</h5>
-            </div>
-            <div class="modal-body" style="text-align: center;">
-
-              <div id="imageCircle" style="display: flex; justify-content: center;">
-                <img id="modalImagePreview" class="img-fluid" src="#" alt="Previsualización de la imagen" style="display: none; width: 80%; height: 80%;">
-              </div>
-              <p id="uploadMessage" style="margin-top: 10px; color: rgb(6, 113, 254); display: none;">Imagen subida</p>
-              <input type="file" id="imageInput" accept="image/*" class="form-control" style="margin-top: 10px;">
-              <p>formato cuadrado, 1080x1080px</p>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="uploadImage()">Guardar</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="successAlert" class="alert alert-success" role="alert" style="display:none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1050;">
-        Datos guardados con éxito.
-      </div>
-
-      <hr>
-
-
-      <button class="btn btn-primary btn-block" type="button" data-bs-toggle="modal" data-bs-target="#clientModal">
-        DATOS DEL CLIENTE
-      </button>
-
-
-      <div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="clientModalLabel">Formulario de Datos del Cliente</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-
-              <h2 id="confirmationMessage" style="display: none; color: green; text-align: center;">Datos guardados</h2>
-
-              <div class="form-group">
-                <label for="clientName">Nombre:</label>
-                <input type="text" class="form-control" id="clientName" [(ngModel)]="clientName" placeholder="Nombre del cliente">
-              </div>
-              <div class="form-group">
-                <label for="contact">Contacto:</label>
-                <input type="text" class="form-control" id="contact" [(ngModel)]="clientContact" placeholder="Información de contacto">
-              </div>
-              <div class="form-group">
-                <label for="budgetDate">Fecha del Presupuesto:</label>
-                <input type="date" class="form-control" id="budgetDate" [(ngModel)]="budgetDate" required>
-              </div>
-              <div class="form-group">
-                <label for="additionalDetails">Detalles Adicionales:</label>
-                <textarea class="form-control" id="additionalDetails" [(ngModel)]="additionalDetailsClient" rows="3" placeholder="Detalles opcionales"></textarea>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveClientData()">Guardar</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasMenuLabel">Opciones</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
-</body-->
-<button class="btn btn-secondary logout-button" (click)="logout()">Logout</button>
+  <div class="offcanvas-body">
+    <ul class="list-unstyled d-flex flex-column align-items-center">
+      <li class="w-100 mb-3 text-center timer-info" style="font-size: 18px; font-weight: bold; color: #092865; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">
+        {{ remainingTime }}
+      </li>
+      <li class="w-100 text-center">
+        <button class="btn btn-secondary logout-button1 w-100" (click)="logout()">Logout</button>
+      </li>
+    </ul>
+  </div>
+</div>
+
 
 <div class="dashboard-container">
-  <!--div-- class="floating-button"> <button class="btn btn-info"> {{ remainingTime }} </button> </!--div-->
-  <div class="floating-timer"> <div class="timer-info"> {{ remainingTime }} </div> </div>
+
+  <div id="successAlert" style="display: none;" class="alert alert-success">Datos de la empresa guardados con éxito.</div>
+
+
+
+ <img id="fixedImageIcon" class="fixed-image" src="#" alt="Logo Empresa" style="display: none;">
   <div class="card dashboard-card">
-    <button class="btn btn-info btn-block dashboard-btn-white" (click)="mostrarCodigo2()"  id="mano-de-obra-button2" >
-      Ver Lista de Presupuesto de Vivienda
-    </button>
-    <div id="codigo" class="container" style="padding: 8px; text-align: center; border-radius: 10px; align-items: center; background-color: #c0e4f354; display: none; flex-direction: column; margin-bottom: 5px;">
-      <button (click)="abrirGoogleSheets2()" id="mano-de-obra-button2" class="btn btn-primary btn-block animate" > ver pdf valor vivienda NOV/2024 </button>
+
+    <div class="program-title" id="portada" style="border-radius: 10px;" *ngIf="!isContentVisible">
+      <h6 style="font-size: 12px; margin-bottom: 0px;">Orbita software</h6>
     </div>
-    <button class="btn btn-primary btn-block dashboard-btn-blue" data-bs-toggle="modal" data-bs-target="#exampleModal" >
-      DATOS DE TU EMPRESA
-    </button>
-    <button class="btn btn-primary btn-block dashboard-btn-blue" data-bs-toggle="modal" data-bs-target="#clientModal" >
-      DATOS DEL CLIENTE
-    </button>
+
+    <div class="card mb-2 w-100 mt-3 ">
+      <div class="card-body d-flex flex-column gap-3 px-2">
+        <button (click)="abrirGoogleSheets2()" id="mano-de-obra-button2" class="btn btn-primary btn-block animate  w-100">PDF valor vivienda JULIO/2025</button>
+        <div class="d-flex flex-row justify-content-between gap-2">
+          <button class="btn btn-primary btn-block w-50 animate ">BONOS TEMU</button>
+          <button class="btn btn-primary btn-block w-50 animate ">BIBLIOTECA</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Segunda tarjeta: Botones Empresa y Cliente verticales -->
+    <div class="card mb-3 w-100">
+      <div class="card-body d-flex flex-column gap-2 px-2">
+        <button class="btn btn-primary btn-block  w-100 animate " data-bs-toggle="modal" data-bs-target="#exampleModal">DATOS DE TU EMPRESA</button>
+        <button class="btn btn-primary btn-block  w-100 animate" data-bs-toggle="modal" data-bs-target="#clientModal">DATOS DEL CLIENTE</button>
+      </div>
+    </div>
+
     <h4 class="text-start">Nuevo Presupuesto</h4>
     <div class="card table-card mt-2 mb-3">
       <div class="card-body">
         <h5 class="mb-3">Lista de tareas</h5>
-        <!--input type="text" class="form-control mb-3" placeholder="Buscar..."-->
+
         <div class="containerbuscar">
           <div class="search-container">
-            <input class="input form-control" placeholder="Buscar tarea..." type="text" id="busqueda" onkeyup="buscar()">
+            <input class="input form-control" placeholder="Buscar tarea..." type="text" id="busqueda" (input)="buscar($event)">
 
           </div>
           </div>
           <p style="text-align: center; "> SI NO ENCUENTRAS LA TAREA QUE NECESITAS BUSCA: TAREA GENERICA,  Y AGREGA DESCRIPCION Y PRECIO.</p>
           <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table table-striped  ">
               <thead>
                 <tr>
                   <th class="col-80">Tarea Generica</th>
-                  <th class="col-20">Precio</th>
+                  <th class="col-20">Costo/$</th>
 
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Dato 1</td>
-                  <td>Dato 2</td>
-
-                </tr>
-                <tr>
-                  <td>Dato 4</td>
-                  <td>Dato 5</td>
-
-                </tr>
-                <tr>
-                  <td>Dato 4</td>
-                  <td>Dato 5</td>
-
-                </tr>
-                <tr>
-                  <td>Dato 4</td>
-                  <td>Dato 5</td>
+                <tr *ngFor="let tarea of tareasFiltradas" (click)="seleccionar(tarea)"  class="hoverable-row" >
+                  <td>{{tarea.nombre}}</td>
+                  <td>{{tarea.costo | currency:'USD' :'symbol':'1.0-0'}}</td>
 
                 </tr>
 
@@ -209,7 +92,56 @@
           </div>
 
 
-        <div class="row mt-4">
+  <div class="modal fade" id="miModal" tabindex="-1" aria-labelledby="exampleModalLabel1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel1">Agregar Tarea</h5>
+
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <textarea [(ngModel)]="tareaSeleccionada.nombre" name="nombre" class="form-control" rows="3"
+                style="margin-bottom: 20px; font-size: 14px; white-space: pre-wrap; overflow-wrap: break-word; background-image: linear-gradient(to top, #c7d0e9, #d7dbee, #e5e7f4, #f3f3f9, #ffffff); color: #092865; padding: 10px; resize: none; font-weight: bold;"
+                readonly></textarea>
+            </div>
+            <div class="row mb-3">
+              <div class="col-6">
+                <label for="area" class="col-form-label">Área (m²/m³):</label>
+                <input type="number" [(ngModel)]="tareaSeleccionada.area" name="area" class="form-control" id="area" placeholder="Ingresa el área" required>
+              </div>
+              <div class="col-6">
+                <label for="modal-cost" class="col-form-label">Costo por m²/m³/ml:</label>
+                <input type="text" [(ngModel)]="tareaSeleccionada.costo" name="costo" class="form-control" id="cost"
+                  style="color: #ab1444; font-weight: bold; text-align: center;" placeholder="Ingresa el costo" step="0.01" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="description" class="col-form-label">Descripción:</label>
+              <input type="text" [(ngModel)]="tareaSeleccionada.descripcion" name="descripcion" class="form-control" id="description" placeholder="Es opcional">
+            </div>
+            <div class="mb-3" id="alert-precio-oculto" style="display: none; text-align: center; color: rgb(240, 90, 44)">
+              <p style="font-size: 14px;">Precio real de la lista solo disponible con código</p>
+            </div>
+            <div class="mb-3">
+              <label for="discount" class="col-form-label">Descuento (%):</label>
+              <input type="number" [(ngModel)]="tareaSeleccionada.descuento" name="descuento" class="form-control" id="discount" value="0">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              <button type="button" (click)="agregarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Agregar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="row mt-4">
           <div class="col">
             <div class="input-group" style="padding:5px; margin: 2px; z-index: 0;">
               <input type="text" class="form-control" placeholder="%" [(ngModel)]="porcentajeBajar">
@@ -229,6 +161,40 @@
       </div>
     </div>
 
+    <div *ngIf="mostrarTabla" class="container mt-4">
+      <h5 class="text-primary">TAREAS A REALIZAR</h5>
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered table-hover table-sm">
+          <thead class="thead-light">
+            <tr>
+              <th class="text-center">Acciones</th>
+              <th class="text-center">Tipo de Trabajo</th>
+              <th class="text-center">Descripción</th>
+              <th class="text-center">Área (m²/m³)</th>
+              <th class="text-center">Costo</th>
+              <th class="text-center">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tarea of tareasAgregadas; let i = index">
+              <td class="text-center">
+                <button (click)="eliminarTarea(i)" class="btn btn-outline-danger btn-sm rounded-circle">X</button>
+              </td>
+              <td>{{ tarea.nombre }}</td>
+              <td>{{ tarea.descripcion }}</td>
+              <td>{{ tarea.area | number:'1.2-2' }}</td>
+              <td>{{ tarea.costo | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td>{{ tarea.totalCost | currency:'USD':'symbol':'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-3" style="font-size: 22px;padding: 8px;margin-bottom: 20px;background-color: withe;box-shadow: rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px;">
+        Total: {{ calcularCostoTotal() | currency:'USD':'symbol':'1.2-2' }}
+      </div>
+    </div>
+
   </div>
   <button class="btn btn-primary btn-block  dashboard-btn-animate" > Ver Presupuesto </button>
 
@@ -236,44 +202,11 @@
 
 </div>
 
-<div class="modal fade" id="empresaModal" tabindex="-1" aria-labelledby="empresaModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="empresaModalLabel">Agregar datos de tu Empresa</h5>
-      </div>
-      <div class="modal-body" style="padding: 10px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;">
 
-        <p style="text-align: center; font-size: 12px;">
-          Podés editar estos datos las veces que quieras.
-        </p>
-        <div class="form-group">
-          <label for="empresaName">Tu Empresa</label>
-          <input type="text" class="form-control" id="empresaName" [(ngModel)]="empresaName" placeholder="¿Cómo se llama?">
-        </div>
-        <div class="form-group">
-          <label for="empresaPhone">Teléfono:</label>
-          <input type="text" class="form-control" id="empresaPhone" [(ngModel)]="empresaPhone" placeholder="Teléfono de tu empresa">
-        </div>
-        <div class="form-group">
-          <label for="empresaEmail">Email:</label>
-          <input type="email" class="form-control" id="empresaEmail" [(ngModel)]="empresaEmail" placeholder="Email de tu empresa">
-        </div>
-        <div class="form-group">
-          <label for="additionalDetailsempresa">Descripción de tu empresa:</label>
-          <textarea class="form-control" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de qué se trata tu empresa"></textarea>
-        </div>
 
-        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#imageModal">
-          Subir imagen
-        </button>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveFormData()">Guardar</button>
-      </div>
-    </div>
-  </div>
-</div>
+
+
+
 
 <div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -310,39 +243,15 @@
   </div>
 </div>
 
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="imageModalLabel">Subir Imagen</h5>
-      </div>
-      <div class="modal-body" style="text-align: center;">
 
-        <div id="imageCircle" style="display: flex; justify-content: center;">
-          <img id="modalImagePreview" class="img-fluid" src="#" alt="Previsualización de la imagen" style="display: none; width: 80%; height: 80%;">
-        </div>
-        <p id="uploadMessage" style="margin-top: 10px; color: rgb(6, 113, 254); display: none;">Imagen subida</p>
-        <input type="file" id="imageInput" accept="image/*" class="form-control" style="margin-top: 10px;">
-        <p>formato cuadrado, 1080x1080px</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="uploadImage()">Guardar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" >
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-
         <h5 class="modal-title" id="exampleModalLabel">Agregar datos de tu Empresa</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" style="padding: 10px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;">
-
         <p style="text-align: center; font-size: 12px;">
           Podés editar estos datos las veces que quieras.
         </p>
@@ -362,10 +271,9 @@
           <label for="additionalDetailsempresa">Descripción de tu empresa:</label>
           <textarea class="form-control" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de qué se trata tu empresa"></textarea>
         </div>
+        <!-- Solo un botón para subir imagen, controlado por TS -->
+        <button class="btn btn-primary" type="button" (click)="abrirModalImagen()">Subir imagen</button>
 
-        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#imageModal">
-          Subir imagen
-        </button>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveFormData()">Guardar</button>
@@ -373,3 +281,31 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" >
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">Subir Imagen</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <div id="imageCircle" style="display: flex; justify-content: center;">
+          <img #modalImagePreview class="img-fluid" src="#" alt="Previsualización de la imagen" style="display: none; width: 80%; height: 80%;">
+        </div>
+        <p #uploadMessage style="margin-top: 10px; color: rgb(6, 113, 254); display: none;">Imagen subida</p>
+        <input type="file" #imageInput accept="image/*" class="form-control" style="margin-top: 10px;" (change)="onImageChange($event)">
+        <p>formato cuadrado recomendado</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="uploadImage()" [disabled]="!imageSelected" >Cargar Imagen</button>
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
