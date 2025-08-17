@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
 
-interface Provincia {
+export interface Provincia {
   id: number;
   nombre: string;
 }
@@ -20,6 +20,12 @@ export class ProvinciaService {
        catchError(this.handleError)
       );
     }
+
+
+getProvinciasByPais(pais: string): Observable<Provincia[]> {
+    return this.http.get<Provincia[]>(`${this.apiUrl}/by-pais?pais=${pais}`);
+  }
+
     private handleError(error: HttpErrorResponse): Observable<never> {
       const errorMessage = error.error.message || 'Error desconocido';
       console.error(errorMessage);

@@ -1,18 +1,10 @@
 <div class="dashboard-container">
-
   <div class="container" style="box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); max-width: 800px;">
     <div class="program-title" id="portada" style="border-radius: 10px;" *ngIf="!isContentVisible">
       <h6 style="font-size: 12px; margin-bottom: 0px;">Orbita software</h6>
     </div>
 
-    <div id="ingreso" class="ingreso" style=" box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.897);" *ngIf="!isContentVisible">
-      <!--div-- id="ingreso6" style="border-radius: 10px; padding-bottom: 10px;">
-        <h6 class="text-center">PRECIOS DE DICIEMBRE ACTUALIZADOS</h6>
-        <p class="text-center" style="font-size: 10px">
-          Optimiza tu manera de trabajar. Realiza automáticamente tus presupuestos directamente desde la aplicación con la lista de precios actualizados cada mes. Ahorrá tiempo. Mostrate profesional.
-        </p>
-      </!--div-->
-
+    <div id="ingreso" class="ingreso" style="box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.897);" *ngIf="!isContentVisible">
       <div class="imagen-container">
         <img src="https://www.metroapp.site/metrologo.jpg" class="w-10rem" alt="Metro logo">
       </div>
@@ -20,26 +12,16 @@
       <div class="text-center bg-gradient">
         <h3>Bienvenido</h3>
         <div class="form-group" id="ingreso-codigo" style="font-size: 20px; margin: 10px;">
-          <!--label for="email">Ingrese su email:</label>
-          <input type="email" id="email" class="form-control" [(ngModel)]="email" placeholder="Ingrese su email" autocomplete="email" style="font-size: 30px; text-align: center; margin-top: 10px;"-->
           <label for="password">Ingrese su código:</label>
-          <input type="text" id="password" class="form-control" [(ngModel)]="code" placeholder="Ingrese su codigo" autocomplete="current-password" style="font-size: 30px; text-align: center;">
+          <input type="text" id="password" class="form-control" [(ngModel)]="code" placeholder="Ingrese su código" autocomplete="current-password" style="font-size: 30px; text-align: center;">
           <button class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="login()">ENTRAR</button>
-
-
-
-        <button id="mercadoPagoButton" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="ocultarContenido()">PROBÁ EL SISTEMA</button>
-
-         <button type="button" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" data-bs-toggle="modal"  data-bs-target="#exampleModal">
-            REGISTRATE
-          </button>
-
-        <button  type="button" class="btn btn-gradient" (click)="openCalculadora()" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" >CALCULADORA DE MATERIALES</button>
-        <button type="button" class="btn btn-success" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="openWebsite()">Comprá un código por Whatsapp</button>
-        <p class="text-center mt-3" style="font-size: 12px;">Valor, $3.800 arg. Te dura 3 meses y tenés acceso a la calculadora de materiales</p>
-        <button id="whatsapp-share" class="btn btn-whatsapp" (click)="shareOnWhatsApp()" >Compartir en WhatsApp</button>
+          <button id="mercadoPagoButton" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="ocultarContenido()">PROBÁ EL SISTEMA</button>
+          <button type="button" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" data-bs-toggle="modal" data-bs-target="#exampleModal">REGISTRATE</button>
+          <button type="button" class="btn btn-gradient" (click)="openCalculadora()" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;">CALCULADORA DE MATERIALES</button>
+          <button type="button" class="btn btn-success" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="openWebsite()">Comprá un código por Whatsapp</button>
+          <p class="text-center mt-3" style="font-size: 12px;">Valor, $3.800 arg. Te dura 3 meses y tenés acceso a la calculadora de materiales</p>
+          <button id="whatsapp-share" class="btn btn-whatsapp" (click)="shareOnWhatsApp()">Compartir en WhatsApp</button>
         </div>
-
       </div>
 
       <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" #exampleModal>
@@ -59,18 +41,24 @@
                   <label for="email" class="col-form-label">Email:</label>
                   <input type="email" class="form-control" id="email" [(ngModel)]="email" placeholder="Ingrese su correo" name="email" (input)="validateForm()">
                 </div>
-                <div class="mb-3">
+                <!--div-- class="mb-3">
                   <label for="username" class="col-form-label">Username:</label>
                   <input type="text" class="form-control" id="username" [(ngModel)]="username" placeholder="Ingrese su nombre de usuario" name="username" (input)="validateForm()">
-                </div>
+                </!--div-->
                 <div class="mb-3">
                   <label for="telefono" class="col-form-label">Teléfono:</label>
-                  <input type="text" class="form-control" id="telefono" [(ngModel)]="telefono" placeholder="Telefono" name="telefono" (input)="validateForm()">
+                  <input type="text" class="form-control" id="telefono" [(ngModel)]="telefono" placeholder="Teléfono" name="telefono" (input)="validateForm()">
+                </div>
+           <div class="mb-3">
+                  <label for="pais" class="col-form-label">País:</label>
+                  <select class="form-select" id="pais" [(ngModel)]="pais" name="pais" (change)="onPaisChange()">
+                    <option value="" disabled selected>Seleccione un país</option>
+                    <option *ngFor="let country of countries" [value]="country">{{ country }}</option>
+                  </select>
                 </div>
                 <div class="mb-3">
                   <label for="provincia" class="col-form-label">Provincia:</label>
-                  <!--input type="text" class="form-control" id="provincia" [(ngModel)]="provincia" name="provincia" (input)="validateForm()"-->
-                  <select  class="form-select" id="provincia" [(ngModel)]="provincia" name="provincia"  (change)="validateForm()" >
+                  <select class="form-select" id="provincia" [(ngModel)]="provincia" name="provincia" (change)="validateForm()">
                     <option value="" disabled selected>Seleccione una provincia</option>
                     <option *ngFor="let provincia of provincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
                   </select>
@@ -84,12 +72,6 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
-
-
-
-
-

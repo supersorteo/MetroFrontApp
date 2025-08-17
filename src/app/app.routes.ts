@@ -4,11 +4,12 @@ import { DashboardComponent } from './componentes/dashboard/dashboard.component'
 import { AuthGuard } from './guard/auth.guard';
 import { AuthLoggedGuard } from './guard/auth-logged.guard';
 import { GenerateCodeComponent } from './componentes/generate-code/generate-code.component';
+import { DatosDeTareasComponent } from './componentes/datos-de-tareas/datos-de-tareas.component';
 
 export const routes: Routes = [
   {path:'', component:LoginComponent, canActivate: [AuthLoggedGuard]},
   {path:'', redirectTo:'', pathMatch:'full'},
   {path:'dashboard', component:DashboardComponent, canActivate: [AuthGuard] },
-
+{ path: 'presupuesto', component: DatosDeTareasComponent },
   {path:'admin-generate-code', component:GenerateCodeComponent, }
 ];

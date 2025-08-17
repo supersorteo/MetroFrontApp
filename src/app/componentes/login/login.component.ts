@@ -27,6 +27,7 @@ export class LoginComponent implements OnInit{
   email: string = '';
   username: string = '';
   telefono: string = '';
+  pais: string = '';
   provincia:string = '';
   isAuthenticated: boolean = false;
 
@@ -39,6 +40,7 @@ export class LoginComponent implements OnInit{
   modal:boolean = false;
   isFormValid: boolean = false;
   provincias: Provincia[] = [];
+   countries: string[] = ['Argentina', 'Colombia', 'Peru'];
 
   @ViewChild('exampleModal') exampleModal!: ElementRef;
 
@@ -49,74 +51,13 @@ constructor(private authService: AuthService,
   private provinciaService: ProvinciaService){}
 
   ngOnInit(): void {
-   this.getProvincias();
+//  this.getProvincias();
 
   }
 
 
 
-  login0(): void {
-     if (this.code.trim().length === 0) {
-          this.errorMessage = 'Debe ingresar su código';
-           this.successMessage = '';
-             console.error(this.errorMessage);
-              this.toastr.error(this.errorMessage, 'Error');
-                return;
-              }
-              this.authService.login(this.code).subscribe(response => {
-                if (response.email && response.email !== 'Código no encontrado') {
-                  this.isAuthenticated = true;
-                  this.successMessage = 'Login exitoso';
-                  this.errorMessage = '';
-                  this.email = response.email;
-                  this.route.navigate(['dashboard']);
-                  console.log(this.successMessage, response.email);
-                  this.toastr.success(this.successMessage, 'Éxito');
-                  console.log('Datos del usuario:', { code: this.code, email: this.email });
-                  localStorage.setItem('userCode', this.code);
-                  localStorage.setItem('userEmail', this.email);
 
-                } else {
-                  this.errorMessage = response.email || 'Error al iniciar sesión';
-                  this.successMessage = '';
-                  console.error(this.errorMessage);
-                  this.toastr.error(this.errorMessage, 'Error');
-                }
-              },
-              error => {
-                this.errorMessage = error.message;
-                this.successMessage = '';
-                console.error('Login error:', this.errorMessage);
-                this.toastr.error(this.errorMessage, 'Error');
-              });
-            }
-
-
-  login1(): void {
-  if (this.code.trim().length === 0) {
-    Swal.fire('Error', 'Debe ingresar su código', 'error');
-    return;
-  }
-  this.authService.login(this.code).subscribe(
-    response => {
-      if (response.email && response.email !== 'Código no encontrado' && response.email !== 'Código existe pero no asignado a un usuario') {
-        this.isAuthenticated = true;
-        this.email = response.email;
-        this.route.navigate(['dashboard']);
-        Swal.fire('Éxito', 'Login exitoso', 'success');
-        localStorage.setItem('userCode', this.code);
-        localStorage.setItem('userEmail', this.email);
-
-      } else {
-        Swal.fire('Error', response.email || 'Error al iniciar sesión', 'error');
-      }
-    },
-    error => {
-      const msg = error.error?.email || error.message || 'Error al iniciar sesión';
-      Swal.fire('Error', msg, 'error');
-    }
-  );
-}
 
 
 login(): void {
@@ -129,6 +70,8 @@ login(): void {
       if (response.email && response.email !== 'Código no encontrado' && response.email !== 'Código existe pero no asignado a un usuario') {
         this.isAuthenticated = true;
         this.email = response.email;
+        //localStorage.clear();
+        console.log('userData guardado en login:', response);
         this.route.navigate(['dashboard']);
         Swal.fire('Éxito', 'Login exitoso', 'success');
         localStorage.setItem('userCode', this.code);
@@ -146,43 +89,14 @@ login(): void {
 }
 
 
-    register0(): void {
-      this.authService.assignEmail({
-        code: this.code,
-        email: this.email,
-        username: this.username,
-        telefono: this.telefono,
-        provincia: this.provincia
-      }).subscribe(
-        response => {
-          if (response.message === 'Datos asignados con éxito') {
-            this.successMessage = response.message;
-            this.errorMessage = '';
-            console.log(this.successMessage);
-            this.toastr.success(this.successMessage, 'Éxito');
-           // this.clearForm();
-          } else {
-            this.errorMessage = response.message;
-            this.successMessage = '';
-            console.log(this.errorMessage);
-            this.toastr.error(this.errorMessage, 'Error');
-          }
-        }, error => {
-          this.errorMessage = error.message;
-          this.successMessage = '';
-          console.log('Register error:', this.errorMessage);
-          this.toastr.error(this.errorMessage, 'Error');
-        }
-      );
-    }
-
 
     register(): void {
     this.authService.assignEmail({
       code: this.code,
       email: this.email,
-      username: this.username,
+      //username: this.username,
       telefono: this.telefono,
+       pais: this.pais,
       provincia: this.provincia
     }).subscribe(
       response => {
@@ -203,21 +117,16 @@ login(): void {
     validateForm(): void {
       this.isFormValid = this.code.trim().length > 0 &&
       this.email.trim().length > 0 &&
-      this.username.trim().length > 0 &&
+      //this.username.trim().length > 0 &&
       this.telefono.trim().length > 0 &&
-      this.provincia.trim().length > 0;
+      this.provincia.trim().length > 0 &&
+      this.pais.trim().length > 0;
     }
 
-    getProvincias0(): void {
-      this.provinciaService.getAllProvincias().subscribe(
-        response => {
-          this.provincias = response;
-          console.log('provincias', response)
-        },
-        error => {
-          this.toastr.error('Error al cargar las provincias', 'Error');
-        } );
-      }
+
+
+
+
 
    getProvincias(): void {
     this.provinciaService.getAllProvincias().subscribe(
@@ -232,6 +141,26 @@ login(): void {
   }
 
 
+
+
+ onPaisChange(): void {
+    if (this.pais) {
+      this.provincia = ''; // Clear provincia on pais change
+      this.provinciaService.getProvinciasByPais(this.pais).subscribe(
+        response => {
+          this.provincias = response;
+        },
+        error => {
+          Swal.fire('Error', 'Error al cargar las provincias', 'error');
+        }
+      );
+    } else {
+      this.provincias = [];
+    }
+    this.validateForm();
+  }
+
+
     ocultarContenido(): void {
     this.isContentVisible = false;
   }
@@ -240,17 +169,7 @@ login(): void {
     window.open('https://metroapp.site/calculadora_materiales.html', '_blank');
     }
 
-    openWebsite0(): void {
-      window.open(this.websiteUrl, '_blank');
 
-    }
-
-   openWebsite1(): void {
-  const phone = '54 9 11 2863-4744'; // Reemplaza con el número real asociado a https://wa.link/9lbeyq
-  const text = 'Hola! quiero una clave de membresía para "METRO"';
-  const whatsappUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
-  window.location.href = whatsappUrl;
-}
 
 openWebsite(): void {
   const phone = '54 9 11 2863-4744'; // Reemplaza con el número real
@@ -270,5 +189,13 @@ openWebsite(): void {
       const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(text)}`; window.location.href = whatsappUrl;
     }
 
-    clearForm(): void { this.code = ''; this.email = ''; this.username = ''; this.telefono = ''; this.provincia = ''; this.isFormValid = false; }
+    clearForm(): void {
+      this.code = '';
+      this.email = '';
+      //this.username = '';
+      this.telefono = '';
+      this.pais = '';
+      this.provincia = '';
+      this.isFormValid = false;
+    }
 }

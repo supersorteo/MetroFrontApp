@@ -4,7 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
-import { TareaService } from '../../servicios/tarea.service';
+import { Tarea, TareaService } from '../../servicios/tarea.service';
+import { Provincia, ProvinciaService } from '../../servicios/provincia.service';
+import { UserTarea, UserTareaService } from '../../servicios/user-tarea.service';
+import { PresupuestoService } from '../../servicios/presupuesto.service';
+
 
 declare var bootstrap: any;
 
@@ -18,15 +22,7 @@ interface AccessCode {
   fechaVencimiento: string;
 }
 
-interface Tarea {
-  id?: number;
-  nombre: string;
-  costo: number;
-  area: number;
-  descripcion: string;
-  descuento: number;
-  totalCost?: number;
-}
+
 
 @Component({
   selector: 'app-dashboard',
@@ -65,11 +61,6 @@ export class DashboardComponent implements OnInit{
   userCode: string = '';
   userData: any | null = null;
   remainingTime: string = '';
- // @ViewChild('imageInput') imageInput!: ElementRef;
-//  @ViewChild('modalImagePreview') modalImagePreview!: ElementRef;
-//  @ViewChild('uploadMessage') uploadMessage!: ElementRef;
-
-
 
   @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
   @ViewChild('modalImagePreview') modalImagePreview!: ElementRef<HTMLImageElement>;
@@ -78,32 +69,43 @@ export class DashboardComponent implements OnInit{
 
   tareas: Tarea[] = [];
   tareasFiltradas: Tarea[] = [];
-  //tareaSeleccionada: Tarea | null = null;
+
   mostrarTabla: boolean = false;
-  tareasAgregadas: Tarea[] = [];
-  tareaSeleccionada: Tarea = {
-    nombre: '',
+  tareasAgregadas: UserTarea[] = [];
+
+
+    tareaSeleccionada: Tarea = {
+    tarea: '',
     costo: 0,
-    area: 1,
+    rubro: '',
+    categoria: '',
+    pais: '',
     descripcion: '',
     descuento: 0,
+    area: 1,
     totalCost: 0
   };
 
+  provincias: Provincia[] = []; // Nuevo
+  provinciaSeleccionada: string = '';
+
   isContentVisible: boolean = false;
+  tareasAgregadasUser: UserTarea[] = [];
 
   constructor(
     private authService: AuthService,
     private route:Router,
     private tareaService: TareaService,
+    private provinciaService: ProvinciaService,
+    private userTareaService: UserTareaService,
+    private presupuestoService: PresupuestoService,
     private toastr: ToastrService ){}
 
   ngOnInit() {
-    //this.loadFormData();
-    //this.loadImageFromLocalStorage();
+
 
     this.loadUserCode()
-
+    this.loadTareasAgregadas();
 
    const uploadedImage = localStorage.getItem('uploadedImage');
     const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
@@ -174,105 +176,282 @@ ngAfterViewInit() {
   }
 
 
-
-  obtenerTareas(): void {
-    this.tareaService.getTareas().subscribe(
-      tareas => {
+obtenerTareas(): void {
+  if (this.userData?.pais) {
+    this.tareaService.getTareasByPais(this.userData.pais).subscribe({
+      next: (tareas) => {
         this.tareas = tareas;
         this.tareasFiltradas = tareas;
-        console.log('Tareas:', this.tareas);
-      }, error => {
-        console.error('Error al obtener las tareas:', error);
-      } );
-    }
+        console.log('Tareas cargadas:', this.tareas);
+      },
+      error: () => this.toastr.error('Error al obtener las tareas', 'Error')
+    });
+  }
+}
+
+
+loadTareasAgregadas0(): void {
+  if (this.userCode) {
+    this.userTareaService.getTareasByUserCode(this.userCode).subscribe({
+      next: (tareas) => {
+        this.tareasAgregadasUser = tareas;
+        this.mostrarTabla = tareas.length > 0;
+        console.log('Tareas agregadas cargadas:', this.tareasAgregadas);
+      },
+      error: () => this.toastr.error('Error al cargar las tareas agregadas', 'Error')
+    });
+  }
+}
+
+
+
+loadTareasAgregadas(): void {
+  // Cargar desde localStorage como respaldo inicial
+  const storedTareas = localStorage.getItem('tareasAgregadas');
+  if (storedTareas) {
+    this.tareasAgregadas = JSON.parse(storedTareas);
+    this.mostrarTabla = this.tareasAgregadas.length > 0;
+  }
+
+  // Sincronizar con el backend
+  if (this.userCode) {
+    this.userTareaService.getTareasByUserCode(this.userCode).subscribe({
+      next: (tareas) => {
+        this.tareasAgregadas = tareas;
+        this.mostrarTabla = tareas.length > 0;
+        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas)); // Actualizar localStorage
+        console.log('Tareas agregadas cargadas del backend:', this.tareasAgregadas);
+      },
+      error: () => {
+        this.toastr.error('Error al cargar las tareas agregadas del backend', 'Error');
+        console.log('Usando tareas de localStorage como respaldo:', this.tareasAgregadas);
+      }
+    });
+  }
+}
 
     seleccionar(tarea: Tarea): void {
-      //this.tareaSeleccionada = tarea;
+    this.tareaSeleccionada = { ...tarea, totalCost: this.calcularTotalCosto(tarea) };
+     console.log('Tarea seleccionada:', this.tareaSeleccionada);
+    this.abrirModal();
+  }
 
-      this.tareaSeleccionada = { ...tarea };
-      console.log('Tarea seleccionada:', this.tareaSeleccionada);
-      this.abrirModal();
-    }
+
+
+
 
     abrirModal(): void {
       const modal = new bootstrap.Modal(document.getElementById('miModal') as HTMLElement);
       modal.show();
     }
 
-    actualizarTarea(): void {
-      if (this.tareaSeleccionada && this.tareaSeleccionada.id) {
-        this.tareaService.actualizarTarea(this.tareaSeleccionada.id, this.tareaSeleccionada).subscribe(
-          tarea => {
-            console.log('Tarea actualizada:', tarea);
-            this.obtenerTareas();
-          },
-          error => {
-            console.error('Error al actualizar la tarea:', error);
-          } );
+
+
+
+actualizarTarea0(): void {
+  if (this.tareaSeleccionada?.id) {
+    const updatedTarea: UserTarea = {
+      ...this.tareaSeleccionada,
+      userCode: this.userCode,
+      pais: this.userData.pais,
+      rubro: this.tareaSeleccionada.rubro || '',
+      categoria: this.tareaSeleccionada.categoria || '',
+      totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
+    };
+    this.userTareaService.updateUserTarea(this.tareaSeleccionada.id, updatedTarea).subscribe({
+      next: () => {
+        this.toastr.success('Tarea actualizada', 'Éxito');
+        this.loadTareasAgregadas(); // Recargar desde backend y actualizar localStorage
+        this.resetTareaSeleccionada();
+      },
+      error: () => {
+        const index = this.tareasAgregadas.findIndex(t => t.id === this.tareaSeleccionada.id);
+        if (index !== -1) {
+          this.tareasAgregadas[index] = updatedTarea; // Actualizar localmente
+          localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+          this.toastr.error('Error al actualizar la tarea en el backend, actualizada localmente', 'Error');
         }
-      }
-
-
-      agregarTarea1(): void {
-        const nuevaTarea: Tarea = {
-          ...this.tareaSeleccionada,
-          costo: this.tareaSeleccionada.costo,
-          area: this.tareaSeleccionada.area,
-          descripcion: this.tareaSeleccionada.descripcion,
-          descuento: this.tareaSeleccionada.descuento
-        };
-        nuevaTarea.totalCost = nuevaTarea.area * nuevaTarea.costo * (1 - nuevaTarea.descuento / 100);
-        this.tareas.push(nuevaTarea); this.resetTareaSeleccionada();
-      }
-
-      agregarTarea0(): void {
-        const nuevaTarea: Tarea = {
-         ...this.tareaSeleccionada,
-         totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
-        };
-        this.tareas.push(nuevaTarea);
         this.resetTareaSeleccionada();
       }
+    });
+  }
+}
 
-      agregarTarea(): void {
-        const nuevaTarea: Tarea = {
-          ...this.tareaSeleccionada,
-          totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
-        };
-        //this.tareasFiltradas.push(nuevaTarea);
-        this.tareasAgregadas.push(nuevaTarea);
-        this.mostrarTabla = true;
+
+actualizarTarea(): void {
+  if (this.tareaSeleccionada?.id) {
+    const updatedTarea: UserTarea = {
+      ...this.tareaSeleccionada,
+      userCode: this.userCode,
+      pais: this.userData.pais,
+      rubro: this.tareaSeleccionada.rubro || '',
+      categoria: this.tareaSeleccionada.categoria || '',
+      totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
+    };
+    this.userTareaService.updateUserTarea(this.tareaSeleccionada.id, updatedTarea).subscribe({
+      next: () => {
+        this.toastr.success('Tarea actualizada', 'Éxito');
+        this.loadTareasAgregadas(); // Recargar desde backend y actualizar localStorage y servicio
+        this.resetTareaSeleccionada();
+      },
+      error: () => {
+        const index = this.tareasAgregadas.findIndex(t => t.id === this.tareaSeleccionada.id);
+        if (index !== -1) {
+          this.tareasAgregadas[index] = updatedTarea; // Actualizar localmente
+          localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+          this.presupuestoService.setTareasAgregadas(this.tareasAgregadas); // Actualizar en el servicio
+          this.toastr.error('Error al actualizar la tarea en el backend, actualizada localmente', 'Error');
+        }
         this.resetTareaSeleccionada();
       }
+    });
+  }
+}
 
-      buscar(event: Event): void { const filtro = (event.target as HTMLInputElement).value.toLowerCase(); this.tareasFiltradas = this.tareas.filter(tarea => tarea.nombre.toLowerCase().includes(filtro) || tarea.descripcion.toLowerCase().includes(filtro) || tarea.costo.toString().includes(filtro) || tarea.area.toString().includes(filtro) || tarea.descuento.toString().includes(filtro) ); }
 
-      eliminarTarea1(index: number): void {
-        if (index >= 0 && index < this.tareas.length) {
-          this.tareas.splice(index, 1);
-        }
-      }
 
-      eliminarTarea(index: number): void {
-        if (index >= 0 && index < this.tareasAgregadas.length) {
-          this.tareasAgregadas.splice(index, 1);
-        }
-      }
 
-      calcularTotalCosto1(tarea: Tarea): number {
-        return tarea.area * tarea.costo * (1 - tarea.descuento / 100);
-      }
-      calcularTotalCosto2(tarea: Tarea): number {
+
+
+agregarTarea(): void {
+  const nuevaTarea: UserTarea = {
+    ...this.tareaSeleccionada,
+    userCode: this.userCode,
+    pais: this.userData.pais,
+    rubro: this.tareaSeleccionada.rubro || '',
+    categoria: this.tareaSeleccionada.categoria || '',
+    totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
+  };
+  this.userTareaService.addUserTarea(nuevaTarea).subscribe({
+    next: (tarea) => {
+      this.tareasAgregadas.push(tarea);
+      this.mostrarTabla = true;
+      localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+      this.presupuestoService.setTareasAgregadas(this.tareasAgregadas); // Guardar en localStorage
+      this.toastr.success('Tarea agregada', 'Éxito');
+      this.resetTareaSeleccionada();
+    },
+    error: () => {
+      this.tareasAgregadas.push(nuevaTarea); // Guardar en localStorage como respaldo
+      this.mostrarTabla = true;
+      localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+      this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+      this.toastr.error('Error al agregar la tarea al backend, guardada localmente', 'Error');
+      this.resetTareaSeleccionada();
+    }
+  });
+}
+
+
+
+verPresupuesto(): void {
+  this.presupuestoService.setTareasAgregadas(this.tareasAgregadas); // Pasar datos al servicio
+  this.route.navigate(['/presupuesto']);
+}
+
+      buscar(event: Event): void {
+    const filtro = (event.target as HTMLInputElement).value.toLowerCase();
+    this.tareasFiltradas = this.tareas.filter(tarea =>
+      tarea.tarea.toLowerCase().includes(filtro) ||
+      tarea.descripcion.toLowerCase().includes(filtro) ||
+      tarea.rubro.toLowerCase().includes(filtro) ||
+      tarea.categoria.toLowerCase().includes(filtro) ||
+      tarea.costo.toString().includes(filtro) ||
+      tarea.area.toString().includes(filtro) ||
+      tarea.descuento.toString().includes(filtro)
+    );
+  }
+
+
+
+
+
+        eliminarTarea0(index: number): void {
+    if (index >= 0 && index < this.tareasAgregadas.length) {
+      this.tareasAgregadas.splice(index, 1);
+      this.mostrarTabla = this.tareasAgregadas.length > 0;
+    }
+  }
+
+  eliminarTarea1(id: number): void {
+  this.userTareaService.deleteUserTarea(id).subscribe({
+    next: () => {
+      this.tareasAgregadas = this.tareasAgregadas.filter(tarea => tarea.id !== id);
+      this.mostrarTabla = this.tareasAgregadas.length > 0;
+      this.toastr.success('Tarea eliminada', 'Éxito');
+    },
+    error: () => this.toastr.error('Error al eliminar la tarea', 'Error')
+  });
+}
+
+eliminarTarea(id: number): void {
+  this.userTareaService.deleteUserTarea(id).subscribe({
+    next: () => {
+      this.tareasAgregadas = this.tareasAgregadas.filter(tarea => tarea.id !== id);
+      this.mostrarTabla = this.tareasAgregadas.length > 0;
+      localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas)); // Actualizar localStorage
+      this.toastr.success('Tarea eliminada', 'Éxito');
+    },
+    error: () => {
+      this.tareasAgregadas = this.tareasAgregadas.filter(tarea => tarea.id !== id); // Eliminar localmente
+      this.mostrarTabla = this.tareasAgregadas.length > 0;
+      localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+      this.toastr.error('Error al eliminar la tarea del backend, eliminada localmente', 'Error');
+    }
+  });
+}
+
+      calcularTotalCosto0(tarea: Tarea): number {
         return (tarea.area || 0) * (tarea.costo || 0) * (1 - (tarea.descuento || 0) / 100);
       }
 
-      calcularCostoTotal1(): number { return this.tareas.reduce((total, tarea) => total + this.calcularTotalCosto(tarea), 0); }
+      calcularCostoTotal0(): number {
+        return this.tareasAgregadas
+        .reduce((total, tarea) =>
+          total + (tarea.totalCost || 0),
+         0);
+      }
 
-      calcularTotalCosto(tarea: Tarea): number { return (tarea.area || 0) * (tarea.costo || 0) * (1 - (tarea.descuento || 0) / 100); }
-      calcularCostoTotal(): number { return this.tareasAgregadas.reduce((total, tarea) => total + (tarea.totalCost || 0), 0); }
+
+      calcularTotalCosto(tarea: Tarea | UserTarea): number {
+  return (tarea.area || 0) * (tarea.costo || 0) * (1 - (tarea.descuento || 0) / 100);
+}
+
+calcularCostoTotal(): number {
+  return this.tareasAgregadas.reduce((total, tarea) => total + (tarea.totalCost || 0), 0);
+}
 
 
-      resetTareaSeleccionada() { this.tareaSeleccionada = { nombre: '', costo: 0, area: 1, descripcion: '', descuento: 0, totalCost: 0 }; }
+
+      resetTareaSeleccionada0(): void {
+    this.tareaSeleccionada = {
+      tarea: '',
+      costo: 0,
+      rubro: '',
+      categoria: '',
+      pais: this.userData?.pais || '',
+      descripcion: '',
+      descuento: 0,
+      area: 1,
+      totalCost: 0
+    };
+  }
+
+  resetTareaSeleccionada(): void {
+  this.tareaSeleccionada = {
+    tarea: '',
+    costo: 0,
+    rubro: '',
+    categoria: '',
+    pais: this.userData?.pais || '',
+    descripcion: '',
+    descuento: 0,
+    area: 1,
+    totalCost: 0,
+    userCode: this.userCode
+  };
+}
+
 
   logout(): void {
     this.authService.logout();
@@ -280,15 +459,7 @@ ngAfterViewInit() {
     this.toastr.success('Logout exitoso', 'Éxito');
   }
 
-  mostrarCodigo2() {
-    const codigo = document.getElementById('codigo') as HTMLElement;
-    if (codigo.style.display === 'none') {
-      codigo.style.display = 'block';
-    } else {
-      codigo.style.display = 'none';
-    }
 
-  }
 
   abrirGoogleSheets2() {
     const url = "https://drive.google.com/file/d/1dZcSD_5lt3OsDE44SN91t5NcUyvQtl-N/view?usp=sharing";
@@ -373,90 +544,6 @@ onImageChange(event: Event): void {
     this.imageSelected = !!(target.files && target.files[0]);
   }
 
-  uploadImage0(): void {
-    const fileInput = this.imageInput?.nativeElement as HTMLInputElement;
-    if (!fileInput) {
-      this.toastr.error('Error: No se encontró el campo de imagen.');
-      return;
-    }
-    const file = fileInput.files?.[0];
-    if (file) {
-      const img = new Image();
-      img.onload = () => {
-        if (img.width !== 1080 || img.height !== 1080) {
-          this.toastr.error('La imagen debe ser 1080x1080px.');
-          return;
-        }
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          const imageBase64 = e.target.result;
-          localStorage.setItem('uploadedImage', imageBase64);
-          const modalPreview = this.modalImagePreview?.nativeElement as HTMLImageElement;
-          if (modalPreview) {
-            modalPreview.src = imageBase64;
-            modalPreview.style.display = 'block';
-          }
-          const mainPreview = document.getElementById('fixedImageIcon') as HTMLImageElement;
-          if (mainPreview) {
-            mainPreview.src = imageBase64;
-            mainPreview.style.display = 'block';
-          }
-          this.uploadMessage.nativeElement.style.display = 'block';
-          this.toastr.success('Imagen subida con éxito.');
-          fileInput.value = '';
-          this.imageSelected = false;
-        };
-        reader.readAsDataURL(file);
-      };
-      img.src = URL.createObjectURL(file);
-    } else {
-      this.toastr.error('Por favor, selecciona una imagen.');
-    }
-  }
-
-
-
-uploadImage1(): void {
-  const fileInput = this.imageInput?.nativeElement as HTMLInputElement;
-  if (!fileInput) {
-    console.error('Error: Elemento de entrada de imagen no encontrado.');
-    this.toastr.error('Error: No se encontró el campo de imagen.');
-    return;
-  }
-  const file = fileInput.files?.[0];
-  if (file) {
-    const img = new Image();
-    img.onload = () => {
-      if (img.width !== 1080 || img.height !== 1080) {
-        this.toastr.error('La imagen debe ser 1080x1080px.');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        const imageBase64 = e.target.result;
-        localStorage.setItem('uploadedImage', imageBase64);
-        const modalPreview = this.modalImagePreview?.nativeElement as HTMLImageElement;
-        if (modalPreview) {
-          modalPreview.src = imageBase64;
-          modalPreview.style.display = 'block';
-        }
-        const mainPreview = document.getElementById('fixedImageIcon') as HTMLImageElement;
-        if (mainPreview) {
-          mainPreview.src = imageBase64;
-          mainPreview.style.display = 'block';
-        }
-        this.uploadMessage.nativeElement.style.display = 'block';
-        console.log('Imagen subida con éxito.');
-        this.toastr.success('Imagen subida con éxito.');
-      };
-      reader.readAsDataURL(file);
-    };
-    img.src = URL.createObjectURL(file);
-  } else {
-    console.error('Error: No se seleccionó ninguna imagen.');
-    this.toastr.error('Por favor, selecciona una imagen.');
-  }
-}
 
 
 
@@ -485,112 +572,103 @@ saveClientData() {
   this.toastr.success('Datos del cliente guardados con éxito.');
 }
 
-/*
-    saveFormData() {
-      const formData = {
-        empresaName: this.empresaName,
-        empresaPhone: this.empresaPhone,
-        empresaEmail: this.empresaEmail,
-        additionalDetailsempresa: this.additionalDetailsEmpresa,
-        image: localStorage.getItem('uploadedImage'),
-       };
-       localStorage.setItem('empresaData', JSON.stringify(formData));
-       const successAlert = document.getElementById('successAlert') as HTMLDivElement;
-       successAlert.style.display = 'block';
-       setTimeout(
-        () => {
-        successAlert.style.display = 'none';
-      }, 2000);
-    }*/
-
-    /*
-    saveClientData() {
-      const clientData = {
-        clientName: this.clientName,
-        clientContact: this.clientContact,
-        budgetDate: this.budgetDate,
-        additionalDetailsClient: this.additionalDetailsClient,
-      };
-      localStorage.setItem('clientData', JSON.stringify(clientData));
-      const confirmationMessage = document.getElementById('confirmationMessage') as HTMLHeadingElement;
-      confirmationMessage.style.display = 'block';
-      setTimeout(
-        () => {
-          confirmationMessage.style.display = 'none';
-        }, 2000);
-      }*/
 
 
 
-
-      //mostrarAlerta(mensaje: string): void {  alert(mensaje); }
 
       mostrarAlerta(mensaje: string): void {
         this.toastr.success(mensaje);
       }
 
-      disminuirPrecios(): void {
-        const porcentaje = this.porcentajeBajar;
-        if (isNaN(porcentaje) || porcentaje <= 0) {
-          this.toastr.error('Por favor, ingrese un porcentaje válido para bajar.');
-          return;
-        }
-        this.tareasFiltradas = this.tareasFiltradas.map(tarea => {
-          tarea.costo = tarea.costo * (1 - porcentaje / 100);
-          tarea.totalCost = tarea.area * tarea.costo * (1 - tarea.descuento / 100);
-          console.log(`Tarea: ${tarea.nombre}, Nuevo Costo: ${tarea.costo}, Nuevo Total: ${tarea.totalCost}`);
-          return tarea;
-        });
-        this.toastr.success(`Toda la lista se redujo un ${porcentaje}%`);
-        this.porcentajeBajar = null;
+
+
+
+    disminuirPrecios(): void {
+    const porcentaje = parseFloat(this.porcentajeBajar);
+    if (isNaN(porcentaje) || porcentaje <= 0) {
+      this.toastr.error('Por favor, ingrese un porcentaje válido para bajar', 'Error');
+      return;
+    }
+    this.tareasFiltradas = this.tareasFiltradas.map(tarea => ({
+      ...tarea,
+      costo: tarea.costo * (1 - porcentaje / 100),
+      totalCost: this.calcularTotalCosto({ ...tarea, costo: tarea.costo * (1 - porcentaje / 100) })
+    }));
+    this.toastr.success(`Lista reducida en ${porcentaje}%`, 'Éxito');
+    this.porcentajeBajar = null;
+  }
+
+  ajustarPrecios(): void {
+    const porcentaje = parseFloat(this.porcentajeSubir);
+    if (isNaN(porcentaje) || porcentaje <= 0) {
+      this.toastr.error('Por favor, ingrese un porcentaje válido para subir', 'Error');
+      return;
+    }
+    this.tareasFiltradas = this.tareasFiltradas.map(tarea => ({
+      ...tarea,
+      costo: tarea.costo * (1 + porcentaje / 100),
+      totalCost: this.calcularTotalCosto({ ...tarea, costo: tarea.costo * (1 + porcentaje / 100) })
+    }));
+    this.toastr.success(`Lista incrementada en ${porcentaje}%`, 'Éxito');
+    this.porcentajeSubir = null;
+  }
+
+
+
+  loadUserCode(): void {
+    this.userCode = localStorage.getItem('userCode') || '';
+    const storedUserData = localStorage.getItem('userData');
+    console.log('Datos en localStorage (userData):', storedUserData ? JSON.parse(storedUserData) : null); // Depuración
+    if (this.userCode) {
+      this.fetchUserData();
+    } else {
+      this.toastr.error('Código de usuario no encontrado en el localStorage', 'Error');
+      this.route.navigate(['']); // Redirigir al login
+    }
+  }
+
+
+
+
+
+
+fetchUserData(): void {
+  this.authService.getUserCode(this.userCode).subscribe(
+    response => {
+      this.userData = response;
+      localStorage.setItem('userData', JSON.stringify(this.userData));
+      console.log('Datos del usuario logueado:', this.userData); // Imprimir datos
+      if (this.userData.fechaVencimiento) {
+        this.calculateRemainingTime(this.userData.fechaVencimiento);
       }
+      this.loadProvincias();
+      this.obtenerTareas();
+    },
+    error => {
+      console.error('Error al obtener datos del usuario:', error);
+      this.toastr.error('Error al obtener los datos del usuario', 'Error');
+      this.route.navigate(['']); // Redirigir al login
+    }
+  );
+}
 
 
-      ajustarPrecios(): void {
-        const porcentaje = this.porcentajeSubir;
-        if (isNaN(porcentaje) || porcentaje <= 0) {
-          this.toastr.error('Por favor, ingrese un porcentaje válido para subir.');
-          return;
+
+  loadProvincias(): void {
+    if (this.userData?.pais) {
+      this.provinciaService.getProvinciasByPais(this.userData.pais).subscribe(
+        provincias => {
+          this.provincias = provincias;
+          console.log('Provincias cargadas:', provincias); // Depuración
+        },
+        error => {
+          this.toastr.error('Error al cargar las provincias', 'Error');
         }
-        this.tareasFiltradas = this.tareasFiltradas.map(
-          tarea => {
-            tarea.costo = tarea.costo * (1 + porcentaje / 100);
-            tarea.totalCost = tarea.area * tarea.costo * (1 - tarea.descuento / 100);
-            console.log(`Tarea: ${tarea.nombre}, Nuevo Costo: ${tarea.costo}, Nuevo Total: ${tarea.totalCost}`);
-            return tarea;
-          });
-          this.toastr.success(`Toda la lista se incrementó un ${porcentaje}%`);
-          this.porcentajeSubir = null;
-        }
-
-      loadUserCode(): void {
-        this.userCode = localStorage.getItem('userCode') || '';
-        if (this.userCode) {
-          this.fetchUserData();
-        } else {
-          this.toastr.error('Código de usuario no encontrado en el localStorage', 'Error');
-        }
-      }
-
-
-
-
-
-
-          fetchUserData(): void {
-            this.authService.getUserCode(this.userCode).subscribe(
-              response => {
-                this.userData = response;
-                console.log('Datos del usuario:', response);
-                localStorage.setItem('userData', JSON.stringify(this.userData))
-                if (this.userData.fechaVencimiento) {
-                  this.calculateRemainingTime(this.userData.fechaVencimiento);
-                }
-              },
-              error => {
-                this.toastr.error('Error al obtener los datos del usuario', 'Error');
-              } );
-            }
+      );
+    } else {
+      console.warn('No se pudo cargar provincias: userData.pais no está disponible', this.userData); // Depuración
+    }
+  }
 
 
       calculateRemainingTime(fechaVencimiento: string): void {

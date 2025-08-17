@@ -34,7 +34,6 @@
 
 
 
- <img id="fixedImageIcon" class="fixed-image" src="#" alt="Logo Empresa" style="display: none;">
   <div class="card dashboard-card">
 
     <div class="program-title" id="portada" style="border-radius: 10px;" *ngIf="!isContentVisible">
@@ -59,144 +58,148 @@
       </div>
     </div>
 
-    <h4 class="text-start">Nuevo Presupuesto</h4>
-    <div class="card table-card mt-2 mb-3">
-      <div class="card-body">
-        <h5 class="mb-3">Lista de tareas</h5>
+  <h4 class="text-start">Nuevo Presupuesto</h4>
+<div class="card table-card mt-2 mb-3">
+  <div class="card-body">
+    <h5 class="mb-3">Lista de tareas</h5>
+    <div class="containerbuscar">
+      <div class="search-container">
+        <input class="input form-control" placeholder="Buscar tarea..." type="text" id="busqueda" (input)="buscar($event)">
+      </div>
+    </div>
+    <p style="text-align: center;">SI NO ENCUENTRAS LA TAREA QUE NECESITAS BUSCA: TAREA GENERICA, Y AGREGA DESCRIPCIÓN Y PRECIO.</p>
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th class="col-40">Tarea</th>
+            <th class="col-20">Rubro</th>
+            <th class="col-20">Categoría</th>
+            <th class="col-20">Costo/$</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tarea of tareasFiltradas" (click)="seleccionar(tarea)" class="hoverable-row">
+            <td>{{ tarea.tarea }}</td>
+            <td>{{ tarea.rubro }}</td>
+            <td>{{ tarea.categoria }}</td>
+            <td>{{ tarea.costo | currency:'USD':'symbol':'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-        <div class="containerbuscar">
-          <div class="search-container">
-            <input class="input form-control" placeholder="Buscar tarea..." type="text" id="busqueda" (input)="buscar($event)">
-
+    <div class="modal fade" id="miModal" tabindex="-1" aria-labelledby="exampleModalLabel1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel1">Agregar Tarea</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
+          <div class="modal-body">
+            <form>
+              <div class="mb-3">
+                <label for="tarea" class="col-form-label">Tarea:</label>
+                <textarea [(ngModel)]="tareaSeleccionada.tarea" name="tarea" class="form-control" rows="3"
+                  style="margin-bottom: 20px; font-size: 14px; white-space: pre-wrap; overflow-wrap: break-word; background-image: linear-gradient(to top, #c7d0e9, #d7dbee, #e5e7f4, #f3f3f9, #ffffff); color: #092865; padding: 10px; resize: none; font-weight: bold;"
+                  readonly></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="rubro" class="col-form-label">Rubro:</label>
+                <input type="text" [(ngModel)]="tareaSeleccionada.rubro" name="rubro" class="form-control" id="rubro" readonly>
+              </div>
+              <div class="mb-3">
+                <label for="categoria" class="col-form-label">Categoría:</label>
+                <input type="text" [(ngModel)]="tareaSeleccionada.categoria" name="categoria" class="form-control" id="categoria" readonly>
+              </div>
+              <div class="row mb-3">
+                <div class="col-6">
+                  <label for="area" class="col-form-label">Área (m²/m³):</label>
+                  <input type="number" [(ngModel)]="tareaSeleccionada.area" name="area" class="form-control" id="area" placeholder="Ingresa el área" required>
+                </div>
+                <div class="col-6">
+                  <label for="modal-cost" class="col-form-label">Costo por m²/m³/ml:</label>
+                  <input type="number" [(ngModel)]="tareaSeleccionada.costo" name="costo" class="form-control" id="cost"
+                    style="color: #ab1444; font-weight: bold; text-align: center;" placeholder="Ingresa el costo" step="0.01" required>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="description" class="col-form-label">Descripción:</label>
+                <input type="text" [(ngModel)]="tareaSeleccionada.descripcion" name="descripcion" class="form-control" id="description" placeholder="Es opcional">
+              </div>
+              <div class="mb-3">
+                <label for="discount" class="col-form-label">Descuento (%):</label>
+                <input type="number" [(ngModel)]="tareaSeleccionada.descuento" name="descuento" class="form-control" id="discount" value="0">
+              </div>
+              <div class="modal-footer">
+                <!--button-- type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</!button-->
+                <button type="button" (click)="agregarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Agregar</button>
+                <!--button-- type="button" *ngIf="tareaSeleccionada.id" (click)="actualizarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Actualizar</!--button-->
+              </div>
+            </form>
           </div>
-          <p style="text-align: center; "> SI NO ENCUENTRAS LA TAREA QUE NECESITAS BUSCA: TAREA GENERICA,  Y AGREGA DESCRIPCION Y PRECIO.</p>
-          <div class="table-responsive">
-            <table class="table table-striped  ">
-              <thead>
-                <tr>
-                  <th class="col-80">Tarea Generica</th>
-                  <th class="col-20">Costo/$</th>
-
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let tarea of tareasFiltradas" (click)="seleccionar(tarea)"  class="hoverable-row" >
-                  <td>{{tarea.nombre}}</td>
-                  <td>{{tarea.costo | currency:'USD' :'symbol':'1.0-0'}}</td>
-
-                </tr>
-
-              </tbody>
-            </table>
-          </div>
-
-
-  <div class="modal fade" id="miModal" tabindex="-1" aria-labelledby="exampleModalLabel1" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel1">Agregar Tarea</h5>
-
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
-          <form>
-            <div class="mb-3">
-              <textarea [(ngModel)]="tareaSeleccionada.nombre" name="nombre" class="form-control" rows="3"
-                style="margin-bottom: 20px; font-size: 14px; white-space: pre-wrap; overflow-wrap: break-word; background-image: linear-gradient(to top, #c7d0e9, #d7dbee, #e5e7f4, #f3f3f9, #ffffff); color: #092865; padding: 10px; resize: none; font-weight: bold;"
-                readonly></textarea>
-            </div>
-            <div class="row mb-3">
-              <div class="col-6">
-                <label for="area" class="col-form-label">Área (m²/m³):</label>
-                <input type="number" [(ngModel)]="tareaSeleccionada.area" name="area" class="form-control" id="area" placeholder="Ingresa el área" required>
-              </div>
-              <div class="col-6">
-                <label for="modal-cost" class="col-form-label">Costo por m²/m³/ml:</label>
-                <input type="text" [(ngModel)]="tareaSeleccionada.costo" name="costo" class="form-control" id="cost"
-                  style="color: #ab1444; font-weight: bold; text-align: center;" placeholder="Ingresa el costo" step="0.01" required>
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="description" class="col-form-label">Descripción:</label>
-              <input type="text" [(ngModel)]="tareaSeleccionada.descripcion" name="descripcion" class="form-control" id="description" placeholder="Es opcional">
-            </div>
-            <div class="mb-3" id="alert-precio-oculto" style="display: none; text-align: center; color: rgb(240, 90, 44)">
-              <p style="font-size: 14px;">Precio real de la lista solo disponible con código</p>
-            </div>
-            <div class="mb-3">
-              <label for="discount" class="col-form-label">Descuento (%):</label>
-              <input type="number" [(ngModel)]="tareaSeleccionada.descuento" name="descuento" class="form-control" id="discount" value="0">
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-              <button type="button" (click)="agregarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Agregar</button>
-            </div>
-          </form>
+      </div>
+    </div>
+
+    <div class="row mt-4">
+      <div class="col">
+        <div class="input-group" style="padding:5px; margin: 2px; z-index: 0;">
+          <input type="text" class="form-control" placeholder="%" [(ngModel)]="porcentajeBajar">
+          <div class="input-group-append">
+            <button class="btn btn-danger w-100" (click)="disminuirPrecios()">BAJAR</button>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="input-group" style="padding:5px; margin: 2px; z-index: 0;">
+          <input type="text" class="form-control" placeholder="%" [(ngModel)]="porcentajeSubir">
+          <div class="input-group-append">
+            <button class="btn btn-success w-100" (click)="ajustarPrecios()">SUBIR</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-
-
-  <div class="row mt-4">
-          <div class="col">
-            <div class="input-group" style="padding:5px; margin: 2px; z-index: 0;">
-              <input type="text" class="form-control" placeholder="%" [(ngModel)]="porcentajeBajar">
-              <div class="input-group-append">
-                <button class="btn btn-danger w-100" (click)="disminuirPrecios()">BAJAR</button>
-              </div>
-            </div>
-          </div>
-          <div class="col">
-            <div class="input-group" style="padding:5px; margin: 2px; z-index: 0;">
-              <input type="text" class="form-control" placeholder="%" [(ngModel)]="porcentajeSubir">
-              <div class="input-group-append">
-                <button class="btn btn-success w-100" (click)="ajustarPrecios()">SUBIR</button>
-              </div>
-            </div>
-          </div>
-      </div>
-    </div>
-
-    <div *ngIf="mostrarTabla" class="container mt-4">
-      <h5 class="text-primary">TAREAS A REALIZAR</h5>
-      <div class="table-responsive">
-        <table class="table table-striped table-bordered table-hover table-sm">
-          <thead class="thead-light">
-            <tr>
-              <th class="text-center">Acciones</th>
-              <th class="text-center">Tipo de Trabajo</th>
-              <th class="text-center">Descripción</th>
-              <th class="text-center">Área (m²/m³)</th>
-              <th class="text-center">Costo</th>
-              <th class="text-center">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let tarea of tareasAgregadas; let i = index">
-              <td class="text-center">
-                <button (click)="eliminarTarea(i)" class="btn btn-outline-danger btn-sm rounded-circle">X</button>
-              </td>
-              <td>{{ tarea.nombre }}</td>
-              <td>{{ tarea.descripcion }}</td>
-              <td>{{ tarea.area | number:'1.2-2' }}</td>
-              <td>{{ tarea.costo | currency:'USD':'symbol':'1.2-2' }}</td>
-              <td>{{ tarea.totalCost | currency:'USD':'symbol':'1.2-2' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="mt-3" style="font-size: 22px;padding: 8px;margin-bottom: 20px;background-color: withe;box-shadow: rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px;">
-        Total: {{ calcularCostoTotal() | currency:'USD':'symbol':'1.2-2' }}
-      </div>
-    </div>
-
+<div *ngIf="mostrarTabla" class="container mt-4">
+  <h5 class="text-primary">TAREAS A REALIZAR</h5>
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover table-sm">
+      <thead class="thead-light">
+        <tr>
+          <th class="text-center">Acciones</th>
+          <th class="text-center">Tarea</th>
+          <!--th-- class="text-center">Rubro</!--th-->
+          <!--th-- class="text-center">Categoría</!--th-->
+          <!--th class="text-center">Descripción</!--th-->
+          <th class="text-center">Área (m²/m³)</th>
+          <th class="text-center">Costo</th>
+          <th class="text-center">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tarea of tareasAgregadas; let i = index">
+          <td class="text-center">
+            <button *ngIf="tarea.id" (click)="eliminarTarea(tarea.id)" class="btn btn-outline-danger btn-sm rounded-circle">X</button>
+          </td>
+          <td>{{ tarea.tarea }}</td>
+          <!--td>{{ tarea.rubro }}</td-->
+          <!--td>{{ tarea.categoria }}</!--td-->
+          <!--td>{{ tarea.descripcion }}</td-->
+          <td>{{ tarea.area | number:'1.2-2' }}</td>
+          <td>{{ tarea.costo | currency:'USD':'symbol':'1.2-2' }}</td>
+          <td>{{ tarea.totalCost | currency:'USD':'symbol':'1.2-2' }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-  <button class="btn btn-primary btn-block  dashboard-btn-animate" > Ver Presupuesto </button>
+  <div class="mt-3" style="font-size: 22px; padding: 8px; margin-bottom: 20px; background-color: white; box-shadow: rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px;">
+    Total: {{ calcularCostoTotal() | currency:'USD':'symbol':'1.2-2' }}
+  </div>
+</div>
+  <button class="btn btn-primary btn-block  dashboard-btn-animate" (click)="verPresupuesto()" > Ver Presupuesto </button>
 
 </div>
 

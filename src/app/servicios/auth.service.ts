@@ -3,47 +3,26 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, Observable, of, throwError } from 'rxjs';
 
-/*interface AccessCode {
-  id: number;
-  code: string;
-}*/
 
-interface AccessCode1 {
-  code: string;
-  email: string;
-}
 
-interface AuthResponse1 {
-  message: string;
-  code?: string;
-  email?: string;
-}
-
-/*export interface AccessCode {
-  code: string;
-  email: string;
-  username?: string;
-  telefono?: string;
-  provincia?: string;
-}*/
 
 export interface AuthResponse {
   message: string;
   code: string;
   email: string;
-  username: string;
   telefono: string;
+  pais?: string;
   provincia: string
 }
 
 
 
 
-interface AccessCode {
+export interface AccessCode {
   code: string;
   email: string;
-  username?: string;
   telefono?: string;
+  pais?: string;
   provincia?: string;
   fechaRegistro?: string;
   fechaVencimiento?: string;
@@ -62,9 +41,10 @@ export class AuthService {
       login(code: string): Observable<AuthResponse> {
         const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
         return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { code }, { headers }) .pipe(
-          catchError(this.handleError0)
+          catchError(this.handleError)
         );
        }
+
 
 
 
@@ -91,6 +71,22 @@ export class AuthService {
           } return throwError(() => new Error(errorMessage));
         }
 
+ private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'Error desconocido';
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `Error: ${error.error.message}`;
+    } else {
+      if (error.error && error.error.email) {
+        errorMessage = error.error.email;
+      } else if (error.status === 401) {
+        errorMessage = 'Código no encontrado o no asignado';
+      } else {
+        errorMessage = `Error ${error.status}: ${error.message}`;
+      }
+    }
+    return throwError(() => new Error(errorMessage));
+  }
+
 
 
     assignEmail(accessCode: AccessCode): Observable<AuthResponse> {
@@ -111,6 +107,7 @@ export class AuthService {
   localStorage.removeItem('userCode');
   localStorage.removeItem('userEmail');
   localStorage.removeItem('userData'); // Añadir esta línea
+  localStorage.clear();
   //this.router.navigate(['/login']);
 }
 
@@ -119,6 +116,8 @@ export class AuthService {
     console.error(errorMessage);
     return throwError(() => new Error(errorMessage));
   }
+
+
 
 
 
