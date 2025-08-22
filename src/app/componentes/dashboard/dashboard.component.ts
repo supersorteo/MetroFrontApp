@@ -130,6 +130,28 @@ export class DashboardComponent implements OnInit{
     if (uploadedImage && imageElement) {
       imageElement.src = uploadedImage;
       imageElement.style.display = 'block';
+      this.logoUrl = uploadedImage;
+    } else if (this.userCode && imageElement) {
+      // Si no hay imagen en localStorage, intenta cargar desde el backend
+      this.empresaService.getEmpresaByUserCode(this.userCode).subscribe({
+        next: (empresaData: any) => {
+          // Si el backend devuelve array, toma la primera empresa
+          let empresa = Array.isArray(empresaData) ? empresaData[0] : empresaData;
+          if (empresa && empresa.logoUrl) {
+            imageElement.src = empresa.logoUrl;
+            imageElement.style.display = 'block';
+            this.logoUrl = empresa.logoUrl;
+          } else {
+            imageElement.style.display = 'none';
+            this.logoUrl = '';
+          }
+        },
+        error: (err) => {
+          imageElement.style.display = 'none';
+          this.logoUrl = '';
+          console.warn('No se pudo cargar el logo de la empresa desde el backend:', err);
+        }
+      });
     }
 
     setInterval(() => {
