@@ -1,4 +1,57 @@
 <div class="container">
+  @if (empresas.length > 0) {
+    <h6>Empresas Asociadas</h6>
+    <div class="row g-3 mb-4">
+      @for (empresa of empresas; track empresa.id) {
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="card p-3 h-100">
+            <div class="row align-items-center">
+              <div class="col-auto">
+                @if (empresa.logoUrl) {
+                  <img [src]="empresa.logoUrl" alt="Logo" style="max-width: 80px; max-height: 80px; border-radius: 8px;">
+                }
+              </div>
+              <div class="col">
+                <p><strong>Nombre:</strong> {{ empresa.name }}</p>
+                <p><strong>Teléfono:</strong> {{ empresa.phone }}</p>
+                <p><strong>Email:</strong> {{ empresa.email }}</p>
+                <p><strong>Descripción:</strong> {{ empresa.description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+  <div *ngIf="clientes.length > 0" class="mb-4">
+    <h6>Clientes Asociados</h6>
+    <div class="table-responsive">
+      <table class="table table-bordered table-hover table-sm">
+        <thead class="table-light">
+          <tr>
+            <th>Nombre</th>
+            <th>Contacto</th>
+            <th>Email</th>
+            <th>CUIT/Clave</th>
+            <th>Dirección</th>
+            <th>Fecha Presupuesto</th>
+            <th>Detalles</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cliente of clientes">
+            <td>{{ cliente.name }}</td>
+            <td>{{ cliente.contact }}</td>
+            <td>{{ cliente.email }}</td>
+            <td>{{ cliente.clave }}</td>
+            <td>{{ cliente.direccion }}</td>
+            <td>{{ cliente.budgetDate }}</td>
+            <td>{{ cliente.additionalDetails }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
   <div *ngIf="userData" class="user-info mb-3">
     <h6>Datos del Usuario</h6>
     <p><strong>Email:</strong> {{ userData.email }}</p>

@@ -43,7 +43,17 @@
   background: linear-gradient(0deg, rgba(233, 238, 244, 1) 0%, rgba(68, 148, 242, 0.5858718487394958) 49%, rgba(233, 235, 238, 0.5858718487394958) 100%);
 }
 
+.alineacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
 
+}
+
+.bot{
+  width: 60px;
+}
 
 .dashboard-card {
   width: 100%;
@@ -458,4 +468,117 @@ p {
 .floating-menu-btn .bi-list {
   font-size: 28px;
   color: white;
+}
+
+
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Mejora el desplazamiento en dispositivos táctiles */
+}
+
+.table {
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 0.75rem;
+  vertical-align: middle;
+  white-space: nowrap; /* Evita que los encabezados se dividan */
+}
+
+.table td {
+  padding: 0.75rem;
+  vertical-align: middle;
+  white-space: nowrap; /* Evita que el contenido de las celdas se divida */
+}
+
+.table-dark {
+  background-color: #343a40;
+  color: #fff;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.d-flex.gap-2 {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.pagination {
+  margin-top: 1rem;
+}
+
+.page-link {
+  cursor: pointer;
+}
+
+.text-center {
+  font-style: italic;
+  color: #6c757d;
+}
+
+/* Media query para dispositivos móviles (pantallas <= 576px) */
+@media (max-width: 576px) {
+  .table {
+    font-size: 0.75rem; /* Tamaño de fuente más pequeño */
+  }
+
+  .table th,
+  .table td {
+    padding: 0.5rem; /* Reducir padding */
+  }
+
+  .btn-sm {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem; /* Botones más pequeños */
+  }
+
+  .pagination {
+    font-size: 0.8rem; /* Paginación más pequeña */
+  }
+
+  .page-link {
+    padding: 0.25rem 0.5rem;
+  }
+
+  .modal-dialog {
+    margin: 0.5rem; /* Reducir márgenes del modal */
+  }
+
+  .modal-body {
+    padding: 1rem; /* Reducir padding del cuerpo del modal */
+  }
 }
