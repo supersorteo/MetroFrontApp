@@ -8,7 +8,7 @@ import { Tarea, TareaService } from '../../servicios/tarea.service';
 import { Provincia, ProvinciaService } from '../../servicios/provincia.service';
 import { UserTarea, UserTareaService } from '../../servicios/user-tarea.service';
 import { PresupuestoService } from '../../servicios/presupuesto.service';
-import { EmpresaService } from '../../servicios/empresa.service';
+import { Empresa, EmpresaService } from '../../servicios/empresa.service';
 import { Cliente, ClienteService } from '../../servicios/cliente.service';
 import Swal from 'sweetalert2';
 
@@ -103,6 +103,7 @@ export class DashboardComponent implements OnInit{
   itemsPerPage: number = 5;
   totalPages: number = 1;
 
+  logoUrl: string = '';
   constructor(
     private authService: AuthService,
     private route:Router,
@@ -724,7 +725,7 @@ calcularCostoTotal(): number {
 
 
 
-uploadImage(): void {
+uploadImage1(): void {
   const fileInput = this.imageInput?.nativeElement as HTMLInputElement;
   if (!fileInput) {
     this.toastr.error('Error: No se encontró el campo de imagen.');
@@ -762,6 +763,44 @@ uploadImage(): void {
   }
 }
 
+ uploadImage(): void {
+    const fileInput = this.imageInput?.nativeElement as HTMLInputElement;
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+      this.toastr.error('Por favor, selecciona una imagen.');
+      return;
+    }
+
+    const file = fileInput.files[0];
+    this.empresaService.uploadImage(file, this.userCode).subscribe({
+      next: (url) => {
+        this.logoUrl = url; // Almacena la URL retornada por el backend
+        const modalPreview = this.modalImagePreview?.nativeElement as HTMLImageElement;
+        if (modalPreview) {
+          modalPreview.src = url;
+          modalPreview.style.display = 'block';
+        }
+        const mainPreview = document.getElementById('fixedImageIcon') as HTMLImageElement;
+        const mainPreview2 = document.getElementById('fixedImageIconmodal') as HTMLImageElement;
+        if (mainPreview) {
+          mainPreview.src = url;
+          mainPreview.style.display = 'block';
+        }
+        if (mainPreview2) {
+          mainPreview2.src = url;
+          mainPreview2.style.display = 'block';
+        }
+        if (this.uploadMessage) {
+          this.uploadMessage.nativeElement.style.display = 'block';
+        }
+        this.toastr.success('Imagen subida con éxito.');
+      },
+      error: (err) => {
+        this.toastr.error(`Error al subir la imagen: ${err.message}`);
+      }
+    });
+  }
+
+
 
 onImageChange(event: Event): void {
     const target = event.target as HTMLInputElement;
@@ -771,21 +810,11 @@ onImageChange(event: Event): void {
 
 
 
+
+
+
+
 saveFormData0() {
-  const formData = {
-    empresaName: this.empresaName,
-    empresaPhone: this.empresaPhone,
-    empresaEmail: this.empresaEmail,
-    additionalDetailsempresa: this.additionalDetailsEmpresa,
-    image: localStorage.getItem('uploadedImage')
-  };
-  localStorage.setItem('empresaData', JSON.stringify(formData));
-  this.toastr.success('Datos de la empresa guardados con éxito.');
-}
-
-
-
-saveFormData() {
   const formData = {
     name: this.empresaName,
     phone: this.empresaPhone,
@@ -801,6 +830,52 @@ saveFormData() {
     error: () => this.toastr.error('Error al guardar los datos de la empresa', 'Error')
   });
 }
+
+saveFormData(): void {
+    if (!this.empresaName.trim()) {
+      this.toastr.error('El nombre de la empresa es obligatorio.');
+      return;
+    }
+    if (!this.userCode.trim()) {
+      this.toastr.error('El código de usuario es obligatorio.');
+      return;
+    }
+    if (!this.logoUrl) {
+      this.toastr.error('Por favor, sube una imagen para la empresa.');
+      return;
+    }
+
+    const formData: Empresa = {
+      name: this.empresaName,
+      phone: this.empresaPhone,
+      email: this.empresaEmail,
+      description: this.additionalDetailsEmpresa,
+      logoUrl: this.logoUrl,
+      userCode: this.userCode
+    };
+
+    this.empresaService.saveEmpresa(formData).subscribe({
+      next: (empresa) => {
+        this.toastr.success('Datos de la empresa guardados', 'Éxito');
+        // Opcional: Limpiar el formulario
+        this.empresaName = '';
+        this.empresaPhone = '';
+        this.empresaEmail = '';
+        this.additionalDetailsEmpresa = '';
+        this.logoUrl = '';
+        if (this.modalImagePreview) {
+          this.modalImagePreview.nativeElement.style.display = 'none';
+        }
+        if (this.imageInput) {
+          this.imageInput.nativeElement.value = '';
+        }
+      },
+      error: (err) => {
+        this.toastr.error(`Error al guardar la empresa: ${err.message}`);
+      }
+    });
+  }
+
 
 
 
@@ -980,6 +1055,12 @@ saveFormData() {
     }
   }
 
+  abrirModalImagen0(): void {
+    const fileInput = this.imageInput?.nativeElement as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click(); // Abre el selector de archivos
+    }
+  }
 
 
 
