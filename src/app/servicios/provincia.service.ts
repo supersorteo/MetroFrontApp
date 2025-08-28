@@ -11,7 +11,8 @@ export interface Provincia {
   providedIn: 'root'
 })
 export class ProvinciaService {
-  private apiUrl = 'http://localhost:8080/api/provincias';
+  //private apiUrl = 'http://localhost:8080/api/provincias';
+  private apiUrl ='https://metrobackapp-production.up.railway.app/api/provincias';
 
   constructor(private http: HttpClient) { }
 
