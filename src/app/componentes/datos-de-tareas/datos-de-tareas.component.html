@@ -1,4 +1,14 @@
 <div class="container">
+
+ <button
+    class="btn btn-secondary btn-floating"
+    style="position: fixed; top: 20px; right: 20px; z-index: 1000;"
+    (click)="volverAlDashboard()"
+    title="Volver al Dashboard"
+  >
+    <i class="bi bi-house-door-fill"></i> Dashboard
+  </button>
+
   @if (empresas.length > 0) {
     <h6>Empresas Asociadas</h6>
     <div class="row g-3 mb-4">

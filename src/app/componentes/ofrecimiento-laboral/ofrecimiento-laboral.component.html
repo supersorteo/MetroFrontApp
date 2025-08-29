@@ -1,0 +1,195 @@
+<!-- Botón flotante para abrir el modal -->
+<button type="button" class="btn btn-primary position-fixed top-0 start-0 m-3 z-3" data-bs-toggle="modal" data-bs-target="#ofrecimientoModal">
+	<i class="bi bi-person-plus"></i> Nuevo Profesional
+</button>
+
+<!-- Modal Bootstrap -->
+<div class="modal fade" id="ofrecimientoModal" tabindex="-1" aria-labelledby="ofrecimientoModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="ofrecimientoModalLabel">Ofrecé tus servicios profesionales</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off">
+					<div class="row g-3">
+						<!-- ...todo el formulario igual que antes... -->
+						<div class="col-md-6">
+							<label class="form-label">Nombre</label>
+							<input type="text" class="form-control" formControlName="nombre" [ngClass]="{'is-invalid': form.get('nombre')?.touched && form.get('nombre')?.invalid}">
+							<div class="invalid-feedback">Nombre es requerido</div>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label">Apellidos</label>
+							<input type="text" class="form-control" formControlName="apellidos" [ngClass]="{'is-invalid': form.get('apellidos')?.touched && form.get('apellidos')?.invalid}">
+							<div class="invalid-feedback">Apellidos son requeridos</div>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label">Categoría o Profesión</label>
+							<select class="form-select" formControlName="categoria" [ngClass]="{'is-invalid': form.get('categoria')?.touched && form.get('categoria')?.invalid}">
+								<option value="" disabled selected>Selecciona una categoría</option>
+								<option *ngFor="let cat of categorias" [value]="cat">{{cat}}</option>
+							</select>
+							<div class="invalid-feedback">Categoría es requerida</div>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label">Teléfono</label>
+							<input type="tel" class="form-control" formControlName="telefono" pattern="[0-9]*" inputmode="numeric" maxlength="15" (input)="onTelefonoInput($event)" [ngClass]="{'is-invalid': form.get('telefono')?.touched && form.get('telefono')?.invalid}">
+							<div class="invalid-feedback">Ingrese solo números (8 a 15 dígitos)</div>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label">Email <span class="text-muted">(opcional)</span></label>
+							<input type="email" class="form-control" formControlName="email" [ngClass]="{'is-invalid': form.get('email')?.touched && form.get('email')?.invalid}">
+							<div class="invalid-feedback">Email inválido</div>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label">Especialización</label>
+							<input type="text" class="form-control" formControlName="especializacion" [ngClass]="{'is-invalid': form.get('especializacion')?.touched && form.get('especializacion')?.invalid}">
+							<div class="invalid-feedback">Especialización requerida</div>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label">Localidad</label>
+							<input type="text" class="form-control" formControlName="localidad" [ngClass]="{'is-invalid': form.get('localidad')?.touched && form.get('localidad')?.invalid}">
+							<div class="invalid-feedback">Localidad requerida</div>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label">País</label>
+																		<ng-select
+															[items]="paises"
+															bindLabel="nombre"
+															bindValue="nombre"
+															formControlName="pais"
+
+															(change)="onPaisChange()"
+															[ngClass]="{'is-invalid': form.get('pais')?.touched && form.get('pais')?.invalid}"
+															placeholder="País"
+															[clearable]="false"
+														>
+															<ng-template ng-option-tmp let-item="item" let-selected="selected">
+																<img [src]="item.flag" width="20" class="me-2" />
+																{{ item.nombre }}
+																<span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
+															</ng-template>
+														</ng-select>
+							<div class="invalid-feedback" *ngIf="form.get('pais')?.touched && form.get('pais')?.invalid">País requerido</div>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label">Provincia</label>
+							<select class="form-select" formControlName="provincia" [ngClass]="{'is-invalid': form.get('provincia')?.touched && form.get('provincia')?.invalid}">
+								<option value="" disabled selected>Selecciona una provincia</option>
+								<option *ngFor="let prov of provincias" [value]="prov.id">{{prov.nombre}}</option>
+							</select>
+							<div class="invalid-feedback">Provincia requerida</div>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label">Rubro</label>
+							<select class="form-select" formControlName="rubro" [ngClass]="{'is-invalid': form.get('rubro')?.touched && form.get('rubro')?.invalid}">
+								<option value="" disabled selected>Selecciona un rubro</option>
+								<option *ngFor="let rubro of rubros" [value]="rubro.codigo">{{rubro.nombre}}</option>
+							</select>
+							<div class="invalid-feedback">Rubro requerido</div>
+						</div>
+						<div class="col-md-6">
+							<label class="form-label">¿Cuenta con vehículo?</label>
+							<div class="d-flex gap-3 align-items-center mt-1">
+								<div class="form-check">
+									<input class="form-check-input" type="radio" name="vehiculo" id="vehiculoSi" [checked]="vehiculo==='si'" (change)="setVehiculo('si')">
+									<label class="form-check-label" for="vehiculoSi">Sí</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="radio" name="vehiculo" id="vehiculoNo" [checked]="vehiculo==='no'" (change)="setVehiculo('no')">
+									<label class="form-check-label" for="vehiculoNo">No</label>
+								</div>
+							</div>
+							<div *ngIf="form.get('vehiculo')?.touched && form.get('vehiculo')?.invalid" class="text-danger small">Selecciona una opción</div>
+						</div>
+						<div class="col-12">
+							<label class="form-label">Herramientas disponibles</label>
+							<textarea class="form-control" rows="3" formControlName="herramientas" [ngClass]="{'is-invalid': form.get('herramientas')?.touched && form.get('herramientas')?.invalid}"></textarea>
+							<div class="invalid-feedback">Este campo es requerido</div>
+						</div>
+					</div>
+					<div class="d-grid mt-4">
+						<button type="submit" class="btn btn-success btn-lg shadow" data-bs-dismiss="modal">Enviar</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Filtros y grid de profesionales -->
+<div class="container py-4">
+		<div class="filtros-row mb-3">
+			<div class="col-md-3">
+				<label class="form-label">Filtrar por país</label>
+															<ng-select
+									[items]="paises"
+									bindLabel="nombre"
+									bindValue="nombre"
+									[(ngModel)]="filtroPais"
+									(change)="onFiltroPaisChange()"
+									placeholder="País"
+									[clearable]="true"
+								>
+									<ng-template ng-option-tmp let-item="item" let-selected="selected">
+										<img [src]="item.flag" width="20" class="me-2" />
+										{{ item.nombre }}
+										<span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
+									</ng-template>
+								</ng-select>
+			</div>
+			<div class="col-md-3">
+				<label class="form-label">Filtrar por provincia</label>
+				<select class="form-select" [(ngModel)]="filtroProvincia" [disabled]="!filtroPais || provinciasFiltro.length === 0">
+					<option value="">Provincia</option>
+					<option *ngFor="let prov of provinciasFiltro" [value]="prov.id">{{prov.nombre}}</option>
+				</select>
+			</div>
+		<div class="col-md-3">
+			<label class="form-label">Filtrar por rubro</label>
+			<select class="form-select" [(ngModel)]="filtroRubro">
+				<option value="">Rubro</option>
+				<option *ngFor="let rubro of rubros" [value]="rubro.codigo">{{rubro.nombre}}</option>
+			</select>
+		</div>
+		<div class="col-md-6">
+			<label class="form-label">Buscar por nombre o especialización</label>
+			<input type="text" class="form-control" [(ngModel)]="filtroTexto" placeholder="Buscar...">
+		</div>
+	</div>
+		<div class="row g-4">
+			<div *ngFor="let prof of profesionalesFiltrados()" class="col-12 col-sm-6 col-md-4 col-lg-3">
+						<div class="card h-100 shadow rounded-4 border-0 d-flex flex-column justify-content-between">
+							<div class="card-body pb-2">
+								<h5 class="card-title mb-1">{{prof.nombre}} {{prof.apellidos}}</h5>
+								<p class="mb-1"><strong>Categoría:</strong> {{prof.categoria}}</p>
+								<p class="mb-1"><strong>Tel:</strong> {{prof.telefono}}</p>
+								<!--p-- class="mb-1"><strong>Email:</strong> {{prof.email}}</!--p-->
+								<p class="mb-1"><strong>Especialización:</strong> {{prof.especializacion}}</p>
+								<p class="mb-1"><strong>Localidad:</strong> {{prof.localidad}}</p>
+								<p class="mb-1"><strong>País:</strong> {{prof.pais}}</p>
+								<p class="mb-1"><strong>Provincia:</strong> {{prof.provincia}}</p>
+								<p class="mb-1"><strong>Rubro:</strong> {{getNombreRubro(prof.rubro)}}</p>
+								<!--p-- class="mb-1"><strong>Vehículo:</strong> {{prof.vehiculo}}</!--p-->
+								<!--p-- class="mb-1"><strong>Herramientas:</strong> {{prof.herramientas}}</!--p-->
+							</div>
+							<div class="card-footer bg-transparent border-0 pt-0">
+								<div class="d-flex gap-2 justify-content-center flex-wrap">
+									<button class="btn btn-outline-danger btn-sm px-3" (click)="eliminarProfesional(prof)">
+										<i class="bi bi-trash"></i> Eliminar
+									</button>
+									<button class="btn btn-outline-primary btn-sm px-3" (click)="editarProfesional(prof)">
+										<i class="bi bi-pencil"></i> Editar
+									</button>
+								</div>
+							</div>
+						</div>
+			</div>
+			<div *ngIf="profesionalesFiltrados().length === 0" class="col-12">
+				<div class="alert alert-info text-center">No hay profesionales registrados o no hay coincidencias.</div>
+			</div>
+		</div>
+</div>
+

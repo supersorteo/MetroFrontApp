@@ -1,3 +1,4 @@
+
 .dashboard-container {
   background: linear-gradient(0deg, rgba(233, 238, 244, 1) 0%, rgba(68, 148, 242, 0.5858718487394958) 49%, rgba(233, 235, 238, 0.5858718487394958) 100%);
   text-decoration: bold;
@@ -81,7 +82,17 @@ element.style {
   text-align: center;
 }
 
+/*
 img {
+  box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
+  max-width: 50%;
+  height: auto;
+  border-radius: 50%;
+  margin-bottom: 25px;
+  padding: 10px;
+}*/
+
+.logo-img {
   box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
   max-width: 50%;
   height: auto;
@@ -126,4 +137,30 @@ button{
   box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, #ffffff14 0px 1px 0px inset;
 }
 
+
+:host ::ng-deep .ng-select .ng-select-container {
+    cursor: default;
+    display: flex;
+    outline: none;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    //border-radius: 10px;
+
+}
+
+:host ::ng-deep .ng-select .ng-option img {
+  max-width: 20px !important;
+  height: auto;
+  border-radius: 0 !important;
+  margin: 0 8px 0 0 !important;
+  padding: 0 !important;
+  vertical-align: middle;
+}
+
+:host ::ng-deep .ng-select.ng-select-single .ng-select-container {
+    height: 40px;
+    font-size: 1.08rem;
+    padding: 0.5rem 0.9rem;
+}
 

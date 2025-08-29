@@ -1,3 +1,14 @@
+// Forzar visibilidad de banderas en todos los ng-select
+.ng-select .ng-option img,
+.ng-select .ng-value img {
+	display: inline-block !important;
+	width: 20px !important;
+	height: 20px !important;
+	margin-right: 8px;
+	vertical-align: middle;
+}
+
 @import 'ngx-toastr/toastr';
+@import '@ng-select/ng-select/themes/default.theme.css';
 
 

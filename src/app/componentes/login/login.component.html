@@ -6,7 +6,7 @@
 
     <div id="ingreso" class="ingreso" style="box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.897);" *ngIf="!isContentVisible">
       <div class="imagen-container">
-        <img src="https://www.metroapp.site/metrologo.jpg" class="w-10rem" alt="Metro logo">
+        <img src="https://www.metroapp.site/metrologo.jpg" class="w-10rem logo-img" alt="Metro logo">
       </div>
 
       <div class="text-center bg-gradient">
@@ -51,10 +51,23 @@
                 </div>
            <div class="mb-3">
                   <label for="pais" class="col-form-label">País:</label>
-                  <select class="form-select" id="pais" [(ngModel)]="pais" name="pais" (change)="onPaisChange()">
-                    <option value="" disabled selected>Seleccione un país</option>
-                    <option *ngFor="let country of countries" [value]="country">{{ country }}</option>
-                  </select>
+                  <ng-select
+                    [items]="countries"
+                    bindLabel="nombre"
+                    bindValue="nombre"
+                    [(ngModel)]="pais"
+                    name="pais"
+                    id="pais"
+                    (change)="onPaisChange()"
+                    placeholder="País"
+                    [clearable]="true"
+                  >
+                    <ng-template ng-option-tmp let-item="item" let-selected="selected">
+                      <img [src]="item.flag" width="20" class="me-2" />
+                      {{ item.nombre }}
+                      <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
+                    </ng-template>
+                  </ng-select>
                 </div>
                 <div class="mb-3">
                   <label for="provincia" class="col-form-label">Provincia:</label>

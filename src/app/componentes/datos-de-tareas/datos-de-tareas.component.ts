@@ -6,12 +6,13 @@ import { Cliente, ClienteService } from '../../servicios/cliente.service';
 import { Empresa, EmpresaService } from '../../servicios/empresa.service';
 import { ToastrService } from 'ngx-toastr';
 import { AccessCode, AuthService } from '../../servicios/auth.service';
+import { Router, RouterModule } from '@angular/router';
 
 
 @Component({
   selector: 'app-datos-de-tareas',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './datos-de-tareas.component.html',
   styleUrl: './datos-de-tareas.component.scss'
 })
@@ -27,7 +28,9 @@ export class DatosDeTareasComponent implements OnInit {
     private authService: AuthService,
     private clienteService: ClienteService,
     private empresaService: EmpresaService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private route:Router
+
   ) {}
 
   ngOnInit(): void {
@@ -105,4 +108,10 @@ export class DatosDeTareasComponent implements OnInit {
   calcularCostoTotal(): number {
     return this.tareasAgregadas.reduce((total, tarea) => total + (tarea.totalCost || 0), 0);
   }
+
+
+volverAlDashboard(){
+this.route.navigate(['/dashboard'])
+}
+
 }

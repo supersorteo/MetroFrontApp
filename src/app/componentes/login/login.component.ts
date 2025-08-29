@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
@@ -13,10 +14,16 @@ interface Provincia {
   nombre: string;
 }
 
+interface Country {
+  nombre: string;
+  codigo: string;
+  flag: string;
+}
+
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgSelectModule],
 
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
@@ -27,7 +34,8 @@ export class LoginComponent implements OnInit{
   email: string = '';
   username: string = '';
   telefono: string = '';
-  pais: string = '';
+  //pais: any = null;
+  pais: string | null = null;
   provincia:string = '';
   isAuthenticated: boolean = false;
 
@@ -40,7 +48,11 @@ export class LoginComponent implements OnInit{
   modal:boolean = false;
   isFormValid: boolean = false;
   provincias: Provincia[] = [];
-   countries: string[] = ['Argentina', 'Colombia', 'Peru'];
+  countries = [
+   { nombre: 'Argentina', codigo: 'AR', flag: 'https://flagcdn.com/ar.svg' },
+   { nombre: 'Colombia', codigo: 'CO', flag: 'https://flagcdn.com/co.svg' },
+   { nombre: 'Peru', codigo: 'PE', flag: 'https://flagcdn.com/pe.svg' }
+  ];
 
   @ViewChild('exampleModal') exampleModal!: ElementRef;
 
@@ -51,8 +63,8 @@ constructor(private authService: AuthService,
   private provinciaService: ProvinciaService){}
 
   ngOnInit(): void {
-//  this.getProvincias();
-
+    console.log('countries:', this.countries);
+    console.log('pais inicial:', this.pais);
   }
 
 
@@ -90,13 +102,13 @@ login(): void {
 
 
 
-    register(): void {
+    /*register(): void {
     this.authService.assignEmail({
       code: this.code,
       email: this.email,
       //username: this.username,
       telefono: this.telefono,
-       pais: this.pais,
+      pais: this.pais ? this.pais.nombre : '',
       provincia: this.provincia
     }).subscribe(
       response => {
@@ -104,6 +116,29 @@ login(): void {
           Swal.fire('Éxito', response.message, 'success');
           console.log(response.message)
            this.clearForm();
+        } else {
+          Swal.fire('Error', response.message, 'error');
+        }
+      },
+      error => {
+        Swal.fire('Error', error.message, 'error');
+      }
+    );
+  }*/
+
+   register(): void {
+    this.authService.assignEmail({
+      code: this.code,
+      email: this.email,
+      telefono: this.telefono,
+      pais: this.pais || '',
+      provincia: this.provincia
+    }).subscribe(
+      response => {
+        if (response.message === 'Datos asignados con éxito') {
+          Swal.fire('Éxito', response.message, 'success');
+          console.log(response.message);
+          this.clearForm();
         } else {
           Swal.fire('Error', response.message, 'error');
         }
@@ -120,7 +155,8 @@ login(): void {
       //this.username.trim().length > 0 &&
       this.telefono.trim().length > 0 &&
       this.provincia.trim().length > 0 &&
-      this.pais.trim().length > 0;
+      //this.pais.trim().length > 0;
+      this.pais !== null;
     }
 
 
@@ -142,13 +178,34 @@ login(): void {
 
 
 
-
+/*
  onPaisChange(): void {
+    console.log('onPaisChange pais:', this.pais);
     if (this.pais) {
-      this.provincia = ''; // Clear provincia on pais change
-      this.provinciaService.getProvinciasByPais(this.pais).subscribe(
+      this.provincia = '';
+      this.provinciaService.getProvinciasByPais(this.pais.nombre).subscribe(
         response => {
           this.provincias = response;
+          console.log('Provincias cargadas:', response);
+        },
+        error => {
+          Swal.fire('Error', 'Error al cargar las provincias', 'error');
+        }
+      );
+    } else {
+      this.provincias = [];
+    }
+    this.validateForm();
+  }*/
+
+  onPaisChange(): void {
+    console.log('onPaisChange pais:', this.pais);
+    if (this.pais) {
+      this.provincia = '';
+      this.provinciaService.getProvinciasByPais(this.pais).subscribe( // Cambiado a this.pais
+        response => {
+          this.provincias = response;
+          console.log('Provincias cargadas:', response);
         },
         error => {
           Swal.fire('Error', 'Error al cargar las provincias', 'error');
@@ -194,8 +251,9 @@ openWebsite(): void {
       this.email = '';
       //this.username = '';
       this.telefono = '';
-      this.pais = '';
+      this.pais = null;
       this.provincia = '';
       this.isFormValid = false;
+      console.log('clearForm ejecutado, pais:', this.pais);
     }
 }
