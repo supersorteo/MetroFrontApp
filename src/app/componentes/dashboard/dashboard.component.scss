@@ -135,16 +135,18 @@ button{
 }
 
 .animate{
-  width: 95%;
+  width: 100%;
   background-color: rgb(44, 121, 208);
-
  // color: #ffffff;
   margin-bottom: 10px;
-  border: none;
+  //border: none;
   border-radius: 20px;
   padding: 12px 27px;
   font-size: 12px;
   background-image: linear-gradient(to right top, #3768b1, #3b75c4, #3e82d7, #3f90eb, #409eff);
+  box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 2px, rgba(6, 24, 44, 0.65) 0px 4px 6px -1px, rgba(255, 255, 255, 0.0784313725) 0px 1px 0px inset;
+  font-weight: bold;
+
 }
 
 .animate:hover{

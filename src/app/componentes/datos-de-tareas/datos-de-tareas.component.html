@@ -21,8 +21,8 @@
             </div>
             <div class="empresa-info">
               <div class="empresa-nombre">{{ empresa.name }}</div>
-              <div class="empresa-telefono">{{ empresa.phone }}</div>
-              <div class="empresa-email">{{ empresa.email }}</div>
+              <div class="empresa-telefono"><strong>TELEFONO:</strong> {{ empresa.phone }}</div>
+              <div class="empresa-email"><strong>EMAIL:</strong> {{ empresa.email }}</div>
               <div class="empresa-descripcion">{{ empresa.description }}</div>
             </div>
           </div>
@@ -33,11 +33,11 @@
         <h6>Cliente</h6>
         <div *ngFor="let cliente of clientes" class="cliente-datos">
         <div class="cliente-nombre">{{ cliente.name }}</div>
-        <div class="cliente-contacto">{{ cliente.contact }}</div>
+        <div class="cliente-contacto"><strong>TELEFONO:</strong> {{ cliente.contact }}</div>
         <!--div-- class="cliente-email">{{ cliente.email }}</!--div-->
         <!--div class="cliente-clave">{{ cliente.clave }}</!--div-->
         <!--div-- class="cliente-direccion">{{ cliente.direccion }}</!--div-->
-        <div class="cliente-budgetDate">{{ cliente.budgetDate }}</div>
+        <div class="cliente-budgetDate"><strong>FECHA DE PRESUPUESTO:</strong> {{ cliente.budgetDate }}</div>
         <div class="cliente-additionalDetails">{{ cliente.additionalDetails }}</div>
       </div>
       </div>
@@ -69,8 +69,8 @@
   <h5 class="text-primary">PRESUPUESTO</h5>
   <div class="table-responsive">
     <table class="table table-striped table-bordered table-hover table-sm">
-      <thead class="thead-light">
-        <tr style="background: #0b69a6; color: #fff;">
+      <thead class="thead-light table-primary">
+        <tr>
           <th class="text-center">Tarea</th>
           <th class="text-center">Rubro</th>
           <th class="text-center">Categoría</th>
@@ -97,8 +97,8 @@
     <div class="total-label">
       Total: {{ calcularCostoTotal() | currency:'USD':'symbol':'1.2-2' }}
     </div>
-    <button class="btn btn-primary mt-2" (click)="descargarPresupuesto()">
-      <i class="bi bi-download"></i> Descargar presupuesto
+    <button class="btn btn-primary mt-2 animate" (click)="descargarPresupuesto()">
+      <i class="bi bi-download"></i> DESCARGAR PRESUPUESTO
     </button>
   </div>
 </div>
