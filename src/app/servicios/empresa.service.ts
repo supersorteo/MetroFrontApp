@@ -23,10 +23,17 @@ export class EmpresaService {
   private uploadUrl = 'https://metrobackapp-production.up.railway.app/api/upload/image';
   constructor(private http: HttpClient) { }
 
+  getEmpresaById(id: number): Observable<Empresa> {
+    return this.http.get<Empresa>(`${this.apiUrl}/id/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
 getEmpresaByUserCode(userCode: string): Observable<Empresa> {
     return this.http.get<Empresa>(`${this.apiUrl}/${userCode}`)
       .pipe(catchError(this.handleError));
   }
+
+
 
   saveEmpresa(empresa: Empresa): Observable<Empresa> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
@@ -36,22 +43,16 @@ getEmpresaByUserCode(userCode: string): Observable<Empresa> {
 
   updateEmpresa(id: number, empresa: Empresa): Observable<Empresa> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-    return this.http.put<Empresa>(`${this.apiUrl}/${id}`, empresa, { headers })
+    return this.http.put<Empresa>(`${this.apiUrl}/id/${id}`, empresa, { headers })
       .pipe(catchError(this.handleError));
   }
 
   deleteEmpresa(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`)
+    return this.http.delete<void>(`${this.apiUrl}/id/${id}`)
       .pipe(catchError(this.handleError));
   }
 
-  uploadImage0(file: File, userCode: string): Observable<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('userCode', userCode);
-    return this.http.post<string>('http://localhost:8080/api/upload/image', formData)
-      .pipe(catchError(this.handleError));
-  }
+
 
    uploadImage(file: File, userCode: string): Observable<string> {
     const formData = new FormData();

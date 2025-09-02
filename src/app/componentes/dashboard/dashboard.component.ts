@@ -11,6 +11,7 @@ import { PresupuestoService } from '../../servicios/presupuesto.service';
 import { Empresa, EmpresaService } from '../../servicios/empresa.service';
 import { Cliente, ClienteService } from '../../servicios/cliente.service';
 import Swal from 'sweetalert2';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 
 declare var bootstrap: any;
@@ -30,16 +31,31 @@ interface AccessCode {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgSelectModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit{
+  selectedEmpresaId: any = null;
+  empresaEditId: number | null = null; // ID de empresa en edición
+  // --- EMPRESAS ---
+
+  empresas: Empresa[] = [];
+  paginatedEmpresas: Empresa[] = [];
+  currentEmpresaPage: number = 1;
+  itemsPerPageEmpresas: number = 5;
+  totalEmpresaPages: number = 1;
+
+
   clienteAEliminar: number | null = null;
   mostrarModalConfirmacion = false;
 
   editarCliente(id: number) {
     this.route.navigate([`/editar-clientes`, id]);
+  }
+
+  editarEmpresa(id: number) {
+    this.route.navigate([`/editar-empresa`, id]);
   }
 
 
@@ -119,13 +135,36 @@ export class DashboardComponent implements OnInit{
     this.loadUserCode();
     this.loadTareasAgregadas();
 
+    // Obtener empresas para el ng-select al iniciar
+    setTimeout(() => {
+      if (this.userCode) {
+        this.getEmpresasByUserCode();
+      }
+    }, 0);
+
     // Recargar clientes si se editó alguno
     if (localStorage.getItem('reloadClientes')) {
       this.getClientesByUserCode();
       localStorage.removeItem('reloadClientes');
     }
 
-    const uploadedImage = localStorage.getItem('uploadedImage');
+    // Persistencia: cargar empresa seleccionada y su imagen
+    setTimeout(() => {
+      const selectedId = localStorage.getItem('selectedEmpresaId');
+      if (selectedId && this.empresas && this.empresas.length > 0) {
+        const empresa = this.empresas.find(e => String(e.id) === selectedId);
+        if (empresa) {
+          this.selectedEmpresaId = empresa;
+          const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
+          if (empresa.logoUrl && imageElement) {
+            imageElement.src = empresa.logoUrl;
+            imageElement.style.display = 'block';
+          }
+        }
+      }
+    }, 500);
+
+       /* const uploadedImage = localStorage.getItem('uploadedImage');
     const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
     if (uploadedImage && imageElement) {
       imageElement.src = uploadedImage;
@@ -152,7 +191,8 @@ export class DashboardComponent implements OnInit{
           console.warn('No se pudo cargar el logo de la empresa desde el backend:', err);
         }
       });
-    }
+    }*/
+
 
     setInterval(() => {
       if (this.userData?.fechaVencimiento) {
@@ -176,6 +216,128 @@ export class DashboardComponent implements OnInit{
       console.log('Fecha forzada para binding:', this.budgetDate);
     }, 0);
   }
+
+
+  getEmpresasByUserCode(): void {
+    if (!this.userCode) {
+      this.toastr.error('Código de usuario no encontrado', 'Error');
+      console.error('[EMPRESA] Código de usuario no encontrado');
+      return;
+    }
+    console.log('[EMPRESA] getEmpresasByUserCode para userCode:', this.userCode);
+    this.empresaService.getEmpresaByUserCode(this.userCode).subscribe({
+      next: (empresas) => {
+        console.log('[EMPRESA] Empresas recibidas:', empresas);
+        this.empresas = Array.isArray(empresas) ? empresas : [empresas];
+        this.updatePaginatedEmpresas();
+        // Lógica de imagen y selección
+        const selectedId = localStorage.getItem('selectedEmpresaId');
+        let empresaSeleccionada = null;
+        if (selectedId) {
+          empresaSeleccionada = this.empresas.find(e => String(e.id) === selectedId);
+        }
+        if (empresaSeleccionada) {
+          this.selectedEmpresaId = empresaSeleccionada;
+          this.actualizarImagenEmpresa(empresaSeleccionada);
+        } else if (this.empresas.length > 0) {
+          this.selectedEmpresaId = this.empresas[0];
+          this.actualizarImagenEmpresa(this.empresas[0]);
+          localStorage.setItem('selectedEmpresaId', String(this.empresas[0].id));
+        } else {
+          this.selectedEmpresaId = null;
+          this.actualizarImagenEmpresa(null);
+          localStorage.removeItem('selectedEmpresaId');
+        }
+      },
+      error: (error) => {
+        this.toastr.error(error.message || 'Error al cargar las empresas');
+        console.error('[EMPRESA] Error al cargar empresas:', error);
+      }
+    });
+  }
+
+  openListaEmpresasModal(): void {
+    this.getEmpresasByUserCode();
+    // Cierra el modal de empresa usando la forma nativa de Bootstrap
+    const empresaModalEl = document.getElementById('exampleModal');
+    if (empresaModalEl && empresaModalEl.classList.contains('show')) {
+      const empresaModalInstance = bootstrap.Modal.getInstance(empresaModalEl) || new bootstrap.Modal(empresaModalEl);
+      empresaModalInstance.hide();
+    }
+    // Abre el modal de lista de empresas
+    const listaEmpresasModalEl = document.getElementById('listaEmpresasModal');
+    if (!listaEmpresasModalEl) {
+      this.toastr.error('Error al abrir la lista de empresas');
+      return;
+    }
+    const listaEmpresasModalInstance = bootstrap.Modal.getInstance(listaEmpresasModalEl) || new bootstrap.Modal(listaEmpresasModalEl);
+    listaEmpresasModalInstance.show();
+  }
+
+  updatePaginatedEmpresas(): void {
+    const startIndex = (this.currentEmpresaPage - 1) * this.itemsPerPageEmpresas;
+    const endIndex = startIndex + this.itemsPerPageEmpresas;
+    this.paginatedEmpresas = this.empresas.slice(startIndex, endIndex);
+    this.totalEmpresaPages = Math.ceil(this.empresas.length / this.itemsPerPageEmpresas) || 1;
+  }
+
+  getEmpresaPages(): number[] {
+    return Array(this.totalEmpresaPages).fill(0).map((_, i) => i + 1);
+  }
+  setEmpresaPage(page: number): void {
+    if (page >= 1 && page <= this.totalEmpresaPages) {
+      this.currentEmpresaPage = page;
+      this.updatePaginatedEmpresas();
+    }
+  }
+  previousEmpresaPage(): void {
+    if (this.currentEmpresaPage > 1) {
+      this.currentEmpresaPage--;
+      this.updatePaginatedEmpresas();
+    }
+  }
+  nextEmpresaPage(): void {
+    if (this.currentEmpresaPage < this.totalEmpresaPages) {
+      this.currentEmpresaPage++;
+      this.updatePaginatedEmpresas();
+    }
+  }
+
+  solicitarConfirmacionEliminarEmpresa(id: number): void {
+    console.log('[EMPRESA] Solicitar confirmación para eliminar empresa con id:', id);
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas eliminar esta empresa? Esta acción no se puede deshacer.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        console.log('[EMPRESA] Eliminando empresa con id:', id);
+        this.empresaService.deleteEmpresa(id).subscribe({
+          next: () => {
+            this.toastr.success('Empresa eliminada correctamente', 'Éxito');
+            this.empresas = this.empresas.filter(empresa => empresa.id !== id);
+            this.updatePaginatedEmpresas();
+            console.log('[EMPRESA] Empresa eliminada correctamente:', id);
+          },
+          error: (error) => {
+            this.toastr.error(error.message || 'Error al eliminar la empresa', 'Error');
+            console.error('[EMPRESA] Error al eliminar empresa:', error);
+          }
+        });
+      } else {
+        console.log('[EMPRESA] Eliminación cancelada por el usuario');
+      }
+    });
+  }
+
+  // ...el método editarEmpresa ahora redirige al componente de edición
+
+
 
 
   deleteCliente(id: number): void {
@@ -334,7 +496,7 @@ ngAfterViewInit() {
     }
 
     // Limpiar modal-backdrop y restaurar foco para modales
-    const modals = ['exampleModal', 'imageModal', 'clientModal', 'listaClientesModal', 'miModal'];
+      const modals = ['exampleModal', 'imageModal', 'clientModal', 'listaClientesModal', 'miModal'];
     modals.forEach(modalId => {
       const modalElement = document.getElementById(modalId);
       if (modalElement) {
@@ -391,6 +553,19 @@ ngAfterViewInit() {
         }
       });
     }
+      // Lógica para reabrir el modal de empresa al cerrar el de listaEmpresasModal
+      const listaEmpresasModal = document.getElementById('listaEmpresasModal');
+      if (listaEmpresasModal) {
+        listaEmpresasModal.addEventListener('hidden.bs.modal', () => {
+          const empresaModal = document.getElementById('exampleModal');
+          if (empresaModal && !empresaModal.classList.contains('show')) {
+            setTimeout(() => {
+              const modal = new bootstrap.Modal(empresaModal);
+              modal.show();
+            }, 300);
+          }
+        });
+      }
 }
 
 
@@ -853,17 +1028,21 @@ saveFormData0() {
   });
 }
 
-saveFormData(): void {
+  saveFormData(): void {
+    console.log('[EMPRESA] Guardar datos de empresa. Modo edición:', this.empresaEditId !== null);
     if (!this.empresaName.trim()) {
       this.toastr.error('El nombre de la empresa es obligatorio.');
+      console.error('[EMPRESA] El nombre de la empresa es obligatorio.');
       return;
     }
     if (!this.userCode.trim()) {
       this.toastr.error('El código de usuario es obligatorio.');
+      console.error('[EMPRESA] El código de usuario es obligatorio.');
       return;
     }
     if (!this.logoUrl) {
       this.toastr.error('Por favor, sube una imagen para la empresa.');
+      console.error('[EMPRESA] Falta logoUrl.');
       return;
     }
 
@@ -875,27 +1054,54 @@ saveFormData(): void {
       logoUrl: this.logoUrl,
       userCode: this.userCode
     };
+    console.log('[EMPRESA] Datos a enviar:', formData);
 
-    this.empresaService.saveEmpresa(formData).subscribe({
-      next: (empresa) => {
-        this.toastr.success('Datos de la empresa guardados', 'Éxito');
-        // Opcional: Limpiar el formulario
-        this.empresaName = '';
-        this.empresaPhone = '';
-        this.empresaEmail = '';
-        this.additionalDetailsEmpresa = '';
-        this.logoUrl = '';
-        if (this.modalImagePreview) {
-          this.modalImagePreview.nativeElement.style.display = 'none';
+    if (this.empresaEditId !== null) {
+      // Modo edición: actualizar empresa existente
+      console.log('[EMPRESA] Llamando updateEmpresa con id:', this.empresaEditId);
+      this.empresaService.updateEmpresa(this.empresaEditId, formData).subscribe({
+        next: (empresa) => {
+          this.toastr.success('Empresa actualizada correctamente', 'Éxito');
+          console.log('[EMPRESA] Empresa actualizada correctamente:', empresa);
+          this.getEmpresasByUserCode();
+          this.limpiarEmpresaForm();
+        },
+        error: (err) => {
+          this.toastr.error(`Error al actualizar la empresa: ${err.message}`);
+          console.error('[EMPRESA] Error al actualizar empresa:', err);
         }
-        if (this.imageInput) {
-          this.imageInput.nativeElement.value = '';
+      });
+    } else {
+      // Modo creación: crear nueva empresa
+      console.log('[EMPRESA] Llamando saveEmpresa');
+      this.empresaService.saveEmpresa(formData).subscribe({
+        next: (empresa) => {
+          this.toastr.success('Datos de la empresa guardados', 'Éxito');
+          console.log('[EMPRESA] Empresa creada correctamente:', empresa);
+          this.getEmpresasByUserCode();
+          this.limpiarEmpresaForm();
+        },
+        error: (err) => {
+          this.toastr.error(`Error al guardar la empresa: ${err.message}`);
+          console.error('[EMPRESA] Error al crear empresa:', err);
         }
-      },
-      error: (err) => {
-        this.toastr.error(`Error al guardar la empresa: ${err.message}`);
-      }
-    });
+      });
+    }
+  }
+
+  limpiarEmpresaForm(): void {
+    this.empresaEditId = null;
+    this.empresaName = '';
+    this.empresaPhone = '';
+    this.empresaEmail = '';
+    this.additionalDetailsEmpresa = '';
+    this.logoUrl = '';
+    if (this.modalImagePreview) {
+      this.modalImagePreview.nativeElement.style.display = 'none';
+    }
+    if (this.imageInput) {
+      this.imageInput.nativeElement.value = '';
+    }
   }
 
 
@@ -1215,6 +1421,22 @@ fetchUserData(): void {
     }
   }
 
+   onEmpresaSeleccionada(empresa: any) {
+  console.log('Empresa seleccionada:', empresa);
+  if (empresa && empresa.id) {
+    localStorage.setItem('selectedEmpresaId', String(empresa.id));
+  } else {
+    localStorage.removeItem('selectedEmpresaId');
+  }
+  const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
+  if (empresa && empresa.logoUrl && imageElement) {
+    imageElement.src = empresa.logoUrl;
+    imageElement.style.display = 'block';
+  } else if (imageElement) {
+    imageElement.src = '#';
+    imageElement.style.display = 'none';
+  }
+}
 
       calculateRemainingTime(fechaVencimiento: string): void {
         if (!fechaVencimiento) {
@@ -1240,4 +1462,14 @@ fetchUserData(): void {
         //console.log('Tiempo restante:', this.remainingTime);
       }
 
+  actualizarImagenEmpresa(empresa: any) {
+    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
+    if (empresa && empresa.logoUrl && imageElement) {
+      imageElement.src = empresa.logoUrl;
+      imageElement.style.display = 'block';
+    } else if (imageElement) {
+      imageElement.src = '#';
+      imageElement.style.display = 'none';
     }
+  }
+   }

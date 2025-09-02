@@ -115,16 +115,45 @@ this.route.navigate(['/dashboard'])
 }
 
 descargarPresupuesto() {
-    const html = document.documentElement.outerHTML;
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'presupuesto.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Oculta los botones antes de descargar
+    const dashboardBtn = document.querySelector('.btn-floating');
+    const descargarBtn = document.querySelector('.presupuesto-total-descarga .btn-primary');
+    if (dashboardBtn) (dashboardBtn as HTMLElement).style.display = 'none';
+    if (descargarBtn) (descargarBtn as HTMLElement).style.display = 'none';
+
+    setTimeout(() => {
+      // Agrega estilos embebidos para bordes de tabla
+      const style = document.createElement('style');
+      style.innerHTML = `
+        table, th, td {
+          border: 1px solid #0d6efd !important;
+          border-collapse: collapse !important;
+        }
+        th, td {
+          padding: 8px !important;
+        }
+        th {
+          background: #0d6efd !important;
+          color: #fff !important;
+        }
+      `;
+      document.head.appendChild(style);
+
+      const html = document.documentElement.outerHTML;
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'presupuesto.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      // Vuelve a mostrar los botones y elimina el estilo embebido
+      if (dashboardBtn) (dashboardBtn as HTMLElement).style.display = '';
+      if (descargarBtn) (descargarBtn as HTMLElement).style.display = '';
+      document.head.removeChild(style);
+    }, 100);
   }
 
 }
