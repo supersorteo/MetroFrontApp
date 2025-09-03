@@ -46,7 +46,7 @@ export class DashboardComponent implements OnInit{
   itemsPerPageEmpresas: number = 5;
   totalEmpresaPages: number = 1;
 
-
+  clienteSeleccionado: Cliente | null = null;
   clienteAEliminar: number | null = null;
   mostrarModalConfirmacion = false;
 
@@ -164,34 +164,6 @@ export class DashboardComponent implements OnInit{
       }
     }, 500);
 
-       /* const uploadedImage = localStorage.getItem('uploadedImage');
-    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
-    if (uploadedImage && imageElement) {
-      imageElement.src = uploadedImage;
-      imageElement.style.display = 'block';
-      this.logoUrl = uploadedImage;
-    } else if (this.userCode && imageElement) {
-      // Si no hay imagen en localStorage, intenta cargar desde el backend
-      this.empresaService.getEmpresaByUserCode(this.userCode).subscribe({
-        next: (empresaData: any) => {
-          // Si el backend devuelve array, toma la primera empresa
-          let empresa = Array.isArray(empresaData) ? empresaData[0] : empresaData;
-          if (empresa && empresa.logoUrl) {
-            imageElement.src = empresa.logoUrl;
-            imageElement.style.display = 'block';
-            this.logoUrl = empresa.logoUrl;
-          } else {
-            imageElement.style.display = 'none';
-            this.logoUrl = '';
-          }
-        },
-        error: (err) => {
-          imageElement.style.display = 'none';
-          this.logoUrl = '';
-          console.warn('No se pudo cargar el logo de la empresa desde el backend:', err);
-        }
-      });
-    }*/
 
 
     setInterval(() => {
@@ -218,7 +190,7 @@ export class DashboardComponent implements OnInit{
   }
 
 
-  getEmpresasByUserCode(): void {
+  getEmpresasByUserCode0(): void {
     if (!this.userCode) {
       this.toastr.error('Código de usuario no encontrado', 'Error');
       console.error('[EMPRESA] Código de usuario no encontrado');
@@ -239,14 +211,92 @@ export class DashboardComponent implements OnInit{
         if (empresaSeleccionada) {
           this.selectedEmpresaId = empresaSeleccionada;
           this.actualizarImagenEmpresa(empresaSeleccionada);
+          console.log('empresa seleccionada', this.selectedEmpresaId)
         } else if (this.empresas.length > 0) {
           this.selectedEmpresaId = this.empresas[0];
+          console.log('empresa seleccionada', this.selectedEmpresaId)
           this.actualizarImagenEmpresa(this.empresas[0]);
           localStorage.setItem('selectedEmpresaId', String(this.empresas[0].id));
         } else {
           this.selectedEmpresaId = null;
           this.actualizarImagenEmpresa(null);
           localStorage.removeItem('selectedEmpresaId');
+          console.log('empresa seleccionada', this.selectedEmpresaId)
+        }
+      },
+      error: (error) => {
+        this.toastr.error(error.message || 'Error al cargar las empresas');
+        console.error('[EMPRESA] Error al cargar empresas:', error);
+      }
+    });
+  }
+
+
+getEmpresasByUserCode(): void {
+    if (!this.userCode) {
+      this.toastr.error('Código de usuario no encontrado', 'Error');
+      console.error('[EMPRESA] Código de usuario no encontrado');
+      return;
+    }
+    console.log('[EMPRESA] getEmpresasByUserCode para userCode:', this.userCode);
+    this.empresaService.getEmpresaByUserCode(this.userCode).subscribe({
+      next: (empresas) => {
+        console.log('[EMPRESA] Empresas recibidas:', empresas);
+        this.empresas = Array.isArray(empresas) ? empresas : [empresas];
+        this.updatePaginatedEmpresas();
+        // Lógica de selección de empresa
+        const selectedId = localStorage.getItem('selectedEmpresaId');
+        let empresaSeleccionada = null;
+        if (selectedId) {
+          empresaSeleccionada = this.empresas.find(e => String(e.id) === selectedId);
+        }
+        if (empresaSeleccionada) {
+          this.selectedEmpresaId = empresaSeleccionada;
+          this.actualizarImagenEmpresa(empresaSeleccionada);
+          console.log('Empresa seleccionada:', this.selectedEmpresaId);
+        } else if (this.empresas.length > 0) {
+          this.selectedEmpresaId = this.empresas[0];
+          this.actualizarImagenEmpresa(this.empresas[0]);
+          localStorage.setItem('selectedEmpresaId', String(this.empresas[0].id));
+          console.log('Empresa seleccionada:', this.selectedEmpresaId);
+        } else {
+          this.selectedEmpresaId = null;
+          this.actualizarImagenEmpresa(null);
+          localStorage.removeItem('selectedEmpresaId');
+          console.log('Empresa seleccionada:', this.selectedEmpresaId);
+        }
+        // Cargar clientes de la empresa seleccionada
+        if (this.selectedEmpresaId?.id) {
+          this.clienteService.getClientesByEmpresaId(this.selectedEmpresaId.id).subscribe({
+            next: (clientes) => {
+              console.log('Clientes recibidos para empresa:', clientes);
+              this.clientes = clientes || [];
+              this.updatePaginatedClientes();
+              // Cargar tareas del cliente seleccionado, si existe
+              if (this.clienteSeleccionado?.id) {
+                this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).subscribe({
+                  next: (tareas) => {
+                    console.log('Tareas recibidas para cliente:', tareas);
+                    this.tareasAgregadas = tareas || [];
+                    this.mostrarTabla = this.tareasAgregadas.length > 0;
+                    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+                  },
+                  error: (error) => {
+                    console.error('Error al cargar tareas:', error);
+                    this.toastr.error(error.message || 'Error al cargar las tareas');
+                    this.tareasAgregadas = [];
+                    this.mostrarTabla = false;
+                  }
+                });
+              }
+            },
+            error: (error) => {
+              console.error('Error al cargar clientes por empresa:', error);
+              this.toastr.error(error.message || 'Error al cargar los clientes');
+              this.clientes = [];
+              this.updatePaginatedClientes();
+            }
+          });
         }
       },
       error: (error) => {
@@ -583,22 +633,11 @@ obtenerTareas(): void {
 }
 
 
+
+
+
+
 loadTareasAgregadas0(): void {
-  if (this.userCode) {
-    this.userTareaService.getTareasByUserCode(this.userCode).subscribe({
-      next: (tareas) => {
-        this.tareasAgregadasUser = tareas;
-        this.mostrarTabla = tareas.length > 0;
-        console.log('Tareas agregadas cargadas:', this.tareasAgregadas);
-      },
-      error: () => this.toastr.error('Error al cargar las tareas agregadas', 'Error')
-    });
-  }
-}
-
-
-
-loadTareasAgregadas(): void {
   // Cargar desde localStorage como respaldo inicial
   const storedTareas = localStorage.getItem('tareasAgregadas');
   if (storedTareas) {
@@ -623,6 +662,34 @@ loadTareasAgregadas(): void {
   }
 }
 
+
+loadTareasAgregadas(): void {
+    // Cargar desde localStorage como respaldo inicial
+    const storedTareas = localStorage.getItem('tareasAgregadas');
+    if (storedTareas) {
+      this.tareasAgregadas = JSON.parse(storedTareas);
+      this.mostrarTabla = this.tareasAgregadas.length > 0;
+    }
+
+    // Sincronizar con el backend
+    if (this.clienteSeleccionado?.id) {
+      this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).subscribe({
+        next: (tareas) => {
+          this.tareasAgregadas = tareas;
+          this.mostrarTabla = tareas.length > 0;
+          localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+          console.log('Tareas agregadas cargadas del backend:', this.tareasAgregadas);
+        },
+        error: () => {
+          this.toastr.error('Error al cargar las tareas agregadas del backend', 'Error');
+          console.log('Usando tareas de localStorage como respaldo:', this.tareasAgregadas);
+        }
+      });
+    }
+  }
+
+
+
     seleccionar(tarea: Tarea): void {
     this.tareaSeleccionada = { ...tarea, totalCost: this.calcularTotalCosto(tarea) };
      console.log('Tarea seleccionada:', this.tareaSeleccionada);
@@ -641,36 +708,9 @@ loadTareasAgregadas(): void {
 
 
 
-actualizarTarea0(): void {
-  if (this.tareaSeleccionada?.id) {
-    const updatedTarea: UserTarea = {
-      ...this.tareaSeleccionada,
-      userCode: this.userCode,
-      pais: this.userData.pais,
-      rubro: this.tareaSeleccionada.rubro || '',
-      categoria: this.tareaSeleccionada.categoria || '',
-      totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
-    };
-    this.userTareaService.updateUserTarea(this.tareaSeleccionada.id, updatedTarea).subscribe({
-      next: () => {
-        this.toastr.success('Tarea actualizada', 'Éxito');
-        this.loadTareasAgregadas(); // Recargar desde backend y actualizar localStorage
-        this.resetTareaSeleccionada();
-      },
-      error: () => {
-        const index = this.tareasAgregadas.findIndex(t => t.id === this.tareaSeleccionada.id);
-        if (index !== -1) {
-          this.tareasAgregadas[index] = updatedTarea; // Actualizar localmente
-          localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-          this.toastr.error('Error al actualizar la tarea en el backend, actualizada localmente', 'Error');
-        }
-        this.resetTareaSeleccionada();
-      }
-    });
-  }
-}
 
 
+/*
 actualizarTarea(): void {
   if (this.tareaSeleccionada?.id) {
     const updatedTarea: UserTarea = {
@@ -699,14 +739,42 @@ actualizarTarea(): void {
       }
     });
   }
-}
+}*/
+
+actualizarTarea(): void {
+    if (this.tareaSeleccionada?.id) {
+      const updatedTarea: UserTarea = {
+        ...this.tareaSeleccionada,
+  clienteId: this.clienteSeleccionado?.id ?? 0, // Usa clienteId seguro
+        pais: this.userData.pais,
+        rubro: this.tareaSeleccionada.rubro || '',
+        categoria: this.tareaSeleccionada.categoria || '',
+        totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
+      };
+      this.userTareaService.updateUserTarea(this.tareaSeleccionada.id, updatedTarea).subscribe({
+        next: () => {
+          this.toastr.success('Tarea actualizada', 'Éxito');
+          this.loadTareasAgregadas();
+          this.resetTareaSeleccionada();
+        },
+        error: () => {
+          const index = this.tareasAgregadas.findIndex(t => t.id === this.tareaSeleccionada.id);
+          if (index !== -1) {
+            this.tareasAgregadas[index] = updatedTarea;
+            localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+            this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+            this.toastr.error('Error al actualizar la tarea en el backend, actualizada localmente', 'Error');
+          }
+          this.resetTareaSeleccionada();
+        }
+      });
+    }
+  }
 
 
 
-
-
-
-agregarTarea(): void {
+/*
+agregarTarea0(): void {
   const nuevaTarea: UserTarea = {
     ...this.tareaSeleccionada,
     userCode: this.userCode,
@@ -733,12 +801,88 @@ agregarTarea(): void {
       this.resetTareaSeleccionada();
     }
   });
-}
+}*/
 
+agregarTarea1(): void {
+    const nuevaTarea: UserTarea = {
+      ...this.tareaSeleccionada,
+  clienteId: this.clienteSeleccionado?.id ?? 0, // Usa clienteId seguro
+      pais: this.userData.pais,
+      rubro: this.tareaSeleccionada.rubro || '',
+      categoria: this.tareaSeleccionada.categoria || '',
+      totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
+    };
+    this.userTareaService.addUserTarea(nuevaTarea).subscribe({
+      next: (tarea) => {
+        this.tareasAgregadas.push(tarea);
+        this.mostrarTabla = true;
+        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+        this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+        this.toastr.success('Tarea agregada', 'Éxito');
+        this.resetTareaSeleccionada();
+      },
+      error: () => {
+        this.tareasAgregadas.push(nuevaTarea);
+        this.mostrarTabla = true;
+        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+        this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+        this.toastr.error('Error al agregar la tarea al backend, guardada localmente', 'Error');
+        this.resetTareaSeleccionada();
+      }
+    });
+  }
+
+
+agregarTarea(): void {
+    if (!this.clienteSeleccionado?.id) {
+      this.toastr.error('Debe seleccionar un cliente antes de agregar una tarea', 'Error');
+      return;
+    }
+
+    const nuevaTarea: UserTarea = {
+      ...this.tareaSeleccionada,
+      clienteId: this.clienteSeleccionado.id, // Usa clienteId del cliente seleccionado
+      pais: this.userData.pais,
+      rubro: this.tareaSeleccionada.rubro || '',
+      categoria: this.tareaSeleccionada.categoria || '',
+      totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
+    };
+
+    console.log('Nueva tarea a enviar:', nuevaTarea); // Log para depuración
+
+    this.userTareaService.addUserTarea(nuevaTarea).subscribe({
+      next: (tarea) => {
+        this.tareasAgregadas.push(tarea);
+        this.mostrarTabla = true;
+        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+        this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+        this.toastr.success('Tarea agregada', 'Éxito');
+        this.resetTareaSeleccionada();
+      },
+      error: (error) => {
+        console.error('Error al agregar tarea:', error.message, nuevaTarea);
+        this.tareasAgregadas.push(nuevaTarea); // Guardar localmente como respaldo
+        this.mostrarTabla = true;
+        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+        this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+        this.toastr.error(error.message || 'Error al agregar la tarea al backend, guardada localmente', 'Error');
+        this.resetTareaSeleccionada();
+      }
+    });
+  }
 
 
 verPresupuesto(): void {
-  this.presupuestoService.setTareasAgregadas(this.tareasAgregadas); // Pasar datos al servicio
+  // Guardar datos seleccionados en localStorage para transferirlos
+  if (this.clienteSeleccionado) {
+    localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
+  }
+  if (this.selectedEmpresaId) {
+    localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
+  }
+  if (this.tareasAgregadas) {
+    localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas));
+  }
   this.route.navigate(['/presupuesto']);
 }
 
@@ -1165,6 +1309,8 @@ saveFormData0() {
   }*/
 
 
+    /*
+
     saveClientData(form: NgForm): void {
     console.log('Valores antes de enviar:', {
       clientName: this.clientName,
@@ -1189,7 +1335,75 @@ saveFormData0() {
       userCode: this.userCode,
       email: this.clientEmail,
       clave: this.clientClave,
-      direccion: this.clientDireccion
+      direccion: this.clientDireccion,
+
+
+    };
+
+    this.isSavingClient = true;
+    this.clienteService.saveCliente(clientData).subscribe({
+      next: (cliente) => {
+        localStorage.setItem(`clientData_${cliente.id || Date.now()}`, JSON.stringify(cliente));
+        console.log('Cliente guardado con éxito:', cliente);
+        this.toastr.success('Cliente guardado con éxito');
+        this.clientName = '';
+        this.clientContact = '';
+        this.budgetDate = new Date().toISOString().split('T')[0];
+        this.additionalDetailsClient = '';
+        this.clientEmail = '';
+        this.clientClave = '';
+        this.clientDireccion = '';
+        const confirmationMessage = document.getElementById('confirmationMessage');
+        if (confirmationMessage) {
+          confirmationMessage.style.display = 'block';
+          setTimeout(() => confirmationMessage.style.display = 'none', 3000);
+        }
+        const modal = bootstrap.Modal.getInstance(document.getElementById('clientModal'));
+        modal?.hide();
+        this.isSavingClient = false;
+      },
+      error: (error) => {
+        localStorage.setItem(`clientData_temp_${Date.now()}`, JSON.stringify(clientData));
+        console.error('Error al guardar cliente:', error.message, clientData);
+        this.toastr.error(error.message || 'Error al guardar el cliente');
+        this.isSavingClient = false;
+      }
+    });
+  }*/
+
+
+saveClientData0(form: NgForm): void {
+    console.log('Valores antes de enviar:', {
+      clientName: this.clientName,
+      clientContact: this.clientContact,
+      budgetDate: this.budgetDate,
+      additionalDetailsClient: this.additionalDetailsClient,
+      clientEmail: this.clientEmail,
+      clientClave: this.clientClave,
+      clientDireccion: this.clientDireccion,
+      userCode: this.userCode,
+      empresaId: this.selectedEmpresaId?.id
+    });
+
+    if (!this.validateForm(form)) {
+      return;
+    }
+
+    if (!this.selectedEmpresaId?.id) {
+      this.toastr.error('Debe seleccionar una empresa', 'Error');
+      return;
+    }
+
+    const clientData: Cliente = {
+      name: this.clientName,
+      contact: this.clientContact,
+      budgetDate: this.budgetDate,
+      additionalDetails: this.additionalDetailsClient,
+      userCode: this.userCode,
+      email: this.clientEmail,
+      clave: this.clientClave,
+      direccion: this.clientDireccion,
+      empresaId: this.selectedEmpresaId.id // Captura empresaId de la empresa seleccionada
     };
 
     this.isSavingClient = true;
@@ -1224,9 +1438,70 @@ saveFormData0() {
   }
 
 
+  saveClientData(form: NgForm): void {
+    console.log('Valores antes de enviar:', {
+      clientName: this.clientName,
+      clientContact: this.clientContact,
+      budgetDate: this.budgetDate,
+      additionalDetailsClient: this.additionalDetailsClient,
+      clientEmail: this.clientEmail,
+      clientClave: this.clientClave,
+      clientDireccion: this.clientDireccion,
+      userCode: this.userCode,
+      empresaId: this.selectedEmpresaId?.id
+    });
 
+    if (!this.validateForm(form)) {
+      return;
+    }
 
+    if (!this.selectedEmpresaId?.id) {
+      this.toastr.error('Debe seleccionar una empresa', 'Error');
+      return;
+    }
 
+    const clientData: Cliente = {
+      name: this.clientName,
+      contact: this.clientContact,
+      budgetDate: this.budgetDate,
+      additionalDetails: this.additionalDetailsClient,
+      userCode: this.userCode,
+      email: this.clientEmail,
+      clave: this.clientClave,
+      direccion: this.clientDireccion,
+      empresaId: this.selectedEmpresaId.id // Usa selectedEmpresaId.id
+    };
+
+    this.isSavingClient = true;
+    this.clienteService.saveCliente(clientData).subscribe({
+      next: (cliente) => {
+        localStorage.setItem(`clientData_${cliente.id || Date.now()}`, JSON.stringify(cliente));
+        console.log('Cliente guardado con éxito:', cliente);
+        this.toastr.success('Cliente guardado con éxito');
+        this.clientName = '';
+        this.clientContact = '';
+        this.budgetDate = new Date().toISOString().split('T')[0];
+        this.additionalDetailsClient = '';
+        this.clientEmail = '';
+        this.clientClave = '';
+        this.clientDireccion = '';
+        const confirmationMessage = document.getElementById('confirmationMessage');
+        if (confirmationMessage) {
+          confirmationMessage.style.display = 'block';
+          setTimeout(() => confirmationMessage.style.display = 'none', 3000);
+        }
+        const modal = bootstrap.Modal.getInstance(document.getElementById('clientModal'));
+        modal?.hide();
+        this.isSavingClient = false;
+      },
+      error: (error) => {
+        localStorage.setItem(`clientData_temp_${Date.now()}`, JSON.stringify(clientData));
+        console.error('Error al guardar cliente:', error.message, clientData);
+        this.toastr.error(error.message || 'Error al guardar el cliente');
+        this.isSavingClient = false;
+      }
+    });
+  }
 
   validateForm(form: NgForm): boolean {
     if (!form.valid) {
@@ -1421,7 +1696,8 @@ fetchUserData(): void {
     }
   }
 
-   onEmpresaSeleccionada(empresa: any) {
+  /*
+   onEmpresaSeleccionada0(empresa: any) {
   console.log('Empresa seleccionada:', empresa);
   if (empresa && empresa.id) {
     localStorage.setItem('selectedEmpresaId', String(empresa.id));
@@ -1437,6 +1713,121 @@ fetchUserData(): void {
     imageElement.style.display = 'none';
   }
 }
+
+onEmpresaSeleccionada1(empresa: any) {
+    console.log('Empresa seleccionada:', empresa);
+    this.selectedEmpresaId = empresa; // Actualiza selectedEmpresaId
+    if (empresa && empresa.id) {
+      localStorage.setItem('selectedEmpresaId', String(empresa.id));
+    } else {
+      this.selectedEmpresaId = null; // Limpia si no hay empresa válida
+      localStorage.removeItem('selectedEmpresaId');
+    }
+    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
+    if (empresa && empresa.logoUrl && imageElement) {
+      imageElement.src = empresa.logoUrl;
+      imageElement.style.display = 'block';
+    } else if (imageElement) {
+      imageElement.src = '#';
+      imageElement.style.display = 'none';
+    }
+  }
+*/
+
+
+  /*onEmpresaSeleccionada(empresa: any) {
+
+    console.log('Empresa seleccionada:', empresa);
+    this.selectedEmpresaId = empresa;
+    if (empresa && empresa.id) {
+      localStorage.setItem('selectedEmpresaId', String(empresa.id));
+      // Cargar clientes asociados a la empresa seleccionada
+      this.clienteService.getClientesByEmpresaId(empresa.id).subscribe({
+        next: (clientes) => {
+          console.log('Clientes recibidos para empresa:', clientes);
+          this.clientes = clientes || [];
+          this.updatePaginatedClientes();
+        },
+        error: (error) => {
+          console.error('Error al cargar clientes por empresa:', error);
+          this.toastr.error(error.message || 'Error al cargar los clientes');
+          this.clientes = [];
+          this.updatePaginatedClientes();
+        }
+      });
+    } else {
+      this.selectedEmpresaId = null;
+      localStorage.removeItem('selectedEmpresaId');
+      this.clientes = [];
+      this.updatePaginatedClientes();
+    }
+    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
+    if (empresa && empresa.logoUrl && imageElement) {
+      imageElement.src = empresa.logoUrl;
+      imageElement.style.display = 'block';
+    } else if (imageElement) {
+      imageElement.src = '#';
+      imageElement.style.display = 'none';
+    }
+
+
+    // Versión optimizada: obtiene clientes y tareas asociadas a cada cliente
+
+  }*/
+
+
+   onEmpresaSeleccionada(empresa: any) {
+
+
+    // Versión optimizada: obtiene clientes y tareas asociadas a cada cliente
+    console.log('Empresa seleccionada:', empresa);
+    this.selectedEmpresaId = empresa;
+    if (empresa && empresa.id) {
+      localStorage.setItem('selectedEmpresaId', String(empresa.id));
+      this.clienteService.getClientesByEmpresaId(empresa.id).subscribe({
+        next: (clientes) => {
+          console.log('Clientes recibidos para empresa:', clientes);
+          this.clientes = clientes || [];
+          this.updatePaginatedClientes();
+          // Obtener tareas asociadas a cada cliente
+          if (this.clientes.length > 0) {
+            this.clientes.forEach(cliente => {
+              if (cliente.id) {
+                this.userTareaService.getTareasByClienteId(cliente.id).subscribe({
+                  next: (tareas) => {
+                    console.log(`Tareas asociadas al cliente ${cliente.name} (ID: ${cliente.id}):`, tareas);
+                  },
+                  error: (error) => {
+                    console.error(`Error al cargar tareas para cliente ${cliente.name} (ID: ${cliente.id}):`, error);
+                  }
+                });
+              }
+            });
+          }
+        },
+        error: (error) => {
+          console.error('Error al cargar clientes por empresa:', error);
+          this.toastr.error(error.message || 'Error al cargar los clientes');
+          this.clientes = [];
+          this.updatePaginatedClientes();
+        }
+      });
+    } else {
+      this.selectedEmpresaId = null;
+      localStorage.removeItem('selectedEmpresaId');
+      this.clientes = [];
+      this.updatePaginatedClientes();
+    }
+    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
+    if (empresa && empresa.logoUrl && imageElement) {
+      imageElement.src = empresa.logoUrl;
+      imageElement.style.display = 'block';
+    } else if (imageElement) {
+      imageElement.src = '#';
+      imageElement.style.display = 'none';
+    }
+  }
+
 
       calculateRemainingTime(fechaVencimiento: string): void {
         if (!fechaVencimiento) {

@@ -10,7 +10,8 @@ export interface UserTarea {
   descripcion: string;
   descuento: number;
   totalCost: number;
-  userCode: string;
+  //userCode: string;
+  clienteId: number;
   pais: string;
   rubro?: string; // Añadido como opcional
   categoria?: string;
@@ -26,6 +27,11 @@ export class UserTareaService {
 
   constructor(private http: HttpClient) { }
 
+getAllTareas(): Observable<UserTarea[]> {
+  return this.http.get<UserTarea[]>(this.apiUrl)
+    .pipe(catchError(this.handleError));
+}
+
 getTareasByUserCode(userCode: string): Observable<UserTarea[]> {
     return this.http.get<UserTarea[]>(`${this.apiUrl}/by-user/${userCode}`)
       .pipe(catchError(this.handleError));
@@ -34,6 +40,11 @@ getTareasByUserCode(userCode: string): Observable<UserTarea[]> {
   addUserTarea(userTarea: UserTarea): Observable<UserTarea> {
     const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
     return this.http.post<UserTarea>(this.apiUrl, userTarea, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+   getTareasByClienteId(clienteId: number): Observable<UserTarea[]> {
+    return this.http.get<UserTarea[]>(`${this.apiUrl}/by-cliente/${clienteId}`)
       .pipe(catchError(this.handleError));
   }
 

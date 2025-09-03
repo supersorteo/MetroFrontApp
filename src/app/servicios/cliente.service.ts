@@ -12,6 +12,7 @@ export interface Cliente {
   email: string;
   clave: string;
   direccion: string;
+  empresaId: number;
 }
 
 @Injectable({
@@ -33,6 +34,12 @@ getClienteByUserCode(userCode: string): Observable<Cliente[]> {
     return this.http.get<Cliente>(`${this.apiUrl}/id/${id}`)
       .pipe(catchError(this.handleError));
   }
+
+   getClientesByEmpresaId(empresaId: number): Observable<Cliente[]> {
+    return this.http.get<Cliente[]>(`${this.apiUrl}/by-empresa/${empresaId}`)
+      .pipe(catchError(this.handleError));
+  }
+
 
   saveCliente(cliente: Cliente): Observable<Cliente> {
     return this.http.post<Cliente>(this.apiUrl, cliente)

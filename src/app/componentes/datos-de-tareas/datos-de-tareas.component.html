@@ -9,40 +9,34 @@
     <i class="bi bi-house-door-fill"></i> Dashboard
   </button>
 
-  @if (empresas.length > 0 && clientes.length > 0) {
-    <div class="empresa-asociada mb-4">
-      @for (empresa of empresas; track empresa.id) {
-        <div class="empresa-card">
-          <div class="empresa-datos">
-            <div class="empresa-logo">
-              @if (empresa.logoUrl) {
-                <img [src]="empresa.logoUrl" alt="Logo" />
-              }
-            </div>
-            <div class="empresa-info">
-              <div class="empresa-nombre">{{ empresa.name }}</div>
-              <div class="empresa-telefono"><strong>TELEFONO:</strong> {{ empresa.phone }}</div>
-              <div class="empresa-email"><strong>EMAIL:</strong> {{ empresa.email }}</div>
-              <div class="empresa-descripcion">{{ empresa.description }}</div>
-            </div>
-          </div>
+  <div *ngIf="empresaSeleccionada && clienteSeleccionado" class="empresa-asociada mb-4">
+    <div class="empresa-card">
+      <div class="empresa-datos">
+        <div class="empresa-logo">
+          <img *ngIf="empresaSeleccionada.logoUrl" [src]="empresaSeleccionada.logoUrl" alt="Logo" />
         </div>
-      }
-      <hr class="empresa-user-divider" />
-      <div class="user-info-empresa">
-        <h6>Cliente</h6>
-        <div *ngFor="let cliente of clientes" class="cliente-datos">
-        <div class="cliente-nombre">{{ cliente.name }}</div>
-        <div class="cliente-contacto"><strong>TELEFONO:</strong> {{ cliente.contact }}</div>
-        <!--div-- class="cliente-email">{{ cliente.email }}</!--div-->
-        <!--div class="cliente-clave">{{ cliente.clave }}</!--div-->
-        <!--div-- class="cliente-direccion">{{ cliente.direccion }}</!--div-->
-        <div class="cliente-budgetDate"><strong>FECHA DE PRESUPUESTO:</strong> {{ cliente.budgetDate }}</div>
-        <div class="cliente-additionalDetails">{{ cliente.additionalDetails }}</div>
-      </div>
+        <div class="empresa-info">
+          <div class="empresa-nombre">{{ empresaSeleccionada.name }}</div>
+          <div class="empresa-telefono"><strong>TELEFONO:</strong> {{ empresaSeleccionada.phone }}</div>
+          <div class="empresa-email"><strong>EMAIL:</strong> {{ empresaSeleccionada.email }}</div>
+          <div class="empresa-descripcion">{{ empresaSeleccionada.description }}</div>
+        </div>
       </div>
     </div>
-  }
+    <hr class="empresa-user-divider" />
+    <div class="user-info-empresa">
+      <h6>Cliente</h6>
+      <div class="cliente-datos">
+        <div class="cliente-nombre">{{ clienteSeleccionado.name }}</div>
+        <div class="cliente-contacto"><strong>TELEFONO:</strong> {{ clienteSeleccionado.contact }}</div>
+        <!--div-- class="cliente-email">{{ clienteSeleccionado.email }}</!--div-->
+        <!--div class="cliente-clave">{{ clienteSeleccionado.clave }}</!--div-->
+        <!--div-- class="cliente-direccion">{{ clienteSeleccionado.direccion }}</!--div-->
+        <div class="cliente-budgetDate"><strong>FECHA DE PRESUPUESTO:</strong> {{ clienteSeleccionado.budgetDate }}</div>
+        <div class="cliente-additionalDetails">{{ clienteSeleccionado.additionalDetails }}</div>
+      </div>
+    </div>
+  </div>
   <!--div *ngIf="clientes.length > 0" class="cliente-asociado mb-4">
     <h6 class="cliente-title">Cliente Asociado</h6>
     <div class="cliente-info">

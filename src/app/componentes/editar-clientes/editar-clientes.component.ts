@@ -20,7 +20,8 @@ export class EditarClientesComponent implements OnInit {
     userCode: '',
     email: '',
     clave: '',
-    direccion: ''
+    direccion: '',
+    empresaId: 0 // Valor inicial, se actualizará dinámicamente
   };
   loading: boolean = true;
   errorMsg: string = '';
@@ -43,7 +44,10 @@ export class EditarClientesComponent implements OnInit {
     if (id) {
       this.clienteService.getClienteById(id).subscribe({
         next: (data) => {
-          this.cliente = data;
+          this.cliente = {
+            ...data,
+            empresaId: data.empresaId // Asegura que empresaId se asigne correctamente
+          };
           console.log('data', data)
           this.loading = false;
         },

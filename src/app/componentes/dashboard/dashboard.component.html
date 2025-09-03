@@ -92,8 +92,24 @@
     </ng-template>
 	</ng-select>
 
-
-
+<!--select-- [(ngModel)]="clienteSeleccionado" (ngModelChange)="loadTareasAgregadas()">
+  <option *ngFor="let cliente of clientes" [ngValue]="cliente">{{ cliente.name }}</option>
+</!--select-->
+<ng-select
+  [items]="clientes"
+  bindLabel="name"
+  [(ngModel)]="clienteSeleccionado"
+  (ngModelChange)="loadTareasAgregadas()"
+  [ngClass]="{'is-invalid': !clienteSeleccionado}"
+  placeholder="Selecciona un cliente"
+  [clearable]="false"
+  style="height: 40px; font-weight: bold; font-size: 16px; border-radius: 15px; box-shadow: 0 2px 8px #0001;"
+>
+  <ng-template ng-option-tmp let-item="item" let-selected="selected">
+    <span>{{ item.name }}</span>
+    <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
+  </ng-template>
+</ng-select>
 
 <!-- Modal Lista de Empresas -->
 <div class="modal fade" id="listaEmpresasModal" aria-hidden="true" aria-labelledby="listaEmpresasLabel" tabindex="-1">
@@ -342,7 +358,7 @@
     Total: {{ calcularCostoTotal() | currency:'USD':'symbol':'1.2-2' }}
   </div>
 </div>
-  <button class="btn btn-primary btn-block  dashboard-btn-animate" (click)="verPresupuesto()" > Ver Presupuesto </button>
+  <button class="btn btn-primary btn-block  dashboard-btn-animate" (click)="verPresupuesto()">Ver Presupuesto </button>
 
 </div>
 

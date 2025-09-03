@@ -10,8 +10,8 @@ interface Alert {
   providedIn: 'root'
 })
 export class AlertUserService {
-  private apiUrl = 'http://localhost:8080/auth/user-code';
-  //private apiUrl = 'https://metrobackapp-production.up.railway.app/auth/user-code'
+  //private apiUrl = 'http://localhost:8080/auth/user-code';
+  private apiUrl = 'https://metrobackapp-production.up.railway.app/auth/user-code'
 
 
   constructor(private http: HttpClient) { }
