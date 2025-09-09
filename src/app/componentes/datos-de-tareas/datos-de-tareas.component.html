@@ -66,8 +66,8 @@
       <thead class="thead-light table-primary">
         <tr>
           <th class="text-center">Tarea</th>
-          <th class="text-center">Rubro</th>
-          <th class="text-center">Categoría</th>
+          <!--th class="text-center">Rubro</!--th-->
+          <!--th class="text-center">Categoría</!--th-->
           <th class="text-center">Descripción</th>
           <th class="text-center">Área (m²/m³)</th>
           <th class="text-center">Costo</th>
@@ -77,8 +77,8 @@
       <tbody>
         <tr *ngFor="let tarea of tareasAgregadas">
           <td>{{ tarea.tarea }}</td>
-          <td>{{ tarea.rubro || '-' }}</td>
-          <td>{{ tarea.categoria || '-' }}</td>
+          <!--td>{{ tarea.rubro || '-' }}</td-->
+          <!--td>{{ tarea.categoria || '-' }}</td-->
           <td>{{ tarea.descripcion }}</td>
           <td>{{ tarea.area | number:'1.2-2' }}</td>
           <td>{{ tarea.costo | currency:'USD':'symbol':'1.2-2' }}</td>

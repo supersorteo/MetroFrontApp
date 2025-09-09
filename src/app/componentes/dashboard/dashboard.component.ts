@@ -12,6 +12,8 @@ import { Empresa, EmpresaService } from '../../servicios/empresa.service';
 import { Cliente, ClienteService } from '../../servicios/cliente.service';
 import Swal from 'sweetalert2';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { FilterClientePipe } from '../../pipes/filter-cliente.pipe';
+import { FilterEmpresaPipe } from '../../pipes/filter-empresa.pipe';
 
 
 declare var bootstrap: any;
@@ -31,11 +33,14 @@ interface AccessCode {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule],
+  imports: [CommonModule, FormsModule, NgSelectModule, FilterClientePipe, FilterEmpresaPipe],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit{
+
+  filtroCliente: string = '';
+  filtroEmpresa: string = '';
   selectedEmpresaId: any = null;
   empresaEditId: number | null = null; // ID de empresa en edición
   // --- EMPRESAS ---
@@ -47,6 +52,7 @@ export class DashboardComponent implements OnInit{
   totalEmpresaPages: number = 1;
 
   clienteSeleccionado: Cliente | null = null;
+
   clienteAEliminar: number | null = null;
   mostrarModalConfirmacion = false;
 
@@ -160,6 +166,21 @@ export class DashboardComponent implements OnInit{
             imageElement.src = empresa.logoUrl;
             imageElement.style.display = 'block';
           }
+          console.log('Empresa seleccionada al iniciar:', empresa);
+        }
+      }
+      // Restaurar selección de cliente (objeto completo)
+      const storedCliente = localStorage.getItem('selectedCliente');
+      if (storedCliente) {
+        try {
+          const clienteObj = JSON.parse(storedCliente);
+          const cliente = this.clientes.find(c => c.id === clienteObj.id);
+          if (cliente) {
+            this.clienteSeleccionado = cliente;
+            console.log('Cliente seleccionado al iniciar (objeto):', cliente);
+          }
+        } catch (e) {
+          console.error('Error restaurando cliente seleccionado:', e);
         }
       }
     }, 500);
@@ -189,6 +210,12 @@ export class DashboardComponent implements OnInit{
     }, 0);
   }
 
+   seleccionarCliente(cliente: Cliente): void {
+  this.clienteSeleccionado = cliente;
+  localStorage.setItem('selectedClienteId', String(cliente.id));
+  localStorage.setItem('selectedCliente', JSON.stringify(cliente));
+  console.log('Cliente seleccionado:', cliente);
+    }
 
   getEmpresasByUserCode0(): void {
     if (!this.userCode) {
@@ -229,6 +256,25 @@ export class DashboardComponent implements OnInit{
         console.error('[EMPRESA] Error al cargar empresas:', error);
       }
     });
+  }
+
+    cargarDatosEmpresaSeleccionada() {
+    if (this.selectedEmpresaId) {
+      this.empresaName = this.selectedEmpresaId.name || '';
+      this.empresaPhone = this.selectedEmpresaId.phone || '';
+      this.empresaEmail = this.selectedEmpresaId.email || '';
+      this.additionalDetailsEmpresa = this.selectedEmpresaId.description || '';
+      // Si hay logo, actualizar imagen
+      this.actualizarImagenEmpresa(this.selectedEmpresaId);
+      console.log('Datos de empresa cargados en modal:', this.selectedEmpresaId);
+    } else {
+      this.empresaName = '';
+      this.empresaPhone = '';
+      this.empresaEmail = '';
+      this.additionalDetailsEmpresa = '';
+      this.actualizarImagenEmpresa(null);
+      console.log('No hay empresa seleccionada');
+    }
   }
 
 
@@ -272,6 +318,27 @@ getEmpresasByUserCode(): void {
               console.log('Clientes recibidos para empresa:', clientes);
               this.clientes = clientes || [];
               this.updatePaginatedClientes();
+              // Restaurar selección de cliente desde localStorage
+              const storedCliente = localStorage.getItem('selectedCliente');
+              if (storedCliente) {
+                try {
+                  const clienteObj = JSON.parse(storedCliente);
+                  const cliente = this.clientes.find(c => c.id === clienteObj.id);
+                  console.log('Intentando restaurar cliente seleccionado:', clienteObj);
+                  if (cliente) {
+                    this.clienteSeleccionado = cliente;
+                    console.log('Cliente restaurado correctamente:', cliente);
+                  } else {
+                    this.clienteSeleccionado = null;
+                    console.log('No se encontró el cliente en la lista actual.');
+                  }
+                } catch (e) {
+                  this.clienteSeleccionado = null;
+                  console.error('Error restaurando cliente seleccionado:', e);
+                }
+              } else {
+                console.log('No hay cliente guardado en localStorage.');
+              }
               // Cargar tareas del cliente seleccionado, si existe
               if (this.clienteSeleccionado?.id) {
                 this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).subscribe({
@@ -289,6 +356,8 @@ getEmpresasByUserCode(): void {
                   }
                 });
               }
+              // Imprimir estado final en consola
+              console.log('Estado final clienteSeleccionado:', this.clienteSeleccionado);
             },
             error: (error) => {
               console.error('Error al cargar clientes por empresa:', error);
@@ -533,7 +602,7 @@ ngAfterViewInit() {
 
 
 
-ngAfterViewInit() {
+ngAfterViewInit0() {
     const menuBtn = document.getElementById('menuToggleBtn');
     const offcanvasElement = document.getElementById('offcanvasMenu');
     if (menuBtn && offcanvasElement) {
@@ -546,7 +615,7 @@ ngAfterViewInit() {
     }
 
     // Limpiar modal-backdrop y restaurar foco para modales
-      const modals = ['exampleModal', 'imageModal', 'clientModal', 'listaClientesModal', 'miModal'];
+      const modals = ['exampleModal','listaEmpresasModal' ,'imageModal', 'clientModal', 'listaClientesModal', 'miModal', 'provinciaModal'];
     modals.forEach(modalId => {
       const modalElement = document.getElementById(modalId);
       if (modalElement) {
@@ -590,7 +659,8 @@ ngAfterViewInit() {
       });
     }
 
-    // Lógica para reabrir clientModal al cerrar listaClientesModal
+    // Lógica para reabrir clientModal al cerrar listaClientesModal (comentada para evitar apertura automática)
+    /*
     const listaClientesModal = document.getElementById('listaClientesModal');
     if (listaClientesModal) {
       listaClientesModal.addEventListener('hidden.bs.modal', () => {
@@ -603,6 +673,7 @@ ngAfterViewInit() {
         }
       });
     }
+    */
       // Lógica para reabrir el modal de empresa al cerrar el de listaEmpresasModal
       const listaEmpresasModal = document.getElementById('listaEmpresasModal');
       if (listaEmpresasModal) {
@@ -616,6 +687,101 @@ ngAfterViewInit() {
           }
         });
       }
+}
+
+ngAfterViewInit() {
+  const menuBtn = document.getElementById('menuToggleBtn');
+  const offcanvasElement = document.getElementById('offcanvasMenu');
+  if (menuBtn && offcanvasElement) {
+    offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
+      menuBtn.style.display = 'none';
+    });
+    offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
+      menuBtn.style.display = 'flex';
+    });
+  }
+
+  // Limpiar modal-backdrop y restaurar foco para modales
+  const modals = ['exampleModal', 'listaEmpresasModal', 'imageModal', 'clientModal', 'listaClientesModal', 'miModal', 'provinciaModal'];
+  modals.forEach(modalId => {
+    const modalElement = document.getElementById(modalId);
+    if (modalElement) {
+      modalElement.addEventListener('show.bs.modal', () => {
+        // Limpiar backdrops solo si hay más de uno para evitar conflictos
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        if (backdrops.length > 1) {
+          backdrops.forEach((backdrop, index) => {
+            if (index < backdrops.length - 1) backdrop.remove();
+          });
+        }
+      });
+      modalElement.addEventListener('hidden.bs.modal', () => {
+        const triggerButton = document.querySelector(`[data-bs-target="#${modalId}"]`) as HTMLElement;
+        if (triggerButton) triggerButton.focus();
+        // Limpiar backdrops solo si hay más de uno
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        if (backdrops.length > 1) {
+          backdrops.forEach((backdrop, index) => {
+            if (index < backdrops.length - 1) backdrop.remove();
+          });
+        }
+      });
+    }
+  });
+
+  // Lógica para reabrir listaClientesModal al cerrar clientModal
+  const clientModal = document.getElementById('clientModal');
+  const listaClientesModal = document.getElementById('listaClientesModal');
+  if (clientModal && listaClientesModal) {
+    clientModal.addEventListener('hidden.bs.modal', () => {
+      // Limpiar todos los backdrops al cerrar clientModal
+      const backdrops = document.querySelectorAll('.modal-backdrop');
+      backdrops.forEach(backdrop => backdrop.remove());
+
+      // Reabrir listaClientesModal si estaba abierto antes
+      setTimeout(() => {
+        const listaClientesInstance = new bootstrap.Modal(listaClientesModal);
+        listaClientesInstance.show();
+      }, 300); // Delay para permitir que el DOM se actualice
+    });
+  }
+
+  // Lógica para reabrir el modal de empresa al cerrar el de imagen
+  const imageModal = document.getElementById('imageModal');
+  if (imageModal) {
+    imageModal.addEventListener('hidden.bs.modal', () => {
+      const empresaModal = document.getElementById('exampleModal');
+      if (this.reabrirEmpresaModal && empresaModal && !empresaModal.classList.contains('show')) {
+        setTimeout(() => {
+          const modal = new bootstrap.Modal(empresaModal);
+          modal.show();
+          this.reabrirEmpresaModal = false;
+        }, 300);
+      } else {
+        this.reabrirEmpresaModal = false;
+      }
+      // Limpiar backdrops
+      const backdrops = document.querySelectorAll('.modal-backdrop');
+      backdrops.forEach(backdrop => backdrop.remove());
+    });
+  }
+
+  // Lógica para reabrir el modal de empresa al cerrar el de listaEmpresasModal
+  const listaEmpresasModal = document.getElementById('listaEmpresasModal');
+  if (listaEmpresasModal) {
+    listaEmpresasModal.addEventListener('hidden.bs.modal', () => {
+      const empresaModal = document.getElementById('exampleModal');
+      if (empresaModal && !empresaModal.classList.contains('show')) {
+        setTimeout(() => {
+          const modal = new bootstrap.Modal(empresaModal);
+          modal.show();
+        }, 300);
+      }
+      // Limpiar backdrops
+      const backdrops = document.querySelectorAll('.modal-backdrop');
+      backdrops.forEach(backdrop => backdrop.remove());
+    });
+  }
 }
 
 
@@ -691,9 +857,22 @@ loadTareasAgregadas(): void {
 
 
     seleccionar(tarea: Tarea): void {
-    this.tareaSeleccionada = { ...tarea, totalCost: this.calcularTotalCosto(tarea) };
-     console.log('Tarea seleccionada:', this.tareaSeleccionada);
-    this.abrirModal();
+  if (!this.clienteSeleccionado) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Falta selección',
+      text: 'Debe seleccionar un cliente.',
+      confirmButtonText: 'Aceptar',
+      customClass: {
+        popup: 'swal2-border-radius',
+        confirmButton: 'btn btn-primary'
+      }
+    });
+    return;
+  }
+  this.tareaSeleccionada = { ...tarea, descripcion: '', totalCost: this.calcularTotalCosto(tarea) };
+  console.log('Tarea seleccionada:', this.tareaSeleccionada);
+  this.abrirModal();
   }
 
 
@@ -873,16 +1052,32 @@ agregarTarea(): void {
 
 
 verPresupuesto(): void {
+  // Validar selección de empresa y cliente
+  let mensaje = '';
+  if (!this.selectedEmpresaId && !this.clienteSeleccionado) {
+    mensaje = 'Debe seleccionar una empresa y un cliente.';
+  } else if (!this.selectedEmpresaId) {
+    mensaje = 'Debe seleccionar una empresa.';
+  } else if (!this.clienteSeleccionado) {
+    mensaje = 'Debe seleccionar un cliente.';
+  }
+  if (mensaje) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Falta selección',
+      text: mensaje,
+      confirmButtonText: 'Aceptar',
+      customClass: {
+        popup: 'swal2-border-radius',
+        confirmButton: 'btn btn-primary'
+      }
+    });
+    return;
+  }
   // Guardar datos seleccionados en localStorage para transferirlos
-  if (this.clienteSeleccionado) {
-    localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
-  }
-  if (this.selectedEmpresaId) {
-    localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
-  }
-  if (this.tareasAgregadas) {
-    localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas));
-  }
+  localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
+  localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
+  localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas));
   this.route.navigate(['/presupuesto']);
 }
 
@@ -1777,8 +1972,6 @@ onEmpresaSeleccionada1(empresa: any) {
 
 
    onEmpresaSeleccionada(empresa: any) {
-
-
     // Versión optimizada: obtiene clientes y tareas asociadas a cada cliente
     console.log('Empresa seleccionada:', empresa);
     this.selectedEmpresaId = empresa;

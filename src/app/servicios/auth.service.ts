@@ -33,7 +33,6 @@ export interface AccessCode {
 })
 export class AuthService {
   //private apiUrl = 'http://localhost:8080/auth';
-
   private apiUrl= 'https://metrobackapp-production.up.railway.app/auth'
 
   constructor(private http: HttpClient, private router: Router) { }
