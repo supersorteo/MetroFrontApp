@@ -63,46 +63,72 @@ volverAlDashboard(){
 this.route.navigate(['/dashboard'])
 }
 
-descargarPresupuesto() {
-    // Oculta los botones antes de descargar
-    const dashboardBtn = document.querySelector('.btn-floating');
-    const descargarBtn = document.querySelector('.presupuesto-total-descarga .btn-primary');
-    if (dashboardBtn) (dashboardBtn as HTMLElement).style.display = 'none';
-    if (descargarBtn) (descargarBtn as HTMLElement).style.display = 'none';
+async descargarPresupuesto() {
+    const exportElement = document.getElementById('export-presupuesto');
+    if (!exportElement) {
+      this.toastr.error('No se encontró el contenido del presupuesto para exportar.', 'Error');
+      return;
+    }
 
-    setTimeout(() => {
-      // Agrega estilos embebidos para bordes de tabla
-      const style = document.createElement('style');
-      style.innerHTML = `
-        table, th, td {
-          border: 1px solid #0d6efd !important;
-          border-collapse: collapse !important;
-        }
-        th, td {
-          padding: 8px !important;
-        }
-        th {
-          background: #0d6efd !important;
-          color: #fff !important;
-        }
-      `;
-      document.head.appendChild(style);
+    const controlsToHide: HTMLElement[] = [];
+    const floatingBtn = document.querySelector('.btn-floating') as HTMLElement | null;
+    const downloadBtn = document.querySelector('.presupuesto-total-descarga .btn-primary') as HTMLElement | null;
+    if (floatingBtn) controlsToHide.push(floatingBtn);
+    if (downloadBtn) controlsToHide.push(downloadBtn);
 
-      const html = document.documentElement.outerHTML;
-      const blob = new Blob([html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'presupuesto.html';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      // Vuelve a mostrar los botones y elimina el estilo embebido
-      if (dashboardBtn) (dashboardBtn as HTMLElement).style.display = '';
-      if (descargarBtn) (descargarBtn as HTMLElement).style.display = '';
-      document.head.removeChild(style);
-    }, 100);
+    const previousDisplay = new Map<HTMLElement, string>();
+    controlsToHide.forEach(el => {
+      previousDisplay.set(el, el.style.display);
+      el.style.display = 'none';
+    });
+
+    const inlineStyle = document.createElement('style');
+    inlineStyle.id = 'pdf-export-style';
+    inlineStyle.innerHTML = `
+      #export-presupuesto {
+        background: #ffffff;
+      }
+      #export-presupuesto table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      #export-presupuesto table th,
+      #export-presupuesto table td {
+        border: 1px solid rgba(13, 96, 164, 0.2);
+        padding: 10px;
+      }
+      #export-presupuesto table thead th {
+        background: linear-gradient(135deg, #1f4e8e, #3580dd);
+        color: #fff;
+      }
+    `;
+    document.head.appendChild(inlineStyle);
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        html2pdf()
+          .set({
+            margin: 10,
+            filename: `presupuesto-${this.clienteSeleccionado?.name || 'cliente'}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          })
+          .from(exportElement)
+          .save()
+          .then(() => resolve())
+          .catch((error: any) => reject(error));
+      });
+      this.toastr.success('Presupuesto descargado correctamente', 'PDF generado');
+    } catch (error) {
+      console.error('Error al generar el PDF', error);
+      this.toastr.error('No se pudo generar el PDF. Inténtalo nuevamente.', 'Error');
+    } finally {
+      document.head.removeChild(inlineStyle);
+      controlsToHide.forEach(el => {
+        el.style.display = previousDisplay.get(el) ?? '';
+      });
+    }
   }
 
   async descargarPresupuesto0() {

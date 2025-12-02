@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" id="export-presupuesto">
 
  <button
     class="btn btn-secondary btn-floating"
@@ -6,34 +6,37 @@
     (click)="volverAlDashboard()"
     title="Volver al Dashboard"
   >
-    <i class="bi bi-house-door-fill"></i> Dashboard
+    <i class="bi bi-house-door-fill"></i> inicio
   </button>
 
   <div *ngIf="empresaSeleccionada && clienteSeleccionado" class="empresa-asociada mb-4">
     <div class="empresa-card">
-      <div class="empresa-datos">
-        <div class="empresa-logo">
-          <img *ngIf="empresaSeleccionada.logoUrl" [src]="empresaSeleccionada.logoUrl" alt="Logo" />
-        </div>
-        <div class="empresa-info">
-          <div class="empresa-nombre">{{ empresaSeleccionada.name }}</div>
-          <div class="empresa-telefono"><strong>TELEFONO:</strong> {{ empresaSeleccionada.phone }}</div>
-          <div class="empresa-email"><strong>EMAIL:</strong> {{ empresaSeleccionada.email }}</div>
-          <div class="empresa-descripcion">{{ empresaSeleccionada.description }}</div>
-        </div>
+      <div class="empresa-logo">
+        <img *ngIf="empresaSeleccionada.logoUrl" [src]="empresaSeleccionada.logoUrl" alt="Logo" />
+      </div>
+      <div class="empresa-info">
+        <div class="empresa-nombre">{{ empresaSeleccionada.name }}</div>
+                <div class="empresa-descripcion">{{ empresaSeleccionada.description }}</div>
+
+        <div class="empresa-telefono"><strong>Tel:</strong> {{ empresaSeleccionada.phone }}</div>
+        <div class="empresa-email"><strong>Email:</strong> {{ empresaSeleccionada.email }}</div>
+        <div class="empresa-cuil" *ngIf="empresaSeleccionada.cuilCuit"><strong>CUIL/CUIT:</strong> {{ empresaSeleccionada.cuilCuit }}</div>
+        <div class="empresa-website" *ngIf="empresaSeleccionada.website"><strong>SITIO WEB:</strong> {{ empresaSeleccionada.website }}</div>
+        <div class="empresa-social" *ngIf="empresaSeleccionada.tiktok"><strong>TIKTOK:</strong> {{ empresaSeleccionada.tiktok }}</div>
+        <div class="empresa-social" *ngIf="empresaSeleccionada.instagram"><strong>INSTAGRAM:</strong> {{ empresaSeleccionada.instagram }}</div>
+        <div class="empresa-social" *ngIf="empresaSeleccionada.facebook"><strong>FACEBOOK:</strong> {{ empresaSeleccionada.facebook }}</div>
       </div>
     </div>
     <hr class="empresa-user-divider" />
     <div class="user-info-empresa">
-      <h6>Cliente</h6>
-      <div class="cliente-datos">
-        <div class="cliente-nombre">{{ clienteSeleccionado.name }}</div>
-        <div class="cliente-contacto"><strong>TELEFONO:</strong> {{ clienteSeleccionado.contact }}</div>
-        <!--div-- class="cliente-email">{{ clienteSeleccionado.email }}</!--div-->
-        <!--div class="cliente-clave">{{ clienteSeleccionado.clave }}</!--div-->
-        <!--div-- class="cliente-direccion">{{ clienteSeleccionado.direccion }}</!--div-->
-        <div class="cliente-budgetDate"><strong>FECHA DE PRESUPUESTO:</strong> {{ clienteSeleccionado.budgetDate }}</div>
-        <div class="cliente-additionalDetails">{{ clienteSeleccionado.additionalDetails }}</div>
+      <div class="cliente-card">
+      
+        <div class="cliente-datos">
+          <div class="cliente-nombre">{{ clienteSeleccionado.name }}</div>
+          <div class="cliente-contacto"><strong>Tel:</strong> {{ clienteSeleccionado.contact }}</div>
+          <div class="cliente-budgetDate"><strong>Fecha:</strong> {{ clienteSeleccionado.budgetDate }}</div>
+          <div class="cliente-additionalDetails">{{ clienteSeleccionado.additionalDetails }}</div>
+        </div>
       </div>
     </div>
   </div>
@@ -60,7 +63,6 @@
     <p><strong>País:</strong> {{ userData.pais || '-' }}</p>
   </!--div-->
 
-  <h5 class="text-primary">PRESUPUESTO</h5>
   <div class="table-responsive">
     <table class="table table-striped table-bordered table-hover table-sm">
       <thead class="thead-light table-primary">
@@ -92,7 +94,7 @@
       Total: {{ calcularCostoTotal() | currency:'USD':'symbol':'1.2-2' }}
     </div>
     <button class="btn btn-primary mt-2 animate" (click)="descargarPresupuesto()">
-      <i class="bi bi-download"></i> DESCARGAR PRESUPUESTO
+      <i class="bi bi-download"></i> DESCARGAR PDF
     </button>
   </div>
 </div>

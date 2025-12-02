@@ -1,0 +1,61 @@
+<div class="saved-budgets-card">
+  <div class="saved-budgets-header">
+    <div>
+
+      <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
+    </div>
+    <div class="save-controls">
+      <input
+        class="form-control"
+        type="text"
+        [(ngModel)]="nombreTemporal"
+        placeholder="Nombre del presupuesto"
+      />
+      <button class="btn btn-primary" (click)="guardarPresupuestoActual()" [disabled]="!puedeGuardar">
+        Guardar presupuesto
+      </button>
+    </div>
+    <small *ngIf="!tareasActuales?.length" class="text-muted">
+      Agrega tareas para poder guardar este presupuesto.
+    </small>
+    <small *ngIf="limiteAlcanzado" class="text-danger">
+      Has alcanzado el máximo de {{ maxItems }} presupuestos guardados. Elimina alguno para guardar uno nuevo.
+    </small>
+  </div>
+
+  <div class="filter-wrapper" *ngIf="presupuestosFiltrados.length || filtro">
+    <input
+      type="text"
+      class="form-control filter-input"
+      [(ngModel)]="filtro"
+      placeholder="Buscar por nombre, empresa o cliente"
+    />
+  </div>
+
+  <ng-container *ngIf="presupuestosFiltrados.length; else noBudgetsTemplate">
+    <div class="saved-budgets-list">
+      <div class="saved-budget-item" *ngFor="let presupuesto of presupuestosFiltrados">
+        <div class="saved-budget-info">
+          <strong>{{ presupuesto.name }}</strong>
+          <small>Creado {{ presupuesto.createdAt | date: 'short' }}</small>
+          <div class="text-muted small">
+            <span>Empresa: {{ presupuesto.empresa?.name || 'Sin empresa' }}</span> |
+            <span>Cliente: {{ presupuesto.cliente?.name || 'Sin cliente' }}</span> |
+            <span>Tareas: {{ presupuesto.tareas.length }}</span>
+          </div>
+        </div>
+        <div class="saved-budget-actions">
+          <button class="btn btn-outline-primary btn-sm" (click)="cargar(presupuesto)">CARGAR</button>
+          <button class="btn btn-outline-danger btn-sm" (click)="eliminar(presupuesto)">ELIMINAR</button>
+          <button class="btn btn-outline-secondary btn-sm" (click)="descargarPDF(presupuesto)">DESCARGAR COMO PDF</button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+
+<ng-template #noBudgetsTemplate>
+  <div class="empty-state">
+    Todavía no hay presupuestos guardados.
+  </div>
+</ng-template>

@@ -10,6 +10,11 @@ export interface Empresa {
   description: string;
   logoUrl: string;
   userCode: string;
+  website?: string;
+  tiktok?: string;
+  instagram?: string;
+  facebook?: string;
+  cuilCuit?: string;
 }
 
 @Injectable({

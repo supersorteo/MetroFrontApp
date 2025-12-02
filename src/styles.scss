@@ -11,4 +11,8 @@
 @import 'ngx-toastr/toastr';
 @import '@ng-select/ng-select/themes/default.theme.css';
 
+body.modal-open app-dashboard .floating-toolbar-container {
+	display: none;
+}
+
 

@@ -22,6 +22,26 @@
 					<label for="description">Descripción de tu empresa:</label>
 					<textarea class="form-control" id="description" name="description" [(ngModel)]="empresa.description" rows="3" placeholder="Cuenta a tus clientes de qué se trata tu empresa"></textarea>
 				</div>
+        <div class="form-group mb-3">
+          <label for="website">Sitio web (opcional)</label>
+          <input type="url" class="form-control" id="website" name="website" [(ngModel)]="empresa.website" placeholder="https://..." />
+        </div>
+        <div class="form-group mb-3">
+          <label for="cuil">CUIL/CUIT (opcional)</label>
+          <input type="text" class="form-control" id="cuil" name="cuil" [(ngModel)]="empresa.cuilCuit" placeholder="00-00000000-0" />
+        </div>
+        <div class="form-group mb-3">
+          <label for="tiktok">TikTok (opcional)</label>
+          <input type="text" class="form-control" id="tiktok" name="tiktok" [(ngModel)]="empresa.tiktok" placeholder="@tuusuario o enlace" />
+        </div>
+        <div class="form-group mb-3">
+          <label for="instagram">Instagram (opcional)</label>
+          <input type="text" class="form-control" id="instagram" name="instagram" [(ngModel)]="empresa.instagram" placeholder="@tuusuario o enlace" />
+        </div>
+        <div class="form-group mb-3">
+          <label for="facebook">Facebook (opcional)</label>
+          <input type="text" class="form-control" id="facebook" name="facebook" [(ngModel)]="empresa.facebook" placeholder="URL de tu página" />
+        </div>
 				<div class="form-group mb-3 text-center">
 					<label for="logo">Logo de la empresa</label>
 					<div *ngIf="imagePreview" class="mb-2">

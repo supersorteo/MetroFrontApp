@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
@@ -14,6 +15,9 @@ import Swal from 'sweetalert2';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FilterClientePipe } from '../../pipes/filter-cliente.pipe';
 import { FilterEmpresaPipe } from '../../pipes/filter-empresa.pipe';
+import { PresupuestosGuardadosComponent } from '../presupuestos-guardados/presupuestos-guardados.component';
+import { SavedPresupuesto } from '../../servicios/budget-storage.service';
+import { firstValueFrom } from 'rxjs';
 
 
 declare var bootstrap: any;
@@ -33,7 +37,15 @@ interface AccessCode {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule, FilterClientePipe, FilterEmpresaPipe],
+  imports: [
+    CommonModule,
+    HttpClientModule,
+    FormsModule,
+    NgSelectModule,
+    FilterClientePipe,
+    FilterEmpresaPipe,
+    PresupuestosGuardadosComponent
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
@@ -73,6 +85,11 @@ export class DashboardComponent implements OnInit{
   empresaPhone: string = '';
   empresaEmail: string = '';
   additionalDetailsEmpresa: string = '';
+  empresaWebsite: string = '';
+  empresaTikTok: string = '';
+  empresaInstagram: string = '';
+  empresaFacebook: string = '';
+  empresaCuilCuit: string = '';
   clientName: string = '';
   clientContact: string = '';
   budgetDate: string = '';
@@ -98,7 +115,14 @@ export class DashboardComponent implements OnInit{
   tareasFiltradas: Tarea[] = [];
 
   mostrarTabla: boolean = false;
+  showSavedBudgetsPanel: boolean = false;
   tareasAgregadas: UserTarea[] = [];
+  isSidebarOpen: boolean = false;
+  showSocialFields: boolean = false;
+  weatherLoading: boolean = false;
+  weatherError: string = '';
+  currentWeather: { temperature: number; windspeed: number; weathercode: number; location: string } | null = null;
+  dailyForecast: { date: Date; max: number; min: number; code: number }[] = [];
 
 
     tareaSeleccionada: Tarea = {
@@ -135,7 +159,8 @@ export class DashboardComponent implements OnInit{
     private presupuestoService: PresupuestoService,
     private empresaService: EmpresaService,
     private clienteService: ClienteService,
-    private toastr: ToastrService ){}
+    private toastr: ToastrService,
+    private http: HttpClient ){}
 
   ngOnInit() {
     this.loadUserCode();
@@ -264,6 +289,12 @@ export class DashboardComponent implements OnInit{
       this.empresaPhone = this.selectedEmpresaId.phone || '';
       this.empresaEmail = this.selectedEmpresaId.email || '';
       this.additionalDetailsEmpresa = this.selectedEmpresaId.description || '';
+      this.empresaWebsite = this.selectedEmpresaId.website || '';
+      this.empresaTikTok = this.selectedEmpresaId.tiktok || '';
+      this.empresaInstagram = this.selectedEmpresaId.instagram || '';
+      this.empresaFacebook = this.selectedEmpresaId.facebook || '';
+      this.empresaCuilCuit = this.selectedEmpresaId.cuilCuit || '';
+      this.showSocialFields = this.hasSocialData();
       // Si hay logo, actualizar imagen
       this.actualizarImagenEmpresa(this.selectedEmpresaId);
       console.log('Datos de empresa cargados en modal:', this.selectedEmpresaId);
@@ -272,6 +303,12 @@ export class DashboardComponent implements OnInit{
       this.empresaPhone = '';
       this.empresaEmail = '';
       this.additionalDetailsEmpresa = '';
+      this.empresaWebsite = '';
+      this.empresaTikTok = '';
+      this.empresaInstagram = '';
+      this.empresaFacebook = '';
+      this.empresaCuilCuit = '';
+      this.showSocialFields = false;
       this.actualizarImagenEmpresa(null);
       console.log('No hay empresa seleccionada');
     }
@@ -1013,21 +1050,31 @@ agregarTarea1(): void {
 
 
 agregarTarea(): void {
-    if (!this.clienteSeleccionado?.id) {
-      this.toastr.error('Debe seleccionar un cliente antes de agregar una tarea', 'Error');
-      return;
-    }
-
+    const clienteId = this.clienteSeleccionado?.id ?? null;
     const nuevaTarea: UserTarea = {
       ...this.tareaSeleccionada,
-      clienteId: this.clienteSeleccionado.id, // Usa clienteId del cliente seleccionado
+      clienteId: clienteId ?? 0,
       pais: this.userData.pais,
       rubro: this.tareaSeleccionada.rubro || '',
       categoria: this.tareaSeleccionada.categoria || '',
       totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
     };
 
-    console.log('Nueva tarea a enviar:', nuevaTarea); // Log para depuración
+    const guardarLocal = (mensaje?: string) => {
+      this.tareasAgregadas.push(nuevaTarea);
+      this.mostrarTabla = true;
+      localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+      this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+      if (mensaje) {
+        this.toastr.info(mensaje, 'Informacion');
+      }
+      this.resetTareaSeleccionada();
+    };
+
+    if (!clienteId) {
+      guardarLocal('Tarea agregada localmente. Podras asociarla a un cliente mas adelante.');
+      return;
+    }
 
     this.userTareaService.addUserTarea(nuevaTarea).subscribe({
       next: (tarea) => {
@@ -1035,23 +1082,18 @@ agregarTarea(): void {
         this.mostrarTabla = true;
         localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
         this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
-        this.toastr.success('Tarea agregada', 'Éxito');
+        this.toastr.success('Tarea agregada', 'Exito');
         this.resetTareaSeleccionada();
       },
       error: (error) => {
         console.error('Error al agregar tarea:', error.message, nuevaTarea);
-        this.tareasAgregadas.push(nuevaTarea); // Guardar localmente como respaldo
-        this.mostrarTabla = true;
-        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-        this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
-        this.toastr.error(error.message || 'Error al agregar la tarea al backend, guardada localmente', 'Error');
-        this.resetTareaSeleccionada();
+        guardarLocal(error.message || 'Error al sincronizar con el backend, tarea guardada localmente');
       }
     });
   }
 
 
-verPresupuesto(): void {
+  verPresupuesto(): void {
   // Validar selección de empresa y cliente
   let mensaje = '';
   if (!this.selectedEmpresaId && !this.clienteSeleccionado) {
@@ -1079,6 +1121,58 @@ verPresupuesto(): void {
   localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
   localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas));
   this.route.navigate(['/presupuesto']);
+}
+
+onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
+  this.tareasAgregadas = (presupuesto.tareas || []).map(t => ({ ...t }));
+  this.mostrarTabla = this.tareasAgregadas.length > 0;
+  localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+  this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+
+  if (presupuesto.cliente) {
+    const cliente = presupuesto.cliente.id
+      ? this.clientes.find(c => c.id === presupuesto.cliente?.id) || presupuesto.cliente
+      : presupuesto.cliente;
+    this.clienteSeleccionado = cliente;
+    localStorage.setItem('selectedCliente', JSON.stringify(cliente));
+  } else {
+    this.clienteSeleccionado = null;
+    localStorage.removeItem('selectedCliente');
+  }
+
+  if (presupuesto.empresa) {
+    const empresa = presupuesto.empresa.id
+      ? this.empresas.find(e => e.id === presupuesto.empresa?.id) || presupuesto.empresa
+      : presupuesto.empresa;
+    this.selectedEmpresaId = empresa;
+    this.empresaName = empresa?.name || '';
+    this.empresaPhone = empresa?.phone || '';
+    this.empresaEmail = empresa?.email || '';
+    this.additionalDetailsEmpresa = empresa?.description || '';
+    this.empresaWebsite = empresa?.website || '';
+    this.empresaTikTok = empresa?.tiktok || '';
+    this.empresaInstagram = empresa?.instagram || '';
+    this.empresaFacebook = empresa?.facebook || '';
+    this.empresaCuilCuit = empresa?.cuilCuit || '';
+    if (empresa?.id) {
+      localStorage.setItem('selectedEmpresaId', String(empresa.id));
+    }
+    this.actualizarImagenEmpresa(empresa);
+  } else {
+    this.selectedEmpresaId = null;
+    localStorage.removeItem('selectedEmpresaId');
+    this.actualizarImagenEmpresa(null);
+  }
+
+  this.toastr.success('Presupuesto cargado correctamente', presupuesto.name);
+}
+
+toggleSavedBudgetsPanel(): void {
+  this.showSavedBudgetsPanel = !this.showSavedBudgetsPanel;
+}
+
+closeSavedBudgetsPanel(): void {
+  this.showSavedBudgetsPanel = false;
 }
 
       buscar(event: Event): void {
@@ -1192,6 +1286,11 @@ calcularCostoTotal(): number {
     this.empresaPhone = empresaData.empresaPhone || '';
     this.empresaEmail = empresaData.empresaEmail || '';
     this.additionalDetailsEmpresa = empresaData.additionalDetailsempresa || '';
+    this.empresaWebsite = empresaData.empresaWebsite || '';
+    this.empresaTikTok = empresaData.empresaTikTok || '';
+    this.empresaInstagram = empresaData.empresaInstagram || '';
+    this.empresaFacebook = empresaData.empresaFacebook || '';
+    this.empresaCuilCuit = empresaData.empresaCuilCuit || '';
     const uploadedImage = localStorage.getItem('uploadedImage');
     if (uploadedImage) {
       const mainPreview = document.getElementById('fixedImageIcon') as HTMLImageElement;
@@ -1356,6 +1455,11 @@ saveFormData0() {
     phone: this.empresaPhone,
     email: this.empresaEmail,
     description: this.additionalDetailsEmpresa,
+    website: this.empresaWebsite,
+    tiktok: this.empresaTikTok,
+    instagram: this.empresaInstagram,
+    facebook: this.empresaFacebook,
+    cuilCuit: this.empresaCuilCuit,
     logoUrl: localStorage.getItem('uploadedImage') || '',
     userCode: this.userCode
   };
@@ -1391,7 +1495,12 @@ saveFormData0() {
       email: this.empresaEmail,
       description: this.additionalDetailsEmpresa,
       logoUrl: this.logoUrl,
-      userCode: this.userCode
+      userCode: this.userCode,
+      website: this.empresaWebsite,
+      tiktok: this.empresaTikTok,
+      instagram: this.empresaInstagram,
+      facebook: this.empresaFacebook,
+      cuilCuit: this.empresaCuilCuit
     };
     console.log('[EMPRESA] Datos a enviar:', formData);
 
@@ -1434,6 +1543,11 @@ saveFormData0() {
     this.empresaPhone = '';
     this.empresaEmail = '';
     this.additionalDetailsEmpresa = '';
+    this.empresaWebsite = '';
+    this.empresaTikTok = '';
+    this.empresaInstagram = '';
+    this.empresaFacebook = '';
+    this.empresaCuilCuit = '';
     this.logoUrl = '';
     if (this.modalImagePreview) {
       this.modalImagePreview.nativeElement.style.display = 'none';
@@ -1860,11 +1974,12 @@ fetchUserData(): void {
       localStorage.setItem('userData', JSON.stringify(this.userData));
       console.log('Datos del usuario logueado:', this.userData); // Imprimir datos
       if (this.userData.fechaVencimiento) {
-        this.calculateRemainingTime(this.userData.fechaVencimiento);
-      }
-      this.loadProvincias();
-      this.obtenerTareas();
-    },
+      this.calculateRemainingTime(this.userData.fechaVencimiento);
+    }
+    this.loadProvincias();
+    this.obtenerTareas();
+    this.loadWeather();
+  },
     error => {
       console.error('Error al obtener datos del usuario:', error);
       this.toastr.error('Error al obtener los datos del usuario', 'Error');
@@ -2056,4 +2171,90 @@ onEmpresaSeleccionada1(empresa: any) {
       imageElement.style.display = 'none';
     }
   }
-   }
+
+  toggleSocialFields() {
+    this.showSocialFields = !this.showSocialFields;
+  }
+
+  private hasSocialData(): boolean {
+    return !!(this.empresaTikTok || this.empresaInstagram || this.empresaFacebook);
+  }
+
+  async loadWeather(): Promise<void> {
+    const location = this.getLocationName();
+    if (!location) {
+      this.weatherError = 'Sin ubicación configurada';
+      return;
+    }
+    this.weatherLoading = true;
+    this.weatherError = '';
+    try {
+      const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=es&format=json`;
+      const geoResponse: any = await firstValueFrom(this.http.get(geoUrl));
+      const place = geoResponse?.results?.[0];
+      if (!place) {
+        throw new Error('Ubicación no encontrada');
+      }
+      const { latitude, longitude, name, country } = place;
+      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+      const weatherResponse: any = await firstValueFrom(this.http.get(weatherUrl));
+      const current = weatherResponse?.current_weather;
+      if (current) {
+        this.currentWeather = {
+          temperature: current.temperature,
+          windspeed: current.windspeed,
+          weathercode: current.weathercode,
+          location: `${name}${country ? ', ' + country : ''}`
+        };
+      }
+      const daily = weatherResponse?.daily;
+      if (daily?.time) {
+        this.dailyForecast = daily.time.slice(0, 5).map((dateStr: string, index: number) => ({
+          date: new Date(dateStr),
+          max: daily.temperature_2m_max?.[index] ?? null,
+          min: daily.temperature_2m_min?.[index] ?? null,
+          code: daily.weathercode?.[index] ?? 0
+        }));
+      } else {
+        this.dailyForecast = [];
+      }
+    } catch (error) {
+      console.error('Error al cargar clima', error);
+      this.weatherError = 'No se pudo cargar el clima. Intenta más tarde.';
+    } finally {
+      this.weatherLoading = false;
+    }
+  }
+
+  private getLocationName(): string {
+    return this.userData?.provincia || this.userData?.pais || 'Buenos Aires';
+  }
+
+  weatherDescription(code: number): string {
+    const map: Record<number, string> = {
+      0: 'Despejado',
+      1: 'Mayormente despejado',
+      2: 'Parcialmente nublado',
+      3: 'Nublado',
+      45: 'Niebla',
+      48: 'Niebla con escarcha',
+      51: 'Llovizna ligera',
+      53: 'Llovizna',
+      55: 'Llovizna intensa',
+      61: 'Lluvia ligera',
+      63: 'Lluvia',
+      65: 'Lluvia intensa',
+      71: 'Nieve ligera',
+      73: 'Nieve',
+      75: 'Nieve intensa',
+      80: 'Chubascos ligeros',
+      81: 'Chubascos',
+      82: 'Chubascos intensos',
+      95: 'Tormenta',
+      96: 'Tormenta con granizo',
+      99: 'Tormenta fuerte'
+    };
+    return map[code] || 'Condición desconocida';
+  }
+}
+
