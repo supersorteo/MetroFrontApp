@@ -30,7 +30,7 @@
     <hr class="empresa-user-divider" />
     <div class="user-info-empresa">
       <div class="cliente-card">
-      
+
         <div class="cliente-datos">
           <div class="cliente-nombre">{{ clienteSeleccionado.name }}</div>
           <div class="cliente-contacto"><strong>Tel:</strong> {{ clienteSeleccionado.contact }}</div>
@@ -40,28 +40,7 @@
       </div>
     </div>
   </div>
-  <!--div *ngIf="clientes.length > 0" class="cliente-asociado mb-4">
-    <h6 class="cliente-title">Cliente Asociado</h6>
-    <div class="cliente-info">
-      <div *ngFor="let cliente of clientes" class="cliente-datos">
-        <div class="cliente-nombre">{{ cliente.name }}</div>
-        <div class="cliente-contacto">{{ cliente.contact }}</div>
-        <div class="cliente-email">{{ cliente.email }}</div>
-        <div class="cliente-clave">{{ cliente.clave }}</div>
-        <div class="cliente-direccion">{{ cliente.direccion }}</div>
-        <div class="cliente-budgetDate">{{ cliente.budgetDate }}</div>
-        <div class="cliente-additionalDetails">{{ cliente.additionalDetails }}</div>
-      </div>
-    </div>
-  </!--div-->
 
-  <!--div-- *ngIf="userData" class="user-info mb-3">
-    <h6>Datos del Usuario</h6>
-    <p><strong>Email:</strong> {{ userData.email }}</p>
-    <p><strong>Teléfono:</strong> {{ userData.telefono || '-' }}</p>
-    <p><strong>Provincia:</strong> {{ userData.provincia || '-' }}</p>
-    <p><strong>País:</strong> {{ userData.pais || '-' }}</p>
-  </!--div-->
 
   <div class="table-responsive">
     <table class="table table-striped table-bordered table-hover table-sm">

@@ -16,8 +16,10 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { FilterClientePipe } from '../../pipes/filter-cliente.pipe';
 import { FilterEmpresaPipe } from '../../pipes/filter-empresa.pipe';
 import { PresupuestosGuardadosComponent } from '../presupuestos-guardados/presupuestos-guardados.component';
-import { SavedPresupuesto } from '../../servicios/budget-storage.service';
+
 import { firstValueFrom } from 'rxjs';
+//import { SavedPresupuesto } from '../../servicios/budget-storage.service';
+import { SavedPresupuesto } from '../../servicios/budget.service';
 
 
 declare var bootstrap: any;
@@ -54,6 +56,7 @@ export class DashboardComponent implements OnInit{
   filtroCliente: string = '';
   filtroEmpresa: string = '';
   selectedEmpresaId: any = null;
+  selectedEmpresa: Empresa | null = null;
   empresaEditId: number | null = null; // ID de empresa en edición
   // --- EMPRESAS ---
 
@@ -92,7 +95,7 @@ export class DashboardComponent implements OnInit{
   empresaCuilCuit: string = '';
   clientName: string = '';
   clientContact: string = '';
-  budgetDate: string = '';
+  budgetDate: any = '';
   additionalDetailsClient: string = '';
 
   clientEmail: string = '';
@@ -398,7 +401,7 @@ getEmpresasByUserCode(): void {
             },
             error: (error) => {
               console.error('Error al cargar clientes por empresa:', error);
-              this.toastr.error(error.message || 'Error al cargar los clientes');
+             // this.toastr.error(error.message || 'Error al cargar los clientes');
               this.clientes = [];
               this.updatePaginatedClientes();
             }
@@ -406,7 +409,7 @@ getEmpresasByUserCode(): void {
         }
       },
       error: (error) => {
-        this.toastr.error(error.message || 'Error al cargar las empresas');
+        //this.toastr.error(error.message || 'Error al cargar las empresas');
         console.error('[EMPRESA] Error al cargar empresas:', error);
       }
     });
@@ -440,18 +443,21 @@ getEmpresasByUserCode(): void {
   getEmpresaPages(): number[] {
     return Array(this.totalEmpresaPages).fill(0).map((_, i) => i + 1);
   }
+
   setEmpresaPage(page: number): void {
     if (page >= 1 && page <= this.totalEmpresaPages) {
       this.currentEmpresaPage = page;
       this.updatePaginatedEmpresas();
     }
   }
+
   previousEmpresaPage(): void {
     if (this.currentEmpresaPage > 1) {
       this.currentEmpresaPage--;
       this.updatePaginatedEmpresas();
     }
   }
+
   nextEmpresaPage(): void {
     if (this.currentEmpresaPage < this.totalEmpresaPages) {
       this.currentEmpresaPage++;
@@ -893,7 +899,7 @@ loadTareasAgregadas(): void {
 
 
 
-    seleccionar(tarea: Tarea): void {
+    seleccionar0(tarea: Tarea): void {
   if (!this.clienteSeleccionado) {
     Swal.fire({
       icon: 'warning',
@@ -911,6 +917,61 @@ loadTareasAgregadas(): void {
   console.log('Tarea seleccionada:', this.tareaSeleccionada);
   this.abrirModal();
   }
+
+  seleccionar(tarea: Tarea): void {
+  // Verificar si hay empresa seleccionada
+  if (!this.selectedEmpresaId) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Falta selección de empresa',
+      text: 'Debe seleccionar una empresa primero.',
+      confirmButtonText: 'Aceptar',
+      customClass: {
+        popup: 'swal2-border-radius',
+        confirmButton: 'btn btn-primary'
+      }
+    });
+    return;
+  }
+
+  // Verificar si la empresa tiene clientes
+  if (!this.clientes || this.clientes.length === 0) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Sin clientes',
+      text: 'La empresa seleccionada no tiene clientes registrados. Por favor, agregue clientes primero.',
+      confirmButtonText: 'Aceptar',
+      customClass: {
+        popup: 'swal2-border-radius',
+        confirmButton: 'btn btn-primary'
+      }
+    });
+    return;
+  }
+
+  // Verificar si hay cliente seleccionado
+  if (!this.clienteSeleccionado) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Falta selección',
+      text: 'Debe seleccionar un cliente.',
+      confirmButtonText: 'Aceptar',
+      customClass: {
+        popup: 'swal2-border-radius',
+        confirmButton: 'btn btn-primary'
+      }
+    });
+    return;
+  }
+
+  this.tareaSeleccionada = {
+    ...tarea,
+    descripcion: '',
+    totalCost: this.calcularTotalCosto(tarea)
+  };
+  console.log('Tarea seleccionada:', this.tareaSeleccionada);
+  this.abrirModal();
+}
 
 
 
@@ -1123,7 +1184,7 @@ agregarTarea(): void {
   this.route.navigate(['/presupuesto']);
 }
 
-onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
+onCargarPresupuestoGuardado1(presupuesto: SavedPresupuesto): void {
   this.tareasAgregadas = (presupuesto.tareas || []).map(t => ({ ...t }));
   this.mostrarTabla = this.tareasAgregadas.length > 0;
   localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
@@ -1166,6 +1227,100 @@ onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
 
   this.toastr.success('Presupuesto cargado correctamente', presupuesto.name);
 }
+
+onCargarPresupuestoGuardado0(presupuesto: SavedPresupuesto): void {
+  console.log('Cargando presupuesto guardado:', presupuesto);
+
+  // Cargar tareas
+  this.tareasAgregadas = (presupuesto.tareas || []).map(t => ({ ...t }));
+  this.mostrarTabla = this.tareasAgregadas.length > 0;
+  localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+  this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+
+  // Cargar cliente
+  if (presupuesto.cliente) {
+    const cliente = this.clientes.find(c => c.id === presupuesto.cliente.id) || presupuesto.cliente;
+    this.clienteSeleccionado = cliente;
+    localStorage.setItem('selectedCliente', JSON.stringify(cliente));
+  } else {
+    this.clienteSeleccionado = null;
+    localStorage.removeItem('selectedCliente');
+  }
+
+  // ELIMINA TODO ESTE BLOQUE (empresa ya no existe en el presupuesto)
+  // if (presupuesto.empresa) { ... }
+
+  this.toastr.success('Presupuesto cargado correctamente', presupuesto.name);
+}
+
+onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
+  console.log('%cCARGANDO PRESUPUESTO GUARDADO', 'color: #4CAF50; font-weight: bold; font-size: 14px');
+  console.log('Presupuesto recibido:', {
+    id: presupuesto.id,
+    name: presupuesto.name,
+    cliente: presupuesto.cliente?.name || 'Sin cliente',
+    tareasCount: presupuesto.tareas?.length || 0
+  });
+
+  // 1. CARGAR TAREAS DEL PRESUPUESTO
+  this.tareasAgregadas = (presupuesto.tareas || []).map(tarea => ({
+    ...tarea,
+    // Aseguramos que totalCost sea número (por si viene como string)
+    totalCost: Number(tarea.totalCost) || 0
+  }));
+
+  this.mostrarTabla = this.tareasAgregadas.length > 0;
+
+  // Guardar en localStorage y servicio global
+  localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+  this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+
+  console.log('Tareas cargadas:', this.tareasAgregadas.length, 'tareas');
+
+  // 2. CARGAR CLIENTE DEL PRESUPUESTO
+  if (presupuesto.cliente && presupuesto.cliente.id) {
+    // Buscar si el cliente ya está en la lista cargada
+    const clienteEncontrado = this.clientes.find(c => c.id === presupuesto.cliente.id);
+
+    if (clienteEncontrado) {
+      this.clienteSeleccionado = clienteEncontrado;
+      console.log('Cliente encontrado en lista local:', clienteEncontrado.name);
+    } else {
+      // Si no está en la lista local, usar el que viene del backend
+      this.clienteSeleccionado = presupuesto.cliente;
+      console.log('Cliente cargado desde presupuesto:', this.clienteSeleccionado.name);
+    }
+
+    // Guardar en localStorage
+    localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
+  } else {
+    this.clienteSeleccionado = null;
+    localStorage.removeItem('selectedCliente');
+    console.warn('El presupuesto no tiene cliente asociado');
+  }
+
+  // 3. NO TOCAR LA EMPRESA
+  // La empresa actual ya está seleccionada por el usuario.
+  // No la cambiamos al cargar un presupuesto (sería confuso para el usuario).
+  console.log('Empresa actual mantenida:', this.selectedEmpresa?.name || 'Ninguna');
+
+  // 4. FEEDBACK AL USUARIO
+  this.toastr.success(
+    `Presupuesto "${presupuesto.name}" cargado correctamente`,
+    '¡Listo!',
+    { timeOut: 3000 }
+  );
+
+  // 5. SCROLL SUAVE A LA TABLA (opcional, mejora UX)
+  setTimeout(() => {
+    const tabla = document.querySelector('.table-responsive');
+    if (tabla) {
+      tabla.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 100);
+}
+
+
 
 toggleSavedBudgetsPanel(): void {
   this.showSavedBudgetsPanel = !this.showSavedBudgetsPanel;
@@ -2086,7 +2241,7 @@ onEmpresaSeleccionada1(empresa: any) {
   }*/
 
 
-   onEmpresaSeleccionada(empresa: any) {
+   onEmpresaSeleccionada1(empresa: any) {
     // Versión optimizada: obtiene clientes y tareas asociadas a cada cliente
     console.log('Empresa seleccionada:', empresa);
     this.selectedEmpresaId = empresa;
@@ -2135,6 +2290,178 @@ onEmpresaSeleccionada1(empresa: any) {
       imageElement.style.display = 'none';
     }
   }
+
+  onEmpresaSeleccionada(empresa: any) {
+  console.log('Empresa seleccionada:', empresa);
+  this.selectedEmpresaId = empresa;
+
+  // Limpiar cliente seleccionado al cambiar de empresa
+  this.clienteSeleccionado = null;
+
+  if (empresa && empresa.id) {
+    localStorage.setItem('selectedEmpresaId', String(empresa.id));
+
+    // Cargar datos de la empresa en el modal
+    this.empresaName = empresa.name || '';
+    this.empresaPhone = empresa.phone || '';
+    this.empresaEmail = empresa.email || '';
+    this.additionalDetailsEmpresa = empresa.description || '';
+    this.empresaWebsite = empresa.website || '';
+    this.empresaCuilCuit = empresa.cuilCuit || '';
+    this.empresaTikTok = empresa.tiktok || '';
+    this.empresaInstagram = empresa.instagram || '';
+    this.empresaFacebook = empresa.facebook || '';
+
+    // Actualizar imagen
+    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
+    if (empresa.logoUrl && imageElement) {
+      imageElement.src = empresa.logoUrl;
+      imageElement.style.display = 'block';
+    } else if (imageElement) {
+      imageElement.src = '#';
+      imageElement.style.display = 'none';
+    }
+
+    // Cargar clientes
+    this.clienteService.getClientesByEmpresaId(empresa.id).subscribe({
+      next: (clientes) => {
+        console.log('Clientes recibidos para empresa:', clientes);
+        this.clientes = clientes || [];
+        this.updatePaginatedClientes();
+
+        // Forzar detección de cambios si usas ChangeDetectionStrategy.OnPush
+        // this.cdr.detectChanges();
+
+        // Obtener tareas asociadas a cada cliente
+        if (this.clientes.length > 0) {
+          this.clientes.forEach(cliente => {
+            if (cliente.id) {
+              this.userTareaService.getTareasByClienteId(cliente.id).subscribe({
+                next: (tareas) => {
+                  console.log(`Tareas asociadas al cliente ${cliente.name} (ID: ${cliente.id}):`, tareas);
+                },
+                error: (error) => {
+                  console.error(`Error al cargar tareas para cliente ${cliente.name} (ID: ${cliente.id}):`, error);
+                }
+              });
+            }
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar clientes por empresa:', error);
+
+        // Limpiar clientes y cliente seleccionado
+        this.clientes = [];
+        this.clienteSeleccionado = null;
+        this.updatePaginatedClientes();
+
+        // Mensaje más amigable cuando no hay clientes
+       /* if (error.status === 404) {
+          this.toastr.info('Esta empresa no tiene clientes registrados aún', 'Sin clientes');
+        } else {
+          this.toastr.error(error.message || 'Error al cargar los clientes');
+        }*/
+
+        // Forzar detección de cambios
+        // this.cdr.detectChanges();
+      }
+    });
+  } else {
+    // Limpiar todo si no hay empresa seleccionada
+    this.selectedEmpresaId = null;
+    this.clienteSeleccionado = null;
+    localStorage.removeItem('selectedEmpresaId');
+    this.clientes = [];
+    this.updatePaginatedClientes();
+
+    // Limpiar campos del modal
+    this.empresaName = '';
+    this.empresaPhone = '';
+    this.empresaEmail = '';
+    this.additionalDetailsEmpresa = '';
+    this.empresaWebsite = '';
+    this.empresaCuilCuit = '';
+
+    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
+    if (imageElement) {
+      imageElement.src = '#';
+      imageElement.style.display = 'none';
+    }
+  }
+}
+
+onEmpresaSeleccionada0(empresa: Empresa) {
+  console.log('Empresa seleccionada:', empresa);
+  this.selectedEmpresa = empresa; // Objeto completo
+  this.selectedEmpresaId = empresa?.id || null; // ID separado
+
+  // Limpiar cliente seleccionado al cambiar de empresa
+  this.clienteSeleccionado = null;
+
+  if (empresa && empresa.id) {
+    localStorage.setItem('selectedEmpresaId', String(empresa.id));
+
+    // Cargar datos en el modal
+    this.empresaName = empresa.name || '';
+    this.empresaPhone = empresa.phone || '';
+    this.empresaEmail = empresa.email || '';
+    this.additionalDetailsEmpresa = empresa.description || '';
+    this.empresaWebsite = empresa.website || '';
+    this.empresaCuilCuit = empresa.cuilCuit || '';
+    this.empresaTikTok = empresa.tiktok || '';
+    this.empresaInstagram = empresa.instagram || '';
+    this.empresaFacebook = empresa.facebook || '';
+
+    // Actualizar imagen
+    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
+    if (empresa.logoUrl && imageElement) {
+      imageElement.src = empresa.logoUrl;
+      imageElement.style.display = 'block';
+    } else if (imageElement) {
+      imageElement.src = '#';
+      imageElement.style.display = 'none';
+    }
+
+    // Cargar clientes por empresa
+    this.clienteService.getClientesByEmpresaId(empresa.id).subscribe({
+      next: (clientes) => {
+        console.log('Clientes recibidos para empresa:', clientes);
+        this.clientes = clientes || [];
+        this.updatePaginatedClientes();
+      },
+      error: (error) => {
+        console.error('Error al cargar clientes por empresa:', error);
+        this.clientes = [];
+        this.clienteSeleccionado = null;
+        this.updatePaginatedClientes();
+      }
+    });
+  } else {
+    // Limpieza cuando no hay empresa
+    this.selectedEmpresa = null;
+    this.selectedEmpresaId = null;
+    this.clienteSeleccionado = null;
+    localStorage.removeItem('selectedEmpresaId');
+    this.clientes = [];
+    this.updatePaginatedClientes();
+
+    this.empresaName = '';
+    this.empresaPhone = '';
+    this.empresaEmail = '';
+    this.additionalDetailsEmpresa = '';
+    this.empresaWebsite = '';
+    this.empresaCuilCuit = '';
+
+    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
+    if (imageElement) {
+      imageElement.src = '#';
+      imageElement.style.display = 'none';
+    }
+  }
+}
+
+
 
 
       calculateRemainingTime(fechaVencimiento: string): void {

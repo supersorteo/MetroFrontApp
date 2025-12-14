@@ -46,9 +46,7 @@ const storedTareas = localStorage.getItem('tareasAgregadas');
    }
 
 
-setTareasAgregadas0(tareas: Tarea[]): void {
-    this.tareasAgregadasSubject.next(tareas);
-  }
+
 
 setTareasAgregadas(tareas: Tarea[]): void {
     this.tareasAgregadasSubject.next(tareas);

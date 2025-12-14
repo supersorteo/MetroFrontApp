@@ -1,11 +1,12 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Cliente } from '../../servicios/cliente.service';
 import { Empresa } from '../../servicios/empresa.service';
 import { UserTarea } from '../../servicios/user-tarea.service';
-import { BudgetStorageService, SavedPresupuesto } from '../../servicios/budget-storage.service';
+import { BudgetStorageService } from '../../servicios/budget-storage.service';
 import { ToastrService } from 'ngx-toastr';
+import { BudgetService, SavedPresupuesto } from '../../servicios/budget.service';
 
 declare const html2pdf: any;
 
@@ -16,7 +17,7 @@ declare const html2pdf: any;
   templateUrl: './presupuestos-guardados.component.html',
   styleUrl: './presupuestos-guardados.component.scss'
 })
-export class PresupuestosGuardadosComponent {
+export class PresupuestosGuardadosComponent implements OnInit{
   @Input() tareasActuales: UserTarea[] = [];
   @Input() clienteActual: Cliente | null = null;
   @Input() empresaActual: Empresa | null = null;
@@ -25,25 +26,64 @@ export class PresupuestosGuardadosComponent {
   nombreTemporal = '';
   filtro = '';
   presupuestos$ = this.budgetStorageService.budgets$;
-  maxItems = this.budgetStorageService.maxItems;
-
+  //maxItems = this.budgetStorageService.maxItems;
+  maxItems = 10;
+  presupuestos: SavedPresupuesto[] = [];
   constructor(
     private budgetStorageService: BudgetStorageService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private budgetService: BudgetService
   ) {}
 
-  get totalGuardados(): number {
-    return this.budgetStorageService.currentBudgets.length;
+
+  ngOnInit(): void {
+
+    /*console.log('%cPRESUPUESTOS GUARDADOS - INICIADO', 'color: #9C27B0; font-weight: bold');
+  if (this.clienteActual?.id) {
+    console.log('Cliente actual:', this.clienteActual.name, '(ID:', this.clienteActual.id, ')');
+    this.cargarPresupuestos();
+  } else {
+    console.warn('No hay cliente seleccionado aún');
+  }*/
+
+
+
+console.log('%cPRESUPUESTOS GUARDADOS - INICIADO', 'color: #9C27B0; font-weight: bold');
+
+  this.budgetService.presupuestos$.subscribe(presupuestos => {
+    this.presupuestos = presupuestos;
+    console.log('Presupuestos actualizados en componente:', this.presupuestos.length);
+  });
+
+  if (this.clienteActual?.id) {
+    this.cargarPresupuestos();
   }
 
-  get puedeGuardar(): boolean {
-    return !!this.tareasActuales?.length && this.totalGuardados < this.maxItems;
+}
+
+ngOnChanges(): void {
+  if (this.clienteActual?.id) {
+    console.log('%cCAMBIO DE CLIENTE DETECTADO → Recargando presupuestos', 'color: #FF9800');
+    this.cargarPresupuestos();
   }
 
-  get limiteAlcanzado(): boolean {
-    return this.totalGuardados >= this.maxItems;
-  }
 
+}
+
+
+cargarPresupuestos() {
+  if (!this.clienteActual?.id) return;
+
+  console.log('%cCARGANDO PRESUPUESTOS DEL CLIENTE ID:', 'color: #2196F3; font-size: 14px', this.clienteActual.id);
+  this.budgetService.cargarPresupuestosPorCliente(this.clienteActual.id).subscribe({
+    next: () => console.log('%cPresupuestos cargados y actualizados en el BehaviorSubject', 'color: #4CAF50'),
+    error: () => console.error('%cFalló la carga de presupuestos', 'color: #F44336')
+  });
+}
+
+
+
+  /*
   guardarPresupuestoActual() {
     const nombre = this.nombreTemporal.trim() || `Presupuesto ${new Date().toLocaleDateString()}`;
 
@@ -61,18 +101,79 @@ export class PresupuestosGuardadosComponent {
 
     this.toastr.success('Presupuesto guardado correctamente', nombre);
     this.nombreTemporal = '';
+  }*/
+
+  guardarPresupuestoActual() {
+  if (!this.clienteActual?.id) {
+    this.toastr.error('Selecciona un cliente');
+    return;
   }
+  if (this.tareasActuales.length === 0) {
+    this.toastr.error('Agrega tareas al presupuesto');
+    return;
+  }
+
+  const nombre = this.nombreTemporal.trim() || `Presupuesto ${new Date().toLocaleDateString()}`;
+  console.log('%cGUARDAR PRESUPUESTO', 'color: #FF9800; font-weight: bold');
+  console.log('Nombre:', nombre);
+  console.log('Cliente:', this.clienteActual.name, '(ID:', this.clienteActual.id, ')');
+  console.log('Tareas a guardar:', this.tareasActuales.map(t => ({ id: t.id, tarea: t.tarea })));
+
+  const payload = {
+    name: nombre,
+    cliente: { id: this.clienteActual.id },
+    tareas: this.tareasActuales.map(t => ({ id: t.id }))
+  };
+
+  this.budgetService.guardarPresupuesto(payload).subscribe({
+    next: (nuevo) => {
+      console.log('%cPresupuesto guardado y añadido a la lista local', 'color: #4CAF50; font-weight: bold', nuevo);
+      this.toastr.success('Presupuesto guardado');
+      this.nombreTemporal = '';
+    },
+    error: (err) => {
+      console.error('%cERROR al guardar presupuesto', 'color: #F44336', err);
+      this.toastr.error(err.error?.error || 'Error al guardar');
+    }
+  });
+}
 
   cargar(presupuesto: SavedPresupuesto) {
     this.cargarPresupuesto.emit(presupuesto);
   }
 
-  eliminar(presupuesto: SavedPresupuesto) {
+ /* eliminar(presupuesto: SavedPresupuesto) {
     this.budgetStorageService.removeBudget(presupuesto.id);
     this.toastr.info('Presupuesto eliminado', presupuesto.name);
+  }*/
+
+  eliminar(presupuesto: SavedPresupuesto) {
+  if (!presupuesto.id) return;
+
+  console.log('%cELIMINAR PRESUPUESTO ID:', 'color: #F44336; font-weight: bold', presupuesto.id, presupuesto.name);
+
+  this.budgetService.eliminarPresupuesto(presupuesto.id).subscribe({
+    next: () => {
+      console.log('%cPresupuesto eliminado correctamente', 'color: #4CAF50');
+      this.toastr.info('Presupuesto eliminado');
+    },
+    error: () => this.toastr.error('Error al eliminar')
+  });
+}
+
+ /*get totalGuardados0(): number {
+    return this.budgetStorageService.currentBudgets.length;
   }
 
-  get presupuestosFiltrados(): SavedPresupuesto[] {
+  get puedeGuardar0(): boolean {
+    return !!this.tareasActuales?.length && this.totalGuardados < this.maxItems;
+  }
+
+  get limiteAlcanzado0(): boolean {
+    return this.totalGuardados >= this.maxItems;
+  }
+
+  get presupuestosFiltrados0(): SavedPresupuesto[] {
     const termino = this.filtro.trim().toLowerCase();
     if (!termino) {
       return this.budgetStorageService.currentBudgets;
@@ -84,7 +185,33 @@ export class PresupuestosGuardadosComponent {
         (presupuesto.empresa?.name?.toLowerCase().includes(termino) ?? false)
       );
     });
+  }*/
+
+
+get totalGuardados(): number {
+  return this.presupuestos.length;
+}
+
+get puedeGuardar(): boolean {
+  return this.tareasActuales.length > 0 && this.totalGuardados < this.maxItems;
+}
+
+get limiteAlcanzado(): boolean {
+  return this.totalGuardados >= this.maxItems;
+}
+
+get presupuestosFiltrados(): SavedPresupuesto[] {
+  if (!this.filtro?.trim()) {
+    return this.presupuestos;
   }
+  const termino = this.filtro.toLowerCase();
+  return this.presupuestos.filter(p =>
+    p.name.toLowerCase().includes(termino) ||
+    p.cliente?.name?.toLowerCase().includes(termino)
+  );
+}
+
+
 
   async descargarPDF(presupuesto: SavedPresupuesto) {
     const printable = this.buildPrintableDocument(presupuesto);
@@ -114,7 +241,7 @@ export class PresupuestosGuardadosComponent {
     wrapper.innerHTML = `
       <h2 style="margin-bottom:8px;">${presupuesto.name}</h2>
       <p><strong>Creado:</strong> ${new Date(presupuesto.createdAt).toLocaleString()}</p>
-      <p><strong>Empresa:</strong> ${presupuesto.empresa?.name || 'Sin empresa'}</p>
+
       <p><strong>Cliente:</strong> ${presupuesto.cliente?.name || 'Sin cliente'}</p>
       <table style="width:100%; border-collapse: collapse; margin-top:16px;">
         <thead>

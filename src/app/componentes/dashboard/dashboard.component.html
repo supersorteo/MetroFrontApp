@@ -31,7 +31,7 @@
       <li class="w-100 mb-3 text-center timer-info" style="font-size: 18px; font-weight: bold; color: #092865; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">
         {{ remainingTime }}
       </li>
-    
+
       <li class="w-100 mt-3">
         <button (click)="abrirGoogleSheets2()" id="mano-de-obra-button2" class="btn btn-primary btn-block animate w-100">PDF valor vivienda JULIO/2025</button>
       </li>
@@ -119,6 +119,7 @@
 <!-- Modal Lista de Empresas -->
 
   <!-- <button class="btn btn-primary btn-block  w-100 animate" data-bs-toggle="modal" data-bs-target="#clientModal">DATOS DEL CLIENTE</button> -->
+
   <button class="btn btn-primary btn-block  w-100 animate" data-bs-toggle="modal" data-bs-target="#listaClientesModal">DATOS DEL CLIENTE</button>
       </div>
     </div>
@@ -588,7 +589,7 @@
             <input type="text" class="form-control" id="empresaFacebook" [(ngModel)]="empresaFacebook" placeholder="URL de tu pagina" />
           </div>
         </div>
-     
+
 
       </div>
       <div class="modal-footer d-flex justify-content-between">
@@ -741,6 +742,7 @@
     [tareasActuales]="tareasAgregadas"
     [clienteActual]="clienteSeleccionado"
     [empresaActual]="selectedEmpresaId"
+    [clienteActual]="clienteSeleccionado"
     (cargarPresupuesto)="onCargarPresupuestoGuardado($event)">
   </app-presupuestos-guardados>
 </div>
