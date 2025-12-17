@@ -20,7 +20,6 @@ export interface SavedPresupuesto {
   name: string;
   createdAt: string;
   cliente: Cliente;
-  //empresa: Empresa | null;
   empresa?: Empresa | null;
   tareas: UserTarea[];
 }
@@ -29,7 +28,9 @@ export interface SavedPresupuesto {
   providedIn: 'root'
 })
 export class BudgetService {
-private apiUrl = 'http://localhost:8080/api/presupuestos';
+//private apiUrl = 'http://localhost:8080/api/presupuestos';
+private apiUrl = 'https://adequate-education-production.up.railway.app/api/presupuestos';
+
 private presupuestosSubject = new BehaviorSubject<SavedPresupuesto[]>([]);
   presupuestos$ = this.presupuestosSubject.asObservable();
 
@@ -158,6 +159,30 @@ cargarPresupuestosPorCliente(clienteId: number): Observable<SavedPresupuesto[]> 
       })
     );
   }
+
+  updatePresupuesto(id: number, payload: any): Observable<SavedPresupuesto> {
+  console.log('%cACTUALIZANDO PRESUPUESTO...', 'color: #FF9800; font-weight: bold');
+  console.log('ID:', id);
+  console.log('Payload:', JSON.parse(JSON.stringify(payload)));
+
+  return this.http.put<SavedPresupuesto>(`${this.apiUrl}/${id}`, payload).pipe(
+    tap(actualizado => {
+      console.log('%cPRESUPUESTO ACTUALIZADO', 'color: #4CAF50; font-weight: bold', actualizado);
+
+      const actuales = this.presupuestosSubject.value;
+      const indice = actuales.findIndex(p => p.id === id);
+
+      if (indice !== -1) {
+        actuales[indice] = actualizado;
+        this.presupuestosSubject.next([...actuales]);
+      }
+    }),
+    catchError(err => {
+      console.error('%cERROR al actualizar', 'color: #F44336', err);
+      throw err;
+    })
+  );
+}
 
 
 }

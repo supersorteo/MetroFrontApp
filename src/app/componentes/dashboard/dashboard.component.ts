@@ -120,6 +120,7 @@ export class DashboardComponent implements OnInit{
   mostrarTabla: boolean = false;
   showSavedBudgetsPanel: boolean = false;
   tareasAgregadas: UserTarea[] = [];
+  tareasDelCliente: UserTarea[] = [];
   isSidebarOpen: boolean = false;
   showSocialFields: boolean = false;
   weatherLoading: boolean = false;
@@ -1365,7 +1366,7 @@ closeSavedBudgetsPanel(): void {
   });
 }
 
-eliminarTarea(id: number): void {
+eliminarTarea00(id: number): void {
   this.userTareaService.deleteUserTarea(id).subscribe({
     next: () => {
       this.tareasAgregadas = this.tareasAgregadas.filter(tarea => tarea.id !== id);
@@ -1381,6 +1382,46 @@ eliminarTarea(id: number): void {
     }
   });
 }
+
+eliminarTarea(id: number): void {
+  this.userTareaService.deleteUserTarea(id).subscribe({
+    next: () => {
+      // Éxito: tarea eliminada del backend
+      this.tareasAgregadas = this.tareasAgregadas.filter(t => t.id !== id);
+      this.actualizarTablaYStorage();
+      this.toastr.success('Tarea eliminada correctamente', 'Éxito');
+    },
+    error: (err) => {
+      const errorMessage = err.error?.error || err.message || 'Error desconocido';
+
+      // Caso específico: tarea asociada a presupuestos
+      if (errorMessage.includes('asociada') || errorMessage.includes('referenced') || errorMessage.includes('presupuesto')) {
+        this.toastr.warning(
+          'No se puede eliminar esta tarea porque está incluida en uno o más presupuestos guardados.\n' +
+          'Si quieres borrarla permanentemente, elimina primero los presupuestos que la contienen.',
+          'Tarea en uso',
+          { timeOut: 8000, closeButton: true }
+        );
+      } else {
+        this.toastr.error('Error al eliminar la tarea del servidor', 'Error');
+      }
+
+      // En ambos casos, eliminar localmente para mantener consistencia visual
+      //this.tareasAgregadas = this.tareasAgregadas.filter(t => t.id !== id);
+      this.actualizarTablaYStorage();
+    }
+  });
+}
+
+// Método auxiliar para evitar repetir código
+private actualizarTablaYStorage() {
+  this.mostrarTabla = this.tareasAgregadas.length > 0;
+  localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+}
+
+
+
+
 
       calcularTotalCosto0(tarea: Tarea): number {
         return (tarea.area || 0) * (tarea.costo || 0) * (1 - (tarea.descuento || 0) / 100);

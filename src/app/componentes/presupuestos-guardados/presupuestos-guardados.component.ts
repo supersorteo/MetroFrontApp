@@ -9,6 +9,7 @@ import { ToastrService } from 'ngx-toastr';
 import { BudgetService, SavedPresupuesto } from '../../servicios/budget.service';
 
 declare const html2pdf: any;
+declare const bootstrap: any
 
 @Component({
   selector: 'app-presupuestos-guardados',
@@ -22,6 +23,7 @@ export class PresupuestosGuardadosComponent implements OnInit{
   @Input() clienteActual: Cliente | null = null;
   @Input() empresaActual: Empresa | null = null;
   @Output() cargarPresupuesto = new EventEmitter<SavedPresupuesto>();
+  @Input() tareasDelCliente: UserTarea[] = [];
 
   nombreTemporal = '';
   filtro = '';
@@ -29,6 +31,13 @@ export class PresupuestosGuardadosComponent implements OnInit{
   //maxItems = this.budgetStorageService.maxItems;
   maxItems = 10;
   presupuestos: SavedPresupuesto[] = [];
+
+ presupuestoEditando: SavedPresupuesto | null = null;
+
+ modalPresupuestosGuardados: any; // Referencia al modal principal (opcional si usas ViewChild)
+ private bsModalRef: any;
+ tareaAAgregarId: number | null = null;
+
   constructor(
     private budgetStorageService: BudgetStorageService,
     private toastr: ToastrService,
@@ -83,27 +92,8 @@ cargarPresupuestos() {
 
 
 
-  /*
-  guardarPresupuestoActual() {
-    const nombre = this.nombreTemporal.trim() || `Presupuesto ${new Date().toLocaleDateString()}`;
 
-    const resultado = this.budgetStorageService.addBudget({
-      name: nombre,
-      cliente: this.clienteActual,
-      empresa: this.empresaActual,
-      tareas: JSON.parse(JSON.stringify(this.tareasActuales || []))
-    });
-
-    if (!resultado.ok) {
-      this.toastr.error(resultado.error || 'No se pudo guardar el presupuesto', 'Error');
-      return;
-    }
-
-    this.toastr.success('Presupuesto guardado correctamente', nombre);
-    this.nombreTemporal = '';
-  }*/
-
-  guardarPresupuestoActual() {
+  guardarPresupuestoActual0() {
   if (!this.clienteActual?.id) {
     this.toastr.error('Selecciona un cliente');
     return;
@@ -138,6 +128,50 @@ cargarPresupuestos() {
   });
 }
 
+guardarPresupuestoActual() {
+  if (!this.clienteActual?.id) {
+    this.toastr.error('Selecciona un cliente');
+    return;
+  }
+  if (this.tareasActuales.length === 0) {
+    this.toastr.error('Agrega tareas al presupuesto');
+    return;
+  }
+
+  const nombre = this.nombreTemporal.trim();
+  if (!nombre) {
+    this.toastr.error('El nombre del presupuesto es obligatorio');
+    return;
+  }
+
+  if (this.nombreYaExiste(nombre)) {
+    this.toastr.error('Ya existe un presupuesto con este nombre. Elige otro.');
+    return;
+  }
+
+   //const nombre = this.nombreTemporal.trim() || `Presupuesto ${new Date().toLocaleDateString()}`;
+  console.log('%cGUARDAR PRESUPUESTO', 'color: #FF9800; font-weight: bold');
+  console.log('Nombre:', nombre);
+  console.log('Cliente:', this.clienteActual.name, '(ID:', this.clienteActual.id, ')');
+  console.log('Tareas a guardar:', this.tareasActuales.map(t => ({ id: t.id, tarea: t.tarea })));
+
+  const payload = {
+    name: nombre || `Presupuesto ${new Date().toLocaleDateString()}`,
+    cliente: { id: this.clienteActual.id },
+    tareas: this.tareasActuales.map(t => ({ id: t.id }))
+  };
+
+  this.budgetService.guardarPresupuesto(payload).subscribe({
+    next: (nuevo) => {
+      this.toastr.success('Presupuesto guardado correctamente');
+      this.nombreTemporal = ''; // Limpiar el campo
+    },
+    error: (err) => {
+      this.toastr.error(err.error?.error || 'Error al guardar el presupuesto');
+    }
+  });
+}
+
   cargar(presupuesto: SavedPresupuesto) {
     this.cargarPresupuesto.emit(presupuesto);
   }
@@ -161,31 +195,7 @@ cargarPresupuestos() {
   });
 }
 
- /*get totalGuardados0(): number {
-    return this.budgetStorageService.currentBudgets.length;
-  }
 
-  get puedeGuardar0(): boolean {
-    return !!this.tareasActuales?.length && this.totalGuardados < this.maxItems;
-  }
-
-  get limiteAlcanzado0(): boolean {
-    return this.totalGuardados >= this.maxItems;
-  }
-
-  get presupuestosFiltrados0(): SavedPresupuesto[] {
-    const termino = this.filtro.trim().toLowerCase();
-    if (!termino) {
-      return this.budgetStorageService.currentBudgets;
-    }
-    return this.budgetStorageService.currentBudgets.filter(presupuesto => {
-      return (
-        presupuesto.name.toLowerCase().includes(termino) ||
-        (presupuesto.cliente?.name?.toLowerCase().includes(termino) ?? false) ||
-        (presupuesto.empresa?.name?.toLowerCase().includes(termino) ?? false)
-      );
-    });
-  }*/
 
 
 get totalGuardados(): number {
@@ -194,6 +204,33 @@ get totalGuardados(): number {
 
 get puedeGuardar(): boolean {
   return this.tareasActuales.length > 0 && this.totalGuardados < this.maxItems;
+}
+
+get puedeGuardarr(): boolean {
+  const nombreValido = this.nombreTemporal.trim().length > 0;
+  const nombreUnico = !this.nombreYaExiste(this.nombreTemporal);
+  return this.tareasActuales.length > 0 && nombreValido && nombreUnico;
+}
+
+nombreYaExiste(nombre: string): boolean {
+  if (!nombre.trim()) return false;
+  const nombreLower = nombre.trim().toLowerCase();
+  return this.presupuestosFiltrados.some(p =>
+    p.name.toLowerCase() === nombreLower
+  );
+}
+
+getMensajeBotonDeshabilitado(): string {
+  if (this.tareasActuales.length === 0) {
+    return 'Agrega tareas para guardar';
+  }
+  if (!this.nombreTemporal.trim()) {
+    return 'Ingresa un nombre para el presupuesto';
+  }
+  if (this.nombreYaExiste(this.nombreTemporal)) {
+    return 'Nombre ya utilizado';
+  }
+  return 'Guardar presupuesto';
 }
 
 get limiteAlcanzado(): boolean {
@@ -280,4 +317,108 @@ get presupuestosFiltrados(): SavedPresupuesto[] {
   private calcularTotal(presupuesto: SavedPresupuesto): number {
     return presupuesto.tareas.reduce((acc, tarea) => acc + (tarea.totalCost || 0), 0);
   }
+
+
+
+
+editarPresupuesto(presupuesto: SavedPresupuesto) {
+  console.log('%cEDITAR PRESUPUESTO SELECCIONADO', 'color: #FFC107; font-weight: bold; font-size: 14px');
+  console.log('ID:', presupuesto.id);
+  console.log('Nombre:', presupuesto.name);
+  console.log('Cliente:', presupuesto.cliente);
+  console.log('Cantidad de tareas:', presupuesto.tareas?.length || 0);
+  console.log('Tareas completas:', presupuesto.tareas);
+
+  // Copia profunda para editar sin afectar el original
+  this.presupuestoEditando = {
+    ...presupuesto,
+    cliente: { ...presupuesto.cliente },
+    tareas: presupuesto.tareas ? [...presupuesto.tareas] : []
+  };
+
+  const modal = new bootstrap.Modal(document.getElementById('editarPresupuestoModal')!);
+  modal.show();
+}
+
+quitarTareaEdicion(index: number) {
+  if (this.presupuestoEditando) {
+    this.presupuestoEditando.tareas.splice(index, 1);
+    console.log('Tarea quitada. Tareas restantes:', this.presupuestoEditando.tareas.length);
+  }
+}
+
+confirmarEdicion() {
+  if (!this.presupuestoEditando || !this.presupuestoEditando.name?.trim()) {
+    this.toastr.error('El nombre es obligatorio');
+    return;
+  }
+
+  const payload = {
+    name: this.presupuestoEditando.name.trim(),
+    cliente: { id: this.presupuestoEditando.cliente.id },
+    tareas: this.presupuestoEditando.tareas.map(t => ({ id: t.id }))
+  };
+
+  console.log('%cENVIANDO ACTUALIZACIÓN AL BACKEND', 'color: #FF9800');
+  console.log('Payload:', payload);
+
+  this.budgetService.updatePresupuesto(this.presupuestoEditando.id!, payload).subscribe({
+    next: (actualizado) => {
+      console.log('%cPRESUPUESTO ACTUALIZADO', 'color: #4CAF50', actualizado);
+      this.toastr.success('Presupuesto actualizado correctamente');
+      bootstrap.Modal.getInstance(document.getElementById('editarPresupuestoModal')!)?.hide();
+    },
+    error: (err) => {
+      console.error('%cERROR AL ACTUALIZAR', 'color: #F44336', err);
+      this.toastr.error(err.error?.error || 'Error al actualizar');
+    }
+  });
+}
+
+
+
+get tareasDisponiblesParaAgregar(): UserTarea[] {
+  if (!this.presupuestoEditando || !this.tareasDelCliente) return [];
+
+
+  const idsActuales = this.presupuestoEditando.tareas.map(t => t.id);
+
+  return this.tareasDelCliente.filter(t => !idsActuales.includes(t.id));
+
+}
+
+agregarTareaAlPresupuesto() {
+  if (!this.tareaAAgregarId || !this.presupuestoEditando) return;
+
+  this.budgetService.agregarTareaAPresupuesto(this.presupuestoEditando.id!, this.tareaAAgregarId).subscribe({
+    next: (presupuestoActualizado) => {
+      this.presupuestoEditando = presupuestoActualizado;
+      this.tareaAAgregarId = null;
+      this.toastr.success('Tarea agregada al presupuesto');
+    },
+    error: (err) => {
+      this.toastr.error(err.error?.error || 'Error al agregar tarea');
+    }
+  });
+}
+
+onTareaSeleccionadaChange() {
+  if (this.tareaAAgregarId === null) {
+    console.log('%cTarea deseleccionada', 'color: gray');
+    return;
+  }
+
+  const tareaSeleccionada = this.tareasDelCliente.find(t => t.id === this.tareaAAgregarId);
+  if (tareaSeleccionada) {
+    console.log('%cTAREA SELECCIONADA PARA AGREGAR', 'color: #FFC107; font-weight: bold; font-size: 14px');
+    console.log('ID:', tareaSeleccionada.id);
+    console.log('Nombre:', tareaSeleccionada.tarea);
+    console.log('Costo:', tareaSeleccionada.costo);
+    console.log('Área:', tareaSeleccionada.area);
+    console.log('Total Cost:', tareaSeleccionada.totalCost);
+    console.log('Descripción:', tareaSeleccionada.descripcion);
+    console.log('Objeto completo:', tareaSeleccionada);
+  }
+}
+
 }

@@ -20,8 +20,8 @@ export interface Cliente {
 })
 export class ClienteService {
 
-  private apiUrl = 'http://localhost:8080/api/clientes';
-  //private apiUrl = 'https://metrobackapp-production.up.railway.app/api/clientes'
+  //private apiUrl = 'http://localhost:8080/api/clientes';
+  private apiUrl = 'https://adequate-education-production.up.railway.app/api/clientes'
 
   constructor(private http: HttpClient) { }
 
