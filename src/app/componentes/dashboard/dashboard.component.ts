@@ -1383,7 +1383,7 @@ eliminarTarea00(id: number): void {
   });
 }
 
-eliminarTarea(id: number): void {
+eliminarTarea11(id: number): void {
   this.userTareaService.deleteUserTarea(id).subscribe({
     next: () => {
       // Éxito: tarea eliminada del backend
@@ -1408,6 +1408,62 @@ eliminarTarea(id: number): void {
 
       // En ambos casos, eliminar localmente para mantener consistencia visual
       //this.tareasAgregadas = this.tareasAgregadas.filter(t => t.id !== id);
+      this.actualizarTablaYStorage();
+    }
+  });
+}
+
+eliminarTarea(id: number): void {
+  this.userTareaService.deleteUserTarea(id).subscribe({
+    next: () => {
+      // Éxito: tarea eliminada del backend
+      this.tareasAgregadas = this.tareasAgregadas.filter(t => t.id !== id);
+      this.actualizarTablaYStorage();
+      this.toastr.success('Tarea eliminada correctamente', 'Éxito');
+    },
+    error: (err) => {
+      console.error('Error completo al eliminar tarea:', err); // Para debug
+
+      // 🔥 Extraer el mensaje del backend de forma robusta
+      let mensajeBackend = 'Error al eliminar la tarea del servidor';
+
+      // Caso 1: Backend devuelve { error: "mensaje" }
+      if (err.error && typeof err.error === 'object' && err.error.error) {
+        mensajeBackend = err.error.error;
+      }
+      // Caso 2: Backend devuelve { message: "mensaje" }
+      else if (err.error && typeof err.error === 'object' && err.error.message) {
+        mensajeBackend = err.error.message;
+      }
+      // Caso 3: Backend devuelve string plano
+      else if (typeof err.error === 'string') {
+        mensajeBackend = err.error;
+      }
+      // Caso 4: Fallback del statusText o message
+      else if (err.message) {
+        mensajeBackend = err.message;
+      }
+
+      // 🔥 Ahora sí: detectar si la tarea está asociada a presupuestos
+      if (
+        mensajeBackend.toLowerCase().includes('presupuesto') ||
+        mensajeBackend.toLowerCase().includes('asociada') ||
+        mensajeBackend.toLowerCase().includes('referenced') ||
+        mensajeBackend.toLowerCase().includes('usada')
+      ) {
+        this.toastr.warning(
+          'No se puede eliminar esta tarea porque está incluida en uno o más presupuestos guardados.\n' +
+          'Si deseas borrarla permanentemente, elimina primero los presupuestos que la contienen.',
+          'Tarea en uso',
+          { timeOut: 10000, closeButton: true, enableHtml: true }
+        );
+      } else {
+        // Cualquier otro error
+        this.toastr.error(mensajeBackend, 'Error');
+      }
+
+      // Opcional: mantener consistencia visual aunque no se elimine del backend
+      // this.tareasAgregadas = this.tareasAgregadas.filter(t => t.id !== id);
       this.actualizarTablaYStorage();
     }
   });

@@ -54,10 +54,16 @@ getTareasByUserCode(userCode: string): Observable<UserTarea[]> {
       .pipe(catchError(this.handleError));
   }
 
-  deleteUserTarea(id: number): Observable<void> {
+  deleteUserTarea0(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`)
       .pipe(catchError(this.handleError));
   }
+
+  deleteUserTarea(id: number): Observable<void> {
+  return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  // 🔥 QUITA .pipe(catchError(this.handleError))
+  // Deja el error crudo para que el componente lo maneje
+}
 
   private handleError(error: any): Observable<never> {
     let errorMessage = 'Error desconocido';
