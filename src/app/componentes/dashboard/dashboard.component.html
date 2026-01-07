@@ -22,7 +22,7 @@
         <div class="weather-temp">{{ currentWeather.temperature | number:'1.0-0' }}°C</div>
         <div class="weather-desc">{{ weatherDescription(currentWeather.weathercode) }}</div>
         <small class="text-muted d-block">{{ currentWeather.location }}</small>
-        <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#weatherModal" (click)="loadWeather()">
+        <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#weathehayrModal" (click)="loadWeather()">
           Ver pronóstico
         </button>
       </div>
@@ -208,7 +208,7 @@
       <tbody>
         <tr *ngFor="let tarea of tareasAgregadas; let i = index">
           <td class="text-center">
-            <button *ngIf="tarea.id" (click)="eliminarTarea(tarea.id)" class="btn btn-outline-danger btn-sm rounded-circle">X</button>
+            <button *ngIf="tarea.id" (click)="solicitarConfirmacionEliminarTarea(tarea)" class="btn btn-outline-danger btn-sm rounded-circle">X</button>
           </td>
           <td>{{ tarea.tarea }}</td>
           <!--td>{{ tarea.rubro }}</td-->
@@ -236,7 +236,30 @@
 </div>
 
 
-  <div class="modal fade" id="miModal" tabindex="-1" aria-labelledby="exampleModalLabel1" aria-hidden="true">
+  <div class="modal fade" id="confirmDeleteTareaModal" tabindex="-1" aria-labelledby="confirmDeleteTareaLabel" aria-hidden="true" (hidden.bs.modal)="limpiarConfirmacionEliminarTarea()">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmDeleteTareaLabel">Eliminar tarea</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0">
+          Estas seguro de eliminar la tarea
+          <span *ngIf="tareaDescripcionAEliminar; else tareaGenerica" class="text-primary fw-bold">{{ tareaDescripcionAEliminar }}</span>
+          <ng-template #tareaGenerica>esta tarea</ng-template>
+          ? Esta accion no se puede deshacer.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" (click)="confirmarEliminarTarea()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="miModal" tabindex="-1" aria-labelledby="exampleModalLabel1" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -248,8 +271,7 @@
               <div class="mb-3">
                 <!--label-- for="tarea" class="col-form-label">Tarea:</!--label-->
                 <textarea [(ngModel)]="tareaSeleccionada.tarea" name="tarea" class="form-control" rows="3"
-                  style="margin-bottom: 20px; font-size: 14px; white-space: pre-wrap; overflow-wrap: break-word; background-image: linear-gradient(to top, #c7d0e9, #d7dbee, #e5e7f4, #f3f3f9, #ffffff); color: #092865; padding: 10px; resize: none; font-weight: bold;"
-                  readonly></textarea>
+                  style="margin-bottom: 20px; font-size: 14px; white-space: pre-wrap; overflow-wrap: break-word; background-image: linear-gradient(to top, #c7d0e9, #d7dbee, #e5e7f4, #f3f3f9, #ffffff); color: #092865; padding: 10px; resize: none; font-weight: bold;"></textarea>
               </div>
               <!--div class="mb-3">
                 <label for="rubro" class="col-form-label">Rubro:</label>
@@ -458,41 +480,43 @@
         <div class="container-fluid">
           <div class="row mb-3">
             <div class="col-12 d-flex flex-wrap align-items-center gap-3">
-              <ng-select
-                [items]="clientes"
-                bindLabel="name"
-                [(ngModel)]="clienteSeleccionado"
-                (ngModelChange)="seleccionarCliente($event); loadTareasAgregadas()"
-                [ngClass]="{'is-invalid': !clienteSeleccionado}"
-                placeholder="Selecciona un cliente"
-                [clearable]="false"
-                style="height: 40px; font-weight: bold; font-size: 16px; border-radius: 15px; box-shadow: 0 2px 8px #0001; min-width: 220px;"
-              >
-                <ng-template ng-option-tmp let-item="item" let-selected="selected">
-                  <span>{{ item.name }}</span>
-                  <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
-                </ng-template>
-              </ng-select>
+              <div class="text-muted small">Selecciona un cliente tocando su tarjeta.</div>
               <input type="text" class="form-control w-auto" placeholder="Filtrar cliente..." [(ngModel)]="filtroCliente" style="max-width: 250px;">
             </div>
           </div>
           <div class="row">
             <div class="col-12" *ngFor="let cliente of paginatedClientes | filterCliente:filtroCliente">
-              <div class="card mb-3 w-100 shadow-sm"
-              style="width: 100%; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.25), 0 1.5px 8px rgba(50,50,105,0.25); border: 2.5px solid #4b5154;"
+              <div
+                class="card mb-3 w-100 shadow-sm cliente-card"
+                [class.cliente-card--selected]="clienteSeleccionado?.id === cliente.id"
+                (click)="seleccionarCliente(cliente); loadTareasAgregadas()"
+                role="button"
+                tabindex="0"
               >
-                <div class="card-body position-relative">
-                  <h5 class="card-title" style="font-size: 1.2rem; font-weight: bold;">{{ cliente.name }}</h5>
+                <div class="card-body position-relative cliente-card__body">
+                  <div class="cliente-card__header">
+                    <h5 class="card-title cliente-card__title">{{ cliente.name }}</h5>
+                    <label class="cliente-check">
+                      <input
+                        type="checkbox"
+                        [checked]="clienteSeleccionado?.id === cliente.id"
+                        (click)="$event.stopPropagation(); seleccionarCliente(cliente); loadTareasAgregadas()"
+                      >
+                      <div class="checkmark"></div>
+                    </label>
+                  </div>
+                  <div *ngIf="clienteSeleccionado?.id === cliente.id" class="cliente-card__selected">
+                    Cliente seleccionado
+                  </div>
                   <p class="card-text mb-1"><strong>Tel:</strong> {{ cliente.contact }}</p>
                   <p class="card-text mb-1"><strong>Email:</strong> {{ cliente.email }}</p>
                   <p class="card-text mb-1"><strong>CUIT/Clave:</strong> {{ cliente.clave }}</p>
                   <p class="card-text mb-1"><strong>Dirección:</strong> {{ cliente.direccion }}</p>
                   <p class="card-text mb-1"><strong>Fecha:</strong> {{ cliente.budgetDate }}</p>
                   <p class="card-text mb-2"><strong>Detalles:</strong> {{ cliente.additionalDetails }}</p>
-                  <div class="d-flex justify-content-end gap-1 mt-2">
-                    <button class="btn btn-danger btn-xs px-3 py-1" style="font-size: 0.85rem; min-width: 80px;" (click)="cliente.id && solicitarConfirmacionEliminar(cliente.id)">Eliminar</button>
-                    <span style="width: 10px;"></span>
-                    <button class="btn btn-success btn-xs px-3 py-1" style="font-size: 0.85rem; min-width: 80px;" *ngIf="cliente.id !== undefined" (click)="editarCliente(cliente.id)">Editar</button>
+                  <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
+                    <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action" (click)="cliente.id && solicitarConfirmacionEliminar(cliente.id)">Eliminar</button>
+                    <button class="btn btn-success btn-xs px-3 py-1 cliente-card__action" *ngIf="cliente.id !== undefined" (click)="editarCliente(cliente.id)">Editar</button>
                   </div>
                 </div>
               </div>
@@ -727,7 +751,10 @@
 <div class="floating-toolbar-container" *ngIf="!isSidebarOpen">
   <div class="floating-toolbar">
     <button class="btn btn-primary toolbar-btn" (click)="verPresupuesto()">VER PRESUPUESTO</button>
-    <button class="btn btn-secondary toolbar-btn" (click)="toggleSavedBudgetsPanel()">GUARDAR PRESUPUESTO</button>
+    <button class="btn btn-secondary toolbar-btn" (click)="toggleSavedBudgetsPanel()">
+      <i class="bi bi-save me-2" aria-hidden="true"></i>
+      GUARDAR PRESUPUESTO
+    </button>
   </div>
 </div>
 
@@ -808,29 +835,47 @@
 
 
  <!-- Modal Seleccionar provincia -->
-    <div class="modal fade provincia-modal" id="provinciaModal" tabindex="-1" aria-labelledby="provinciaModalLabel" aria-hidden="true">
+    <div class="modal fade provincia-modal" id="provinciaModal" tabindex="-1" aria-labelledby="modalZonaLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header border-0 pb-0">
-            <div>
-              <p class="text-uppercase text-muted mb-1 small">Configuración</p>
-              <h1 class="modal-title fs-5 fw-bold" id="provinciaModalLabel">Seleccionar provincia</h1>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content modal-zona">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalZonaLabel">Seleccionar Provincia</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
-            <div class="mb-4">
-              <label for="selectProvincia" class="form-label fw-semibold">Provincia</label>
-              <select id="selectProvincia" class="form-select form-select-lg" [(ngModel)]="provinciaSeleccionada" name="provinciaSeleccionada">
-                <option value="" disabled selected>Seleccione una provincia</option>
-                <option *ngFor="let provincia of provincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
-              </select>
-            </div>
+            <h6 id="zonaBloqueadaMensaje" class="text-danger mt-2" style="display: block;">
+              Esta función solo se activa con código de acceso.
+            </h6>
+
+            <select class="form-select" id="provinciaSelect" [(ngModel)]="provinciaSeleccionada" name="provinciaSeleccionada">
+              <option value="" disabled selected>Seleccione una provincia...</option>
+              <option *ngFor="let provincia of provincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
+            </select>
+
             <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el país seleccionado.</div>
-          </div>
-          <div class="modal-footer border-0 pt-0">
-            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cerrar</button>
-            <button type="button" class="btn btn-primary px-4">Guardar</button>
+
+            <div class="mt-3">
+              <h6 class="modal-zona-title">valor sugerido de mano de obra pura sin cargas sociales</h6>
+              <hr>
+              <div class="modal-zona-card">
+                <span class="modal-zona-label">Zona 1:</span>
+                Buenos Aires, Santa Fe, Mendoza, Córdoba, Tucumán, Salta, Jujuy, Entre Ríos, Corrientes, Formosa,
+                La Pampa, San Luis, La Rioja, Santiago del Estero, Chaco, Misiones, Catamarca, San Juan.
+              </div>
+              <div class="modal-zona-card">
+                <span class="modal-zona-label">Zona 2:</span>
+                Neuquén, Río Negro, Chubut.
+              </div>
+              <div class="modal-zona-card">
+                <span class="modal-zona-label">Zona 3:</span>
+                Santa Cruz.
+              </div>
+              <div class="modal-zona-card">
+                <span class="modal-zona-label">Zona 4:</span>
+                Tierra del Fuego.
+              </div>
+              <hr>
+            </div>
           </div>
         </div>
       </div>

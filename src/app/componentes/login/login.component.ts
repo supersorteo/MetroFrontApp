@@ -226,6 +226,18 @@ login(): void {
     window.open('https://metroapp.site/calculadora_materiales.html', '_blank');
     }
 
+  activarModoPrueba(): void {
+    const trialUserData = {
+      pais: 'Argentina',
+      provincia: 'Buenos Aires',
+      fechaVencimiento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    };
+    localStorage.setItem('trialMode', 'true');
+    localStorage.setItem('userCode', 'trial');
+    localStorage.setItem('userData', JSON.stringify(trialUserData));
+    this.route.navigate(['dashboard']);
+  }
+
 
 
 openWebsite(): void {

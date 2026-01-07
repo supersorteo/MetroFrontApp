@@ -34,6 +34,13 @@ interface AccessCode {
   fechaVencimiento: string;
 }
 
+interface ColorScheme {
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  textColor: string;
+  tableTextColor: string;
+}
 
 
 @Component({
@@ -70,6 +77,9 @@ export class DashboardComponent implements OnInit{
 
   clienteAEliminar: number | null = null;
   mostrarModalConfirmacion = false;
+
+  tareaAEliminar: number | null = null;
+  tareaDescripcionAEliminar: string | null = null;
 
   editarCliente(id: number) {
     this.route.navigate([`/editar-clientes`, id]);
@@ -127,6 +137,16 @@ export class DashboardComponent implements OnInit{
   weatherError: string = '';
   currentWeather: { temperature: number; windspeed: number; weathercode: number; location: string } | null = null;
   dailyForecast: { date: Date; max: number; min: number; code: number }[] = [];
+  colorSchemeMessageVisible = false;
+  readonly defaultColorScheme: ColorScheme = {
+    primaryColor: '#409eff',
+    secondaryColor: '#deecea',
+    accentColor: '#5d8eea',
+    textColor: '#0b69a6',
+    tableTextColor: '#132d6b'
+  };
+  colorScheme: ColorScheme = { ...this.defaultColorScheme };
+  private readonly colorSchemeStorageKey = 'metroColorScheme';
 
 
     tareaSeleccionada: Tarea = {
@@ -222,6 +242,7 @@ export class DashboardComponent implements OnInit{
       }
     }, 1000);
     this.obtenerTareas();
+    this.colorScheme = this.loadColorScheme();
 
     console.log('Estado inicial del formulario:', {
       clientName: this.clientName,
@@ -1331,6 +1352,44 @@ closeSavedBudgetsPanel(): void {
   this.showSavedBudgetsPanel = false;
 }
 
+openColorSchemeModal(): void {
+  const empresaModalEl = document.getElementById('exampleModal');
+  if (empresaModalEl && empresaModalEl.classList.contains('show')) {
+    const empresaModalInstance = bootstrap.Modal.getInstance(empresaModalEl) || new bootstrap.Modal(empresaModalEl);
+    empresaModalInstance.hide();
+  }
+  const colorSchemeModalEl = document.getElementById('colorSchemeModal');
+  if (colorSchemeModalEl) {
+    const colorSchemeModalInstance = bootstrap.Modal.getInstance(colorSchemeModalEl) || new bootstrap.Modal(colorSchemeModalEl);
+    colorSchemeModalInstance.show();
+  }
+}
+
+saveColorScheme(): void {
+  try {
+    localStorage.setItem(this.colorSchemeStorageKey, JSON.stringify(this.colorScheme));
+    this.colorSchemeMessageVisible = true;
+    setTimeout(() => {
+      this.colorSchemeMessageVisible = false;
+    }, 2000);
+  } catch (error) {
+    console.error('No se pudo guardar el esquema de colores.', error);
+  }
+}
+
+private loadColorScheme(): ColorScheme {
+  try {
+    const storedScheme = localStorage.getItem(this.colorSchemeStorageKey);
+    if (storedScheme) {
+      const parsedScheme = JSON.parse(storedScheme);
+      return { ...this.defaultColorScheme, ...parsedScheme };
+    }
+  } catch (error) {
+    console.error('No se pudo cargar el esquema de colores.', error);
+  }
+  return { ...this.defaultColorScheme };
+}
+
       buscar(event: Event): void {
     const filtro = (event.target as HTMLInputElement).value.toLowerCase();
     this.tareasFiltradas = this.tareas.filter(tarea =>
@@ -1411,6 +1470,43 @@ eliminarTarea11(id: number): void {
       this.actualizarTablaYStorage();
     }
   });
+}
+
+solicitarConfirmacionEliminarTarea(tarea: UserTarea): void {
+  if (!tarea?.id) {
+    return;
+  }
+  this.tareaAEliminar = tarea.id;
+  this.tareaDescripcionAEliminar = tarea.tarea || tarea.descripcion || null;
+  const modalElement = document.getElementById('confirmDeleteTareaModal');
+  if (!modalElement) {
+    this.eliminarTarea(tarea.id);
+    return;
+  }
+  const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+  modalInstance.show();
+}
+
+confirmarEliminarTarea(): void {
+  if (this.tareaAEliminar == null) {
+    return;
+  }
+  const id = this.tareaAEliminar;
+  this.tareaAEliminar = null;
+  this.tareaDescripcionAEliminar = null;
+  this.eliminarTarea(id);
+  const modalElement = document.getElementById('confirmDeleteTareaModal');
+  if (modalElement) {
+    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+    if (modalInstance) {
+      modalInstance.hide();
+    }
+  }
+}
+
+limpiarConfirmacionEliminarTarea(): void {
+  this.tareaAEliminar = null;
+  this.tareaDescripcionAEliminar = null;
 }
 
 eliminarTarea(id: number): void {
@@ -2170,7 +2266,7 @@ saveClientData0(form: NgForm): void {
   loadUserCode(): void {
     this.userCode = localStorage.getItem('userCode') || '';
     const storedUserData = localStorage.getItem('userData');
-    console.log('Datos en localStorage (userData):', storedUserData ? JSON.parse(storedUserData) : null); // Depuración
+    console.log('Datos en localStorage (userData):', storedUserData ? JSON.parse(storedUserData) : null);
     if (this.userCode) {
       this.fetchUserData();
     } else {

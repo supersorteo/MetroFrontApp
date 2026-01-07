@@ -42,32 +42,141 @@
   border-radius: 16px;
 }
 
-#provinciaModal .modal-content {
-  border-radius: 18px;
-  border: none;
-  box-shadow: 0 25px 60px rgba(13, 49, 104, 0.25);
-  background: linear-gradient(180deg, #639cc4 0%, #eef3ff 100%);
-  padding: 16px 18px 18px;
-}
-
-#provinciaModal .modal-body {
-  padding: 24px;
-}
-
-#provinciaModal .modal-footer {
-  padding: 0 24px 24px;
-}
-
-#provinciaModal .form-select {
+.provincia-modal__content {
   border-radius: 16px;
-  padding: 0.75rem 1rem;
-  box-shadow: inset 0 0 0 1px rgba(26, 71, 146, 0.15);
-  font-weight: 600;
-  color: #0b224a;
+  border: 1px solid rgba(30, 68, 160, 0.15);
+  box-shadow: 0 18px 45px rgba(12, 44, 110, 0.18);
+  overflow: hidden;
 }
 
-#provinciaModal .modal-header .text-muted {
-  letter-spacing: 0.12em;
+.provincia-modal__header {
+
+  background: linear-gradient(135deg, #2b5fd6, #1e4fc9);
+
+  border: 0;
+
+  padding: 18px 22px;
+
+}
+
+
+.provincia-modal__title {
+
+  color: #ffffff;
+
+  font-size: 1.2rem;
+
+  font-weight: 700;
+
+  margin: 0;
+
+}
+
+
+
+.provincia-modal__close {
+
+  filter: invert(1);
+
+  opacity: 0.9;
+
+}
+
+
+
+.provincia-modal__body {
+
+  background: #f7faff;
+
+  padding: 20px 22px 24px;
+
+}
+
+
+.provincia-modal__notice {
+
+  color: #e13b3b;
+
+  font-weight: 600;
+
+  margin-bottom: 14px;
+
+}
+
+
+.provincia-modal__select {
+
+  margin-bottom: 18px;
+
+}
+
+
+
+.provincia-modal__dropdown {
+
+  background: #eef2f7;
+
+  border: 1px solid rgba(30, 68, 160, 0.2);
+
+  border-radius: 18px;
+
+  box-shadow: 0 10px 24px rgba(22, 52, 108, 0.12);
+
+  padding: 10px 14px;
+
+}
+
+
+
+.provincia-modal__section-title {
+
+  color: #2b65d5;
+
+  font-size: 0.95rem;
+
+  font-weight: 600;
+
+  margin: 8px 0 16px;
+
+}
+
+
+
+.provincia-modal__zones {
+
+  display: grid;
+
+  gap: 12px;
+
+}
+
+
+.provincia-modal__zone {
+
+  background: #ffffff;
+
+  border: 1px solid rgba(30, 68, 160, 0.12);
+
+  border-radius: 12px;
+
+  color: #1f4bc1;
+
+  font-weight: 600;
+
+  padding: 14px 16px;
+
+  box-shadow: 0 10px 20px rgba(24, 44, 80, 0.08);
+
+}
+
+
+.provincia-modal__footer {
+
+  background: #f7faff;
+
+  border: 0;
+
+  padding: 12px 22px 18px;
 }
 
 /* Centrado vertical para todos los modales */
@@ -404,10 +513,8 @@ p {
 .mt-3 {
  // margin-top: 1rem !important;
   justify-content: center;
-  display: flex;
   font-weight: bold;
   color: rgb(44, 121, 208);
-  box-shadow: rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px;
 }
 
 .rounded-circle {
@@ -673,6 +780,112 @@ p {
   padding: 1.5rem;
 }
 
+.cliente-card {
+  border: 1px solid rgba(32, 82, 160, 0.18);
+  border-left: 6px solid #3a74d9;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5ff 100%);
+  box-shadow: 0 12px 28px rgba(12, 42, 90, 0.18);
+}
+
+.cliente-card__body {
+  padding: 18px 20px;
+}
+
+.cliente-card__title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1f4bc1;
+  margin-bottom: 10px;
+}
+
+.cliente-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cliente-check {
+  --input-focus: #2d8cf0;
+  --input-out-of-focus: #111;
+  --bg-color: #111;
+  --bg-color-alt: #7e7e7e;
+  --main-color: #fefefe;
+  position: relative;
+  cursor: pointer;
+}
+
+.cliente-check input {
+  position: absolute;
+  opacity: 0;
+}
+
+.cliente-check .checkmark {
+  width: 30px;
+  height: 30px;
+  position: relative;
+  top: 0;
+  left: 0;
+  border: 2px solid var(--main-color);
+  border-radius: 5px;
+  box-shadow: 4px 4px var(--main-color);
+  background-color: var(--input-out-of-focus);
+  transition: all 0.3s;
+}
+
+.cliente-check input:checked ~ .checkmark {
+  background-color: var(--input-focus);
+}
+
+.cliente-check .checkmark:after {
+  content: "";
+  width: 7px;
+  height: 15px;
+  position: absolute;
+  top: 2px;
+  left: 8px;
+  display: none;
+  border: solid var(--main-color);
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+
+.cliente-check input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.cliente-card .card-text {
+  color: #2d3c55;
+  margin-bottom: 6px;
+}
+
+.cliente-card .card-text strong {
+  color: #0b2a59;
+  font-weight: 700;
+}
+
+.cliente-card__actions {
+  flex-wrap: wrap;
+}
+
+.cliente-card__action {
+  min-width: 90px;
+  font-size: 0.85rem;
+  border-radius: 999px;
+}
+
+.cliente-card__selected {
+  color: #1f9d55;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.cliente-card--selected {
+  border-color: #2f6ddf;
+  box-shadow: 0 0 0 2px rgba(47, 109, 223, 0.25), 0 14px 30px rgba(12, 42, 90, 0.2);
+}
+
 .card-title {
   font-size: 1.25rem;
   margin-bottom: 1rem;
@@ -863,8 +1076,8 @@ p {
   right: 0;
   bottom: -100%;
   max-height: 80vh;
-  background: #a0afc4;
-  border-radius: 24px 24px 0 0;
+  background: #f1f7ff;
+  border-radius: 10px 10px 0 0;
   box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2);
   padding: 24px;
   z-index: 1055;
@@ -1019,4 +1232,166 @@ p {
   padding: 10px 26px;
   font-weight: 600;
   box-shadow: 0 10px 25px rgba(15, 40, 80, 0.2);
+}
+
+.color-scheme-body {
+  background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9);
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.18) 0 2px 4px;
+  padding: 12px;
+}
+
+.color-scheme-text {
+  font-size: 12px;
+  text-align: center;
+}
+
+.color-preview {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: rgba(50, 50, 93, 0.15) 0 13px 27px -5px, rgba(0, 0, 0, 0.15) 0 8px 16px -8px;
+  font-size: 12px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.color-preview-info {
+  padding: 15px;
+}
+
+.color-preview-table {
+  padding: 0 15px 15px 15px;
+}
+
+.color-preview-table-header {
+  border-radius: 6px 6px 0 0;
+  display: grid;
+  font-size: 11px;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 6px 0;
+  text-align: center;
+}
+
+.color-preview-table-row {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  display: grid;
+  font-size: 11px;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 6px 0;
+  text-align: center;
+}
+
+.color-preview-total {
+  font-weight: bold;
+  padding: 10px 15px;
+  text-align: right;
+}
+
+.provincia-modal__content {
+  border-radius: 16px;
+  border: 1px solid rgba(30, 68, 160, 0.15);
+  box-shadow: 0 18px 45px rgba(12, 44, 110, 0.18);
+  overflow: hidden;
+}
+
+.provincia-modal__header {
+  background: linear-gradient(135deg, #2b5fd6, #1e4fc9);
+  border: 0;
+  padding: 18px 22px;
+}
+
+.provincia-modal__title {
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.provincia-modal__close {
+  filter: invert(1);
+  opacity: 0.9;
+}
+
+.provincia-modal__body {
+  background: #f7faff;
+  padding: 20px 22px 24px;
+}
+
+.provincia-modal__notice {
+  color: #e13b3b;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.provincia-modal__select {
+  margin-bottom: 18px;
+}
+
+.provincia-modal__dropdown {
+  background: #eef2f7;
+  border: 1px solid rgba(30, 68, 160, 0.2);
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(22, 52, 108, 0.12);
+  padding: 10px 14px;
+}
+
+.provincia-modal__section-title {
+  color: #2b65d5;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 8px 0 16px;
+}
+
+.provincia-modal__zones {
+  display: grid;
+  gap: 12px;
+}
+
+.provincia-modal__zone {
+  background: #ffffff;
+  border: 1px solid rgba(30, 68, 160, 0.12);
+  border-radius: 12px;
+  color: #1f4bc1;
+  font-weight: 600;
+  padding: 14px 16px;
+  box-shadow: 0 10px 20px rgba(24, 44, 80, 0.08);
+}
+
+.provincia-modal__footer {
+  background: #f7faff;
+  border: 0;
+  padding: 12px 22px 18px;
+}
+
+.modal-content.modal-zona {
+  background: linear-gradient(135deg, #ffffff 0%, #eef4ff 40%, #dbe8ff 100%);
+  border: 1px solid rgba(52, 105, 181, 0.2);
+  padding: 6px;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.modal-zona-title {
+  color: #2463d3;
+  font-weight: 700;
+}
+
+.modal-zona-card {
+  display: block;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #dbe8ff;
+  border-radius: 12px;
+  color: #1f5fd6;
+  font-weight: 600;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 6px 14px rgba(36, 99, 211, 0.1);
+}
+
+.modal-zona-label {
+  font-weight: 800;
 }
