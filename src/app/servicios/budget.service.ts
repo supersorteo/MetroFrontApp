@@ -28,8 +28,8 @@ export interface SavedPresupuesto {
   providedIn: 'root'
 })
 export class BudgetService {
-private apiUrl = 'http://localhost:8080/api/presupuestos';
-//private apiUrl = 'https://adequate-education-production.up.railway.app/api/presupuestos';
+//private apiUrl = 'http://localhost:8080/api/presupuestos';
+private apiUrl = 'https://adequate-education-production.up.railway.app/api/presupuestos';
 
 private presupuestosSubject = new BehaviorSubject<SavedPresupuesto[]>([]);
   presupuestos$ = this.presupuestosSubject.asObservable();

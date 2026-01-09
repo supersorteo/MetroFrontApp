@@ -24,8 +24,8 @@ export interface Tarea {
   providedIn: 'root'
 })
 export class TareaService {
-private apiUrl = 'http://localhost:8080/api/tareas'
-//private apiUrl = 'https://adequate-education-production.up.railway.app/api/tareas';
+//private apiUrl = 'http://localhost:8080/api/tareas'
+private apiUrl = 'https://adequate-education-production.up.railway.app/api/tareas';
 
   constructor(private http: HttpClient) { }
 

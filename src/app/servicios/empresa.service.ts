@@ -22,10 +22,10 @@ export interface Empresa {
 })
 export class EmpresaService {
 
-  private apiUrl = 'http://localhost:8080/api/empresas';
-  //private apiUrl = 'https://adequate-education-production.up.railway.app/api/empresas'
-  private uploadUrl = 'http://localhost:8080/api/upload/image';
-  //private uploadUrl = 'https://adequate-education-production.up.railway.app/api/upload/image';
+  //private apiUrl = 'http://localhost:8080/api/empresas';
+  private apiUrl = 'https://adequate-education-production.up.railway.app/api/empresas'
+  //private uploadUrl = 'http://localhost:8080/api/upload/image';
+  private uploadUrl = 'https://adequate-education-production.up.railway.app/api/upload/image';
   constructor(private http: HttpClient) { }
 
   getEmpresaById(id: number): Observable<Empresa> {
