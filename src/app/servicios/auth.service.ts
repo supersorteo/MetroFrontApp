@@ -112,6 +112,8 @@ export class AuthService {
   localStorage.removeItem('userEmail');
   localStorage.removeItem('userData'); // Añadir esta línea
   localStorage.clear();
+  localStorage.setItem('trialMode', 'false');
+
   //this.router.navigate(['/login']);
 }
 

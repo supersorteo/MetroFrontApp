@@ -275,6 +275,16 @@ if (this.trialMode) {
     }, 0);
   }
 
+   ngOnDestroy(): void {
+    if (localStorage.getItem('trialMode') === 'true') {
+      localStorage.setItem('trialMode', 'false');
+      // opcional: limpiar también datos demo si querés
+      // localStorage.removeItem('demoEmpresas');
+      // localStorage.removeItem('demoTareas');
+      // localStorage.removeItem('demoEmpresaLogo');
+    }
+  }
+
   private isTrialMode(): boolean {
   return localStorage.getItem('trialMode') === 'true';
 }

@@ -258,7 +258,7 @@ login(): void {
     }
   ];
 
-  const demoTareas = Array.from({ length: 10 }).map((_, i) => ({
+  const demoTareas1 = Array.from({ length: 10 }).map((_, i) => ({
     id: i + 1,
     tarea: `Tarea demo ${i + 1}`,
     costo: 1234,
@@ -270,6 +270,130 @@ login(): void {
     area: 1,
     totalCost: 1234
   }));
+
+  const demoTareas = [
+  {
+    id: 1,
+    tarea: 'BASE ZAPATA ARMADO Y LLENADO Hº (1,00X1,00X0,80)',
+    costo: 1234,
+    rubro: 'Demo',
+    categoria: 'Demo',
+    pais: 'Argentina',
+    descripcion: '',
+    descuento: 0,
+    area: 1,
+    totalCost: 1234
+  },
+  {
+    id: 2,
+    tarea: 'BASE ZAPATA ARMADO Y LLENADO Hº X M3',
+    costo: 1234,
+    rubro: 'Demo',
+    categoria: 'Demo',
+    pais: 'Argentina',
+    descripcion: '',
+    descuento: 0,
+    area: 1,
+    totalCost: 1234
+  },
+  {
+    id: 3,
+    tarea: 'BASE ZAPATA SOLO CAVADO 0,80X0,80X1M',
+    costo: 1234,
+    rubro: 'Demo',
+    categoria: 'Demo',
+    pais: 'Argentina',
+    descripcion: '',
+    descuento: 0,
+    area: 1,
+    totalCost: 1234
+  },
+  {
+    id: 4,
+    tarea: 'BASE COAT',
+    costo: 1234,
+    rubro: 'Demo',
+    categoria: 'Demo',
+    pais: 'Argentina',
+    descripcion: '',
+    descuento: 0,
+    area: 1,
+    totalCost: 1234
+  },
+  {
+    id: 5,
+    tarea: 'BASE Hº LIMPIEZA 5 CM DE ESPESOR Hº 180 A200 KG/M3 + CENTRADO ARMADURA',
+    costo: 1234,
+    rubro: 'Demo',
+    categoria: 'Demo',
+    pais: 'Argentina',
+    descripcion: '',
+    descuento: 0,
+    area: 1,
+    totalCost: 1234
+  },
+  {
+    id: 6,
+    tarea: 'BASES ARMADO (GANDES OBRAS) X CANTIDAD 0,8X0,8 (PARRILLA Y ATADO PIE ARMADURA DE COLUMNA APLOMADA EN EXCAVACION)',
+    costo: 1234,
+    rubro: 'Demo',
+    categoria: 'Demo',
+    pais: 'Argentina',
+    descripcion: '',
+    descuento: 0,
+    area: 1,
+    totalCost: 1234
+  },
+  {
+    id: 7,
+    tarea: 'BASES ZAPATAS LLENADO M3 (GRANDES OBRAS)',
+    costo: 1234,
+    rubro: 'Demo',
+    categoria: 'Demo',
+    pais: 'Argentina',
+    descripcion: '',
+    descuento: 0,
+    area: 1,
+    totalCost: 1234
+  },
+  {
+    id: 8,
+    tarea: 'BIDE ARMADO GRIFERIA',
+    costo: 1234,
+    rubro: 'Demo',
+    categoria: 'Demo',
+    pais: 'Argentina',
+    descripcion: '',
+    descuento: 0,
+    area: 1,
+    totalCost: 1234
+  },
+  {
+    id: 9,
+    tarea: 'BOCA DE CALDERA',
+    costo: 1234,
+    rubro: 'Demo',
+    categoria: 'Demo',
+    pais: 'Argentina',
+    descripcion: '',
+    descuento: 0,
+    area: 1,
+    totalCost: 1234
+  },
+  {
+    id: 10,
+    tarea: 'BOCA DE CIRCUITO',
+    costo: 1234,
+    rubro: 'Demo',
+    categoria: 'Demo',
+    pais: 'Argentina',
+    descripcion: '',
+    descuento: 0,
+    area: 1,
+    totalCost: 1234
+  }
+];
+
 
   localStorage.setItem('trialMode', 'true');
   localStorage.setItem('userCode', 'demo');
