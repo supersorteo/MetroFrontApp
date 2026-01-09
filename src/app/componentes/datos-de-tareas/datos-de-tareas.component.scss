@@ -7,10 +7,10 @@
 .empresa-asociada,
 .cliente-asociado,
 .user-info {
-  background: linear-gradient(180deg, #595eefd5, #ffffff, #e3e3e3);
+  background: var(--scheme-secondary, #deecea);
   border-radius: 18px;
   box-shadow: 0 12px 35px rgba(15, 40, 80, 0.15);
-  color: #000;
+  color: var(--scheme-text, #0b69a6);
   margin: 0 auto 32px;
   padding: 32px;
   width: 100%;
@@ -66,7 +66,7 @@
 }
 
 .empresa-nombre {
-  color: #2b55fe;
+  color: var(--scheme-text, #0b69a6);
   font-size: 2.2rem;
   font-weight: 800;
   grid-column: 1 / -1;
@@ -76,19 +76,19 @@
 .empresa-telefono,
 .empresa-email,
 .empresa-descripcion {
-  color: #2b55fe;
+  color: var(--scheme-text, #0b69a6);
   font-size: 1rem;
 }
 
 .empresa-cuil,
 .empresa-website,
 .empresa-social {
-  color: #265a8f;
+  color: var(--scheme-text, #0b69a6);
   font-size: 0.95rem;
 }
 
 .cliente-datos {
-  color: #0b69a6;
+  color: var(--scheme-text, #0b69a6);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -104,13 +104,13 @@
 .cliente-contacto,
 .cliente-budgetDate,
 .cliente-additionalDetails {
-  color: #074874;
+  color: var(--scheme-text, #0b69a6);
   font-size: 1rem;
 }
 
 .empresa-user-divider {
   border: none;
-  border-top: 2px solid #b3c6e0;
+  border-top: 2px solid var(--scheme-accent, #5d8eea);
   margin: 18px 0;
 }
 
@@ -137,7 +137,7 @@
 }
 
 .total-label {
-  color: #0b69a6;
+  color: var(--scheme-primary, #0b69a6);
   font-size: 22px;
   font-weight: bold;
 }
@@ -172,7 +172,7 @@ table {
 }
 
 thead {
-  background: linear-gradient(135deg, #1f8e55, #3580dd);
+  background: var(--scheme-accent, #5d8eea);
   color: #fff;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -199,7 +199,7 @@ tbody tr:hover {
 
 tbody td {
   border-bottom: 1px solid rgba(13, 96, 164, 0.08);
-  color: #1d3557;
+  color: var(--scheme-table-text, #1d3557);
   padding: 14px 16px;
 }
 
@@ -215,7 +215,7 @@ tfoot td {
 
 .table-total {
   background: rgba(11, 94, 215, 0.08);
-  color: #0b5ed7;
+  color: var(--scheme-primary, #0b5ed7);
   font-size: 1.05rem;
 }
 
@@ -272,4 +272,59 @@ tfoot td {
   .user-info {
     padding: 20px;
   }
+}
+
+.color-scheme-body {
+  background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9);
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.18) 0 2px 4px;
+  padding: 12px;
+}
+
+.color-scheme-text {
+  font-size: 12px;
+  text-align: center;
+}
+
+.color-preview {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: rgba(50, 50, 93, 0.15) 0 13px 27px -5px, rgba(0, 0, 0, 0.15) 0 8px 16px -8px;
+  font-size: 12px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.color-preview-info {
+  padding: 15px;
+}
+
+.color-preview-table {
+  padding: 0 15px 15px 15px;
+}
+
+.color-preview-table-header {
+  border-radius: 6px 6px 0 0;
+  display: grid;
+  font-size: 11px;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 6px 0;
+  text-align: center;
+}
+
+.color-preview-table-row {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  display: grid;
+  font-size: 11px;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 6px 0;
+  text-align: center;
+}
+
+.color-preview-total {
+  font-weight: bold;
+  padding: 10px 15px;
+  text-align: right;
 }

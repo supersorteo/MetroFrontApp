@@ -226,6 +226,63 @@ login(): void {
     window.open('https://metroapp.site/calculadora_materiales.html', '_blank');
     }
 
+  activarModoPrueba0(): void {
+    const trialUserData = {
+      pais: 'Argentina',
+      provincia: 'Buenos Aires',
+      fechaVencimiento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    };
+    localStorage.setItem('trialMode', 'true');
+    localStorage.setItem('userCode', 'trial');
+    localStorage.setItem('userData', JSON.stringify(trialUserData));
+    this.route.navigate(['dashboard']);
+  }
+
+  activarModoPrueba(): void {
+     console.log('[DEMO] Click en PROBÁ EL SISTEMA');
+  const trialUserData = {
+    pais: 'Argentina',
+    provincia: 'Buenos Aires',
+    fechaVencimiento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+  };
+
+  const demoEmpresa = [
+    {
+      id: 1234,
+      name: 'Empresa Demo',
+      phone: '11 0000-0000',
+      email: 'demo@metroapp.site',
+      description: 'Empresa de prueba',
+      logoUrl: 'assets/demo-logo/demo.jpeg',
+      userCode: 'demo'
+    }
+  ];
+
+  const demoTareas = Array.from({ length: 10 }).map((_, i) => ({
+    id: i + 1,
+    tarea: `Tarea demo ${i + 1}`,
+    costo: 1234,
+    rubro: 'Demo',
+    categoria: 'Demo',
+    pais: 'Argentina',
+    descripcion: '',
+    descuento: 0,
+    area: 1,
+    totalCost: 1234
+  }));
+
+  localStorage.setItem('trialMode', 'true');
+  localStorage.setItem('userCode', 'demo');
+  localStorage.setItem('userData', JSON.stringify(trialUserData));
+  localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresa));
+  localStorage.setItem('demoTareas', JSON.stringify(demoTareas));
+  localStorage.removeItem('selectedEmpresaId');
+  localStorage.removeItem('selectedCliente');
+  localStorage.removeItem('tareasAgregadas');
+ console.log('[DEMO] Datos demo guardados, redirigiendo a dashboard');
+  this.route.navigate(['dashboard']);
+}
+
 
 
 openWebsite(): void {

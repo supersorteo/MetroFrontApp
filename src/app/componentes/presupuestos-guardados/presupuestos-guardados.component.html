@@ -62,9 +62,7 @@
 
 <div class="saved-budgets-card">
   <div class="saved-budgets-header">
-    <div>
-      <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
-    </div>
+   
     <div class="save-controls">
       <input
         class="form-control"
@@ -79,8 +77,11 @@
         [disabled]="!puedeGuardarr"
         [title]="!puedeGuardarr ? getMensajeBotonDeshabilitado() : 'Guardar presupuesto'"
       >
-        Guardar presupuesto
+        Guardar
       </button>
+       <div>
+      <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
+    </div>
     </div>
 
     @if (nombreTemporal.trim() && nombreYaExiste(nombreTemporal)) {

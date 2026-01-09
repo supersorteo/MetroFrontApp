@@ -34,6 +34,13 @@ interface AccessCode {
   fechaVencimiento: string;
 }
 
+interface ColorScheme {
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  textColor: string;
+  tableTextColor: string;
+}
 
 
 @Component({
@@ -70,6 +77,9 @@ export class DashboardComponent implements OnInit{
 
   clienteAEliminar: number | null = null;
   mostrarModalConfirmacion = false;
+
+  tareaAEliminar: number | null = null;
+  tareaDescripcionAEliminar: string | null = null;
 
   editarCliente(id: number) {
     this.route.navigate([`/editar-clientes`, id]);
@@ -127,6 +137,16 @@ export class DashboardComponent implements OnInit{
   weatherError: string = '';
   currentWeather: { temperature: number; windspeed: number; weathercode: number; location: string } | null = null;
   dailyForecast: { date: Date; max: number; min: number; code: number }[] = [];
+  colorSchemeMessageVisible = false;
+  readonly defaultColorScheme: ColorScheme = {
+    primaryColor: '#409eff',
+    secondaryColor: '#deecea',
+    accentColor: '#5d8eea',
+    textColor: '#0b69a6',
+    tableTextColor: '#132d6b'
+  };
+  colorScheme: ColorScheme = { ...this.defaultColorScheme };
+  private readonly colorSchemeStorageKey = 'metroColorScheme';
 
 
     tareaSeleccionada: Tarea = {
@@ -154,6 +174,13 @@ export class DashboardComponent implements OnInit{
   totalPages: number = 1;
 
   logoUrl: string = '';
+  trialMode: boolean = false;
+
+  private demoTareasKey(clienteId: number | null | undefined): string {
+  return `demoTareasCliente_${clienteId ?? 'sinCliente'}`;
+}
+
+
   constructor(
     private authService: AuthService,
     private route:Router,
@@ -167,6 +194,14 @@ export class DashboardComponent implements OnInit{
     private http: HttpClient ){}
 
   ngOnInit() {
+
+    this.trialMode = this.isTrialMode();
+
+if (this.trialMode) {
+  this.loadDemoData();
+  return;
+}
+
     this.loadUserCode();
     this.loadTareasAgregadas();
 
@@ -222,6 +257,7 @@ export class DashboardComponent implements OnInit{
       }
     }, 1000);
     this.obtenerTareas();
+    this.colorScheme = this.loadColorScheme();
 
     console.log('Estado inicial del formulario:', {
       clientName: this.clientName,
@@ -238,6 +274,35 @@ export class DashboardComponent implements OnInit{
       console.log('Fecha forzada para binding:', this.budgetDate);
     }, 0);
   }
+
+  private isTrialMode(): boolean {
+  return localStorage.getItem('trialMode') === 'true';
+}
+
+
+  private loadDemoData(): void {
+  const demoUserData = localStorage.getItem('userData');
+  this.userData = demoUserData ? JSON.parse(demoUserData) : { pais: 'Argentina', provincia: 'Buenos Aires' };
+  this.userCode = 'demo';
+
+  const demoEmpresas = localStorage.getItem('demoEmpresas');
+  this.empresas = demoEmpresas ? JSON.parse(demoEmpresas) : [];
+  this.updatePaginatedEmpresas();
+  this.selectedEmpresaId = this.empresas[0] || null;
+
+  const demoTareas = localStorage.getItem('demoTareas');
+  const tareas = demoTareas ? JSON.parse(demoTareas) : [];
+  this.tareas = tareas;
+  //this.tareasFiltradas = tareas;
+  this.tareasFiltradas = this.tareas.map(t => ({ ...t, costo: 1234, totalCost: 1234 }));
+
+
+  this.tareasAgregadas = [];
+  this.mostrarTabla = false;
+
+  this.remainingTime = 'Modo demo';
+}
+
 
    seleccionarCliente(cliente: Cliente): void {
   this.clienteSeleccionado = cliente;
@@ -320,6 +385,15 @@ export class DashboardComponent implements OnInit{
 
 
 getEmpresasByUserCode(): void {
+
+  if (this.trialMode) {
+  const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
+  const demoEmpresas = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
+  this.empresas = demoEmpresas;
+  this.updatePaginatedEmpresas();
+  return;
+}
+
     if (!this.userCode) {
       this.toastr.error('Código de usuario no encontrado', 'Error');
       console.error('[EMPRESA] Código de usuario no encontrado');
@@ -504,6 +578,7 @@ getEmpresasByUserCode(): void {
 
 
   deleteCliente(id: number): void {
+
     this.clienteService.deleteCliente(id).subscribe({
       next: () => {
         this.toastr.success('Cliente eliminado correctamente', 'Éxito');
@@ -523,6 +598,20 @@ getEmpresasByUserCode(): void {
   }
 
   solicitarConfirmacionEliminar(id: number): void {
+if (this.trialMode) {
+  const key = `demoCliente_${id}`;
+  localStorage.removeItem(key);
+
+  this.clientes = this.clientes.filter(cliente => cliente.id !== id);
+  if (this.paginatedClientes.length === 1 && this.currentPage > 1) {
+    this.currentPage--;
+  }
+  this.updatePaginatedClientes();
+  this.toastr.success('Cliente eliminado en modo demo', 'Éxito');
+  return;
+}
+
+
     Swal.fire({
       title: '¿Estás seguro?',
       text: '¿Deseas eliminar este cliente? Esta acción no se puede deshacer.',
@@ -875,6 +964,23 @@ loadTareasAgregadas0(): void {
 
 loadTareasAgregadas(): void {
     // Cargar desde localStorage como respaldo inicial
+
+  /*if (this.trialMode) {
+    const storedTareas = localStorage.getItem('tareasAgregadas');
+    this.tareasAgregadas = storedTareas ? JSON.parse(storedTareas) : [];
+    this.mostrarTabla = this.tareasAgregadas.length > 0;
+    return;
+  }*/
+
+if (this.trialMode) {
+  const key = this.demoTareasKey(this.clienteSeleccionado?.id ?? null);
+  const stored = localStorage.getItem(key);
+  this.tareasAgregadas = stored ? JSON.parse(stored) : [];
+  this.mostrarTabla = this.tareasAgregadas.length > 0;
+  return;
+}
+
+
     const storedTareas = localStorage.getItem('tareasAgregadas');
     if (storedTareas) {
       this.tareasAgregadas = JSON.parse(storedTareas);
@@ -1112,7 +1218,45 @@ agregarTarea1(): void {
 
 
 agregarTarea(): void {
+
+/*if (this.trialMode && this.tareasAgregadas.length >= 3) {
+  this.toastr.info('En modo demo solo podés agregar 3 tareas', 'Modo demo');
+  return;
+}*/
+
+if (this.trialMode) {
+  const clienteId = this.clienteSeleccionado?.id ?? null;
+
+  if (this.tareasAgregadas.length >= 3) {
+    this.toastr.info('En modo demo solo podés agregar 3 tareas', 'Modo demo');
+    return;
+  }
+
+  const nuevaTarea: UserTarea = {
+    ...this.tareaSeleccionada,
+    clienteId: clienteId ?? 0,
+    pais: this.userData?.pais || 'Argentina',
+    rubro: this.tareaSeleccionada.rubro || '',
+    categoria: this.tareaSeleccionada.categoria || '',
+    totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
+  };
+
+  this.tareasAgregadas.push(nuevaTarea);
+  this.mostrarTabla = true;
+
+  localStorage.setItem(this.demoTareasKey(clienteId), JSON.stringify(this.tareasAgregadas));
+  localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+
+  this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+  this.toastr.success('Tarea agregada en modo demo');
+  this.resetTareaSeleccionada();
+  return;
+}
+
+
+
     const clienteId = this.clienteSeleccionado?.id ?? null;
+
     const nuevaTarea: UserTarea = {
       ...this.tareaSeleccionada,
       clienteId: clienteId ?? 0,
@@ -1331,6 +1475,44 @@ closeSavedBudgetsPanel(): void {
   this.showSavedBudgetsPanel = false;
 }
 
+openColorSchemeModal(): void {
+  const empresaModalEl = document.getElementById('exampleModal');
+  if (empresaModalEl && empresaModalEl.classList.contains('show')) {
+    const empresaModalInstance = bootstrap.Modal.getInstance(empresaModalEl) || new bootstrap.Modal(empresaModalEl);
+    empresaModalInstance.hide();
+  }
+  const colorSchemeModalEl = document.getElementById('colorSchemeModal');
+  if (colorSchemeModalEl) {
+    const colorSchemeModalInstance = bootstrap.Modal.getInstance(colorSchemeModalEl) || new bootstrap.Modal(colorSchemeModalEl);
+    colorSchemeModalInstance.show();
+  }
+}
+
+saveColorScheme(): void {
+  try {
+    localStorage.setItem(this.colorSchemeStorageKey, JSON.stringify(this.colorScheme));
+    this.colorSchemeMessageVisible = true;
+    setTimeout(() => {
+      this.colorSchemeMessageVisible = false;
+    }, 2000);
+  } catch (error) {
+    console.error('No se pudo guardar el esquema de colores.', error);
+  }
+}
+
+private loadColorScheme(): ColorScheme {
+  try {
+    const storedScheme = localStorage.getItem(this.colorSchemeStorageKey);
+    if (storedScheme) {
+      const parsedScheme = JSON.parse(storedScheme);
+      return { ...this.defaultColorScheme, ...parsedScheme };
+    }
+  } catch (error) {
+    console.error('No se pudo cargar el esquema de colores.', error);
+  }
+  return { ...this.defaultColorScheme };
+}
+
       buscar(event: Event): void {
     const filtro = (event.target as HTMLInputElement).value.toLowerCase();
     this.tareasFiltradas = this.tareas.filter(tarea =>
@@ -1343,6 +1525,56 @@ closeSavedBudgetsPanel(): void {
       tarea.descuento.toString().includes(filtro)
     );
   }
+
+openClientModal0(): void {
+  if (this.trialMode) {
+    const demoClientes = Object.keys(localStorage)
+      .filter(key => key.startsWith('demoCliente_'))
+      .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
+      .filter(c => c && c.empresaId === this.selectedEmpresaId?.id);
+
+    if (demoClientes.length >= 1) {
+      this.toastr.info('En modo demo solo podés crear 1 cliente', 'Modo demo');
+      return;
+    }
+  }
+
+  const modalElement = document.getElementById('clientModal');
+  if (!modalElement) {
+    return;
+  }
+  const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+  modalInstance.show();
+}
+
+openClientModal(): void {
+  if (this.trialMode) {
+    const demoClientes = Object.keys(localStorage)
+      .filter(key => key.startsWith('demoCliente_'))
+      .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
+      .filter(c => c && c.empresaId === this.selectedEmpresaId?.id);
+
+    if (demoClientes.length >= 1) {
+      this.toastr.info('En modo demo solo podés crear 1 cliente', 'Modo demo');
+      return;
+    }
+  }
+
+  const listaModalEl = document.getElementById('listaClientesModal');
+  if (listaModalEl) {
+    const listaModal = bootstrap.Modal.getInstance(listaModalEl);
+    listaModal?.hide();
+  }
+
+  setTimeout(() => {
+    const modalElement = document.getElementById('clientModal');
+    if (!modalElement) {
+      return;
+    }
+    const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+    modalInstance.show();
+  }, 200);
+}
 
 
 
@@ -1413,7 +1645,55 @@ eliminarTarea11(id: number): void {
   });
 }
 
+solicitarConfirmacionEliminarTarea(tarea: UserTarea): void {
+  if (!tarea?.id) {
+    return;
+  }
+  this.tareaAEliminar = tarea.id;
+  this.tareaDescripcionAEliminar = tarea.tarea || tarea.descripcion || null;
+  const modalElement = document.getElementById('confirmDeleteTareaModal');
+  if (!modalElement) {
+    this.eliminarTarea(tarea.id);
+    return;
+  }
+  const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+  modalInstance.show();
+}
+
+confirmarEliminarTarea(): void {
+  if (this.tareaAEliminar == null) {
+    return;
+  }
+  const id = this.tareaAEliminar;
+  this.tareaAEliminar = null;
+  this.tareaDescripcionAEliminar = null;
+  this.eliminarTarea(id);
+  const modalElement = document.getElementById('confirmDeleteTareaModal');
+  if (modalElement) {
+    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+    if (modalInstance) {
+      modalInstance.hide();
+    }
+  }
+}
+
+limpiarConfirmacionEliminarTarea(): void {
+  this.tareaAEliminar = null;
+  this.tareaDescripcionAEliminar = null;
+}
+
 eliminarTarea(id: number): void {
+
+  if (this.trialMode) {
+  this.tareasAgregadas = this.tareasAgregadas.filter(t => t.id !== id);
+  const key = this.demoTareasKey(this.clienteSeleccionado?.id ?? null);
+  localStorage.setItem(key, JSON.stringify(this.tareasAgregadas));
+  localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+  this.mostrarTabla = this.tareasAgregadas.length > 0;
+  this.toastr.success('Tarea eliminada en modo demo');
+  return;
+}
+
   this.userTareaService.deleteUserTarea(id).subscribe({
     next: () => {
       // Éxito: tarea eliminada del backend
@@ -1651,6 +1931,37 @@ uploadImage1(): void {
 }
 
  uploadImage(): void {
+
+  if (this.trialMode) {
+  const fileInput = this.imageInput?.nativeElement as HTMLInputElement;
+  const file = fileInput?.files?.[0];
+  if (!file) {
+    this.toastr.error('Selecciona una imagen primero.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = String(reader.result || '');
+    localStorage.setItem('demoEmpresaLogo', dataUrl);
+    this.logoUrl = dataUrl;
+
+    if (this.modalImagePreview) {
+      this.modalImagePreview.nativeElement.src = dataUrl;
+      this.modalImagePreview.nativeElement.style.display = 'block';
+    }
+    const mainPreview = document.getElementById('fixedImageIcon') as HTMLImageElement;
+    if (mainPreview) {
+      mainPreview.src = dataUrl;
+      mainPreview.style.display = 'block';
+    }
+    this.toastr.success('Imagen guardada en modo demo');
+  };
+  reader.readAsDataURL(file);
+  return;
+}
+
+
     const fileInput = this.imageInput?.nativeElement as HTMLInputElement;
     if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
       this.toastr.error('Por favor, selecciona una imagen.');
@@ -1724,6 +2035,61 @@ saveFormData0() {
 }
 
   saveFormData(): void {
+
+ if (this.trialMode) {
+  const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
+  const demoEmpresas = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
+
+  /*const soloDefault =
+  demoEmpresas.length === 1 && demoEmpresas[0].id === 1234;
+
+if (demoEmpresas.length >= 1 && !soloDefault) {
+  this.toastr.info('En modo demo solo podés tener 1 empresa', 'Modo demo');
+  return;
+}*/
+
+  // Si ya existe una empresa demo, bloquear nuevas
+  if (demoEmpresas.length >= 2) {
+    this.toastr.info('En modo demo solo podés crear 1 empresa', 'Modo demo');
+    return;
+  }
+
+  const localLogo = localStorage.getItem('demoEmpresaLogo') || this.logoUrl || '';
+
+  const nuevaEmpresa: Empresa = {
+    id: Date.now(),
+    name: this.empresaName,
+    phone: this.empresaPhone,
+    email: this.empresaEmail,
+    description: this.additionalDetailsEmpresa,
+    logoUrl: localLogo,
+    userCode: this.userCode,
+    website: this.empresaWebsite,
+    tiktok: this.empresaTikTok,
+    instagram: this.empresaInstagram,
+    facebook: this.empresaFacebook,
+    cuilCuit: this.empresaCuilCuit
+  };
+
+/*if (soloDefault) {
+  demoEmpresas.length = 0; // elimina la demo por defecto
+}*/
+
+
+  demoEmpresas.push(nuevaEmpresa);
+  localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresas));
+  this.empresas = demoEmpresas;
+  this.updatePaginatedEmpresas();
+  this.selectedEmpresaId = nuevaEmpresa;
+  localStorage.setItem('selectedEmpresaId', String(nuevaEmpresa.id));
+
+  this.actualizarImagenEmpresa(nuevaEmpresa);
+  this.toastr.success('Empresa creada en modo demo');
+  this.limpiarEmpresaForm();
+  return;
+}
+
+
     console.log('[EMPRESA] Guardar datos de empresa. Modo edición:', this.empresaEditId !== null);
     if (!this.empresaName.trim()) {
       this.toastr.error('El nombre de la empresa es obligatorio.');
@@ -2000,6 +2366,8 @@ saveClientData0(form: NgForm): void {
 
 
   saveClientData(form: NgForm): void {
+
+
     console.log('Valores antes de enviar:', {
       clientName: this.clientName,
       clientContact: this.clientContact,
@@ -2032,6 +2400,60 @@ saveClientData0(form: NgForm): void {
       direccion: this.clientDireccion,
       empresaId: this.selectedEmpresaId.id // Usa selectedEmpresaId.id
     };
+
+    if (this.trialMode) {
+
+  const demoClientes = Object.keys(localStorage)
+    .filter(key => key.startsWith('demoCliente_'))
+    .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
+    .filter(c => c && c.empresaId === this.selectedEmpresaId?.id);
+
+  if (demoClientes.length >= 1) {
+    this.toastr.info('En modo demo solo podés crear 1 cliente', 'Modo demo');
+    return;
+  }
+  const clientData: Cliente = {
+    name: this.clientName,
+    contact: this.clientContact,
+    budgetDate: this.budgetDate,
+    additionalDetails: this.additionalDetailsClient,
+    userCode: this.userCode,
+    email: this.clientEmail,
+    clave: this.clientClave,
+    direccion: this.clientDireccion,
+    empresaId: this.selectedEmpresaId.id
+  };
+
+  // Guardar localmente en demo
+  const localId = Date.now();
+  const localCliente = { ...clientData, id: localId };
+  localStorage.setItem(`demoCliente_${localId}`, JSON.stringify(localCliente));
+
+  this.clientes = [...this.clientes, localCliente];
+  this.updatePaginatedClientes();
+  this.toastr.success('Cliente guardado en modo demo');
+
+  // limpiar formulario igual que en el flujo normal
+  this.clientName = '';
+  this.clientContact = '';
+  this.budgetDate = new Date().toISOString().split('T')[0];
+  this.additionalDetailsClient = '';
+  this.clientEmail = '';
+  this.clientClave = '';
+  this.clientDireccion = '';
+
+  const confirmationMessage = document.getElementById('confirmationMessage');
+  if (confirmationMessage) {
+    confirmationMessage.style.display = 'block';
+    setTimeout(() => confirmationMessage.style.display = 'none', 3000);
+  }
+
+  const modal = bootstrap.Modal.getInstance(document.getElementById('clientModal'));
+  modal?.hide();
+  this.isSavingClient = false;
+  return;
+}
+
 
     this.isSavingClient = true;
     this.clienteService.saveCliente(clientData).subscribe({
@@ -2170,7 +2592,7 @@ saveClientData0(form: NgForm): void {
   loadUserCode(): void {
     this.userCode = localStorage.getItem('userCode') || '';
     const storedUserData = localStorage.getItem('userData');
-    console.log('Datos en localStorage (userData):', storedUserData ? JSON.parse(storedUserData) : null); // Depuración
+    console.log('Datos en localStorage (userData):', storedUserData ? JSON.parse(storedUserData) : null);
     if (this.userCode) {
       this.fetchUserData();
     } else {
@@ -2418,6 +2840,18 @@ onEmpresaSeleccionada1(empresa: any) {
       imageElement.src = '#';
       imageElement.style.display = 'none';
     }
+
+    if (this.trialMode) {
+  const demoClientes = Object.keys(localStorage)
+    .filter(key => key.startsWith('demoCliente_'))
+    .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
+    .filter(c => c && c.empresaId === empresa.id);
+
+  this.clientes = demoClientes;
+  this.updatePaginatedClientes();
+  return;
+}
+
 
     // Cargar clientes
     this.clienteService.getClientesByEmpresaId(empresa.id).subscribe({

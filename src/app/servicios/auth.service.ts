@@ -32,11 +32,14 @@ export interface AccessCode {
   providedIn: 'root'
 })
 export class AuthService {
-  //private apiUrl = 'http://localhost:8080/auth';
-  private apiUrl= 'https://adequate-education-production.up.railway.app/auth'
+  private apiUrl = 'http://localhost:8080/auth';
+ // private apiUrl= 'https://adequate-education-production.up.railway.app/auth'
 
   constructor(private http: HttpClient, private router: Router) { }
 
+  isTrialMode(): boolean {
+  return localStorage.getItem('trialMode') === 'true';
+}
 
 
       login(code: string): Observable<AuthResponse> {

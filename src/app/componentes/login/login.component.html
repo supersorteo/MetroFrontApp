@@ -15,7 +15,8 @@
           <label for="password">Ingrese su código:</label>
           <input type="text" id="password" class="form-control" [(ngModel)]="code" placeholder="Ingrese su código" autocomplete="current-password" style="font-size: 30px; text-align: center;">
           <button class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="login()">ENTRAR</button>
-          <button id="mercadoPagoButton" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="ocultarContenido()">PROBÁ EL SISTEMA</button>
+          <!--button-- id="mercadoPagoButton" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="ocultarContenido()">PROBÁ EL SISTEMA</!--button-->
+         <button id="mercadoPagoButton" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="activarModoPrueba()">PROBÁ EL SISTEMA</button>
           <button type="button" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" data-bs-toggle="modal" data-bs-target="#exampleModal">REGISTRATE</button>
           <button type="button" class="btn btn-gradient" (click)="openCalculadora()" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;">CALCULADORA DE MATERIALES</button>
           <button type="button" class="btn btn-success" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="openWebsite()">Comprá un código por Whatsapp</button>

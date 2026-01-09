@@ -11,6 +11,13 @@ import { Router, RouterModule } from '@angular/router';
 import Swal from 'sweetalert2';
 declare var html2pdf: any;
 
+interface ColorScheme {
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  textColor: string;
+  tableTextColor: string;
+}
 
 @Component({
   selector: 'app-datos-de-tareas',
@@ -23,6 +30,16 @@ export class DatosDeTareasComponent implements OnInit {
   empresaSeleccionada: Empresa | null = null;
   clienteSeleccionado: Cliente | null = null;
   tareasAgregadas: Tarea[] = [];
+  colorSchemeMessageVisible = false;
+  readonly defaultColorScheme: ColorScheme = {
+    primaryColor: '#409eff',
+    secondaryColor: '#deecea',
+    accentColor: '#5d8eea',
+    textColor: '#0b69a6',
+    tableTextColor: '#132d6b'
+  };
+  colorScheme: ColorScheme = { ...this.defaultColorScheme };
+  private readonly colorSchemeStorageKey = 'metroColorScheme';
 
   constructor(
     private presupuestoService: PresupuestoService,
@@ -48,6 +65,7 @@ export class DatosDeTareasComponent implements OnInit {
     if (storedTareas) {
       this.tareasAgregadas = JSON.parse(storedTareas);
     }
+    this.colorScheme = this.loadColorScheme();
     // Puedes agregar lógica para cargar datos adicionales si es necesario
     console.log('Empresa seleccionada:', this.empresaSeleccionada);
     console.log('Cliente seleccionado:', this.clienteSeleccionado);
@@ -63,13 +81,14 @@ volverAlDashboard(){
 this.route.navigate(['/dashboard'])
 }
 
-async descargarPresupuesto() {
+  async descargarPresupuesto() {
     const exportElement = document.getElementById('export-presupuesto');
     if (!exportElement) {
       this.toastr.error('No se encontró el contenido del presupuesto para exportar.', 'Error');
       return;
     }
 
+    const scheme = this.loadColorScheme();
     const controlsToHide: HTMLElement[] = [];
     const floatingBtn = document.querySelector('.btn-floating') as HTMLElement | null;
     const downloadBtn = document.querySelector('.presupuesto-total-descarga .btn-primary') as HTMLElement | null;
@@ -88,6 +107,13 @@ async descargarPresupuesto() {
       #export-presupuesto {
         background: #ffffff;
       }
+      #export-presupuesto .presupuesto-info {
+        background: ${scheme.secondaryColor};
+        color: ${scheme.textColor};
+      }
+      #export-presupuesto .presupuesto-info * {
+        color: ${scheme.textColor};
+      }
       #export-presupuesto table {
         width: 100%;
         border-collapse: collapse;
@@ -98,8 +124,14 @@ async descargarPresupuesto() {
         padding: 10px;
       }
       #export-presupuesto table thead th {
-        background: linear-gradient(135deg, #1f4e8e, #3580dd);
+        background: ${scheme.accentColor};
         color: #fff;
+      }
+      #export-presupuesto table tbody td {
+        color: ${scheme.tableTextColor};
+      }
+      #export-presupuesto .total-label {
+        color: ${scheme.primaryColor};
       }
     `;
     document.head.appendChild(inlineStyle);
@@ -129,6 +161,31 @@ async descargarPresupuesto() {
         el.style.display = previousDisplay.get(el) ?? '';
       });
     }
+  }
+
+  saveColorScheme() {
+    try {
+      localStorage.setItem(this.colorSchemeStorageKey, JSON.stringify(this.colorScheme));
+      this.colorSchemeMessageVisible = true;
+      setTimeout(() => {
+        this.colorSchemeMessageVisible = false;
+      }, 2000);
+    } catch (error) {
+      console.error('No se pudo guardar el esquema de colores.', error);
+    }
+  }
+
+  private loadColorScheme(): ColorScheme {
+    try {
+      const storedScheme = localStorage.getItem(this.colorSchemeStorageKey);
+      if (storedScheme) {
+        const parsedScheme = JSON.parse(storedScheme);
+        return { ...this.defaultColorScheme, ...parsedScheme };
+      }
+    } catch (error) {
+      console.error('No se pudo cargar el esquema de colores.', error);
+    }
+    return { ...this.defaultColorScheme };
   }
 
   async descargarPresupuesto0() {
