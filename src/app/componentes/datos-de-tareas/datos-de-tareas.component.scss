@@ -43,9 +43,15 @@
 }
 
 .cliente-card {
-  background: rgba(255, 255, 255, 0.45);
-  border: 1px solid rgba(14, 94, 176, 0.12);
-  margin-top: 20px;
+  text-decoration: none;
+  font-weight: bold;
+  color: rgb(44, 121, 208);
+  max-width: none;
+  margin: 0px;
+  padding: 10px;
+  background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9);
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
 }
 
 .empresa-logo img {

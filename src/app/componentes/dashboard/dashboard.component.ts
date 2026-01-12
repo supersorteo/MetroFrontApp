@@ -1183,7 +1183,9 @@ agregarTarea0(): void {
       this.mostrarTabla = true;
       localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
       this.presupuestoService.setTareasAgregadas(this.tareasAgregadas); // Guardar en localStorage
-      this.toastr.success('Tarea agregada', 'Éxito');
+      this.toastr.success('Tarea agregada', 'Éxito', {
+        toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
+      });
       this.resetTareaSeleccionada();
     },
     error: () => {
@@ -1212,7 +1214,9 @@ agregarTarea1(): void {
         this.mostrarTabla = true;
         localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
         this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
-        this.toastr.success('Tarea agregada', 'Éxito');
+        this.toastr.success('Tarea agregada', 'Éxito', {
+          toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
+        });
         this.resetTareaSeleccionada();
       },
       error: () => {
@@ -1258,7 +1262,9 @@ if (this.trialMode) {
   localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
 
   this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
-  this.toastr.success('Tarea agregada en modo demo');
+  this.toastr.success('Tarea agregada en modo demo', '', {
+    toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
+  });
   this.resetTareaSeleccionada();
   return;
 }
@@ -1298,7 +1304,9 @@ if (this.trialMode) {
         this.mostrarTabla = true;
         localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
         this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
-        this.toastr.success('Tarea agregada', 'Exito');
+        this.toastr.success('Tarea agregada', 'Exito', {
+          toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
+        });
         this.resetTareaSeleccionada();
       },
       error: (error) => {
@@ -1308,34 +1316,21 @@ if (this.trialMode) {
     });
   }
 
-
   verPresupuesto(): void {
-  // Validar selección de empresa y cliente
-  let mensaje = '';
-  if (!this.selectedEmpresaId && !this.clienteSeleccionado) {
-    mensaje = 'Debe seleccionar una empresa y un cliente.';
-  } else if (!this.selectedEmpresaId) {
-    mensaje = 'Debe seleccionar una empresa.';
-  } else if (!this.clienteSeleccionado) {
-    mensaje = 'Debe seleccionar un cliente.';
+  // Permitir vista previa incluso sin empresa o cliente seleccionados.
+  if (this.clienteSeleccionado) {
+    localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
+  } else {
+    localStorage.removeItem('selectedCliente');
   }
-  if (mensaje) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Falta selección',
-      text: mensaje,
-      confirmButtonText: 'Aceptar',
-      customClass: {
-        popup: 'swal2-border-radius',
-        confirmButton: 'btn btn-primary'
-      }
-    });
-    return;
+
+  if (this.selectedEmpresaId) {
+    localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
+  } else {
+    localStorage.removeItem('selectedEmpresa');
   }
-  // Guardar datos seleccionados en localStorage para transferirlos
-  localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
-  localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
-  localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas));
+
+  localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas ?? []));
   this.route.navigate(['/presupuesto']);
 }
 
@@ -1602,7 +1597,9 @@ openClientModal(): void {
     next: () => {
       this.tareasAgregadas = this.tareasAgregadas.filter(tarea => tarea.id !== id);
       this.mostrarTabla = this.tareasAgregadas.length > 0;
-      this.toastr.success('Tarea eliminada', 'Éxito');
+      this.toastr.success('Tarea eliminada', 'Éxito', {
+        toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
+      });
     },
     error: () => this.toastr.error('Error al eliminar la tarea', 'Error')
   });
@@ -1614,7 +1611,9 @@ eliminarTarea00(id: number): void {
       this.tareasAgregadas = this.tareasAgregadas.filter(tarea => tarea.id !== id);
       this.mostrarTabla = this.tareasAgregadas.length > 0;
       localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas)); // Actualizar localStorage
-      this.toastr.success('Tarea eliminada', 'Éxito');
+      this.toastr.success('Tarea eliminada', 'Éxito', {
+        toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
+      });
     },
     error: () => {
       this.tareasAgregadas = this.tareasAgregadas.filter(tarea => tarea.id !== id); // Eliminar localmente
@@ -1631,7 +1630,9 @@ eliminarTarea11(id: number): void {
       // Éxito: tarea eliminada del backend
       this.tareasAgregadas = this.tareasAgregadas.filter(t => t.id !== id);
       this.actualizarTablaYStorage();
-      this.toastr.success('Tarea eliminada correctamente', 'Éxito');
+      this.toastr.success('Tarea eliminada correctamente', 'Éxito', {
+        toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
+      });
     },
     error: (err) => {
       const errorMessage = err.error?.error || err.message || 'Error desconocido';
@@ -1700,7 +1701,9 @@ eliminarTarea(id: number): void {
   localStorage.setItem(key, JSON.stringify(this.tareasAgregadas));
   localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
   this.mostrarTabla = this.tareasAgregadas.length > 0;
-  this.toastr.success('Tarea eliminada en modo demo');
+  this.toastr.success('Tarea eliminada en modo demo', '', {
+    toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
+  });
   return;
 }
 
@@ -1709,7 +1712,9 @@ eliminarTarea(id: number): void {
       // Éxito: tarea eliminada del backend
       this.tareasAgregadas = this.tareasAgregadas.filter(t => t.id !== id);
       this.actualizarTablaYStorage();
-      this.toastr.success('Tarea eliminada correctamente', 'Éxito');
+      this.toastr.success('Tarea eliminada correctamente', 'Éxito', {
+        toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
+      });
     },
     error: (err) => {
       console.error('Error completo al eliminar tarea:', err); // Para debug
@@ -3125,4 +3130,6 @@ onEmpresaSeleccionada0(empresa: Empresa) {
     return map[code] || 'Condición desconocida';
   }
 }
+
+
 
