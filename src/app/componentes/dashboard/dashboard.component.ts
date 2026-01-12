@@ -129,6 +129,7 @@ export class DashboardComponent implements OnInit{
 
   mostrarTabla: boolean = false;
   showSavedBudgetsPanel: boolean = false;
+  showTareasPanel: boolean = false;
   tareasAgregadas: UserTarea[] = [];
   tareasDelCliente: UserTarea[] = [];
   isSidebarOpen: boolean = false;
@@ -1473,7 +1474,15 @@ onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
 
 
 toggleSavedBudgetsPanel(): void {
-  this.showSavedBudgetsPanel = !this.showSavedBudgetsPanel;
+  const nextState = !this.showSavedBudgetsPanel;
+  this.showSavedBudgetsPanel = nextState;
+  if (nextState) {
+    this.showTareasPanel = false;
+  }
+}
+
+toggleTareasPanel(): void {
+  this.showTareasPanel = !this.showTareasPanel;
 }
 
 closeSavedBudgetsPanel(): void {
