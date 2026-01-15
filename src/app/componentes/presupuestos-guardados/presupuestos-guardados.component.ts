@@ -29,7 +29,7 @@ export class PresupuestosGuardadosComponent implements OnInit{
   filtro = '';
   presupuestos$ = this.budgetStorageService.budgets$;
   //maxItems = this.budgetStorageService.maxItems;
-  maxItems = 10;
+  maxItems = 30;
   presupuestos: SavedPresupuesto[] = [];
 
  presupuestoEditando: SavedPresupuesto | null = null;
