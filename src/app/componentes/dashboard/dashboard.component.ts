@@ -276,6 +276,10 @@ if (this.trialMode) {
     }, 0);
   }
 
+
+
+
+
    ngOnDestroy(): void {
     if (localStorage.getItem('trialMode') === 'true') {
       localStorage.setItem('trialMode', 'false');
@@ -312,6 +316,20 @@ if (this.trialMode) {
   this.mostrarTabla = false;
 
   this.remainingTime = 'Modo demo';
+  this.selectedEmpresaId = this.empresas[0] || null;
+
+  if (this.selectedEmpresaId?.id) {
+  localStorage.setItem('selectedEmpresaId', String(this.selectedEmpresaId.id));
+}
+
+// Forzar carga de datos en el modal + logo
+this.cargarDatosEmpresaSeleccionada();
+this.actualizarImagenEmpresa(this.selectedEmpresaId);
+
+if (this.selectedEmpresaId) {
+  this.onEmpresaSeleccionada(this.selectedEmpresaId);
+}
+
 }
 
 
@@ -842,8 +860,19 @@ ngAfterViewInit() {
     });
     offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
       menuBtn.style.display = 'flex';
+       document.querySelectorAll('.offcanvas-backdrop').forEach(el => el.remove());
     });
+
+
   }
+
+  const offcanvasEl = document.getElementById('offcanvasMenu');
+offcanvasEl?.addEventListener('hidden.bs.offcanvas', () => {
+  document.querySelectorAll('.offcanvas-backdrop').forEach(el => el.remove());
+});
+
+
+
 
   // Limpiar modal-backdrop y restaurar foco para modales
   const modals = ['exampleModal', 'listaEmpresasModal', 'imageModal', 'clientModal', 'listaClientesModal', 'miModal', 'provinciaModal'];
@@ -1317,7 +1346,7 @@ if (this.trialMode) {
     });
   }
 
-  verPresupuesto(): void {
+  verPresupuesto0(): void {
   // Permitir vista previa incluso sin empresa o cliente seleccionados.
   if (this.clienteSeleccionado) {
     localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
@@ -1334,6 +1363,34 @@ if (this.trialMode) {
   localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas ?? []));
   this.route.navigate(['/presupuesto']);
 }
+
+verPresupuesto(): void {
+  if (!this.tareasAgregadas || this.tareasAgregadas.length === 0) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Presupuesto sin tareas',
+      text: 'Agrega al menos una tarea para generar el presupuesto.',
+      confirmButtonText: 'Aceptar'
+    });
+    return;
+  }
+
+  if (this.clienteSeleccionado) {
+    localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
+  } else {
+    localStorage.removeItem('selectedCliente');
+  }
+
+  if (this.selectedEmpresaId) {
+    localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
+  } else {
+    localStorage.removeItem('selectedEmpresa');
+  }
+
+  localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas ?? []));
+  this.route.navigate(['/presupuesto']);
+}
+
 
 onCargarPresupuestoGuardado1(presupuesto: SavedPresupuesto): void {
   this.tareasAgregadas = (presupuesto.tareas || []).map(t => ({ ...t }));
@@ -1481,9 +1538,24 @@ toggleSavedBudgetsPanel(): void {
   }
 }
 
-toggleTareasPanel(): void {
+toggleTareasPanel0(): void {
   this.showTareasPanel = !this.showTareasPanel;
 }
+
+toggleTareasPanel(): void {
+  if (!this.tareasAgregadas || this.tareasAgregadas.length === 0) {
+    Swal.fire({
+      title: 'Sin tareas',
+      text: 'Aún no agregaste tareas. Agrega al menos una para poder ver el panel.',
+      icon: 'info',
+      confirmButtonText: 'Entendido'
+    });
+    return;
+  }
+
+  this.showTareasPanel = !this.showTareasPanel;
+}
+
 
 closeSavedBudgetsPanel(): void {
   this.showSavedBudgetsPanel = false;
@@ -1665,7 +1737,7 @@ eliminarTarea11(id: number): void {
   });
 }
 
-solicitarConfirmacionEliminarTarea(tarea: UserTarea): void {
+solicitarConfirmacionEliminarTarea0(tarea: UserTarea): void {
   if (!tarea?.id) {
     return;
   }
@@ -1679,6 +1751,29 @@ solicitarConfirmacionEliminarTarea(tarea: UserTarea): void {
   const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
   modalInstance.show();
 }
+
+solicitarConfirmacionEliminarTarea(tarea: UserTarea): void {
+  if (!tarea?.id) {
+    return;
+  }
+
+  const descripcion = tarea.tarea || tarea.descripcion || 'esta tarea';
+
+  Swal.fire({
+    title: 'Eliminar tarea',
+    text: `Estas seguro de eliminar ${descripcion}? Esta accion no se puede deshacer.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Eliminar',
+    cancelButtonText: 'Cancelar',
+    reverseButtons: true
+  }).then(result => {
+    if (result.isConfirmed) {
+      this.eliminarTarea(tarea.id);
+    }
+  });
+}
+
 
 confirmarEliminarTarea(): void {
   if (this.tareaAEliminar == null) {
@@ -1710,6 +1805,11 @@ eliminarTarea(id: number): void {
   localStorage.setItem(key, JSON.stringify(this.tareasAgregadas));
   localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
   this.mostrarTabla = this.tareasAgregadas.length > 0;
+
+  if (this.tareasAgregadas.length === 0) {
+  this.showTareasPanel = false;
+}
+
   this.toastr.success('Tarea eliminada en modo demo', '', {
     toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
   });
@@ -1773,11 +1873,17 @@ eliminarTarea(id: number): void {
   });
 }
 
-// Método auxiliar para evitar repetir código
+
+
 private actualizarTablaYStorage() {
   this.mostrarTabla = this.tareasAgregadas.length > 0;
   localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+
+  if (this.tareasAgregadas.length === 0) {
+    this.showTareasPanel = false;
+  }
 }
+
 
 
 
@@ -1823,11 +1929,30 @@ calcularCostoTotal(): number {
 }
 
 
-  logout(): void {
+  logout1(): void {
     this.authService.logout();
     this.route.navigate(['']);
     this.toastr.success('Logout exitoso', 'Éxito');
   }
+
+  logout(): void {
+  Swal.fire({
+    title: 'Cerrar sesion',
+    text: 'Estas seguro que deseas cerrar sesion?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Cerrar sesion',
+    cancelButtonText: 'Cancelar',
+    reverseButtons: true
+  }).then(result => {
+    if (result.isConfirmed) {
+      this.authService.logout();
+      this.route.navigate(['']);
+      this.toastr.success('Sesion cerrada correctamente', 'Exito');
+    }
+  });
+}
+
 
 
 
@@ -2704,85 +2829,6 @@ fetchUserData(): void {
     }
   }
 
-  /*
-   onEmpresaSeleccionada0(empresa: any) {
-  console.log('Empresa seleccionada:', empresa);
-  if (empresa && empresa.id) {
-    localStorage.setItem('selectedEmpresaId', String(empresa.id));
-  } else {
-    localStorage.removeItem('selectedEmpresaId');
-  }
-  const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
-  if (empresa && empresa.logoUrl && imageElement) {
-    imageElement.src = empresa.logoUrl;
-    imageElement.style.display = 'block';
-  } else if (imageElement) {
-    imageElement.src = '#';
-    imageElement.style.display = 'none';
-  }
-}
-
-onEmpresaSeleccionada1(empresa: any) {
-    console.log('Empresa seleccionada:', empresa);
-    this.selectedEmpresaId = empresa; // Actualiza selectedEmpresaId
-    if (empresa && empresa.id) {
-      localStorage.setItem('selectedEmpresaId', String(empresa.id));
-    } else {
-      this.selectedEmpresaId = null; // Limpia si no hay empresa válida
-      localStorage.removeItem('selectedEmpresaId');
-    }
-    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
-    if (empresa && empresa.logoUrl && imageElement) {
-      imageElement.src = empresa.logoUrl;
-      imageElement.style.display = 'block';
-    } else if (imageElement) {
-      imageElement.src = '#';
-      imageElement.style.display = 'none';
-    }
-  }
-*/
-
-
-  /*onEmpresaSeleccionada(empresa: any) {
-
-    console.log('Empresa seleccionada:', empresa);
-    this.selectedEmpresaId = empresa;
-    if (empresa && empresa.id) {
-      localStorage.setItem('selectedEmpresaId', String(empresa.id));
-      // Cargar clientes asociados a la empresa seleccionada
-      this.clienteService.getClientesByEmpresaId(empresa.id).subscribe({
-        next: (clientes) => {
-          console.log('Clientes recibidos para empresa:', clientes);
-          this.clientes = clientes || [];
-          this.updatePaginatedClientes();
-        },
-        error: (error) => {
-          console.error('Error al cargar clientes por empresa:', error);
-          this.toastr.error(error.message || 'Error al cargar los clientes');
-          this.clientes = [];
-          this.updatePaginatedClientes();
-        }
-      });
-    } else {
-      this.selectedEmpresaId = null;
-      localStorage.removeItem('selectedEmpresaId');
-      this.clientes = [];
-      this.updatePaginatedClientes();
-    }
-    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
-    if (empresa && empresa.logoUrl && imageElement) {
-      imageElement.src = empresa.logoUrl;
-      imageElement.style.display = 'block';
-    } else if (imageElement) {
-      imageElement.src = '#';
-      imageElement.style.display = 'none';
-    }
-
-
-    // Versión optimizada: obtiene clientes y tareas asociadas a cada cliente
-
-  }*/
-
 
    onEmpresaSeleccionada1(empresa: any) {
     // Versión optimizada: obtiene clientes y tareas asociadas a cada cliente
@@ -2840,6 +2886,8 @@ onEmpresaSeleccionada1(empresa: any) {
 
   // Limpiar cliente seleccionado al cambiar de empresa
   this.clienteSeleccionado = null;
+  this.tareasAgregadas = [];
+  this.mostrarTabla = false;
 
   if (empresa && empresa.id) {
     localStorage.setItem('selectedEmpresaId', String(empresa.id));
@@ -2873,8 +2921,21 @@ onEmpresaSeleccionada1(empresa: any) {
 
   this.clientes = demoClientes;
   this.updatePaginatedClientes();
+
+  const storedClienteId = localStorage.getItem('selectedClienteId');
+  const clienteGuardado = storedClienteId
+    ? this.clientes.find(c => String(c.id) === storedClienteId)
+    : null;
+
+  const clienteFinal = clienteGuardado || this.clientes[this.clientes.length - 1];
+  if (clienteFinal) {
+    this.seleccionarCliente(clienteFinal);
+    this.loadTareasAgregadas();
+  }
+
   return;
 }
+
 
 
     // Cargar clientes
@@ -2883,6 +2944,28 @@ onEmpresaSeleccionada1(empresa: any) {
         console.log('Clientes recibidos para empresa:', clientes);
         this.clientes = clientes || [];
         this.updatePaginatedClientes();
+
+        /*const ultimoCliente = this.clientes[this.clientes.length - 1];
+        if (ultimoCliente) {
+          this.seleccionarCliente(ultimoCliente);
+          this.loadTareasAgregadas();
+        }*/
+
+   const storedClienteId = localStorage.getItem('selectedClienteId');
+const clienteGuardado = storedClienteId
+  ? this.clientes.find(c => String(c.id) === storedClienteId)
+  : null;
+
+// si no hay stored, usa el último (o el primero si prefieres)
+const clienteFinal = clienteGuardado || this.clientes[this.clientes.length - 1];
+
+if (clienteFinal) {
+  this.seleccionarCliente(clienteFinal); // guarda selectedClienteId + selectedCliente
+  this.loadTareasAgregadas(); // trae tareas del backend y actualiza localStorage
+}
+
+
+
 
         // Forzar detección de cambios si usas ChangeDetectionStrategy.OnPush
         // this.cdr.detectChanges();

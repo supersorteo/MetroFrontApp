@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
 
 export interface UserTarea {
-  id?: number;
+  id?: any;
   tarea: string;
   costo: number;
   area: number;
@@ -22,8 +22,8 @@ export interface UserTarea {
 })
 export class UserTareaService {
 
- // private apiUrl = 'http://localhost:8080/api/user-tareas';
-  private apiUrl = 'https://adequate-education-production.up.railway.app/api/user-tareas';
+  private apiUrl = 'http://localhost:8080/api/user-tareas';
+  //private apiUrl = 'https://adequate-education-production.up.railway.app/api/user-tareas';
 
   constructor(private http: HttpClient) { }
 

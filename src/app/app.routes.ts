@@ -14,10 +14,10 @@ export const routes: Routes = [
   {path:'', component:LoginComponent, canActivate: [AuthLoggedGuard]},
   {path:'', redirectTo:'', pathMatch:'full'},
   {path:'dashboard', component:DashboardComponent, canActivate: [AuthGuard] },
-  { path: 'presupuesto', component: DatosDeTareasComponent },
+  { path: 'presupuesto', component: DatosDeTareasComponent, canActivate: [AuthGuard] },
   {path:'admin-generate-code', component:GenerateCodeComponent, },
   {path:'editar-clientes/:id', component: EditarClientesComponent, canActivate: [AuthGuard]},
   {path:'ofrecimiento', component: OfrecimientoLaboralComponent},
-  {path:'editar-empresa/:id', component:EditarEmpresaComponent},
+  {path:'editar-empresa/:id', component:EditarEmpresaComponent,  canActivate: [AuthGuard]},
   {path:'**', redirectTo:'', pathMatch:'full'}
 ];

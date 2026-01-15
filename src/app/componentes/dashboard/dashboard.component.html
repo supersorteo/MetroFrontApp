@@ -3,8 +3,13 @@
   </div>
 
 
-<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMenu" aria-label="Menu"
-  (shown.bs.offcanvas)="isSidebarOpen = true" (hidden.bs.offcanvas)="isSidebarOpen = false">
+<div class="offcanvas offcanvas-start"
+tabindex="-1"
+id="offcanvasMenu"
+aria-label="Menu"
+
+(shown.bs.offcanvas)="isSidebarOpen = true"
+(hidden.bs.offcanvas)="isSidebarOpen = false">
   <div class="program-title" id="portada" style="border-radius: 10px;" *ngIf="!isContentVisible">
       <h6 style="font-size: 12px; margin-bottom: 0px;">Orbita software</h6>
     </div>
@@ -37,9 +42,14 @@
         <button class="btn btn-primary btn-block w-100 animate">BIBLIOTECA</button>
       </li>
         <li class="w-100 text-center">
-        <button class="btn btn-secondary logout-button1 w-100" data-bs-toggle="modal" data-bs-target="#confirmLogoutModal">
+        <!--button-- class="btn btn-secondary logout-button1 w-100" data-bs-toggle="modal" data-bs-target="#confirmLogoutModal">
           cerrar session
-        </button>
+        </!--button-->
+
+        <button class="btn btn-secondary logout-button1 w-100" (click)="logout()">
+        cerrar session
+      </button>
+
       </li>
     </ul>
   </div>
@@ -182,9 +192,9 @@
 </div>
 
 
-  <div class="tareas-panel-overlay" *ngIf="showTareasPanel" (click)="toggleTareasPanel()"></div>
+  <div class="tareas-panel-overlay" *ngIf="showTareasPanel " (click)="toggleTareasPanel()"></div>
 
-  <aside class="tareas-panel" *ngIf="mostrarTabla" [class.open]="showTareasPanel">
+  <aside class="tareas-panel" *ngIf="showTareasPanel" [class.open]="showTareasPanel">
     <div class="container mt-4 tareas-agregadas">
       <div class="tareas-agregadas__header">
         <div>
@@ -198,7 +208,13 @@
           </small>
         </div>
       </div>
-      <div class="table-responsive tareas-table-wrapper">
+
+      <div *ngIf="!tareasAgregadas?.length" class="p-4 text-center text-muted">
+      No hay tareas para mostrar.
+    </div>
+
+       <div *ngIf="tareasAgregadas?.length" class="table-responsive tareas-table-wrapper">
+        <div class="table-responsive tareas-table-wrapper">
         <table class="table table-striped table-hover tareas-table">
           <thead class="thead-light">
             <tr>
@@ -207,7 +223,8 @@
               <!--th-- class="text-center">Rubro</!--th-->
               <!--th-- class="text-center">Categor��a</!--th-->
               <!--th class="text-center">Descripci��n</!--th-->
-              <th class="text-center">�?rea (m��/m��)</th>
+              <!--th-- class="text-center">�?rea (m��/m��)</!--th-->
+              <th class="text-center">Área (m²/m³)</th>
               <th class="text-center">Costo</th>
               <th class="text-center">Total</th>
             </tr>
@@ -235,6 +252,8 @@
           </tbody>
         </table>
       </div>
+    </div>
+
       <div class="tareas-total mt-3">
         Total: {{ calcularCostoTotal() | currency:'USD':'symbol':'1.2-2' }}
       </div>
@@ -875,6 +894,8 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <button type="button" class="btn btn-danger" (click)="logout()" data-bs-dismiss="modal">Cerrar sesion</button>
+
+
       </div>
     </div>
   </div>

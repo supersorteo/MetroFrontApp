@@ -77,9 +77,19 @@ export class DatosDeTareasComponent implements OnInit {
   }
 
 
-volverAlDashboard(){
+volverAlDashboard0(){
 this.route.navigate(['/dashboard'])
 }
+
+volverAlDashboard(): void {
+  const isTrial = localStorage.getItem('trialMode') === 'true';
+  if (isTrial) {
+    // asegura que el flag siga activo
+    localStorage.setItem('trialMode', 'true');
+  }
+  this.route.navigate(['/dashboard']);
+}
+
 
   async descargarPresupuesto() {
     const exportElement = document.getElementById('export-presupuesto');
