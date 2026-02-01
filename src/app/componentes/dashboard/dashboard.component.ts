@@ -1346,7 +1346,7 @@ if (this.trialMode) {
     });
   }
 
-  verPresupuesto0(): void {
+  verPresupuesto(): void {
   // Permitir vista previa incluso sin empresa o cliente seleccionados.
   if (this.clienteSeleccionado) {
     localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
@@ -1364,7 +1364,7 @@ if (this.trialMode) {
   this.route.navigate(['/presupuesto']);
 }
 
-verPresupuesto(): void {
+verPresupuesto0(): void {
   if (!this.tareasAgregadas || this.tareasAgregadas.length === 0) {
     Swal.fire({
       icon: 'info',
@@ -1640,7 +1640,7 @@ openClientModal(): void {
       .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
       .filter(c => c && c.empresaId === this.selectedEmpresaId?.id);
 
-    if (demoClientes.length >= 1) {
+    if (demoClientes.length >= 2) {
       this.toastr.info('En modo demo solo podés crear 1 cliente', 'Modo demo');
       return;
     }
@@ -2335,117 +2335,6 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
     console.log('budgetDate cambiado:', this.budgetDate);
   }
 
-  /*
-
-  saveClientData0(form: NgForm): void {
-    console.log('Valores antes de enviar:', {
-      clientName: this.clientName,
-      clientContact: this.clientContact,
-      budgetDate: this.budgetDate,
-      additionalDetailsClient: this.additionalDetailsClient,
-      userCode: this.userCode
-    });
-
-    if (!this.validateForm(form)) {
-      return;
-    }
-
-    const clientData: Cliente = {
-      name: this.clientName,
-      contact: this.clientContact,
-      budgetDate: this.budgetDate,
-      additionalDetails: this.additionalDetailsClient,
-      userCode: this.userCode
-    };
-
-    this.clienteService.saveCliente(clientData).subscribe({
-      next: (cliente) => {
-        localStorage.setItem(`clientData_${cliente.id || Date.now()}`, JSON.stringify(cliente));
-        console.log('Cliente guardado con éxito:', cliente);
-        this.toastr.success('Cliente guardado con éxito');
-        this.clientName = '';
-        this.clientContact = '';
-        this.budgetDate = new Date().toISOString().split('T')[0]; // Reset a fecha actual
-        this.additionalDetailsClient = '';
-        const confirmationMessage = document.getElementById('confirmationMessage');
-        if (confirmationMessage) {
-          confirmationMessage.style.display = 'block';
-          setTimeout(() => confirmationMessage.style.display = 'none', 3000);
-        }
-        // Close modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('clientModal'));
-        modal?.hide();
-      },
-      error: (error) => {
-        localStorage.setItem(`clientData_temp_${Date.now()}`, JSON.stringify(clientData));
-        console.error('Error al guardar cliente:', error.message, clientData);
-        this.toastr.error(error.message || 'Error al guardar el cliente');
-      }
-    });
-  }*/
-
-
-    /*
-
-    saveClientData(form: NgForm): void {
-    console.log('Valores antes de enviar:', {
-      clientName: this.clientName,
-      clientContact: this.clientContact,
-      budgetDate: this.budgetDate,
-      additionalDetailsClient: this.additionalDetailsClient,
-      clientEmail: this.clientEmail,
-      clientClave: this.clientClave,
-      clientDireccion: this.clientDireccion,
-      userCode: this.userCode
-    });
-
-    if (!this.validateForm(form)) {
-      return;
-    }
-
-    const clientData: Cliente = {
-      name: this.clientName,
-      contact: this.clientContact,
-      budgetDate: this.budgetDate,
-      additionalDetails: this.additionalDetailsClient,
-      userCode: this.userCode,
-      email: this.clientEmail,
-      clave: this.clientClave,
-      direccion: this.clientDireccion,
-
-
-    };
-
-    this.isSavingClient = true;
-    this.clienteService.saveCliente(clientData).subscribe({
-      next: (cliente) => {
-        localStorage.setItem(`clientData_${cliente.id || Date.now()}`, JSON.stringify(cliente));
-        console.log('Cliente guardado con éxito:', cliente);
-        this.toastr.success('Cliente guardado con éxito');
-        this.clientName = '';
-        this.clientContact = '';
-        this.budgetDate = new Date().toISOString().split('T')[0];
-        this.additionalDetailsClient = '';
-        this.clientEmail = '';
-        this.clientClave = '';
-        this.clientDireccion = '';
-        const confirmationMessage = document.getElementById('confirmationMessage');
-        if (confirmationMessage) {
-          confirmationMessage.style.display = 'block';
-          setTimeout(() => confirmationMessage.style.display = 'none', 3000);
-        }
-        const modal = bootstrap.Modal.getInstance(document.getElementById('clientModal'));
-        modal?.hide();
-        this.isSavingClient = false;
-      },
-      error: (error) => {
-        localStorage.setItem(`clientData_temp_${Date.now()}`, JSON.stringify(clientData));
-        console.error('Error al guardar cliente:', error.message, clientData);
-        this.toastr.error(error.message || 'Error al guardar el cliente');
-        this.isSavingClient = false;
-      }
-    });
-  }*/
 
 
 saveClientData0(form: NgForm): void {
@@ -2557,7 +2446,7 @@ saveClientData0(form: NgForm): void {
     .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
     .filter(c => c && c.empresaId === this.selectedEmpresaId?.id);
 
-  if (demoClientes.length >= 1) {
+  if (demoClientes.length >= 2) {
     this.toastr.info('En modo demo solo podés crear 1 cliente', 'Modo demo');
     return;
   }

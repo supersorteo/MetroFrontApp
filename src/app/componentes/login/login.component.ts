@@ -394,14 +394,36 @@ login(): void {
   }
 ];
 
+const demoCliente = {
+    id: 5678,
+    name: 'Cliente Demo',
+    contact: '11 1111-1111',
+    budgetDate: new Date().toISOString().split('T')[0],
+    additionalDetails: 'Cliente de prueba',
+    userCode: 'demo',
+    email: 'cliente@metroapp.site',
+    clave: '20-00000000-0',
+    direccion: 'Direccion demo 123',
+    empresaId: 1234
+  };
+
+  Object.keys(localStorage)
+    .filter(key => key.startsWith('demoCliente_'))
+    .forEach(key => localStorage.removeItem(key));
+
+
 
   localStorage.setItem('trialMode', 'true');
   localStorage.setItem('userCode', 'demo');
   localStorage.setItem('userData', JSON.stringify(trialUserData));
   localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresa));
   localStorage.setItem('demoTareas', JSON.stringify(demoTareas));
+  localStorage.setItem(`demoCliente_${demoCliente.id}`, JSON.stringify(demoCliente));
   localStorage.removeItem('selectedEmpresaId');
+  localStorage.removeItem('selectedClienteId');
   localStorage.removeItem('selectedCliente');
+  localStorage.setItem('selectedClienteId', String(demoCliente.id));
+  localStorage.setItem('selectedCliente', JSON.stringify(demoCliente));
   localStorage.removeItem('tareasAgregadas');
  console.log('[DEMO] Datos demo guardados, redirigiendo a dashboard');
   this.route.navigate(['dashboard']);
