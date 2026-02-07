@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
+import {  shareReplay } from 'rxjs/operators';
 
 
 //interface Tarea { id?: number; nombre: string; costo: number; area: number; descripcion: string; descuento: number}
@@ -26,7 +27,7 @@ export interface Tarea {
 export class TareaService {
 private apiUrl = 'http://localhost:8080/api/tareas'
 //private apiUrl = 'https://adequate-education-production.up.railway.app/api/tareas';
-
+private tareasCache = new Map<string, Observable<Tarea[]>>();
   constructor(private http: HttpClient) { }
 
   getTareas(): Observable<Tarea[]> {
@@ -40,6 +41,21 @@ private apiUrl = 'http://localhost:8080/api/tareas'
     return this.http.get<Tarea[]>(`${this.apiUrl}/by-pais?pais=${pais}`)
       .pipe(catchError(this.handleError));
   }
+
+  getTareasByPaisCached(pais: string, force = false): Observable<Tarea[]> {
+  if (!force && this.tareasCache.has(pais)) {
+    return this.tareasCache.get(pais)!;
+  }
+
+  const req$ = this.http.get<Tarea[]>(`${this.apiUrl}/by-pais?pais=${pais}`)
+    .pipe(
+      shareReplay(1),
+      catchError(this.handleError)
+    );
+
+  this.tareasCache.set(pais, req$);
+  return req$;
+}
 
   agregarTarea(tarea: Tarea): Observable<Tarea> {
     return this.http.post<Tarea>(this.apiUrl, tarea)

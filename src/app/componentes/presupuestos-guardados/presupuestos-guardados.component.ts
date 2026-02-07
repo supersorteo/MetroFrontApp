@@ -7,6 +7,7 @@ import { UserTarea } from '../../servicios/user-tarea.service';
 import { BudgetStorageService } from '../../servicios/budget-storage.service';
 import { ToastrService } from 'ngx-toastr';
 import { BudgetService, SavedPresupuesto } from '../../servicios/budget.service';
+import { Router } from '@angular/router';
 
 declare const html2pdf: any;
 declare const bootstrap: any
@@ -24,6 +25,10 @@ export class PresupuestosGuardadosComponent implements OnInit{
   @Input() empresaActual: Empresa | null = null;
   @Output() cargarPresupuesto = new EventEmitter<SavedPresupuesto>();
   @Input() tareasDelCliente: UserTarea[] = [];
+  @Output() presupuestoEliminado = new EventEmitter<SavedPresupuesto>();
+  @Input() presupuestoCargado: SavedPresupuesto | null = null;
+  @Output() presupuestoActualizado = new EventEmitter<SavedPresupuesto>();
+
 
   nombreTemporal = '';
   filtro = '';
@@ -41,7 +46,8 @@ export class PresupuestosGuardadosComponent implements OnInit{
   constructor(
     private budgetStorageService: BudgetStorageService,
     private toastr: ToastrService,
-    private budgetService: BudgetService
+    private budgetService: BudgetService,
+     private router: Router
   ) {}
 
 
@@ -70,13 +76,24 @@ console.log('%cPRESUPUESTOS GUARDADOS - INICIADO', 'color: #9C27B0; font-weight:
 
 }
 
-ngOnChanges(): void {
+/*ngOnChanges(): void {
   if (this.clienteActual?.id) {
     console.log('%cCAMBIO DE CLIENTE DETECTADO → Recargando presupuestos', 'color: #FF9800');
     this.cargarPresupuestos();
   }
 
 
+}*/
+
+ngOnChanges(): void {
+  if (this.clienteActual?.id) {
+    console.log('%cCAMBIO DE CLIENTE DETECTADO → Recargando presupuestos', 'color: #FF9800');
+    this.cargarPresupuestos();
+  }
+
+  if (this.presupuestoCargado) {
+    this.nombreTemporal = this.presupuestoCargado.name || '';
+  }
 }
 
 
@@ -128,7 +145,7 @@ cargarPresupuestos() {
   });
 }
 
-guardarPresupuestoActual() {
+guardarPresupuestoActual1() {
   if (!this.clienteActual?.id) {
     this.toastr.error('Selecciona un cliente');
     return;
@@ -172,6 +189,70 @@ guardarPresupuestoActual() {
   });
 }
 
+guardarPresupuestoActual() {
+  if (!this.clienteActual?.id) {
+    this.toastr.error('Selecciona un cliente');
+    return;
+  }
+  if (this.tareasActuales.length === 0) {
+    this.toastr.error('Agrega tareas al presupuesto');
+    return;
+  }
+
+  const nombre = this.nombreTemporal.trim();
+  if (!nombre) {
+    this.toastr.error('El nombre del presupuesto es obligatorio');
+    return;
+  }
+
+  if (this.nombreYaExiste(nombre)) {
+    this.toastr.error('Ya existe un presupuesto con este nombre. Elige otro.');
+    return;
+  }
+
+  const payload = {
+    name: nombre,
+    cliente: { id: this.clienteActual.id },
+    tareas: this.tareasActuales.map(t => ({ id: t.id }))
+  };
+
+  // ✅ SI HAY PRESUPUESTO CARGADO → ACTUALIZAR
+  if (this.presupuestoCargado?.id) {
+    this.budgetService.updatePresupuesto(this.presupuestoCargado.id, payload).subscribe({
+      next: (actualizado) => {
+        this.toastr.success('Presupuesto actualizado correctamente');
+        this.presupuestoCargado = actualizado; // opcional, refleja el nuevo nombre
+        this.presupuestoActualizado.emit(actualizado);
+
+      // ✅ refrescar lista inmediatamente
+      if (this.clienteActual?.id) {
+        this.budgetService.cargarPresupuestosPorCliente(this.clienteActual.id).subscribe();
+      }
+
+      // ✅ avisar al padre para actualizar panel y tareas
+      this.presupuestoActualizado.emit(actualizado);
+
+      },
+      error: (err) => {
+        this.toastr.error(err.error?.error || 'Error al actualizar el presupuesto');
+      }
+    });
+    return;
+  }
+
+  // ✅ SI NO HAY → GUARDAR NUEVO
+  this.budgetService.guardarPresupuesto(payload).subscribe({
+    next: (nuevo) => {
+      this.toastr.success('Presupuesto guardado correctamente');
+      this.nombreTemporal = '';
+    },
+    error: (err) => {
+      this.toastr.error(err.error?.error || 'Error al guardar el presupuesto');
+    }
+  });
+}
+
+
   cargar(presupuesto: SavedPresupuesto) {
     this.cargarPresupuesto.emit(presupuesto);
   }
@@ -190,6 +271,7 @@ guardarPresupuestoActual() {
     next: () => {
       console.log('%cPresupuesto eliminado correctamente', 'color: #4CAF50');
       this.toastr.info('Presupuesto eliminado');
+       this.presupuestoEliminado.emit(presupuesto); // 👈 aviso al padre
     },
     error: () => this.toastr.error('Error al eliminar')
   });
@@ -212,13 +294,28 @@ get puedeGuardarr(): boolean {
   return this.tareasActuales.length > 0 && nombreValido && nombreUnico;
 }
 
-nombreYaExiste(nombre: string): boolean {
+nombreYaExiste0(nombre: string): boolean {
   if (!nombre.trim()) return false;
   const nombreLower = nombre.trim().toLowerCase();
   return this.presupuestosFiltrados.some(p =>
     p.name.toLowerCase() === nombreLower
   );
 }
+
+nombreYaExiste(nombre: string): boolean {
+  if (!nombre.trim()) return false;
+  const nombreLower = nombre.trim().toLowerCase();
+
+  // Si estamos editando y el nombre es el mismo, no es duplicado
+  if (this.presupuestoCargado && this.presupuestoCargado.name?.toLowerCase() === nombreLower) {
+    return false;
+  }
+
+  return this.presupuestosFiltrados.some(p =>
+    p.name.toLowerCase() === nombreLower
+  );
+}
+
 
 getMensajeBotonDeshabilitado(): string {
   if (this.tareasActuales.length === 0) {
@@ -313,6 +410,20 @@ get presupuestosFiltrados(): SavedPresupuesto[] {
     `;
     return wrapper;
   }
+
+  verPresupuesto(presupuesto: SavedPresupuesto) {
+  // guardar datos en localStorage para que DatosDeTareasComponent los lea
+  localStorage.setItem('selectedEmpresa', JSON.stringify(this.empresaActual));
+  localStorage.setItem('selectedCliente', JSON.stringify(presupuesto.cliente));
+  localStorage.setItem('selectedTareas', JSON.stringify(presupuesto.tareas));
+
+  // opcional: guardar nombre del presupuesto
+  localStorage.setItem('selectedPresupuestoName', presupuesto.name);
+  console.log('datos del presupuesto a descargar: ', presupuesto )
+
+  this.router.navigate(['/presupuesto']);
+}
+
 
   private calcularTotal(presupuesto: SavedPresupuesto): number {
     return presupuesto.tareas.reduce((acc, tarea) => acc + (tarea.totalCost || 0), 0);

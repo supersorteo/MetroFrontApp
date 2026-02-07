@@ -62,7 +62,7 @@
 
 <div class="saved-budgets-card">
   <div class="saved-budgets-header">
-   
+
     <div class="save-controls">
       <input
         class="form-control"
@@ -75,9 +75,11 @@
         (click)="guardarPresupuestoActual()"
 
         [disabled]="!puedeGuardarr"
-        [title]="!puedeGuardarr ? getMensajeBotonDeshabilitado() : 'Guardar presupuesto'"
-      >
-        Guardar
+
+        [title]="!puedeGuardarr ? getMensajeBotonDeshabilitado() : (presupuestoCargado ? 'Actualizar presupuesto' : 'Guardar presupuesto')"
+
+        >
+         {{ presupuestoCargado ? 'Actualizar' : 'Guardar' }}
       </button>
        <div>
       <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
@@ -139,9 +141,14 @@
             <button class="btn btn-outline-danger btn-sm" (click)="eliminar(presupuesto)">
               ELIMINAR
             </button>
-            <button class="btn btn-outline-secondary btn-sm" (click)="descargarPDF(presupuesto)">
+            <!--button class="btn btn-outline-secondary btn-sm" (click)="descargarPDF(presupuesto)">
               DESCARGAR PDF
-            </button>
+            </button-->
+
+            <button class="btn btn-outline-secondary btn-sm" (click)="verPresupuesto(presupuesto)">
+             VER / DESCARGAR
+           </button>
+
           </div>
         </div>
       }

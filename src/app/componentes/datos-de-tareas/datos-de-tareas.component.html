@@ -21,11 +21,13 @@
 
   <div *ngIf="empresaSeleccionada && clienteSeleccionado" class="empresa-asociada presupuesto-info mb-4">
     <div class="empresa-card">
+      <h3 class="mb-3">{{ presupuestoNombre }}</h3>
       <div class="empresa-grid-top">
         <div class="empresa-logo">
           <img *ngIf="empresaSeleccionada.logoUrl" [src]="empresaSeleccionada.logoUrl" alt="Logo" />
         </div>
         <div class="empresa-info">
+          <h3 class="mb-3">{{ presupuestoNombre }}</h3>
           <div class="empresa-nombre">{{ empresaSeleccionada.name }}</div>
           <div class="empresa-descripcion">{{ empresaSeleccionada.description }}</div>
           <div class="empresa-telefono"><strong>Tel:</strong> {{ empresaSeleccionada.phone }}</div>

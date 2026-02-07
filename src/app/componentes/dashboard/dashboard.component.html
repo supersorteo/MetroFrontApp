@@ -202,7 +202,8 @@ aria-label="Menu"
           <div></div>
         </div>
         <div class="tareas-agregadas__cliente" *ngIf="clienteSeleccionado">
-          <span class="tareas-agregadas__cliente-nombre">{{ clienteSeleccionado.name }}</span>
+          <!--span class="tareas-agregadas__cliente-nombre">{{ presupuestoSeleccionado?.name }}</!--span-->
+          <span class="tareas-agregadas__cliente-nombre"> {{ presupuestoSeleccionado?.name || clienteSeleccionado?.name }}</span>
           <small class="tareas-agregadas__cliente-fecha" *ngIf="budgetDate">
             Presupuesto: {{ budgetDate | date:'dd/MM/yyyy' }}
           </small>
@@ -264,6 +265,11 @@ aria-label="Menu"
         <button class="tareas-panel__close " (click)="toggleSavedBudgetsPanel()">
           Guardar
         </button>
+
+        <button class="tareas-panel__close" type="button" (click)="limpiarPresupuestoCargado()">
+  Quitar carga
+</button>
+
       </div>
     </div>
   </aside>
@@ -914,7 +920,9 @@ aria-label="Menu"
     [empresaActual]="selectedEmpresaId"
     [clienteActual]="clienteSeleccionado"
     [tareasDelCliente]="tareasAgregadas"
-
+    [presupuestoCargado]="presupuestoSeleccionado"
+    (presupuestoActualizado)="onPresupuestoActualizado($event)"
+    (presupuestoEliminado)="onPresupuestoEliminado($event)"
     (cargarPresupuesto)="onCargarPresupuestoGuardado($event)">
   </app-presupuestos-guardados>
 </div>

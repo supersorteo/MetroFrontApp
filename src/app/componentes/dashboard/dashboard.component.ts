@@ -181,6 +181,10 @@ export class DashboardComponent implements OnInit{
   return `demoTareasCliente_${clienteId ?? 'sinCliente'}`;
 }
 
+presupuestoSeleccionado: SavedPresupuesto | null = null;
+private presupuestoPendiente: SavedPresupuesto | null = null;
+
+
 
   constructor(
     private authService: AuthService,
@@ -274,6 +278,20 @@ if (this.trialMode) {
       this.budgetDate = this.budgetDate;
       console.log('Fecha forzada para binding:', this.budgetDate);
     }, 0);
+
+
+   /* const storedPresupuesto = localStorage.getItem('presupuestoCargado');
+if (storedPresupuesto) {
+  const presupuesto = JSON.parse(storedPresupuesto) as SavedPresupuesto;
+  this.onCargarPresupuestoGuardado(presupuesto);
+}*/
+
+const storedPresupuesto = localStorage.getItem('presupuestoCargado');
+if (storedPresupuesto) {
+  this.presupuestoPendiente = JSON.parse(storedPresupuesto) as SavedPresupuesto;
+}
+
+
   }
 
 
@@ -334,6 +352,9 @@ if (this.selectedEmpresaId) {
 
 
    seleccionarCliente(cliente: Cliente): void {
+  localStorage.removeItem('selectedPresupuestoName');
+  this.presupuestoSeleccionado = null;
+
   this.clienteSeleccionado = cliente;
   localStorage.setItem('selectedClienteId', String(cliente.id));
   localStorage.setItem('selectedCliente', JSON.stringify(cliente));
@@ -413,7 +434,7 @@ if (this.selectedEmpresaId) {
   }
 
 
-getEmpresasByUserCode(): void {
+getEmpresasByUserCode00(): void {
 
   if (this.trialMode) {
   const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
@@ -512,12 +533,136 @@ getEmpresasByUserCode(): void {
           });
         }
       },
+
+
+
+
       error: (error) => {
         //this.toastr.error(error.message || 'Error al cargar las empresas');
         console.error('[EMPRESA] Error al cargar empresas:', error);
       }
     });
   }
+
+  getEmpresasByUserCode(): void {
+
+  if (this.trialMode) {
+    const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
+    const demoEmpresas = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
+    this.empresas = demoEmpresas;
+    this.updatePaginatedEmpresas();
+    return;
+  }
+
+  if (!this.userCode) {
+    this.toastr.error('Código de usuario no encontrado', 'Error');
+    console.error('[EMPRESA] Código de usuario no encontrado');
+    return;
+  }
+  console.log('[EMPRESA] getEmpresasByUserCode para userCode:', this.userCode);
+  this.empresaService.getEmpresaByUserCode(this.userCode).subscribe({
+    next: (empresas) => {
+      console.log('[EMPRESA] Empresas recibidas:', empresas);
+      this.empresas = Array.isArray(empresas) ? empresas : [empresas];
+      this.updatePaginatedEmpresas();
+      // Lógica de selección de empresa
+      const selectedId = localStorage.getItem('selectedEmpresaId');
+      let empresaSeleccionada = null;
+      if (selectedId) {
+        empresaSeleccionada = this.empresas.find(e => String(e.id) === selectedId);
+      }
+      if (empresaSeleccionada) {
+        this.selectedEmpresaId = empresaSeleccionada;
+        this.actualizarImagenEmpresa(empresaSeleccionada);
+        console.log('Empresa seleccionada:', this.selectedEmpresaId);
+      } else if (this.empresas.length > 0) {
+        this.selectedEmpresaId = this.empresas[0];
+        this.actualizarImagenEmpresa(this.empresas[0]);
+        localStorage.setItem('selectedEmpresaId', String(this.empresas[0].id));
+        console.log('Empresa seleccionada:', this.selectedEmpresaId);
+      } else {
+        this.selectedEmpresaId = null;
+        this.actualizarImagenEmpresa(null);
+        localStorage.removeItem('selectedEmpresaId');
+        console.log('Empresa seleccionada:', this.selectedEmpresaId);
+      }
+      // Cargar clientes de la empresa seleccionada
+      if (this.selectedEmpresaId?.id) {
+        this.clienteService.getClientesByEmpresaId(this.selectedEmpresaId.id).subscribe({
+          next: (clientes) => {
+            console.log('Clientes recibidos para empresa:', clientes);
+            this.clientes = clientes || [];
+            this.updatePaginatedClientes();
+
+            // Selección automática de cliente (normal)
+            const storedClienteId = localStorage.getItem('selectedClienteId');
+            const clienteGuardado = storedClienteId
+              ? this.clientes.find(c => String(c.id) === storedClienteId)
+              : null;
+
+            const clienteFinal = clienteGuardado || this.clientes[this.clientes.length - 1];
+
+            if (clienteFinal) {
+              this.seleccionarCliente(clienteFinal); // guarda selectedClienteId + selectedCliente
+            } else {
+              this.clienteSeleccionado = null;
+              localStorage.removeItem('selectedClienteId');
+              localStorage.removeItem('selectedCliente');
+            }
+
+            // 👇 va acá
+           // 👇 va acá
+if (this.presupuestoPendiente) {
+  const mismoCliente =
+    this.presupuestoPendiente?.cliente?.id &&
+    this.clienteSeleccionado?.id &&
+    this.presupuestoPendiente.cliente.id === this.clienteSeleccionado.id;
+
+  if (mismoCliente) {
+    this.onCargarPresupuestoGuardado(this.presupuestoPendiente);
+  }
+
+  this.presupuestoPendiente = null;
+  return;
+}
+
+
+            // Cargar tareas del cliente seleccionado, si existe
+            if (this.clienteSeleccionado?.id) {
+              this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).subscribe({
+                next: (tareas) => {
+                  console.log('Tareas recibidas para cliente:', tareas);
+                  this.tareasAgregadas = tareas || [];
+                  this.mostrarTabla = this.tareasAgregadas.length > 0;
+                  localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+                },
+                error: (error) => {
+                  console.error('Error al cargar tareas:', error);
+                  this.toastr.error(error.message || 'Error al cargar las tareas');
+                  this.tareasAgregadas = [];
+                  this.mostrarTabla = false;
+                }
+              });
+            }
+
+            console.log('Estado final clienteSeleccionado:', this.clienteSeleccionado);
+          },
+          error: (error) => {
+            console.error('Error al cargar clientes por empresa:', error);
+            // this.toastr.error(error.message || 'Error al cargar los clientes');
+            this.clientes = [];
+            this.updatePaginatedClientes();
+          }
+        });
+      }
+    },
+    error: (error) => {
+      //this.toastr.error(error.message || 'Error al cargar las empresas');
+      console.error('[EMPRESA] Error al cargar empresas:', error);
+    }
+  });
+}
+
 
   openListaEmpresasModal(): void {
     this.getEmpresasByUserCode();
@@ -958,7 +1103,7 @@ offcanvasEl?.addEventListener('hidden.bs.offcanvas', () => {
 }
 
 
-obtenerTareas(): void {
+obtenerTareas0(): void {
   if (this.userData?.pais) {
     this.tareaService.getTareasByPais(this.userData.pais).subscribe({
       next: (tareas) => {
@@ -971,7 +1116,43 @@ obtenerTareas(): void {
   }
 }
 
+// src/app/componentes/dashboard/dashboard.component.ts shareReplay
+obtenerTareas(): void {
+  if (this.userData?.pais) {
+    this.tareaService.getTareasByPaisCached(this.userData.pais).subscribe({
+      next: (tareas) => {
+        this.tareas = tareas;
+        this.tareasFiltradas = tareas;
+        console.log('Tareas cargadas:', this.tareas);
+      },
+      error: () => this.toastr.error('Error al obtener las tareas', 'Error')
+    });
+  }
+}
 
+
+// src/app/componentes/dashboard/dashboard.component.ts localstoarage
+obtenerTareas1(): void {
+  if (!this.userData?.pais) return;
+
+  const key = `tareas_${this.userData.pais}`;
+  const cached = localStorage.getItem(key);
+
+  if (cached) {
+    this.tareas = JSON.parse(cached);
+    this.tareasFiltradas = this.tareas;
+    return;
+  }
+
+  this.tareaService.getTareasByPais(this.userData.pais).subscribe({
+    next: (tareas) => {
+      this.tareas = tareas;
+      this.tareasFiltradas = tareas;
+      localStorage.setItem(key, JSON.stringify(tareas));
+    },
+    error: () => this.toastr.error('Error al obtener las tareas', 'Error')
+  });
+}
 
 
 
@@ -1348,6 +1529,7 @@ if (this.trialMode) {
 
   verPresupuesto(): void {
   // Permitir vista previa incluso sin empresa o cliente seleccionados.
+    localStorage.removeItem('selectedPresupuestoName');
   if (this.clienteSeleccionado) {
     localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
   } else {
@@ -1362,6 +1544,9 @@ if (this.trialMode) {
 
   localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas ?? []));
   this.route.navigate(['/presupuesto']);
+
+
+
 }
 
 verPresupuesto0(): void {
@@ -1470,6 +1655,10 @@ onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
     tareasCount: presupuesto.tareas?.length || 0
   });
 
+   this.presupuestoSeleccionado = presupuesto;
+   localStorage.setItem('presupuestoCargado', JSON.stringify(presupuesto));
+
+
   // 1. CARGAR TAREAS DEL PRESUPUESTO
   this.tareasAgregadas = (presupuesto.tareas || []).map(tarea => ({
     ...tarea,
@@ -1506,6 +1695,8 @@ onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
     localStorage.removeItem('selectedCliente');
     console.warn('El presupuesto no tiene cliente asociado');
   }
+
+  this.budgetDate = new Date().toISOString().split('T')[0];
 
   // 3. NO TOCAR LA EMPRESA
   // La empresa actual ya está seleccionada por el usuario.
@@ -1555,6 +1746,73 @@ toggleTareasPanel(): void {
 
   this.showTareasPanel = !this.showTareasPanel;
 }
+
+onPresupuestoEliminado(p: SavedPresupuesto) {
+  // si es el que está cargado, limpiar
+  if (this.presupuestoSeleccionado?.id === p.id) {
+    this.limpiarPresupuestoCargado();
+  }
+}
+
+limpiarPresupuestoCargado0() {
+ // this.tareasAgregadas = [];
+  //this.mostrarTabla = false;
+  //this.budgetDate = '';
+  this.clienteSeleccionado= null;
+  this.presupuestoSeleccionado = null;
+  localStorage.removeItem('selectedTareas');
+}
+
+limpiarPresupuestoCargado() {
+  // Quitar info del presupuesto cargado
+  this.presupuestoSeleccionado = null;
+  this.budgetDate = '';
+  localStorage.removeItem('presupuestoCargado');
+
+
+  // Volver a cargar tareas normales del cliente seleccionado
+  if (this.clienteSeleccionado?.id) {
+    this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).subscribe({
+      next: (tareas) => {
+        this.tareasAgregadas = tareas || [];
+        this.mostrarTabla = this.tareasAgregadas.length > 0;
+        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+      },
+      error: () => {
+        this.tareasAgregadas = [];
+        this.mostrarTabla = false;
+      }
+    });
+  } else {
+    // Si no hay cliente seleccionado, limpiar todo
+    this.tareasAgregadas = [];
+    this.mostrarTabla = false;
+    localStorage.removeItem('tareasAgregadas');
+  }
+
+  localStorage.removeItem('selectedTareas');
+}
+
+
+
+onPresupuestoActualizado0(p: SavedPresupuesto) {
+  // si es el que está cargado, refrescá todo
+  if (this.presupuestoSeleccionado?.id === p.id) {
+    this.onCargarPresupuestoGuardado(p); // recarga tareas, cliente, nombre
+    localStorage.setItem('presupuestoCargado', JSON.stringify(p));
+  }
+}
+
+onPresupuestoActualizado(p: SavedPresupuesto) {
+  // actualizar estado y localStorage
+  this.presupuestoSeleccionado = p;
+  localStorage.setItem('presupuestoCargado', JSON.stringify(p));
+
+  // refrescar tareas y UI usando tu método existente
+  this.onCargarPresupuestoGuardado(p);
+}
+
+
 
 
 closeSavedBudgetsPanel(): void {
@@ -2770,6 +3028,9 @@ fetchUserData(): void {
   }
 
   onEmpresaSeleccionada(empresa: any) {
+  localStorage.removeItem('selectedPresupuestoName');
+  this.presupuestoSeleccionado = null;
+
   console.log('Empresa seleccionada:', empresa);
   this.selectedEmpresaId = empresa;
 

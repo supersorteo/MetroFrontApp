@@ -41,6 +41,8 @@ export class DatosDeTareasComponent implements OnInit {
   colorScheme: ColorScheme = { ...this.defaultColorScheme };
   private readonly colorSchemeStorageKey = 'metroColorScheme';
 
+  presupuestoNombre: string = '';
+
   constructor(
     private presupuestoService: PresupuestoService,
     private authService: AuthService,
@@ -70,6 +72,15 @@ export class DatosDeTareasComponent implements OnInit {
     console.log('Empresa seleccionada:', this.empresaSeleccionada);
     console.log('Cliente seleccionado:', this.clienteSeleccionado);
     console.log('Tareas asociadas:', this.tareasAgregadas);
+
+
+    const storedPresupuestoName = localStorage.getItem('selectedPresupuestoName');
+if (storedPresupuestoName) {
+  this.presupuestoNombre = storedPresupuestoName;
+  console.log('datos del presupuesto: ', storedPresupuestoName )
+}
+
+
   }
 
   calcularCostoTotal(): number {
