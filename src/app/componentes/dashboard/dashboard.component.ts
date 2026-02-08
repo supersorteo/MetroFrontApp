@@ -299,14 +299,17 @@ if (storedPresupuesto) {
 
 
    ngOnDestroy(): void {
-    if (localStorage.getItem('trialMode') === 'true') {
+    /*if (localStorage.getItem('trialMode') === 'true') {
       localStorage.setItem('trialMode', 'false');
       // opcional: limpiar también datos demo si querés
       // localStorage.removeItem('demoEmpresas');
       // localStorage.removeItem('demoTareas');
       // localStorage.removeItem('demoEmpresaLogo');
-    }
+    }*/
   }
+
+
+
 
   private isTrialMode(): boolean {
   return localStorage.getItem('trialMode') === 'true';
@@ -1721,13 +1724,32 @@ onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
 
 
 
-toggleSavedBudgetsPanel(): void {
+toggleSavedBudgetsPanel0(): void {
   const nextState = !this.showSavedBudgetsPanel;
   this.showSavedBudgetsPanel = nextState;
   if (nextState) {
     this.showTareasPanel = false;
   }
 }
+
+toggleSavedBudgetsPanel(): void {
+  if (this.trialMode) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Modo demo',
+      text: 'Esta función no está habilitada en el modo de prueba.',
+      confirmButtonText: 'Entendido'
+    });
+    return;
+  }
+
+  const nextState = !this.showSavedBudgetsPanel;
+  this.showSavedBudgetsPanel = nextState;
+  if (nextState) {
+    this.showTareasPanel = false;
+  }
+}
+
 
 toggleTareasPanel0(): void {
   this.showTareasPanel = !this.showTareasPanel;
@@ -1764,6 +1786,16 @@ limpiarPresupuestoCargado0() {
 }
 
 limpiarPresupuestoCargado() {
+  if (this.trialMode) {
+  Swal.fire({
+    icon: 'info',
+    title: 'Modo demo',
+    text: 'Esta función no está habilitada en el modo de prueba.',
+    confirmButtonText: 'Entendido'
+  });
+  return;
+}
+
   // Quitar info del presupuesto cargado
   this.presupuestoSeleccionado = null;
   this.budgetDate = '';
@@ -2187,11 +2219,7 @@ calcularCostoTotal(): number {
 }
 
 
-  logout1(): void {
-    this.authService.logout();
-    this.route.navigate(['']);
-    this.toastr.success('Logout exitoso', 'Éxito');
-  }
+
 
   logout(): void {
   Swal.fire({

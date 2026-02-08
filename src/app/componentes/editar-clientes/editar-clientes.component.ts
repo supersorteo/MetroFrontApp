@@ -40,7 +40,37 @@ export class EditarClientesComponent implements OnInit {
       document.body.classList.remove('modal-open');
       document.body.style.overflow = '';
     }, 0);
+    //const id = Number(this.route.snapshot.paramMap.get('id'));
+
+
     const id = Number(this.route.snapshot.paramMap.get('id'));
+if (!id) {
+  this.errorMsg = 'ID de cliente no válido';
+  this.loading = false;
+  setTimeout(() => this.router.navigate(['/dashboard']), 2000);
+  return;
+}
+
+const isTrial = localStorage.getItem('trialMode') === 'true';
+
+if (isTrial) {
+  const demoClientes = Object.keys(localStorage)
+    .filter(key => key.startsWith('demoCliente_'))
+    .map(key => JSON.parse(localStorage.getItem(key) || '{}'));
+
+  const cliente = demoClientes.find(c => Number(c.id) === id);
+  if (cliente) {
+    this.cliente = { ...cliente };
+    this.loading = false;
+  } else {
+    this.errorMsg = 'No se pudo cargar el cliente demo';
+    this.loading = false;
+    setTimeout(() => this.router.navigate(['/dashboard']), 2000);
+  }
+  return;
+}
+
+
     if (id) {
       this.clienteService.getClienteById(id).subscribe({
         next: (data) => {
@@ -65,7 +95,18 @@ export class EditarClientesComponent implements OnInit {
   }
 
   onSubmit() {
+    const isTrial = localStorage.getItem('trialMode') === 'true';
+if (isTrial) {
+  const key = `demoCliente_${this.cliente.id}`;
+  localStorage.setItem(key, JSON.stringify(this.cliente));
+  localStorage.setItem('reloadClientes', 'true');
+  this.router.navigate(['/dashboard']);
+  return;
+}
+
     if (!this.cliente.id) {
+
+
       alert('ID de cliente no válido');
       return;
     }

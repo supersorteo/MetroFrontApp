@@ -19,13 +19,22 @@ export class AuthLoggedGuard implements CanActivate {
         }
       }
 
-canActivate(): boolean {
+canActivate1(): boolean {
   if (this.authService.isLoggedIn()) {
     this.router.navigate(['/dashboard']);
     return false;
   }
   return true;
 }
+
+canActivate(): boolean {
+  if (this.authService.isLoggedIn() || this.authService.isTrialMode()) {
+    this.router.navigate(['/dashboard']);
+    return false;
+  }
+  return true;
+}
+
 
 
     }

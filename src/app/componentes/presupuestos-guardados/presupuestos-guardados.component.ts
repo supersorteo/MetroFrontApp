@@ -8,6 +8,7 @@ import { BudgetStorageService } from '../../servicios/budget-storage.service';
 import { ToastrService } from 'ngx-toastr';
 import { BudgetService, SavedPresupuesto } from '../../servicios/budget.service';
 import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 
 declare const html2pdf: any;
 declare const bootstrap: any
@@ -190,6 +191,19 @@ guardarPresupuestoActual1() {
 }
 
 guardarPresupuestoActual() {
+
+const isTrial = localStorage.getItem('trialMode') === 'true';
+if (isTrial) {
+  Swal.fire({
+    icon: 'info',
+    title: 'Modo demo',
+    text: 'Guardar presupuestos no está habilitado en el modo de prueba.',
+    confirmButtonText: 'Entendido'
+  });
+  return;
+}
+
+
   if (!this.clienteActual?.id) {
     this.toastr.error('Selecciona un cliente');
     return;
@@ -262,7 +276,7 @@ guardarPresupuestoActual() {
     this.toastr.info('Presupuesto eliminado', presupuesto.name);
   }*/
 
-  eliminar(presupuesto: SavedPresupuesto) {
+  eliminar0(presupuesto: SavedPresupuesto) {
   if (!presupuesto.id) return;
 
   console.log('%cELIMINAR PRESUPUESTO ID:', 'color: #F44336; font-weight: bold', presupuesto.id, presupuesto.name);
@@ -276,6 +290,32 @@ guardarPresupuestoActual() {
     error: () => this.toastr.error('Error al eliminar')
   });
 }
+
+async eliminar(presupuesto: SavedPresupuesto) {
+  if (!presupuesto.id) return;
+ console.log('%cELIMINAR PRESUPUESTO ID:', 'color: #F44336; font-weight: bold', presupuesto.id, presupuesto.name);
+
+  const result = await Swal.fire({
+    title: 'Eliminar presupuesto',
+    text: `¿Seguro que querés eliminar "${presupuesto.name}"? Esta acción no se puede deshacer.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Eliminar',
+    cancelButtonText: 'Cancelar',
+    reverseButtons: true
+  });
+
+  if (!result.isConfirmed) return;
+
+  this.budgetService.eliminarPresupuesto(presupuesto.id).subscribe({
+    next: () => {
+      this.toastr.info('Presupuesto eliminado');
+      this.presupuestoEliminado.emit(presupuesto);
+    },
+    error: () => this.toastr.error('Error al eliminar')
+  });
+}
+
 
 
 
