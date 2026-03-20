@@ -132,7 +132,6 @@ export class DashboardComponent implements OnInit{
   showTareasPanel: boolean = false;
   tareasAgregadas: UserTarea[] = [];
   tareasDelCliente: UserTarea[] = [];
-  isSidebarOpen: boolean = false;
   showSocialFields: boolean = false;
   weatherLoading: boolean = false;
   weatherError: string = '';
@@ -692,17 +691,24 @@ if (this.trialMode) {
 
 
 /*
-ngAfterViewInit() {
-    const menuBtn = document.getElementById('menuToggleBtn');
-    const offcanvasElement = document.getElementById('offcanvasMenu');
-    if (menuBtn && offcanvasElement) {
-      offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
-        menuBtn.style.display = 'none';
-      });
-      offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-        menuBtn.style.display = 'flex';
-      });
-    }
+  ngAfterViewInit() {
+  const menuBtn = document.getElementById('menuToggleBtn');
+  const offcanvasElement = document.getElementById('offcanvasMenu');
+  if (menuBtn && offcanvasElement) {
+    offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
+      menuBtn.style.display = 'none';
+      this.isSidebarOpen = true;
+    });
+    offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
+      menuBtn.style.display = 'flex';
+      this.isSidebarOpen = false;
+      this.clearOffcanvasBackdrop();
+    });
+    offcanvasElement.addEventListener('hide.bs.offcanvas', () => {
+      this.isSidebarOpen = false;
+      this.clearOffcanvasBackdrop();
+    });
+  }
 
     // Limpiar modal-backdrop y restaurar foco para modales
     const modals = ['exampleModal', 'imageModal', 'clientModal', 'miModal'];
@@ -834,14 +840,10 @@ ngAfterViewInit0() {
 }
 
 ngAfterViewInit() {
-  const menuBtn = document.getElementById('menuToggleBtn');
-  const offcanvasElement = document.getElementById('offcanvasMenu');
-  if (menuBtn && offcanvasElement) {
-    offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
-      menuBtn.style.display = 'none';
-    });
-    offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-      menuBtn.style.display = 'flex';
+  const offcanvasElements = document.querySelectorAll('#offcanvasMenu');
+  if (offcanvasElements.length > 1) {
+    offcanvasElements.forEach((element, index) => {
+      if (index > 0) element.remove();
     });
   }
 
@@ -1037,68 +1039,19 @@ if (this.trialMode) {
   }
 
   seleccionar(tarea: Tarea): void {
-  // Verificar si hay empresa seleccionada
-  if (!this.selectedEmpresaId) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Falta selección de empresa',
-      text: 'Debe seleccionar una empresa primero.',
-      confirmButtonText: 'Aceptar',
-      customClass: {
-        popup: 'swal2-border-radius',
-        confirmButton: 'btn btn-primary'
-      }
-    });
-    return;
+    this.tareaSeleccionada = {
+      ...tarea,
+      descripcion: '',
+      totalCost: this.calcularTotalCosto(tarea)
+    };
+    console.log('Tarea seleccionada:', this.tareaSeleccionada);
+    this.abrirModal();
   }
 
-  // Verificar si la empresa tiene clientes
-  if (!this.clientes || this.clientes.length === 0) {
-    Swal.fire({
-      icon: 'info',
-      title: 'Sin clientes',
-      text: 'La empresa seleccionada no tiene clientes registrados. Por favor, agregue clientes primero.',
-      confirmButtonText: 'Aceptar',
-      customClass: {
-        popup: 'swal2-border-radius',
-        confirmButton: 'btn btn-primary'
-      }
-    });
-    return;
+  abrirModal(): void {
+    const modal = new bootstrap.Modal(document.getElementById('miModal') as HTMLElement);
+    modal.show();
   }
-
-  // Verificar si hay cliente seleccionado
-  if (!this.clienteSeleccionado) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Falta selección',
-      text: 'Debe seleccionar un cliente.',
-      confirmButtonText: 'Aceptar',
-      customClass: {
-        popup: 'swal2-border-radius',
-        confirmButton: 'btn btn-primary'
-      }
-    });
-    return;
-  }
-
-  this.tareaSeleccionada = {
-    ...tarea,
-    descripcion: '',
-    totalCost: this.calcularTotalCosto(tarea)
-  };
-  console.log('Tarea seleccionada:', this.tareaSeleccionada);
-  this.abrirModal();
-}
-
-
-
-
-
-    abrirModal(): void {
-      const modal = new bootstrap.Modal(document.getElementById('miModal') as HTMLElement);
-      modal.show();
-    }
 
 
 
@@ -1305,7 +1258,7 @@ if (this.trialMode) {
         this.mostrarTabla = true;
         localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
         this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
-        this.toastr.success('Tarea agregada', 'Exito', {
+        this.toastr.success('Tarea agregada', '', {
           toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
         });
         this.resetTareaSeleccionada();

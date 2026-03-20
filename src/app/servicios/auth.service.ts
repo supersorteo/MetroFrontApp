@@ -2,6 +2,8 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, Observable, of, throwError } from 'rxjs';
+import { AUTH_API_URL } from '../core/api/api.config';
+import { extractApiErrorMessage } from '../core/http/api-error.util';
 
 
 
@@ -32,8 +34,7 @@ export interface AccessCode {
   providedIn: 'root'
 })
 export class AuthService {
-  //private apiUrl = 'http://localhost:8080/auth';
-  private apiUrl= 'https://adequate-education-production.up.railway.app/auth'
+  private apiUrl = AUTH_API_URL;
 
   constructor(private http: HttpClient, private router: Router) { }
 
@@ -70,7 +71,7 @@ export class AuthService {
             } else if (error.status === 401) {
               errorMessage = 'Código no encontrado';
             } else {
-              errorMessage = `Error ${error.status}: ${error.message}`;
+              errorMessage = extractApiErrorMessage(error);
             }
           } return throwError(() => new Error(errorMessage));
         }
@@ -85,7 +86,7 @@ export class AuthService {
       } else if (error.status === 401) {
         errorMessage = 'Código no encontrado o no asignado';
       } else {
-        errorMessage = `Error ${error.status}: ${error.message}`;
+        errorMessage = extractApiErrorMessage(error);
       }
     }
     return throwError(() => new Error(errorMessage));
@@ -118,7 +119,7 @@ export class AuthService {
 }
 
   private handleError1(error: HttpErrorResponse): Observable<never> {
-    const errorMessage = error.error.message || 'Error desconocido';
+    const errorMessage = extractApiErrorMessage(error);
     console.error(errorMessage);
     return throwError(() => new Error(errorMessage));
   }
@@ -153,3 +154,4 @@ export class AuthService {
 
   deleteCode(code: string): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/codes/${code}`) .pipe( catchError(this.handleError1) ); }
 }
+

@@ -22,6 +22,10 @@
     padding: 0.4rem;
     min-width: 80px;
   }
+
+  .datos-empresa-cliente {
+    grid-template-columns: 1fr;
+  }
 }
 .lista-tareas-odd-row td {
   background-color: #e5e9ef56 !important;
@@ -219,11 +223,41 @@
   z-index: 1075;
 }
 /* Contenedor para la imagen fija en la esquina superior derecha */
-
 .fixed-image-container {
-  position: absolute;
+  position: fixed;
   top: 20px;
   right: 20px;
+  z-index: 1035;
+  width: 70px;
+  height: 70px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.dashboard-header {
+  position: sticky;
+  top: 0;
+  z-index: 1035;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(12, 44, 110, 0.08);
+}
+
+.dashboard-header__spacer {
+  flex: 1;
+}
+
+.dashboard-header .fixed-image-container {
+  position: static;
   width: 70px;
   height: 70px;
   background: #fff;
@@ -309,7 +343,6 @@
   margin-bottom: 10px;
   border: none;
   border-radius: 10px;
-
   height: 50px;
 }
 
@@ -337,14 +370,14 @@ button{
 
 .coolinput label.text {
   color: #ffffff;
-  font-weight: 700;
+  font-weight: 100;
   position: relative;
   top: 0.5rem;
   margin: 0 0 0 7px;
   padding: 0 3px;
-  background-image: linear-gradient(to left top, #0d69f8, #637cf3, #8990ed, #a7a6e8, #bfbce2);
-  width: fit-content;
-  border-radius: 4px;
+background-image: linear-gradient(to bottom, #5781dd, #5179e1, #4f71e4, #4f68e6, #525ee7); 
+width: fit-content;
+border-radius: 4px;
 }
 
 .coolinput .input {
@@ -356,6 +389,36 @@ button{
   color: #012d5f;
   width: 100%;
   box-sizing: border-box;
+}
+
+.tarea-textarea-wrap {
+  position: relative;
+}
+
+.tarea-textarea-wrap textarea {
+  padding-right: 44px;
+  padding-bottom: 44px;
+}
+
+.tarea-info-btn {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 999px;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 12px rgba(12, 44, 110, 0.15);
+  cursor: pointer;
+}
+
+.tarea-info-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .coolinput .input:focus {
@@ -421,6 +484,25 @@ button{
 
 .dashboard-btn-blue:hover {
   opacity: 0.7;
+}
+
+.datos-empresa-cliente {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  padding: 0 8px;
+}
+
+.datos-cta {
+  width: 100%;
+  border-radius: 5px;
+  border: 1px solid #d2d6de;
+  background-image: linear-gradient(135deg, #f7f7f7, #dedede);
+  color: #2f3a4a;
+  font-weight: 700;
+  padding: 10px 12px;
+  box-shadow: 0 6px 14px rgba(12, 44, 110, 0.12);
 }
 
 .table-card {
@@ -1171,53 +1253,59 @@ p {
   bottom: 16px;
   display: flex;
   justify-content: center;
-  z-index: 1055;
+  z-index: 1030;
   pointer-events: none;
 }
 
 .floating-toolbar {
   display: grid;
-  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  grid-template-columns: repeat(5, minmax(70px, 1fr));
   gap: 10px;
-  background: rgba(255, 255, 255, 0.96);
+ 
   border-radius: 12px;
-  padding: 12px;
+
   box-shadow: 0 10px 24px rgba(12, 44, 110, 0.18);
   pointer-events: auto;
+
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        border-radius: 10px;
+        padding: 2px;
+   
+        background-image: linear-gradient(to bottom, #e9e9e9, #edf3fa, #e8eef2, #f5fcff, #ffffff);
 }
 
 .toolbar-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 5px;
-  border: 1px solid rgba(91, 116, 143, 0.2);
-  background: linear-gradient(135deg, #ffffff 0%, #f3f6fb 100%);
-  color: #1a2a3a;
+  gap: 6px;
+  border: none;
+  background: #e9f1ff;
+  color: #0f2d54;
   font-weight: 700;
-  font-size: 0.82rem;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  box-shadow: 0 6px 14px rgba(12, 44, 110, 0.12);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  border-radius: 5px;
+  padding: 8px 10px;
+  text-align: center;
 }
 
-.toolbar-item:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(12, 44, 110, 0.18);
-  border-color: rgba(91, 116, 143, 0.35);
+.toolbar-item--ghost {
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
+.toolbar-item--ghost .toolbar-item__icon {
+  background: transparent;
+}
 .toolbar-item__icon {
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #eef3f8;
-  border-radius: 5px;
-  padding: 4px;
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 6px;
   flex: 0 0 auto;
 }
 
@@ -1227,25 +1315,48 @@ p {
 }
 
 .toolbar-item__label {
-  line-height: 1;
+    line-height: 1.1;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #3674ce;
+    text-align: center;
+}
+
+.tareas-agregadas__title {
+  max-width: 60px;
+  border-radius: 5px;
+}
+
+.tareas-agregadas__logo {
+  display: block;
+  width: 100%;
+  max-width: 60px;
+  height: auto;
+  border-radius: 5px;
+  object-fit: contain;
 }
 
 @media (max-width: 576px) {
   .floating-toolbar {
     width: calc(100% - 32px);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     border-radius: 10px;
   }
 
-  .toolbar-item {
-    padding: 8px 10px;
-    font-size: 0.74rem;
+  .toolbar-item__icon {
+    width: 30px;
+    height: 30px;
+    padding: 6px;
+  }
+
+  .toolbar-item__label {
+    font-size: 0.66rem;
   }
 }
 
 @media (min-width: 992px) {
   .floating-toolbar {
-    grid-template-columns: repeat(4, minmax(160px, 1fr));
+    grid-template-columns: repeat(5, minmax(90px, 1fr));
     padding: 12px 16px;
   }
 }
