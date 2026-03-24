@@ -1,6 +1,7 @@
-  <div class="fixed-image-container">
+﻿  <div class="fixed-image-container">
     <img id="fixedImageIcon" class="fixed-image" src="#" alt="Logo Empresa" style="display: none;">
   </div>
+
 
 
 <div class="offcanvas offcanvas-start"
@@ -10,6 +11,8 @@ aria-label="Menu"
 
 (shown.bs.offcanvas)="isSidebarOpen = true"
 (hidden.bs.offcanvas)="isSidebarOpen = false">
+
+
   <div class="program-title" id="portada" style="border-radius: 10px;" *ngIf="!isContentVisible">
       <h6 style="font-size: 12px; margin-bottom: 0px;">Orbita software</h6>
     </div>
@@ -22,11 +25,11 @@ aria-label="Menu"
       <div *ngIf="weatherLoading" class="text-muted">Cargando...</div>
       <div *ngIf="weatherError && !weatherLoading" class="text-danger small">{{ weatherError }}</div>
       <div *ngIf="currentWeather && !weatherLoading">
-        <div class="weather-temp">{{ currentWeather.temperature | number:'1.0-0' }}°C</div>
+        <div class="weather-temp">{{ currentWeather.temperature | number:'1.0-0' }}Â°C</div>
         <div class="weather-desc">{{ weatherDescription(currentWeather.weathercode) }}</div>
         <small class="text-muted d-block">{{ currentWeather.location }}</small>
-        <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#weathehayrModal" (click)="loadWeather()">
-          Ver pronóstico
+        <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#weatherModal" (click)="loadWeather()">
+          Ver pronÃ³stico
         </button>
       </div>
     </div>
@@ -55,7 +58,6 @@ aria-label="Menu"
   </div>
 </div>
 
-
 <div class="dashboard-container">
 
   <div id="successAlert" style="display: none;" class="alert alert-success">Datos guardados</div>
@@ -66,8 +68,15 @@ aria-label="Menu"
 
     <!-- Segunda tarjeta: Botones Empresa y Cliente verticales -->
     <div class="card mb-3 w-100">
-      <div class="card-body d-flex flex-column gap-2 px-2">
-  <button class="btn btn-primary btn-block  w-100 animate " data-bs-toggle="modal" data-bs-target="#exampleModal" (click)="cargarDatosEmpresaSeleccionada()">DATOS DE TU EMPRESA/PERSONA</button>
+      <div class="card-body d-flex gap-2 px-2">
+        <div class="flex-fill">
+          <button class="btn btn-primary btn-block w-100 animate" data-bs-toggle="modal" data-bs-target="#exampleModal" (click)="cargarDatosEmpresaSeleccionada()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52.29 52.35" width="18" height="18" aria-hidden="true" focusable="false" style="margin-right: 6px;">
+              <path fill="#ffffff" d="m51.18,8.07c-.24-.54-.73-.93-1.32-1.07-.63-.1-1.22.1-1.66.54l-5.89,5.89-3.02-.39-.44-3.07,5.94-5.89c.39-.44.58-1.02.49-1.66-.15-.58-.54-1.07-1.07-1.32-5.11-2.19-10.91-1.07-14.81,2.83-3.36,3.36-4.63,8.18-3.51,12.76l-6.19,6.24-3.02,3.02c-4.53-1.17-9.45.15-12.76,3.51C.04,33.31-1.08,39.3,1.11,44.27c.24.54.78.93,1.36,1.07.58.1,1.22-.1,1.61-.54l5.89-5.89,3.07.39.39,3.07-5.89,5.89c-.44.44-.63,1.02-.49,1.66.1.58.49,1.07,1.07,1.32,1.7.73,3.51,1.12,5.31,1.12,3.46,0,6.87-1.36,9.45-3.95,2.44-2.44,3.8-5.65,3.95-8.96l-3.7-.78c.1,2.68-.88,5.26-2.82,7.16-2.14,2.14-5.07,3.12-7.94,2.78l4.29-4.29c.39-.39.58-.97.54-1.51l-.73-5.36c-.1-.83-.73-1.51-1.56-1.61l-5.31-.63c-.58-.1-1.12.1-1.56.49l-4.29,4.34c-.34-2.87.63-5.89,2.78-7.99,2.63-2.68,6.53-3.56,10.13-2.29.63.2,1.36.05,1.9-.44l3.75-3.8c.1-.05.15-.15.19-.24l6.77-6.72c.49-.54.68-1.27.44-1.9-1.22-3.6-.34-7.5,2.29-10.13,2.14-2.14,5.07-3.12,7.99-2.78l-4.34,4.29c-.39.39-.58.97-.49,1.51l.68,5.36c.1.83.78,1.51,1.56,1.61l5.36.63c.54.1,1.12-.1,1.51-.49l4.34-4.34c.34,2.87-.68,5.89-2.78,7.99-2.68,2.68-6.53,3.56-10.13,2.29-.68-.2-1.41-.05-1.9.44l-3.8,3.8s-.15.15-.2.24l-6.77,6.72c-.24.29-.44.63-.44.97l3.8.88,6.19-6.24c.1-.05.15-.15.2-.19l2.82-2.83c4.58,1.17,9.5-.15,12.81-3.51,3.85-3.85,4.97-9.84,2.78-14.81Z"/>
+            </svg>
+            DATOS DE TU EMPRESA/PERSONA
+          </button>
+        </div>
   <!--ng-select--
     [items]="empresas"
     bindLabel="name"
@@ -125,7 +134,15 @@ aria-label="Menu"
 
   <!-- <button class="btn btn-primary btn-block  w-100 animate" data-bs-toggle="modal" data-bs-target="#clientModal">DATOS DEL CLIENTE</button> -->
 
-  <button class="btn btn-primary btn-block  w-100 animate" data-bs-toggle="modal" data-bs-target="#listaClientesModal">DATOS DEL CLIENTE</button>
+        <div class="flex-fill">
+          <button class="btn btn-primary btn-block w-100 animate" data-bs-toggle="modal" data-bs-target="#listaClientesModal">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42.97 48.65" width="18" height="18" aria-hidden="true" focusable="false" style="margin-right: 6px;">
+              <path fill="#ffffff" d="m36.34,0H6.63C2.98,0,0,2.98,0,6.63v35.38c0,3.66,2.98,6.63,6.63,6.63h31.39v-3.24h-8.43v-5.96h.43c1.99,0,3.6-1.61,3.6-3.6v-10.89c0-1.99-1.61-3.6-3.6-3.6H12.95c-1.99,0-3.6,1.61-3.6,3.6v10.89c0,1.99,1.61,3.6,3.6,3.6h.43v5.96h-6.74c-1.87,0-3.39-1.52-3.39-3.39V6.63c0-1.87,1.52-3.39,3.39-3.39h29.71c1.87,0,3.39,1.52,3.39,3.39v36.8h3.24V6.63c0-3.66-2.98-6.63-6.63-6.63Z"/>
+              <path fill="#ffffff" d="m15.79,13.65c0,3.15,2.55,5.7,5.7,5.7s5.7-2.55,5.7-5.7-2.55-5.7-5.7-5.7-5.7,2.55-5.7,5.7Zm7.18-2.83c0,.55-.45,1-1,1-1.23,0-2.24,1-2.24,2.24,0,.55-.45,1-1,1s-1-.45-1-1c0-2.34,1.9-4.24,4.24-4.24.55,0,1,.44,1,1Z"/>
+            </svg>
+            CLIENTES
+          </button>
+        </div>
       </div>
     </div>
 
@@ -142,7 +159,7 @@ aria-label="Menu"
       </span>
     </div>
     </div>
-    <p style="text-align: center;">Si no encuentras una tarea, selecciona TAREA GENERICA y edita su precio y descripción</p>
+    <p style="text-align: center;">Si no encuentras una tarea, selecciona TAREA GENERICA y edita su precio y descripciÃ³n</p>
     <div class="table-responsive">
       <table class="table table-striped">
         <thead>
@@ -198,7 +215,14 @@ aria-label="Menu"
     <div class="container mt-4 tareas-agregadas">
       <div class="tareas-agregadas__header">
         <div>
-          <h5 class="text-primary tareas-agregadas__title">TAREAS A REALIZAR</h5>
+          <div class="tareas-agregadas__title">
+            <img
+              *ngIf="selectedEmpresaId?.logoUrl"
+              [src]="selectedEmpresaId.logoUrl"
+              alt="Logo empresa"
+              class="tareas-agregadas__logo"
+            >
+          </div>
           <div></div>
         </div>
         <div class="tareas-agregadas__cliente" *ngIf="clienteSeleccionado">
@@ -222,10 +246,10 @@ aria-label="Menu"
               <th class="text-center">Acciones</th>
               <th class="text-center">Tarea</th>
               <!--th-- class="text-center">Rubro</!--th-->
-              <!--th-- class="text-center">Categor��a</!--th-->
-              <!--th class="text-center">Descripci��n</!--th-->
-              <!--th-- class="text-center">�?rea (m��/m��)</!--th-->
-              <th class="text-center">Área (m²/m³)</th>
+              <!--th-- class="text-center">Categorï¿½ï¿½a</!--th-->
+              <!--th class="text-center">Descripciï¿½ï¿½n</!--th-->
+              <!--th-- class="text-center">ï¿½?rea (mï¿½ï¿½/mï¿½ï¿½)</!--th-->
+              <th class="text-center">Ãrea (mÂ²/mÂ³)</th>
               <th class="text-center">Costo</th>
               <th class="text-center">Total</th>
             </tr>
@@ -305,17 +329,18 @@ aria-label="Menu"
           </div>
           <div class="modal-body" style="padding: 10px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;">
             <form>
-              <div class="mb-3 coolinput">
+              <div class="mb-3 coolinput tarea-textarea-wrap">
                 <label for="tarea" class="text">Tarea:</label>
                 <textarea [(ngModel)]="tareaSeleccionada.tarea" name="tarea" class="form-control input" rows="3"
                   style="margin-bottom: 20px; font-size: 14px; white-space: pre-wrap; overflow-wrap: break-word; background-image: linear-gradient(to top, #c7d0e9, #d7dbee, #e5e7f4, #f3f3f9, #ffffff); color: #092865; padding: 10px; resize: none; font-weight: bold;"></textarea>
+
               </div>
               <!--div class="mb-3">
                 <label for="rubro" class="col-form-label">Rubro:</label>
                 <input type="text" [(ngModel)]="tareaSeleccionada.rubro" name="rubro" class="form-control" id="rubro" readonly>
               </div-->
               <!--div-- class="mb-3">
-                <label for="categoria" class="col-form-label">Categoría:</label>
+                <label for="categoria" class="col-form-label">CategorÃ­a:</label>
                 <input type="text" [(ngModel)]="tareaSeleccionada.categoria" name="categoria" class="form-control" id="categoria" readonly>
               </!div-->
               <div class="row mb-3">
@@ -371,12 +396,12 @@ aria-label="Menu"
           </div>
           <div class="form-group mb-3 coolinput">
             <label for="contact" class="text">Contacto:</label>
-            <input type="text" class="form-control input" id="contact" name="clientContact" [(ngModel)]="clientContact" required pattern="\+?\d{7,15}" placeholder="Teléfono" #contact="ngModel">
+            <input type="text" class="form-control input" id="contact" name="clientContact" [(ngModel)]="clientContact" required pattern="\+?\d{7,15}" placeholder="TelÃ©fono" #contact="ngModel">
             @if (contact.touched && contact.errors?.['required']) {
               <div class="text-danger">El contacto es obligatorio.</div>
             }
             @if (contact.touched && contact.errors?.['pattern']) {
-              <div class="text-danger">El contacto debe ser un número de teléfono válido (7-15 dígitos, puede incluir +).</div>
+              <div class="text-danger">El contacto debe ser un nÃºmero de telÃ©fono vÃ¡lido (7-15 dÃ­gitos, puede incluir +).</div>
             }
           </div>
           <div class="form-group mb-3 coolinput">
@@ -386,7 +411,7 @@ aria-label="Menu"
               <div class="text-danger">El email es obligatorio.</div>
             }
             @if (email.touched && email.errors?.['email']) {
-              <div class="text-danger">El email debe tener un formato válido.</div>
+              <div class="text-danger">El email debe tener un formato vÃ¡lido.</div>
             }
           </div>
           <div class="form-group mb-3 coolinput">
@@ -399,12 +424,12 @@ aria-label="Menu"
           </div>
           <div class="form-group mb-3 coolinput">
             <label for="direccion" class="text">Direccion:</label>
-            <input type="text" class="form-control input" id="direccion" name="clientDireccion" [(ngModel)]="clientDireccion" required minlength="5" placeholder="Dirección" #direccion="ngModel">
+            <input type="text" class="form-control input" id="direccion" name="clientDireccion" [(ngModel)]="clientDireccion" required minlength="5" placeholder="DirecciÃ³n" #direccion="ngModel">
             @if (direccion.touched && direccion.errors?.['required']) {
-              <div class="text-danger">La dirección es obligatoria.</div>
+              <div class="text-danger">La direcciÃ³n es obligatoria.</div>
             }
             @if (direccion.touched && direccion.errors?.['minlength']) {
-              <div class="text-danger">La dirección debe tener al menos 5 caracteres.</div>
+              <div class="text-danger">La direcciÃ³n debe tener al menos 5 caracteres.</div>
             }
           </div>
           <div class="form-group mb-3 coolinput">
@@ -450,7 +475,7 @@ aria-label="Menu"
                 <th scope="col">Contacto</th>
                 <th scope="col">Email</th>
                 <th scope="col">CUIT/Clave</th>
-                <th scope="col">Dirección</th>
+                <th scope="col">DirecciÃ³n</th>
                 <th scope="col">Fecha</th>
                 <th scope="col">Detalles</th>
                 <th scope="col">Acciones</th>
@@ -479,7 +504,7 @@ aria-label="Menu"
           </table>
         </div>
 
-        <nav aria-label="Paginación de clientes" *ngIf="clientes.length > itemsPerPage">
+        <nav aria-label="PaginaciÃ³n de clientes" *ngIf="clientes.length > itemsPerPage">
           <ul class="pagination justify-content-center flex-wrap">
             <li class="page-item" [class.disabled]="currentPage === 1">
               <a class="page-link" (click)="previousPage()" aria-label="Anterior">
@@ -548,7 +573,7 @@ aria-label="Menu"
                   <p class="card-text mb-1"><strong>Tel:</strong> {{ cliente.contact }}</p>
                   <p class="card-text mb-1"><strong>Email:</strong> {{ cliente.email }}</p>
                   <p class="card-text mb-1"><strong>CUIT/Clave:</strong> {{ cliente.clave }}</p>
-                  <p class="card-text mb-1"><strong>Dirección:</strong> {{ cliente.direccion }}</p>
+                  <p class="card-text mb-1"><strong>DirecciÃ³n:</strong> {{ cliente.direccion }}</p>
                   <p class="card-text mb-1"><strong>Fecha:</strong> {{ cliente.budgetDate }}</p>
                   <p class="card-text mb-2"><strong>Detalles:</strong> {{ cliente.additionalDetails }}</p>
                   <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
@@ -563,8 +588,8 @@ aria-label="Menu"
             </div>
           </div>
         </div>
-        <!-- Controles de paginación -->
-        <nav aria-label="Paginación de clientes" *ngIf="clientes.length > itemsPerPage">
+        <!-- Controles de paginaciÃ³n -->
+        <nav aria-label="PaginaciÃ³n de clientes" *ngIf="clientes.length > itemsPerPage">
           <ul class="pagination justify-content-center flex-wrap">
             <li class="page-item" [class.disabled]="currentPage === 1">
               <a class="page-link" (click)="previousPage()" aria-label="Anterior">
@@ -601,20 +626,18 @@ aria-label="Menu"
       </div>
       <div class="modal-body" style="padding: 10px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;">
         <p style="text-align: center; font-size: 12px;">
-          Podés editar estos datos las veces que quieras.
+          PodÃ©s editar estos datos las veces que quieras.
         </p>
         <div class="row g-2 align-items-end mb-3">
           <div class="col coolinput">
             <label for="empresaName" class="text">Tu Empresa/nombre personal</label>
-            <input type="text" class="form-control input" id="empresaName" [(ngModel)]="empresaName" placeholder="¿Cómo se llama?">
+            <input type="text" class="form-control input" id="empresaName" [(ngModel)]="empresaName" placeholder="Â¿CÃ³mo se llama?">
           </div>
-          <div class="col-auto d-flex align-items-end">
-            <button class="btn btn-primary w-100" type="button" (click)="abrirModalImagen()">Subir imagen</button>
-          </div>
+
         </div>
         <div class="form-group mb-3 coolinput">
           <label for="empresaPhone" class="text">Tel:</label>
-          <input type="text" class="form-control input" id="empresaPhone" [(ngModel)]="empresaPhone" placeholder="Teléfono de tu empresa">
+          <input type="text" class="form-control input" id="empresaPhone" [(ngModel)]="empresaPhone" placeholder="TelÃ©fono de tu empresa">
         </div>
         <div class="form-group mb-3 coolinput">
           <label for="empresaEmail" class="text">Email:</label>
@@ -622,7 +645,7 @@ aria-label="Menu"
         </div>
         <div class="form-group mb-3 coolinput">
           <label for="additionalDetailsempresa" class="text">Descripcion:</label>
-          <textarea class="form-control input" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de qué se trata tu empresa"></textarea>
+          <textarea class="form-control input" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de quÃ© se trata tu empresa"></textarea>
         </div>
         <div class="form-group mb-3 coolinput">
           <label for="empresaWebsite" class="text">Sitio web (opcional)</label>
@@ -637,6 +660,9 @@ aria-label="Menu"
          <button type="button" class="btn btn-outline-primary mb-3" (click)="toggleSocialFields()">
           {{ showSocialFields ? 'Ocultar redes' : 'Redes' }}
         </button>
+         <div class="col-auto d-flex align-items-end">
+            <button class="btn btn-primary w-100" type="button" (click)="abrirModalImagen()">Subir imagen</button>
+          </div>
        </div>
         <div *ngIf="showSocialFields">
           <div class="form-group mb-3 coolinput">
@@ -709,7 +735,7 @@ aria-label="Menu"
                   </h5>
                   <p class="card-text mb-1"><strong>Tel:</strong> {{ empresa.phone }}</p>
                   <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
-                  <p class="card-text mb-1"><strong>Descripción:</strong> {{ empresa.description }}</p>
+                  <p class="card-text mb-1"><strong>DescripciÃ³n:</strong> {{ empresa.description }}</p>
                   <div class="d-flex justify-content-end gap-1 mt-2">
                     <button class="btn btn-danger btn-xs px-3 py-1" style="font-size: 0.85rem; min-width: 80px;" (click)="empresa.id && solicitarConfirmacionEliminarEmpresa(empresa.id)">Eliminar</button>
                     <span style="width: 10px;"></span>
@@ -755,7 +781,7 @@ aria-label="Menu"
 
       <p class="card-text mb-1"><strong>Tel:</strong> {{ empresa.phone }}</p>
       <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
-      <p class="card-text mb-1"><strong>Descripción:</strong> {{ empresa.description }}</p>
+      <p class="card-text mb-1"><strong>DescripciÃ³n:</strong> {{ empresa.description }}</p>
 
       <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
         <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action"
@@ -780,8 +806,8 @@ aria-label="Menu"
             </div>
           </div>
         </div>
-        <!-- Controles de paginación -->
-        <nav aria-label="Paginación de empresas" *ngIf="empresas.length > itemsPerPageEmpresas">
+        <!-- Controles de paginaciÃ³n -->
+        <nav aria-label="PaginaciÃ³n de empresas" *ngIf="empresas.length > itemsPerPageEmpresas">
           <ul class="pagination justify-content-center flex-wrap">
             <li class="page-item" [class.disabled]="currentEmpresaPage === 1">
               <a class="page-link" (click)="previousEmpresaPage()" aria-label="Anterior">
@@ -805,9 +831,9 @@ aria-label="Menu"
             <thead class="table-light">
               <tr>
                 <th scope="col">Nombre</th>
-                <th scope="col">Teléfono</th>
+                <th scope="col">TelÃ©fono</th>
                 <th scope="col">Email</th>
-                <th scope="col">Descripción</th>
+                <th scope="col">DescripciÃ³n</th>
                 <th scope="col">Logo</th>
                 <th scope="col">Acciones</th>
               </tr>
@@ -844,17 +870,17 @@ aria-label="Menu"
 </div>
 
 
-<div class="floating-toolbar-container" *ngIf="!isSidebarOpen">
+<div class="floating-toolbar-container">
   <div class="floating-toolbar">
-    <button class="toolbar-item" (click)="verPresupuesto()" type="button" aria-label="Ver presupuesto">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" (click)="verPresupuesto()" type="button" aria-label="Ver presupuesto">
       <span class="toolbar-item__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41.88 47.94">
           <path fill="#5b748f" d="m37.1.07L3.32,6.25c-1.93.35-3.32,2.03-3.32,3.99v33.64c0,2.53,2.29,4.45,4.78,3.99l33.78-6.19c1.92-.35,3.32-2.03,3.32-3.98V4.05c0-2.53-2.29-4.44-4.78-3.98ZM12.05,11.89l-5.17,1.11s-.05.03-.06.03c0,0-.03.08-.03.26v6.24c0,.83-.67,1.5-1.5,1.5s-1.5-.67-1.5-1.5v-6.24c0-1.56.85-2.75,2.27-3.18.04-.01.08-.02.12-.03l5.24-1.12c.81-.17,1.61.34,1.78,1.15.17.81-.34,1.61-1.15,1.78Z"/>
         </svg>
       </span>
-      <span class="toolbar-item__label">Ver presupuesto</span>
+      <span class="toolbar-item__label">Presupuesto</span>
     </button>
-    <button class="toolbar-item" (click)="toggleTareasPanel()" type="button" aria-label="Abrir tareas agregadas">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" (click)="toggleTareasPanel()" type="button" aria-label="Abrir tareas agregadas">
       <span class="toolbar-item__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45.53 26.06">
           <path fill="#5b748f" d="m12.67,3.97h30.87c1.1,0,1.99-.89,1.99-1.99s-.89-1.99-1.99-1.99H12.67c-1.1,0-1.99.89-1.99,1.99s.89,1.99,1.99,1.99Z"/>
@@ -867,7 +893,7 @@ aria-label="Menu"
       </span>
       <span class="toolbar-item__label">Tareas</span>
     </button>
-    <button class="toolbar-item" (click)="toggleSavedBudgetsPanel()" type="button" aria-label="Gestor de presupuestos">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" (click)="toggleSavedBudgetsPanel()" type="button" aria-label="Gestor de presupuestos">
       <span class="toolbar-item__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 57.25 44.7">
           <path fill="#5b748f" d="m56.96,20.05c-.34-.54-.93-.83-1.56-.83h-7.74v-9.16c0-1.02-.83-1.85-1.85-1.85h-18.13L20.72.6c-.35-.38-.84-.6-1.35-.6H6.02c-.68,0-1.31.39-1.63,1L.19,9.23c-.17.32-.22.68-.18,1.03v32.48c-.03.36.04.74.24,1.09.34.54.93.88,1.56.88h43.99c.73,0,1.41-.44,1.7-1.12l1.12-2.58h-3.99v.05H4.84l9.55-18.17h38.24l-6.38,14.47h3.99l6.87-15.59c.24-.54.2-1.22-.15-1.71ZM7.13,3.65h11.43l4.16,4.56H4.81l2.33-4.56Zm6.18,15.57c-.68,0-1.31.34-1.66.97l-7.99,15.23V11.89h23.21s.07-.01.1-.01h17.02v7.36H13.31Z"/>
@@ -875,7 +901,15 @@ aria-label="Menu"
       </span>
       <span class="toolbar-item__label">Gestor</span>
     </button>
-    <button class="toolbar-item" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu" aria-label="Abrir menu">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" type="button" aria-label="Calculadora">
+      <span class="toolbar-item__icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 51.84 47.66">
+          <path fill="#5b748f" d="m51.83,33.62v-6.52s0-.1,0-.15v-1.13c0-.78-.44-1.46-1.17-1.7l-10.87-4.36V6.62c0-.75-.46-1.42-1.15-1.7L26.6.13c-.44-.17-.91-.17-1.35,0l-12.04,4.8c-.69.28-1.15.95-1.15,1.7v13.15L1.15,24.11C.46,24.39,0,25.06,0,25.81v1.22s0,.02,0,.03v13.34c0,.72.42,1.37,1.08,1.66l12.05,5.44c.24.11.49.16.75.16s.51-.05.75-.16l11.31-5.11,11.28,5.12c.24.1.49.15.73.15.29,0,.54-.05.78-.15l12.03-5.46c.68-.29,1.07-.93,1.07-1.66v-2.78l-3.65,1.61-10.23,4.58-10.21-4.57v-9.51l9.54,3.87c.22.09.45.13.68.13s.47-.05.68-.13l9.53-3.86v5.5l3.65-1.61ZM25.22,14.54c.23.09.47.14.7.14s.48-.05.7-.14l9.52-3.97v9.19l-10.21,4.09-10.23-4.07v-9.21l9.51,3.97Zm-11.57,8.54l8.82,3.37-8.59,3.48-8.65-3.5,8.42-3.35ZM25.92,3.79l8.68,3.46-8.68,3.62-8.68-3.62,8.68-3.46Zm-12.04,40.03l-10.22-4.61v-9.49l9.54,3.87c.22.09.45.13.69.13s.47-.05.69-.13l9.51-3.86v9.49l-10.19,4.6Zm24.09-13.9l-8.6-3.48,8.79-3.36,8.45,3.34-8.64,3.5Z"/>
+        </svg>
+      </span>
+      <span class="toolbar-item__label">Calculadora</span>
+    </button>
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu" aria-label="Abrir menu">
       <span class="toolbar-item__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48.61 42.53">
           <path fill="#5b748f" d="m41.27,0H7.34C3.29,0,0,3.29,0,7.34v27.85c0,4.05,3.29,7.34,7.34,7.34h33.93v-3H7.34c-2.39,0-4.34-1.95-4.34-4.34V7.34c0-2.39,1.95-4.34,4.34-4.34h33.93c2.39,0,4.34,1.95,4.34,4.34v27.85h3V7.34c0-4.05-3.29-7.34-7.34-7.34Z"/>
@@ -916,7 +950,6 @@ aria-label="Menu"
   </div>
   <app-presupuestos-guardados
     [tareasActuales]="tareasAgregadas"
-    [clienteActual]="clienteSeleccionado"
     [empresaActual]="selectedEmpresaId"
     [clienteActual]="clienteSeleccionado"
     [tareasDelCliente]="tareasAgregadas"
@@ -931,7 +964,7 @@ aria-label="Menu"
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="weatherModalLabel">Próximos 5 días</h5>
+        <h5 class="modal-title" id="weatherModalLabel">PrÃ³ximos 5 dÃ­as</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
@@ -942,8 +975,8 @@ aria-label="Menu"
                 <div class="fw-bold">{{ day.date | date:'EEEE d MMM' }}</div>
                 <div class="text-muted small">{{ weatherDescription(day.code) }}</div>
                 <div class="d-flex justify-content-between align-items-center mt-3">
-                  <span class="text-primary fw-bold">Máx: {{ day.max | number:'1.0-0' }}°C</span>
-                  <span class="text-secondary">Mín: {{ day.min | number:'1.0-0' }}°C</span>
+                  <span class="text-primary fw-bold">MÃ¡x: {{ day.max | number:'1.0-0' }}Â°C</span>
+                  <span class="text-secondary">MÃ­n: {{ day.min | number:'1.0-0' }}Â°C</span>
                 </div>
               </div>
             </div>
@@ -970,7 +1003,7 @@ aria-label="Menu"
       </div>
       <div class="modal-body" style="text-align: center;">
         <div id="imageCircle" style="display: flex; justify-content: center;">
-          <img #modalImagePreview class="img-fluid" src="#" alt="Previsualización de la imagen" style="display: none; width: 80%; height: 80%;">
+          <img #modalImagePreview class="img-fluid" src="#" alt="PrevisualizaciÃ³n de la imagen" style="display: none; width: 80%; height: 80%;">
         </div>
         <p #uploadMessage style="margin-top: 10px; color: rgb(6, 113, 254); display: none;">Imagen subida</p>
         <input type="file" #imageInput accept="image/*" class="form-control" style="margin-top: 10px;" (change)="onImageChange($event)">
@@ -990,12 +1023,12 @@ aria-label="Menu"
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modal-zona">
           <div class="modal-header">
-            <h5 class="modal-title" id="modalZonaLabel">Seleccionar Provincia</h5>
+
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
             <h6 id="zonaBloqueadaMensaje" class="text-danger mt-2" style="display: block;">
-              Esta función solo se activa con código de acceso.
+              Esta funciÃ³n solo se activa con cÃ³digo de acceso.
             </h6>
 
             <select class="form-select" id="provinciaSelect" [(ngModel)]="provinciaSeleccionada" name="provinciaSeleccionada">
@@ -1003,19 +1036,19 @@ aria-label="Menu"
               <option *ngFor="let provincia of provincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
             </select>
 
-            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el país seleccionado.</div>
+            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el paÃ­s seleccionado.</div>
 
             <div class="mt-3">
               <h6 class="modal-zona-title">valor sugerido de mano de obra pura sin cargas sociales</h6>
               <hr>
               <div class="modal-zona-card">
                 <span class="modal-zona-label">Zona 1:</span>
-                Buenos Aires, Santa Fe, Mendoza, Córdoba, Tucumán, Salta, Jujuy, Entre Ríos, Corrientes, Formosa,
+                Buenos Aires, Santa Fe, Mendoza, CÃ³rdoba, TucumÃ¡n, Salta, Jujuy, Entre RÃ­os, Corrientes, Formosa,
                 La Pampa, San Luis, La Rioja, Santiago del Estero, Chaco, Misiones, Catamarca, San Juan.
               </div>
               <div class="modal-zona-card">
                 <span class="modal-zona-label">Zona 2:</span>
-                Neuquén, Río Negro, Chubut.
+                NeuquÃ©n, RÃ­o Negro, Chubut.
               </div>
               <div class="modal-zona-card">
                 <span class="modal-zona-label">Zona 3:</span>

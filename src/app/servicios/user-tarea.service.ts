@@ -1,6 +1,8 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
+import { APP_API_URL } from '../core/api/api.config';
+import { extractApiErrorMessage } from '../core/http/api-error.util';
 
 export interface UserTarea {
   id?: any;
@@ -22,8 +24,12 @@ export interface UserTarea {
 })
 export class UserTareaService {
 
-  private apiUrl = 'http://localhost:8080/api/user-tareas';
+
+  //private apiUrl = 'http://localhost:8080/api/user-tareas';
  // private apiUrl = 'https://adequate-education-production.up.railway.app/api/user-tareas';
+
+  private apiUrl = `${APP_API_URL}/user-tareas`;
+
 
   constructor(private http: HttpClient) { }
 
@@ -70,7 +76,7 @@ getTareasByUserCode(userCode: string): Observable<UserTarea[]> {
     if (error.error instanceof ErrorEvent) {
       errorMessage = `Error: ${error.error.message}`;
     } else {
-      errorMessage = error.error?.message || `Error ${error.status}: ${error.message}`;
+      errorMessage = extractApiErrorMessage(error);
     }
     return throwError(() => new Error(errorMessage));
   }

@@ -4,6 +4,7 @@ import { Empresa } from './empresa.service';
 import { UserTarea } from './user-tarea.service';
 import { BehaviorSubject, catchError, Observable, tap, throwError } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { APP_API_URL } from '../core/api/api.config';
 
 /*export interface SavedPresupuesto {
   id?: number;
@@ -28,8 +29,11 @@ export interface SavedPresupuesto {
   providedIn: 'root'
 })
 export class BudgetService {
-private apiUrl = 'http://localhost:8080/api/presupuestos';
+
+//private apiUrl = 'http://localhost:8080/api/presupuestos';
 //private apiUrl = 'https://adequate-education-production.up.railway.app/api/presupuestos';
+
+private apiUrl = `${APP_API_URL}/presupuestos`;
 
 private presupuestosSubject = new BehaviorSubject<SavedPresupuesto[]>([]);
   presupuestos$ = this.presupuestosSubject.asObservable();

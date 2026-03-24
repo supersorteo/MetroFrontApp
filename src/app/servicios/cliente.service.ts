@@ -1,6 +1,8 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
+import { APP_API_URL } from '../core/api/api.config';
+import { extractApiErrorMessage } from '../core/http/api-error.util';
 
 export interface Cliente {
   id?: number;
@@ -20,8 +22,12 @@ export interface Cliente {
 })
 export class ClienteService {
 
-  private apiUrl = 'http://localhost:8080/api/clientes';
+
+ // private apiUrl = 'http://localhost:8080/api/clientes';
   //private apiUrl = 'https://adequate-education-production.up.railway.app/api/clientes'
+
+  private apiUrl = `${APP_API_URL}/clientes`;
+
 
   constructor(private http: HttpClient) { }
 
@@ -63,7 +69,7 @@ getClienteByUserCode(userCode: string): Observable<Cliente[]> {
     } else if (error.error && error.error.error) {
       errorMessage = error.error.error; // Use backend error message
     } else {
-      errorMessage = `Error ${error.status}: ${error.message}`;
+      errorMessage = extractApiErrorMessage(error);
     }
     console.error('Error en ClienteService:', errorMessage);
     return throwError(() => new Error(errorMessage));
@@ -80,7 +86,7 @@ getClienteByUserCode(userCode: string): Observable<Cliente[]> {
         errorMessage = error.error.error;
     } else {
         // Otros errores HTTP
-        errorMessage = `Error ${error.status || 'desconocido'}: ${error.message || 'Error interno del servidor'}`;
+        errorMessage = extractApiErrorMessage(error);
         // Incluir mensaje del backend si está disponible
         if (error.error && typeof error.error === 'string') {
             errorMessage = error.error;
@@ -97,3 +103,4 @@ getClienteByUserCode(userCode: string): Observable<Cliente[]> {
 
 
 }
+

@@ -1,6 +1,8 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable, throwError } from 'rxjs';
+import { APP_API_URL } from '../core/api/api.config';
+import { extractApiErrorMessage } from '../core/http/api-error.util';
 
 export interface Empresa {
   id?: number;
@@ -22,10 +24,15 @@ export interface Empresa {
 })
 export class EmpresaService {
 
-  private apiUrl = 'http://localhost:8080/api/empresas';
+
+ // private apiUrl = 'http://localhost:8080/api/empresas';
   //private apiUrl = 'https://adequate-education-production.up.railway.app/api/empresas'
-  private uploadUrl = 'http://localhost:8080/api/upload/image';
+  //private uploadUrl = 'http://localhost:8080/api/upload/image';
   //private uploadUrl = 'https://adequate-education-production.up.railway.app/api/upload/image';
+
+  private apiUrl = `${APP_API_URL}/empresas`;
+  private uploadUrl = `${APP_API_URL}/upload/image`;
+
   constructor(private http: HttpClient) { }
 
   getEmpresaById(id: number): Observable<Empresa> {
@@ -75,9 +82,10 @@ getEmpresaByUserCode(userCode: string): Observable<Empresa> {
     if (error.error instanceof ErrorEvent) {
       errorMessage = `Error: ${error.error.message}`;
     } else {
-      errorMessage = error.error?.message || `Error ${error.status}: ${error.message}`;
+      errorMessage = extractApiErrorMessage(error);
     }
     return throwError(() => new Error(errorMessage));
   }
 
 }
+

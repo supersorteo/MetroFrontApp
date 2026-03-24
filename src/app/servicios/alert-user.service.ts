@@ -1,6 +1,8 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
+import { AUTH_API_URL } from '../core/api/api.config';
+import { extractApiErrorMessage } from '../core/http/api-error.util';
 
 interface Alert {
   code: string;
@@ -10,8 +12,12 @@ interface Alert {
   providedIn: 'root'
 })
 export class AlertUserService {
-  private apiUrl = 'http://localhost:8080/auth/user-code';
+
+ // private apiUrl = 'http://localhost:8080/auth/user-code';
   //private apiUrl = 'https://adequate-education-production.up.railway.app/auth/user-code'
+
+  private apiUrl = `${AUTH_API_URL}/user-code`;
+
 
 
   constructor(private http: HttpClient) { }
@@ -21,7 +27,7 @@ export class AlertUserService {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    const errorMessage = error.error.message || 'Error desconocido';
+    const errorMessage = extractApiErrorMessage(error);
     console.error(errorMessage);
     return throwError(() => new Error(errorMessage));
   }
