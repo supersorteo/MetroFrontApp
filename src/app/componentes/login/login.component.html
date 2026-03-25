@@ -12,15 +12,15 @@
       <div class="text-center bg-gradient">
         <h3>Bienvenido</h3>
         <div class="form-group" id="ingreso-codigo" style="font-size: 20px; margin: 10px;">
-          <label for="password">Ingrese su código:</label>
-          <input type="text" id="password" class="form-control" [(ngModel)]="code" placeholder="Ingrese su código" autocomplete="current-password" style="font-size: 30px; text-align: center;">
+          <label for="password">Ingrese su codigo:</label>
+          <input type="text" id="password" class="form-control" [(ngModel)]="code" placeholder="Ingrese su codigo" autocomplete="current-password" style="font-size: 30px; text-align: center;">
           <button class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="login()">ENTRAR</button>
-          <!--button-- id="mercadoPagoButton" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="ocultarContenido()">PROBÁ EL SISTEMA</!--button-->
-         <button id="mercadoPagoButton" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="activarModoPrueba()">PROBÁ EL SISTEMA</button>
+          <button id="mercadoPagoButton" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="activarModoPrueba()">PROBA EL SISTEMA</button>
           <button type="button" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" data-bs-toggle="modal" data-bs-target="#exampleModal">REGISTRATE</button>
           <button type="button" class="btn btn-gradient" (click)="openCalculadora()" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;">CALCULADORA DE MATERIALES</button>
-          <button type="button" class="btn btn-success" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="openWebsite()">Comprá un código por Whatsapp</button>
-          <p class="text-center mt-3" style="font-size: 12px;">Valor, $3.800 arg. Te dura 3 meses y tenés acceso a la calculadora de materiales</p>
+          <button type="button" class="btn btn-success" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" data-bs-toggle="modal" data-bs-target="#membershipModal">COMPRAR CON MERCADO PAGO</button>
+          <button type="button" class="btn btn-outline-success" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 12px;" (click)="openWebsite()">Comprar por WhatsApp</button>
+          <p class="text-center mt-3" style="font-size: 12px;">Membresias online con Mercado Pago para Argentina, Uruguay y Colombia. Prioridad activa para Argentina y Uruguay.</p>
           <button id="whatsapp-share" class="btn btn-whatsapp" (click)="shareOnWhatsApp()">Compartir en WhatsApp</button>
         </div>
       </div>
@@ -29,29 +29,37 @@
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h1 class="modal-title fs-5" id="exampleModalLabel">Registrar Código y Email</h1>
+              <h1 class="modal-title fs-5" id="exampleModalLabel">Registrar codigo y email</h1>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
               <form>
                 <div class="mb-3">
-                  <label for="code" class="col-form-label">Código:</label>
-                  <input type="text" class="form-control" id="code" [(ngModel)]="code" placeholder="Ingrese su código" name="code" (input)="validateForm()">
+                  <label for="code" class="col-form-label">Codigo:</label>
+                  <input type="text" class="form-control" id="code" [(ngModel)]="code" placeholder="Ingrese su codigo" name="code" (input)="validateForm()">
                 </div>
                 <div class="mb-3">
                   <label for="email" class="col-form-label">Email:</label>
                   <input type="email" class="form-control" id="email" [(ngModel)]="email" placeholder="Ingrese su correo" name="email" (input)="validateForm()">
                 </div>
-                <!--div-- class="mb-3">
-                  <label for="username" class="col-form-label">Username:</label>
-                  <input type="text" class="form-control" id="username" [(ngModel)]="username" placeholder="Ingrese su nombre de usuario" name="username" (input)="validateForm()">
-                </!--div-->
                 <div class="mb-3">
-                  <label for="telefono" class="col-form-label">Teléfono:</label>
-                  <input type="text" class="form-control" id="telefono" [(ngModel)]="telefono" placeholder="Teléfono" name="telefono" (input)="validateForm()">
+                  <label for="telefono" class="col-form-label">Telefono:</label>
+                  <input
+                    type="tel"
+                    class="form-control"
+                    [class.is-invalid]="telefono.trim().length > 0 && !!telefonoErrorMessage"
+                    id="telefono"
+                    [(ngModel)]="telefono"
+                    [placeholder]="telefonoPlaceholder"
+                    name="telefono"
+                    (input)="onTelefonoInput()"
+                  >
+                  <div class="invalid-feedback" *ngIf="telefono.trim().length > 0 && telefonoErrorMessage">
+                    {{ telefonoErrorMessage }}
+                  </div>
                 </div>
-           <div class="mb-3">
-                  <label for="pais" class="col-form-label">País:</label>
+                <div class="mb-3">
+                  <label for="pais" class="col-form-label">Pais:</label>
                   <ng-select
                     [items]="countries"
                     bindLabel="nombre"
@@ -60,7 +68,7 @@
                     name="pais"
                     id="pais"
                     (change)="onPaisChange()"
-                    placeholder="País"
+                    placeholder="Pais"
                     [clearable]="true"
                   >
                     <ng-template ng-option-tmp let-item="item" let-selected="selected">
@@ -82,6 +90,101 @@
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
               <button type="button" class="btn btn-primary" [disabled]="!isFormValid" (click)="register()">Registrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="membershipModal" tabindex="-1" aria-labelledby="membershipModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="membershipModalLabel">Comprar membresia con Mercado Pago</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            <p class="small text-muted mb-3" *ngIf="isLoadingCatalog">Cargando planes disponibles...</p>
+            <p class="small text-muted mb-3" *ngIf="!isLoadingCatalog">Seras redirigido a Mercado Pago para completar el pago.</p>
+
+              <div class="mb-3">
+                <label for="purchaseCountry" class="col-form-label">Pais:</label>
+                <ng-select
+                  [items]="membershipCountries"
+                  bindLabel="nombre"
+                  bindValue="codigo"
+                  [(ngModel)]="purchaseCountryCode"
+                  name="purchaseCountry"
+                  id="purchaseCountry"
+                  placeholder="Selecciona un pais"
+                  [clearable]="false"
+                  (change)="onPurchaseCountryChange()"
+                >
+                  <ng-template ng-option-tmp let-item="item">
+                    <img *ngIf="item.flag" [src]="item.flag" width="20" class="me-2" />
+                    {{ item.nombre }}
+                  </ng-template>
+                </ng-select>
+              </div>
+
+              <div class="mb-3">
+                <label for="purchasePlan" class="col-form-label">Plan:</label>
+                <select class="form-select" id="purchasePlan" [(ngModel)]="purchasePlanMonths" name="purchasePlan">
+                  <option [ngValue]="null" disabled>Selecciona un plan</option>
+                  <option *ngFor="let plan of selectedMembershipCountry?.plans" [ngValue]="plan.months">
+                    {{ plan.months }} meses - {{ plan.amount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label for="purchaseName" class="col-form-label">Nombre completo:</label>
+                <input id="purchaseName" class="form-control" [(ngModel)]="purchaseName" name="purchaseName" />
+              </div>
+
+              <div class="mb-3">
+                <label for="purchaseEmail" class="col-form-label">Email:</label>
+                <input id="purchaseEmail" type="email" class="form-control" [(ngModel)]="purchaseEmail" name="purchaseEmail" />
+              </div>
+
+                <div class="mb-3">
+                  <label for="purchasePhone" class="col-form-label">Telefono:</label>
+                  <input
+                    id="purchasePhone"
+                    type="tel"
+                    class="form-control"
+                    [class.is-invalid]="purchasePhone.trim().length > 0 && !!purchasePhoneErrorMessage"
+                    [(ngModel)]="purchasePhone"
+                    [placeholder]="purchasePhonePlaceholder"
+                    name="purchasePhone"
+                    (input)="onPurchasePhoneInput()"
+                  />
+                  <div class="invalid-feedback" *ngIf="purchasePhone.trim().length > 0 && purchasePhoneErrorMessage">
+                    {{ purchasePhoneErrorMessage }}
+                  </div>
+                </div>
+
+              <div class="mb-3">
+                <label for="purchaseDocument" class="col-form-label">{{ selectedMembershipCountry?.documentLabel || 'Documento' }}:</label>
+                <input id="purchaseDocument" class="form-control" [(ngModel)]="purchaseDocument" name="purchaseDocument" />
+              </div>
+
+              <div class="mb-3">
+                <label for="purchaseProvince" class="col-form-label">Provincia:</label>
+                <select class="form-select" id="purchaseProvince" [(ngModel)]="purchaseProvince" name="purchaseProvince">
+                  <option value="" disabled selected>Selecciona una provincia</option>
+                  <option *ngFor="let provincia of purchaseProvincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
+                </select>
+              </div>
+
+            <div class="alert alert-light border" *ngIf="selectedPlanAmount !== null">
+              Total a pagar: <strong>{{ selectedPlanAmount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}</strong>
+            </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              <button type="button" class="btn btn-success" [disabled]="!canStartCheckout || isStartingCheckout" (click)="startMembershipCheckout()">
+                {{ isStartingCheckout ? 'Redirigiendo...' : 'Ir a pagar' }}
+              </button>
             </div>
           </div>
         </div>

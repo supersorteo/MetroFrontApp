@@ -3,9 +3,10 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ProvinciaService } from '../../servicios/provincia.service';
+import { MembershipCatalogCountry, MembershipPaymentService } from '../../servicios/membership-payment.service';
 import Swal from 'sweetalert2';
 declare var bootstrap: any;
 
@@ -18,6 +19,12 @@ interface Country {
   nombre: string;
   codigo: string;
   flag: string;
+}
+
+interface MembershipCountryOption extends Country {
+  currency: string;
+  documentLabel: string;
+  plans: { months: number; amount: number }[];
 }
 
 @Component({
@@ -48,23 +55,49 @@ export class LoginComponent implements OnInit{
   modal:boolean = false;
   isFormValid: boolean = false;
   provincias: Provincia[] = [];
+  telefonoErrorMessage: string = '';
   countries = [
    { nombre: 'Argentina', codigo: 'AR', flag: 'https://flagcdn.com/ar.svg' },
    { nombre: 'Colombia', codigo: 'CO', flag: 'https://flagcdn.com/co.svg' },
-   { nombre: 'Peru', codigo: 'PE', flag: 'https://flagcdn.com/pe.svg' }
+   { nombre: 'Uruguay', codigo: 'UY', flag: 'https://flagcdn.com/uy.svg' }
   ];
+  membershipCountries: MembershipCountryOption[] = [];
+  purchaseCountryCode: string | null = null;
+  purchasePlanMonths: number | null = 3;
+  purchaseName: string = '';
+  purchaseEmail: string = '';
+  purchasePhone: string = '';
+  purchaseDocument: string = '';
+  purchaseProvince: string = '';
+  purchaseProvincias: Provincia[] = [];
+  purchasePhoneErrorMessage: string = '';
+  isLoadingCatalog: boolean = false;
+  isStartingCheckout: boolean = false;
 
   @ViewChild('exampleModal') exampleModal!: ElementRef;
 
 constructor(private authService: AuthService,
   private route:Router,
+  private activatedRoute: ActivatedRoute,
   private renderer: Renderer2,
   private toastr: ToastrService,
-  private provinciaService: ProvinciaService){}
+  private provinciaService: ProvinciaService,
+  private membershipPaymentService: MembershipPaymentService){}
 
   ngOnInit(): void {
     console.log('countries:', this.countries);
     console.log('pais inicial:', this.pais);
+    this.loadMembershipCatalog();
+    this.activatedRoute.queryParamMap.subscribe(params => {
+      const code = params.get('code');
+      const paid = params.get('paid');
+      if (code) {
+        this.code = code;
+      }
+      if (paid === '1') {
+        this.toastr.success('Tu codigo ya esta activado. Ingresa con el codigo recibido.', 'Pago confirmado');
+      }
+    });
   }
 
 
@@ -127,6 +160,12 @@ login(): void {
   }*/
 
    register(): void {
+    this.validateForm();
+    if (!this.isFormValid) {
+      Swal.fire('Error', this.telefonoErrorMessage || 'Completa correctamente los datos del registro.', 'error');
+      return;
+    }
+
     this.authService.assignEmail({
       code: this.code,
       email: this.email,
@@ -150,12 +189,12 @@ login(): void {
   }
 
     validateForm(): void {
+      const phoneValidation = this.validatePhoneByCountry(this.telefono, this.pais);
+      this.telefonoErrorMessage = phoneValidation.message;
       this.isFormValid = this.code.trim().length > 0 &&
       this.email.trim().length > 0 &&
-      //this.username.trim().length > 0 &&
-      this.telefono.trim().length > 0 &&
+      phoneValidation.valid &&
       this.provincia.trim().length > 0 &&
-      //this.pais.trim().length > 0;
       this.pais !== null;
     }
 
@@ -202,6 +241,7 @@ login(): void {
     console.log('onPaisChange pais:', this.pais);
     if (this.pais) {
       this.provincia = '';
+      this.telefono = '';
       this.provinciaService.getProvinciasByPais(this.pais).subscribe( // Cambiado a this.pais
         response => {
           this.provincias = response;
@@ -458,5 +498,209 @@ openWebsite(): void {
       this.provincia = '';
       this.isFormValid = false;
       console.log('clearForm ejecutado, pais:', this.pais);
+    }
+
+    get selectedMembershipCountry(): MembershipCountryOption | undefined {
+      return this.membershipCountries.find(country => country.codigo === this.purchaseCountryCode);
+    }
+
+    get selectedPlanAmount(): number | null {
+      return this.selectedMembershipCountry?.plans.find(plan => plan.months === this.purchasePlanMonths)?.amount ?? null;
+    }
+
+    get canStartCheckout(): boolean {
+      const phoneValidation = this.validatePhoneByCountry(
+        this.purchasePhone,
+        this.selectedMembershipCountry?.nombre || null
+      );
+      return !!(
+        this.purchaseCountryCode &&
+        this.purchasePlanMonths &&
+        this.purchaseName.trim() &&
+        this.purchaseEmail.trim() &&
+        phoneValidation.valid &&
+        this.purchaseDocument.trim() &&
+        this.purchaseProvince.trim()
+      );
+    }
+
+    loadMembershipCatalog(): void {
+      this.isLoadingCatalog = true;
+      this.membershipPaymentService.getCatalog().subscribe({
+        next: (catalog) => {
+          this.membershipCountries = Object.entries(catalog.countries)
+            .map(([countryCode, country]) => this.mapMembershipCountry(countryCode, country))
+            .sort((left, right) => left.nombre.localeCompare(right.nombre));
+          this.isLoadingCatalog = false;
+        },
+        error: () => {
+          this.isLoadingCatalog = false;
+          this.toastr.error('No se pudo cargar el catalogo de membresias.');
+        }
+      });
+    }
+
+    onPurchaseCountryChange(): void {
+      this.purchaseProvince = '';
+      this.purchaseDocument = '';
+      this.purchasePhone = '';
+      this.purchasePhoneErrorMessage = '';
+      this.purchasePlanMonths = this.selectedMembershipCountry?.plans[0]?.months ?? null;
+      if (!this.purchaseCountryCode) {
+        this.purchaseProvincias = [];
+        return;
+      }
+      this.provinciaService.getProvinciasByPais(this.selectedMembershipCountry?.nombre || this.purchaseCountryCode).subscribe({
+        next: (provincias) => {
+          this.purchaseProvincias = provincias;
+        },
+        error: () => {
+          this.purchaseProvincias = [];
+          this.toastr.error('No se pudieron cargar las provincias para la compra.');
+        }
+      });
+    }
+
+    startMembershipCheckout(): void {
+      const phoneValidation = this.validatePhoneByCountry(
+        this.purchasePhone,
+        this.selectedMembershipCountry?.nombre || null
+      );
+      this.purchasePhoneErrorMessage = phoneValidation.message;
+
+      if (!this.canStartCheckout || !this.purchaseCountryCode || !this.purchasePlanMonths) {
+        Swal.fire('Faltan datos', this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.', 'warning');
+        return;
+      }
+
+      this.isStartingCheckout = true;
+      this.membershipPaymentService.createCheckout({
+        countryCode: this.purchaseCountryCode,
+        planMonths: this.purchasePlanMonths,
+        payerName: this.purchaseName.trim(),
+        payerEmail: this.purchaseEmail.trim(),
+        payerPhone: this.purchasePhone.trim(),
+        payerDocument: this.purchaseDocument.trim(),
+        province: this.purchaseProvince.trim(),
+        callbackUrl: `${window.location.origin}/payment-result`
+      }).subscribe({
+        next: (order) => {
+          this.isStartingCheckout = false;
+          if (!order.redirectUrl) {
+            this.toastr.error('La pasarela no devolvio una URL de pago.');
+            return;
+          }
+          localStorage.setItem('pendingPaymentId', order.externalId);
+          window.location.href = order.redirectUrl;
+        },
+        error: (error) => {
+          this.isStartingCheckout = false;
+          Swal.fire('Error', error?.message || 'No se pudo iniciar el checkout.', 'error');
+        }
+      });
+    }
+
+    private mapMembershipCountry(countryCode: string, country: MembershipCatalogCountry): MembershipCountryOption {
+      const current = this.countries.find(item => item.codigo === countryCode);
+      return {
+        nombre: country.displayName,
+        codigo: countryCode,
+        flag: current?.flag || '',
+        currency: country.currency,
+        documentLabel: country.documentLabel,
+        plans: Object.entries(country.plans)
+          .map(([months, amount]) => ({ months: Number(months), amount }))
+          .sort((left, right) => left.months - right.months)
+      };
+    }
+
+    get telefonoPlaceholder(): string {
+      return this.getPhonePlaceholder(this.pais);
+    }
+
+    get purchasePhonePlaceholder(): string {
+      return this.getPhonePlaceholder(this.selectedMembershipCountry?.nombre || null);
+    }
+
+    onTelefonoInput(): void {
+      this.telefono = this.sanitizePhoneInput(this.telefono);
+      this.validateForm();
+    }
+
+    onPurchasePhoneInput(): void {
+      this.purchasePhone = this.sanitizePhoneInput(this.purchasePhone);
+      this.purchasePhoneErrorMessage = this.validatePhoneByCountry(
+        this.purchasePhone,
+        this.selectedMembershipCountry?.nombre || null
+      ).message;
+    }
+
+    private sanitizePhoneInput(value: string): string {
+      return value.replace(/[^0-9+\s()-]/g, '');
+    }
+
+    private getPhonePlaceholder(country: string | null): string {
+      switch (country) {
+        case 'Argentina':
+          return 'Ej: 11 2345-6789 o +54 9 11 2345-6789';
+        case 'Uruguay':
+          return 'Ej: 091 234 567 o +598 91 234 567';
+        case 'Colombia':
+          return 'Ej: 300 123 4567 o +57 300 123 4567';
+        default:
+          return 'Telefono';
+      }
+    }
+
+    private validatePhoneByCountry(rawPhone: string, country: string | null): { valid: boolean; message: string } {
+      const phone = rawPhone.trim();
+      if (!country) {
+        return { valid: false, message: 'Selecciona un pais antes de cargar el telefono.' };
+      }
+      if (!phone) {
+        return { valid: false, message: 'El telefono es obligatorio.' };
+      }
+
+      let digits = phone.replace(/\D/g, '');
+
+      switch (country) {
+        case 'Argentina':
+          if (digits.startsWith('54')) {
+            digits = digits.slice(2);
+          }
+          if (digits.startsWith('9') && digits.length >= 11) {
+            digits = digits.slice(1);
+          }
+          if (digits.startsWith('0') && digits.length >= 11) {
+            digits = digits.slice(1);
+          }
+          return digits.length >= 10 && digits.length <= 11
+            ? { valid: true, message: '' }
+            : { valid: false, message: 'El telefono de Argentina debe tener entre 10 y 11 digitos validos.' };
+
+        case 'Uruguay':
+          if (digits.startsWith('598')) {
+            digits = digits.slice(3);
+          }
+          if (digits.startsWith('0') && digits.length === 9) {
+            digits = digits.slice(1);
+          }
+          return digits.length === 8
+            ? { valid: true, message: '' }
+            : { valid: false, message: 'El telefono de Uruguay debe tener 8 digitos validos.' };
+
+        case 'Colombia':
+          if (digits.startsWith('57')) {
+            digits = digits.slice(2);
+          }
+          return digits.length === 10
+            ? { valid: true, message: '' }
+            : { valid: false, message: 'El telefono de Colombia debe tener 10 digitos validos.' };
+
+        default:
+          return digits.length >= 8 && digits.length <= 15
+            ? { valid: true, message: '' }
+            : { valid: false, message: 'El telefono no tiene un formato valido.' };
+      }
     }
 }

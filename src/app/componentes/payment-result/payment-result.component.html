@@ -1,0 +1,45 @@
+<section class="payment-result">
+  <div class="payment-result__card">
+    <h1 class="payment-result__title">Estado del pago con Mercado Pago</h1>
+
+    <p *ngIf="loading" class="payment-result__state">Consultando confirmacion del pago en Mercado Pago...</p>
+    <p *ngIf="!loading && errorMessage" class="payment-result__error">{{ errorMessage }}</p>
+
+    <ng-container *ngIf="!loading && order">
+      <p class="payment-result__state">
+        Estado actual: <strong>{{ order.status }}</strong>
+      </p>
+
+      <p class="payment-result__detail">
+        {{ paymentMessage }}
+      </p>
+
+      <p class="payment-result__detail" *ngIf="order.statusDetail">
+        {{ order.statusDetail }}
+      </p>
+
+      <div class="payment-result__summary">
+        <div>Pais: {{ order.countryCode }}</div>
+        <div>Plan: {{ order.planMonths }} meses</div>
+        <div>Monto: {{ order.amount | number:'1.0-2' }} {{ order.currencyCode }}</div>
+      </div>
+
+      <div *ngIf="order.accessCode" class="payment-result__code-box">
+        <span class="payment-result__label">Codigo activado</span>
+        <strong class="payment-result__code">{{ order.accessCode }}</strong>
+      </div>
+
+      <div class="payment-result__actions">
+        <button type="button" class="btn btn-primary" *ngIf="order.accessCode" (click)="useAccessCode()">
+          Usar este codigo
+        </button>
+        <button type="button" class="btn btn-outline-primary" *ngIf="!order.accessCode" (click)="retryCheck()">
+          Reconsultar estado
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="backToLogin()">
+          Volver al login
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</section>

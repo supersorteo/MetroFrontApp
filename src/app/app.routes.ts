@@ -9,12 +9,14 @@ import { DatosDeTareasComponent } from './componentes/datos-de-tareas/datos-de-t
 import { EditarClientesComponent } from './componentes/editar-clientes/editar-clientes.component';
 import { OfrecimientoLaboralComponent } from './componentes/ofrecimiento-laboral/ofrecimiento-laboral.component';
 import { EditarEmpresaComponent } from './componentes/editar-empresa/editar-empresa.component';
+import { PaymentResultComponent } from './componentes/payment-result/payment-result.component';
 
 export const routes: Routes = [
   {path:'', component:LoginComponent, canActivate: [AuthLoggedGuard]},
   {path:'', redirectTo:'', pathMatch:'full'},
   {path:'dashboard', component:DashboardComponent, canActivate: [AuthGuard] },
   { path: 'presupuesto', component: DatosDeTareasComponent, canActivate: [AuthGuard] },
+  { path: 'payment-result', component: PaymentResultComponent },
   {path:'admin-generate-code', component:GenerateCodeComponent, },
   {path:'editar-clientes/:id', component: EditarClientesComponent, canActivate: [AuthGuard]},
   {path:'ofrecimiento', component: OfrecimientoLaboralComponent},

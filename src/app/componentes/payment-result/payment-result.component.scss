@@ -1,0 +1,73 @@
+.payment-result {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top, rgba(64, 158, 255, 0.18), transparent 35%),
+    linear-gradient(180deg, #f8fbff 0%, #e9f1fb 100%);
+}
+
+.payment-result__card {
+  width: min(100%, 520px);
+  padding: 28px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgba(31, 60, 102, 0.14);
+}
+
+.payment-result__title {
+  margin: 0 0 16px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #15325b;
+}
+
+.payment-result__state,
+.payment-result__detail,
+.payment-result__summary {
+  color: #36506f;
+}
+
+.payment-result__error {
+  color: #b42318;
+}
+
+.payment-result__summary {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0;
+  padding: 16px;
+  border-radius: 14px;
+  background: #f4f8fc;
+}
+
+.payment-result__code-box {
+  margin: 18px 0;
+  padding: 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0c8f66, #15b880);
+  color: #fff;
+}
+
+.payment-result__label {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.82;
+}
+
+.payment-result__code {
+  display: block;
+  margin-top: 8px;
+  font-size: 28px;
+  letter-spacing: 0.08em;
+}
+
+.payment-result__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
