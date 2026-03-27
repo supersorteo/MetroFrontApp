@@ -146,6 +146,7 @@
                 <input id="purchaseEmail" type="email" class="form-control" [(ngModel)]="purchaseEmail" name="purchaseEmail" />
               </div>
 
+                <!-- TELEFONO DESACTIVADO del formulario de compra para reducir friccion
                 <div class="mb-3">
                   <label for="purchasePhone" class="col-form-label">Telefono:</label>
                   <input
@@ -162,6 +163,7 @@
                     {{ purchasePhoneErrorMessage }}
                   </div>
                 </div>
+                -->
 
               <div class="mb-3">
                 <label for="purchaseDocument" class="col-form-label">{{ selectedMembershipCountry?.documentLabel || 'Documento' }}:</label>
@@ -180,11 +182,22 @@
               Total a pagar: <strong>{{ selectedPlanAmount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}</strong>
             </div>
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-              <button type="button" class="btn btn-success" [disabled]="!canStartCheckout || isStartingCheckout" (click)="startMembershipCheckout()">
-                {{ isStartingCheckout ? 'Redirigiendo...' : 'Ir a pagar' }}
+            <div class="modal-footer d-flex flex-column gap-2 align-items-stretch">
+              <button
+                *ngIf="purchaseCountryCode === 'AR'"
+                type="button"
+                class="btn btn-success w-100"
+                [disabled]="!canStartCheckout || isStartingCheckout"
+                (click)="startMembershipCheckout()">
+                {{ isStartingCheckout ? 'Redirigiendo...' : 'Pagar con Mercado Pago' }}
               </button>
+              <button type="button" class="btn btn-warning w-100" [disabled]="!canStartCheckout || isStartingPayPal" (click)="startPayPalCheckout()">
+                {{ isStartingPayPal ? 'Redirigiendo...' : 'Pagar con PayPal' }}
+              </button>
+              <p *ngIf="purchaseCountryCode && purchaseCountryCode !== 'AR'" class="small text-muted text-center mb-0">
+                Mercado Pago disponible solo para Argentina.
+              </p>
+              <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Cerrar</button>
             </div>
           </div>
         </div>

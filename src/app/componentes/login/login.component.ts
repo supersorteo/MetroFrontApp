@@ -7,6 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ProvinciaService } from '../../servicios/provincia.service';
 import { MembershipCatalogCountry, MembershipPaymentService } from '../../servicios/membership-payment.service';
+import { PayPalPaymentService } from '../../servicios/paypal-payment.service';
 import Swal from 'sweetalert2';
 declare var bootstrap: any;
 
@@ -73,6 +74,7 @@ export class LoginComponent implements OnInit{
   purchasePhoneErrorMessage: string = '';
   isLoadingCatalog: boolean = false;
   isStartingCheckout: boolean = false;
+  isStartingPayPal: boolean = false;
 
   @ViewChild('exampleModal') exampleModal!: ElementRef;
 
@@ -82,7 +84,8 @@ constructor(private authService: AuthService,
   private renderer: Renderer2,
   private toastr: ToastrService,
   private provinciaService: ProvinciaService,
-  private membershipPaymentService: MembershipPaymentService){}
+  private membershipPaymentService: MembershipPaymentService,
+  private payPalPaymentService: PayPalPaymentService){}
 
   ngOnInit(): void {
     console.log('countries:', this.countries);
@@ -509,16 +512,17 @@ openWebsite(): void {
     }
 
     get canStartCheckout(): boolean {
-      const phoneValidation = this.validatePhoneByCountry(
-        this.purchasePhone,
-        this.selectedMembershipCountry?.nombre || null
-      );
+      // TELEFONO DESACTIVADO: validacion de telefono comentada junto con el campo del formulario
+      // const phoneValidation = this.validatePhoneByCountry(
+      //   this.purchasePhone,
+      //   this.selectedMembershipCountry?.nombre || null
+      // );
       return !!(
         this.purchaseCountryCode &&
         this.purchasePlanMonths &&
         this.purchaseName.trim() &&
         this.purchaseEmail.trim() &&
-        phoneValidation.valid &&
+        // phoneValidation.valid &&
         this.purchaseDocument.trim() &&
         this.purchaseProvince.trim()
       );
@@ -562,14 +566,15 @@ openWebsite(): void {
     }
 
     startMembershipCheckout(): void {
-      const phoneValidation = this.validatePhoneByCountry(
-        this.purchasePhone,
-        this.selectedMembershipCountry?.nombre || null
-      );
-      this.purchasePhoneErrorMessage = phoneValidation.message;
+      // TELEFONO DESACTIVADO: validacion y error de telefono comentados
+      // const phoneValidation = this.validatePhoneByCountry(
+      //   this.purchasePhone,
+      //   this.selectedMembershipCountry?.nombre || null
+      // );
+      // this.purchasePhoneErrorMessage = phoneValidation.message;
 
       if (!this.canStartCheckout || !this.purchaseCountryCode || !this.purchasePlanMonths) {
-        Swal.fire('Faltan datos', this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.', 'warning');
+        Swal.fire('Faltan datos', 'Completa los datos para iniciar el pago.', 'warning');
         return;
       }
 
@@ -579,7 +584,7 @@ openWebsite(): void {
         planMonths: this.purchasePlanMonths,
         payerName: this.purchaseName.trim(),
         payerEmail: this.purchaseEmail.trim(),
-        payerPhone: this.purchasePhone.trim(),
+        payerPhone: '', // TELEFONO DESACTIVADO: campo oculto, se envía vacío
         payerDocument: this.purchaseDocument.trim(),
         province: this.purchaseProvince.trim(),
         callbackUrl: `${window.location.origin}/payment-result`
@@ -596,6 +601,38 @@ openWebsite(): void {
         error: (error) => {
           this.isStartingCheckout = false;
           Swal.fire('Error', error?.message || 'No se pudo iniciar el checkout.', 'error');
+        }
+      });
+    }
+
+    startPayPalCheckout(): void {
+      if (!this.canStartCheckout || !this.purchaseCountryCode || !this.purchasePlanMonths) {
+        Swal.fire('Faltan datos', 'Completa los datos para iniciar el pago.', 'warning');
+        return;
+      }
+
+      this.isStartingPayPal = true;
+      this.payPalPaymentService.createCheckout({
+        countryCode: this.purchaseCountryCode,
+        planMonths: this.purchasePlanMonths,
+        payerName: this.purchaseName.trim(),
+        payerEmail: this.purchaseEmail.trim(),
+        payerDocument: this.purchaseDocument.trim(),
+        province: this.purchaseProvince.trim(),
+        callbackUrl: `${window.location.origin}/payment-result`
+      }).subscribe({
+        next: (order) => {
+          this.isStartingPayPal = false;
+          if (!order.approvalUrl) {
+            this.toastr.error('PayPal no devolvio una URL de pago.');
+            return;
+          }
+          localStorage.setItem('pendingPaymentId', order.externalId);
+          window.location.href = order.approvalUrl;
+        },
+        error: (error) => {
+          this.isStartingPayPal = false;
+          Swal.fire('Error', error?.error?.message || 'No se pudo iniciar el checkout con PayPal.', 'error');
         }
       });
     }
