@@ -146,9 +146,8 @@
                 <input id="purchaseEmail" type="email" class="form-control" [(ngModel)]="purchaseEmail" name="purchaseEmail" />
               </div>
 
-                <!-- TELEFONO DESACTIVADO del formulario de compra para reducir friccion
                 <div class="mb-3">
-                  <label for="purchasePhone" class="col-form-label">Telefono:</label>
+                  <label for="purchasePhone" class="col-form-label">Telefono (para recibir el codigo por WhatsApp):</label>
                   <input
                     id="purchasePhone"
                     type="tel"
@@ -163,7 +162,6 @@
                     {{ purchasePhoneErrorMessage }}
                   </div>
                 </div>
-                -->
 
               <div class="mb-3">
                 <label for="purchaseDocument" class="col-form-label">{{ selectedMembershipCountry?.documentLabel || 'Documento' }}:</label>

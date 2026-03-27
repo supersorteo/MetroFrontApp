@@ -512,17 +512,16 @@ openWebsite(): void {
     }
 
     get canStartCheckout(): boolean {
-      // TELEFONO DESACTIVADO: validacion de telefono comentada junto con el campo del formulario
-      // const phoneValidation = this.validatePhoneByCountry(
-      //   this.purchasePhone,
-      //   this.selectedMembershipCountry?.nombre || null
-      // );
+      const phoneValidation = this.validatePhoneByCountry(
+        this.purchasePhone,
+        this.selectedMembershipCountry?.nombre || null
+      );
       return !!(
         this.purchaseCountryCode &&
         this.purchasePlanMonths &&
         this.purchaseName.trim() &&
         this.purchaseEmail.trim() &&
-        // phoneValidation.valid &&
+        phoneValidation.valid &&
         this.purchaseDocument.trim() &&
         this.purchaseProvince.trim()
       );
@@ -566,15 +565,14 @@ openWebsite(): void {
     }
 
     startMembershipCheckout(): void {
-      // TELEFONO DESACTIVADO: validacion y error de telefono comentados
-      // const phoneValidation = this.validatePhoneByCountry(
-      //   this.purchasePhone,
-      //   this.selectedMembershipCountry?.nombre || null
-      // );
-      // this.purchasePhoneErrorMessage = phoneValidation.message;
+      const phoneValidation = this.validatePhoneByCountry(
+        this.purchasePhone,
+        this.selectedMembershipCountry?.nombre || null
+      );
+      this.purchasePhoneErrorMessage = phoneValidation.message;
 
       if (!this.canStartCheckout || !this.purchaseCountryCode || !this.purchasePlanMonths) {
-        Swal.fire('Faltan datos', 'Completa los datos para iniciar el pago.', 'warning');
+        Swal.fire('Faltan datos', this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.', 'warning');
         return;
       }
 
@@ -584,7 +582,7 @@ openWebsite(): void {
         planMonths: this.purchasePlanMonths,
         payerName: this.purchaseName.trim(),
         payerEmail: this.purchaseEmail.trim(),
-        payerPhone: '', // TELEFONO DESACTIVADO: campo oculto, se envía vacío
+        payerPhone: this.purchasePhone.trim(),
         payerDocument: this.purchaseDocument.trim(),
         province: this.purchaseProvince.trim(),
         callbackUrl: `${window.location.origin}/payment-result`
@@ -596,7 +594,10 @@ openWebsite(): void {
             return;
           }
           localStorage.setItem('pendingPaymentId', order.externalId);
-          window.location.href = order.redirectUrl;
+          window.open(order.redirectUrl, '_blank');
+          this.route.navigate(['/payment-result'], {
+            queryParams: { externalId: order.externalId }
+          });
         },
         error: (error) => {
           this.isStartingCheckout = false;

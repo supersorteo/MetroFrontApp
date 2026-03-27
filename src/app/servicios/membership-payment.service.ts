@@ -51,6 +51,7 @@ export interface MembershipPaymentStatusResponse {
   planMonths: number;
   amount: number;
   paidAt: string | null;
+  payerPhone: string | null;
 }
 
 @Injectable({
@@ -69,7 +70,8 @@ export class MembershipPaymentService {
     return this.http.post<CreateMembershipPaymentResponse>(`${this.apiUrl}/checkout`, payload);
   }
 
-  getStatus(externalId: string): Observable<MembershipPaymentStatusResponse> {
-    return this.http.get<MembershipPaymentStatusResponse>(`${this.apiUrl}/${externalId}`);
+  getStatus(externalId: string, paymentId?: string): Observable<MembershipPaymentStatusResponse> {
+    const params = paymentId ? `?paymentId=${paymentId}` : '';
+    return this.http.get<MembershipPaymentStatusResponse>(`${this.apiUrl}/${externalId}${params}`);
   }
 }
