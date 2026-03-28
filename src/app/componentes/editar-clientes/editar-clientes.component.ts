@@ -78,7 +78,6 @@ if (isTrial) {
             ...data,
             empresaId: data.empresaId // Asegura que empresaId se asigne correctamente
           };
-          console.log('data', data)
           this.loading = false;
         },
         error: (err) => {

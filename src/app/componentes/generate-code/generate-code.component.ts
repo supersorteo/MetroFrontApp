@@ -75,7 +75,6 @@ export class GenerateCodeComponent implements OnInit {
           this.errorMessage = '';
           this.toastr.success(this.successMessage, 'Éxito');
           this.loadCodes();
-          console.log('codigo: ', this.code)
         } else {
           this.errorMessage = response.message;
           this.successMessage = '';
@@ -98,8 +97,6 @@ export class GenerateCodeComponent implements OnInit {
                       .map(code => {
                           const fechaRegistro = code.fechaRegistro || '';
                           const fechaVencimiento = code.fechaVencimiento || '';
-                          console.log('Fecha de registro:', fechaRegistro);
-                          console.log('Fecha de vencimiento:', fechaVencimiento);
                           return {
                               ...code,
                               tipo: code.code.length === 5 ? '3 meses' : '6 meses',
@@ -117,7 +114,6 @@ export class GenerateCodeComponent implements OnInit {
                       });
                   this.filteredCodes = this.codes;
                   this.updatePagination();
-                  console.log(this.codes);
               },
               error => {
                   this.toastr.error('Error al cargar los códigos', 'Error');
@@ -144,7 +140,6 @@ export class GenerateCodeComponent implements OnInit {
 
 
       editCode(item: AccessCode): void {
-        console.log('Editar código:', item);
       }
 
       deleteCode(code: string): void {
@@ -184,8 +179,6 @@ export class GenerateCodeComponent implements OnInit {
         this.generateCodesModal6 = false;
         this.showGeneratedCodesModal = true;
 
-        console.log(`Códigos de ${months} meses:`);
-        codes.forEach(code => console.log(code.code));
         this.authService.agregarCodes(codes).subscribe(
           response => {
             this.toastr.success(response.message, 'Éxito');
@@ -238,7 +231,6 @@ export class GenerateCodeComponent implements OnInit {
         navigator.clipboard.writeText(code).then(
           () => {
             this.toastr.success('Código copiado al portapapeles', 'Éxito');
-            console.log('Código', code)
           },
           err => {
             this.toastr.error('Error al copiar el código', 'Error');

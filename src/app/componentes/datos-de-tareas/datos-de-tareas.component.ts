@@ -69,15 +69,9 @@ export class DatosDeTareasComponent implements OnInit {
     }
     this.colorScheme = this.loadColorScheme();
     // Puedes agregar lógica para cargar datos adicionales si es necesario
-    console.log('Empresa seleccionada:', this.empresaSeleccionada);
-    console.log('Cliente seleccionado:', this.clienteSeleccionado);
-    console.log('Tareas asociadas:', this.tareasAgregadas);
-
-
     const storedPresupuestoName = localStorage.getItem('selectedPresupuestoName');
 if (storedPresupuestoName) {
   this.presupuestoNombre = storedPresupuestoName;
-  console.log('datos del presupuesto: ', storedPresupuestoName )
 }
 
 

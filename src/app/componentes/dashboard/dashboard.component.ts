@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
 import { Router } from '@angular/router';
@@ -43,6 +45,17 @@ interface ColorScheme {
 }
 
 
+function cleanupBootstrapModals(): void {
+  document.body.classList.remove('modal-open');
+  document.body.style.overflow = '';
+  document.body.style.paddingRight = '';
+  document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+  document.querySelectorAll('.modal.show').forEach(el => {
+    el.classList.remove('show');
+    (el as HTMLElement).style.display = 'none';
+  });
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -58,7 +71,8 @@ interface ColorScheme {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent implements OnInit{
+export class DashboardComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
 
   filtroCliente: string = '';
   filtroEmpresa: string = '';
@@ -235,7 +249,6 @@ if (this.trialMode) {
             imageElement.src = empresa.logoUrl;
             imageElement.style.display = 'block';
           }
-          console.log('Empresa seleccionada al iniciar:', empresa);
         }
       }
       // Restaurar selección de cliente (objeto completo)
@@ -246,7 +259,6 @@ if (this.trialMode) {
           const cliente = this.clientes.find(c => c.id === clienteObj.id);
           if (cliente) {
             this.clienteSeleccionado = cliente;
-            console.log('Cliente seleccionado al iniciar (objeto):', cliente);
           }
         } catch (e) {
           console.error('Error restaurando cliente seleccionado:', e);
@@ -264,27 +276,12 @@ if (this.trialMode) {
     this.obtenerTareas();
     this.colorScheme = this.loadColorScheme();
 
-    console.log('Estado inicial del formulario:', {
-      clientName: this.clientName,
-      clientContact: this.clientContact,
-      budgetDate: this.budgetDate,
-      userCode: this.userCode
-    });
-
     const today = new Date();
     this.budgetDate = today.toISOString().split('T')[0];
-    console.log('Fecha del presupuesto por defecto:', this.budgetDate);
     setTimeout(() => {
       this.budgetDate = this.budgetDate;
-      console.log('Fecha forzada para binding:', this.budgetDate);
     }, 0);
 
-
-   /* const storedPresupuesto = localStorage.getItem('presupuestoCargado');
-if (storedPresupuesto) {
-  const presupuesto = JSON.parse(storedPresupuesto) as SavedPresupuesto;
-  this.onCargarPresupuestoGuardado(presupuesto);
-}*/
 
 const storedPresupuesto = localStorage.getItem('presupuestoCargado');
 if (storedPresupuesto) {
@@ -298,14 +295,10 @@ if (storedPresupuesto) {
 
 
 
-   ngOnDestroy(): void {
-    /*if (localStorage.getItem('trialMode') === 'true') {
-      localStorage.setItem('trialMode', 'false');
-      // opcional: limpiar también datos demo si querés
-      // localStorage.removeItem('demoEmpresas');
-      // localStorage.removeItem('demoTareas');
-      // localStorage.removeItem('demoEmpresaLogo');
-    }*/
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    cleanupBootstrapModals();
   }
 
 
@@ -361,49 +354,7 @@ if (this.selectedEmpresaId) {
   this.clienteSeleccionado = cliente;
   localStorage.setItem('selectedClienteId', String(cliente.id));
   localStorage.setItem('selectedCliente', JSON.stringify(cliente));
-  console.log('Cliente seleccionado:', cliente);
     }
-
-  getEmpresasByUserCode0(): void {
-    if (!this.userCode) {
-      this.toastr.error('Código de usuario no encontrado', 'Error');
-      console.error('[EMPRESA] Código de usuario no encontrado');
-      return;
-    }
-    console.log('[EMPRESA] getEmpresasByUserCode para userCode:', this.userCode);
-    this.empresaService.getEmpresaByUserCode(this.userCode).subscribe({
-      next: (empresas) => {
-        console.log('[EMPRESA] Empresas recibidas:', empresas);
-        this.empresas = Array.isArray(empresas) ? empresas : [empresas];
-        this.updatePaginatedEmpresas();
-        // Lógica de imagen y selección
-        const selectedId = localStorage.getItem('selectedEmpresaId');
-        let empresaSeleccionada = null;
-        if (selectedId) {
-          empresaSeleccionada = this.empresas.find(e => String(e.id) === selectedId);
-        }
-        if (empresaSeleccionada) {
-          this.selectedEmpresaId = empresaSeleccionada;
-          this.actualizarImagenEmpresa(empresaSeleccionada);
-          console.log('empresa seleccionada', this.selectedEmpresaId)
-        } else if (this.empresas.length > 0) {
-          this.selectedEmpresaId = this.empresas[0];
-          console.log('empresa seleccionada', this.selectedEmpresaId)
-          this.actualizarImagenEmpresa(this.empresas[0]);
-          localStorage.setItem('selectedEmpresaId', String(this.empresas[0].id));
-        } else {
-          this.selectedEmpresaId = null;
-          this.actualizarImagenEmpresa(null);
-          localStorage.removeItem('selectedEmpresaId');
-          console.log('empresa seleccionada', this.selectedEmpresaId)
-        }
-      },
-      error: (error) => {
-        this.toastr.error(error.message || 'Error al cargar las empresas');
-        console.error('[EMPRESA] Error al cargar empresas:', error);
-      }
-    });
-  }
 
     cargarDatosEmpresaSeleccionada() {
     if (this.selectedEmpresaId) {
@@ -419,7 +370,6 @@ if (this.selectedEmpresaId) {
       this.showSocialFields = this.hasSocialData();
       // Si hay logo, actualizar imagen
       this.actualizarImagenEmpresa(this.selectedEmpresaId);
-      console.log('Datos de empresa cargados en modal:', this.selectedEmpresaId);
     } else {
       this.empresaName = '';
       this.empresaPhone = '';
@@ -432,120 +382,9 @@ if (this.selectedEmpresaId) {
       this.empresaCuilCuit = '';
       this.showSocialFields = false;
       this.actualizarImagenEmpresa(null);
-      console.log('No hay empresa seleccionada');
     }
   }
 
-
-getEmpresasByUserCode00(): void {
-
-  if (this.trialMode) {
-  const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
-  const demoEmpresas = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
-  this.empresas = demoEmpresas;
-  this.updatePaginatedEmpresas();
-  return;
-}
-
-    if (!this.userCode) {
-      this.toastr.error('Código de usuario no encontrado', 'Error');
-      console.error('[EMPRESA] Código de usuario no encontrado');
-      return;
-    }
-    console.log('[EMPRESA] getEmpresasByUserCode para userCode:', this.userCode);
-    this.empresaService.getEmpresaByUserCode(this.userCode).subscribe({
-      next: (empresas) => {
-        console.log('[EMPRESA] Empresas recibidas:', empresas);
-        this.empresas = Array.isArray(empresas) ? empresas : [empresas];
-        this.updatePaginatedEmpresas();
-        // Lógica de selección de empresa
-        const selectedId = localStorage.getItem('selectedEmpresaId');
-        let empresaSeleccionada = null;
-        if (selectedId) {
-          empresaSeleccionada = this.empresas.find(e => String(e.id) === selectedId);
-        }
-        if (empresaSeleccionada) {
-          this.selectedEmpresaId = empresaSeleccionada;
-          this.actualizarImagenEmpresa(empresaSeleccionada);
-          console.log('Empresa seleccionada:', this.selectedEmpresaId);
-        } else if (this.empresas.length > 0) {
-          this.selectedEmpresaId = this.empresas[0];
-          this.actualizarImagenEmpresa(this.empresas[0]);
-          localStorage.setItem('selectedEmpresaId', String(this.empresas[0].id));
-          console.log('Empresa seleccionada:', this.selectedEmpresaId);
-        } else {
-          this.selectedEmpresaId = null;
-          this.actualizarImagenEmpresa(null);
-          localStorage.removeItem('selectedEmpresaId');
-          console.log('Empresa seleccionada:', this.selectedEmpresaId);
-        }
-        // Cargar clientes de la empresa seleccionada
-        if (this.selectedEmpresaId?.id) {
-          this.clienteService.getClientesByEmpresaId(this.selectedEmpresaId.id).subscribe({
-            next: (clientes) => {
-              console.log('Clientes recibidos para empresa:', clientes);
-              this.clientes = clientes || [];
-              this.updatePaginatedClientes();
-              // Restaurar selección de cliente desde localStorage
-              const storedCliente = localStorage.getItem('selectedCliente');
-              if (storedCliente) {
-                try {
-                  const clienteObj = JSON.parse(storedCliente);
-                  const cliente = this.clientes.find(c => c.id === clienteObj.id);
-                  console.log('Intentando restaurar cliente seleccionado:', clienteObj);
-                  if (cliente) {
-                    this.clienteSeleccionado = cliente;
-                    console.log('Cliente restaurado correctamente:', cliente);
-                  } else {
-                    this.clienteSeleccionado = null;
-                    console.log('No se encontró el cliente en la lista actual.');
-                  }
-                } catch (e) {
-                  this.clienteSeleccionado = null;
-                  console.error('Error restaurando cliente seleccionado:', e);
-                }
-              } else {
-                console.log('No hay cliente guardado en localStorage.');
-              }
-              // Cargar tareas del cliente seleccionado, si existe
-              if (this.clienteSeleccionado?.id) {
-                this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).subscribe({
-                  next: (tareas) => {
-                    console.log('Tareas recibidas para cliente:', tareas);
-                    this.tareasAgregadas = tareas || [];
-                    this.mostrarTabla = this.tareasAgregadas.length > 0;
-                    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-                  },
-                  error: (error) => {
-                    console.error('Error al cargar tareas:', error);
-                    this.toastr.error(error.message || 'Error al cargar las tareas');
-                    this.tareasAgregadas = [];
-                    this.mostrarTabla = false;
-                  }
-                });
-              }
-              // Imprimir estado final en consola
-              console.log('Estado final clienteSeleccionado:', this.clienteSeleccionado);
-            },
-            error: (error) => {
-              console.error('Error al cargar clientes por empresa:', error);
-             // this.toastr.error(error.message || 'Error al cargar los clientes');
-              this.clientes = [];
-              this.updatePaginatedClientes();
-            }
-          });
-        }
-      },
-
-
-
-
-      error: (error) => {
-        //this.toastr.error(error.message || 'Error al cargar las empresas');
-        console.error('[EMPRESA] Error al cargar empresas:', error);
-      }
-    });
-  }
 
   getEmpresasByUserCode(): void {
 
@@ -562,10 +401,8 @@ getEmpresasByUserCode00(): void {
     console.error('[EMPRESA] Código de usuario no encontrado');
     return;
   }
-  console.log('[EMPRESA] getEmpresasByUserCode para userCode:', this.userCode);
-  this.empresaService.getEmpresaByUserCode(this.userCode).subscribe({
+  this.empresaService.getEmpresaByUserCode(this.userCode).pipe(takeUntil(this.destroy$)).subscribe({
     next: (empresas) => {
-      console.log('[EMPRESA] Empresas recibidas:', empresas);
       this.empresas = Array.isArray(empresas) ? empresas : [empresas];
       this.updatePaginatedEmpresas();
       // Lógica de selección de empresa
@@ -577,23 +414,19 @@ getEmpresasByUserCode00(): void {
       if (empresaSeleccionada) {
         this.selectedEmpresaId = empresaSeleccionada;
         this.actualizarImagenEmpresa(empresaSeleccionada);
-        console.log('Empresa seleccionada:', this.selectedEmpresaId);
       } else if (this.empresas.length > 0) {
         this.selectedEmpresaId = this.empresas[0];
         this.actualizarImagenEmpresa(this.empresas[0]);
         localStorage.setItem('selectedEmpresaId', String(this.empresas[0].id));
-        console.log('Empresa seleccionada:', this.selectedEmpresaId);
       } else {
         this.selectedEmpresaId = null;
         this.actualizarImagenEmpresa(null);
         localStorage.removeItem('selectedEmpresaId');
-        console.log('Empresa seleccionada:', this.selectedEmpresaId);
       }
       // Cargar clientes de la empresa seleccionada
       if (this.selectedEmpresaId?.id) {
-        this.clienteService.getClientesByEmpresaId(this.selectedEmpresaId.id).subscribe({
+        this.clienteService.getClientesByEmpresaId(this.selectedEmpresaId.id).pipe(takeUntil(this.destroy$)).subscribe({
           next: (clientes) => {
-            console.log('Clientes recibidos para empresa:', clientes);
             this.clientes = clientes || [];
             this.updatePaginatedClientes();
 
@@ -632,9 +465,8 @@ if (this.presupuestoPendiente) {
 
             // Cargar tareas del cliente seleccionado, si existe
             if (this.clienteSeleccionado?.id) {
-              this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).subscribe({
+              this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).pipe(takeUntil(this.destroy$)).subscribe({
                 next: (tareas) => {
-                  console.log('Tareas recibidas para cliente:', tareas);
                   this.tareasAgregadas = tareas || [];
                   this.mostrarTabla = this.tareasAgregadas.length > 0;
                   localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
@@ -648,7 +480,6 @@ if (this.presupuestoPendiente) {
               });
             }
 
-            console.log('Estado final clienteSeleccionado:', this.clienteSeleccionado);
           },
           error: (error) => {
             console.error('Error al cargar clientes por empresa:', error);
@@ -718,7 +549,6 @@ if (this.presupuestoPendiente) {
   }
 
   solicitarConfirmacionEliminarEmpresa(id: number): void {
-    console.log('[EMPRESA] Solicitar confirmación para eliminar empresa con id:', id);
     Swal.fire({
       title: '¿Estás seguro?',
       text: '¿Deseas eliminar esta empresa? Esta acción no se puede deshacer.',
@@ -730,21 +560,17 @@ if (this.presupuestoPendiente) {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        console.log('[EMPRESA] Eliminando empresa con id:', id);
         this.empresaService.deleteEmpresa(id).subscribe({
           next: () => {
             this.toastr.success('Empresa eliminada correctamente', 'Éxito');
             this.empresas = this.empresas.filter(empresa => empresa.id !== id);
             this.updatePaginatedEmpresas();
-            console.log('[EMPRESA] Empresa eliminada correctamente:', id);
           },
           error: (error) => {
             this.toastr.error(error.message || 'Error al eliminar la empresa', 'Error');
             console.error('[EMPRESA] Error al eliminar empresa:', error);
           }
         });
-      } else {
-        console.log('[EMPRESA] Eliminación cancelada por el usuario');
       }
     });
   }
@@ -1112,7 +938,6 @@ obtenerTareas0(): void {
       next: (tareas) => {
         this.tareas = tareas;
         this.tareasFiltradas = tareas;
-        console.log('Tareas cargadas:', this.tareas);
       },
       error: () => this.toastr.error('Error al obtener las tareas', 'Error')
     });
@@ -1122,11 +947,10 @@ obtenerTareas0(): void {
 // src/app/componentes/dashboard/dashboard.component.ts shareReplay
 obtenerTareas(): void {
   if (this.userData?.pais) {
-    this.tareaService.getTareasByPaisCached(this.userData.pais).subscribe({
+    this.tareaService.getTareasByPaisCached(this.userData.pais).pipe(takeUntil(this.destroy$)).subscribe({
       next: (tareas) => {
         this.tareas = tareas;
         this.tareasFiltradas = tareas;
-        console.log('Tareas cargadas:', this.tareas);
       },
       error: () => this.toastr.error('Error al obtener las tareas', 'Error')
     });
@@ -1175,11 +999,9 @@ loadTareasAgregadas0(): void {
         this.tareasAgregadas = tareas;
         this.mostrarTabla = tareas.length > 0;
         localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas)); // Actualizar localStorage
-        console.log('Tareas agregadas cargadas del backend:', this.tareasAgregadas);
       },
       error: () => {
         this.toastr.error('Error al cargar las tareas agregadas del backend', 'Error');
-        console.log('Usando tareas de localStorage como respaldo:', this.tareasAgregadas);
       }
     });
   }
@@ -1213,16 +1035,14 @@ if (this.trialMode) {
 
     // Sincronizar con el backend
     if (this.clienteSeleccionado?.id) {
-      this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).subscribe({
+      this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).pipe(takeUntil(this.destroy$)).subscribe({
         next: (tareas) => {
           this.tareasAgregadas = tareas;
           this.mostrarTabla = tareas.length > 0;
           localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-          console.log('Tareas agregadas cargadas del backend:', this.tareasAgregadas);
         },
         error: () => {
           this.toastr.error('Error al cargar las tareas agregadas del backend', 'Error');
-          console.log('Usando tareas de localStorage como respaldo:', this.tareasAgregadas);
         }
       });
     }
@@ -1245,7 +1065,6 @@ if (this.trialMode) {
     return;
   }
   this.tareaSeleccionada = { ...tarea, descripcion: '', totalCost: this.calcularTotalCosto(tarea) };
-  console.log('Tarea seleccionada:', this.tareaSeleccionada);
   this.abrirModal();
   }
 
@@ -1300,7 +1119,6 @@ if (this.trialMode) {
     descripcion: '',
     totalCost: this.calcularTotalCosto(tarea)
   };
-  console.log('Tarea seleccionada:', this.tareaSeleccionada);
   this.abrirModal();
 }
 
@@ -1625,7 +1443,6 @@ onCargarPresupuestoGuardado1(presupuesto: SavedPresupuesto): void {
 }
 
 onCargarPresupuestoGuardado0(presupuesto: SavedPresupuesto): void {
-  console.log('Cargando presupuesto guardado:', presupuesto);
 
   // Cargar tareas
   this.tareasAgregadas = (presupuesto.tareas || []).map(t => ({ ...t }));
@@ -1650,14 +1467,6 @@ onCargarPresupuestoGuardado0(presupuesto: SavedPresupuesto): void {
 }
 
 onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
-  console.log('%cCARGANDO PRESUPUESTO GUARDADO', 'color: #4CAF50; font-weight: bold; font-size: 14px');
-  console.log('Presupuesto recibido:', {
-    id: presupuesto.id,
-    name: presupuesto.name,
-    cliente: presupuesto.cliente?.name || 'Sin cliente',
-    tareasCount: presupuesto.tareas?.length || 0
-  });
-
    this.presupuestoSeleccionado = presupuesto;
    localStorage.setItem('presupuestoCargado', JSON.stringify(presupuesto));
 
@@ -1675,8 +1484,6 @@ onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
   localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
   this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
 
-  console.log('Tareas cargadas:', this.tareasAgregadas.length, 'tareas');
-
   // 2. CARGAR CLIENTE DEL PRESUPUESTO
   if (presupuesto.cliente && presupuesto.cliente.id) {
     // Buscar si el cliente ya está en la lista cargada
@@ -1684,11 +1491,9 @@ onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
 
     if (clienteEncontrado) {
       this.clienteSeleccionado = clienteEncontrado;
-      console.log('Cliente encontrado en lista local:', clienteEncontrado.name);
     } else {
       // Si no está en la lista local, usar el que viene del backend
       this.clienteSeleccionado = presupuesto.cliente;
-      console.log('Cliente cargado desde presupuesto:', this.clienteSeleccionado.name);
     }
 
     // Guardar en localStorage
@@ -1704,8 +1509,6 @@ onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
   // 3. NO TOCAR LA EMPRESA
   // La empresa actual ya está seleccionada por el usuario.
   // No la cambiamos al cargar un presupuesto (sería confuso para el usuario).
-  console.log('Empresa actual mantenida:', this.selectedEmpresa?.name || 'Ninguna');
-
   // 4. FEEDBACK AL USUARIO
   this.toastr.success(
     `Presupuesto "${presupuesto.name}" cargado correctamente`,
@@ -1804,7 +1607,7 @@ limpiarPresupuestoCargado() {
 
   // Volver a cargar tareas normales del cliente seleccionado
   if (this.clienteSeleccionado?.id) {
-    this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).subscribe({
+    this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).pipe(takeUntil(this.destroy$)).subscribe({
       next: (tareas) => {
         this.tareasAgregadas = tareas || [];
         this.mostrarTabla = this.tareasAgregadas.length > 0;
@@ -2222,22 +2025,23 @@ calcularCostoTotal(): number {
 
 
   logout(): void {
-  Swal.fire({
-    title: 'Cerrar sesion',
-    text: 'Estas seguro que deseas cerrar sesion?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Cerrar sesion',
-    cancelButtonText: 'Cancelar',
-    reverseButtons: true
-  }).then(result => {
-    if (result.isConfirmed) {
-      this.authService.logout();
-      this.route.navigate(['']);
-      this.toastr.success('Sesion cerrada correctamente', 'Exito');
-    }
-  });
-}
+    Swal.fire({
+      title: 'Cerrar sesion',
+      text: 'Estas seguro que deseas cerrar sesion?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Cerrar sesion',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true
+    }).then(result => {
+      if (result.isConfirmed) {
+        cleanupBootstrapModals();
+        this.authService.logout();
+        this.route.navigate(['']);
+        this.toastr.success('Sesion cerrada correctamente', 'Exito');
+      }
+    });
+  }
 
 
 
@@ -2315,7 +2119,6 @@ calcularCostoTotal(): number {
           mainPreview2.style.display = 'block';
         }
         this.uploadMessage.nativeElement.style.display = 'block';
-        console.log('Imagen subida con éxito.');
         this.toastr.success('Imagen subida con éxito.');
       };
       reader.readAsDataURL(file);
@@ -2356,7 +2159,6 @@ uploadImage1(): void {
       }
       this.uploadMessage.nativeElement.style.display = 'block';
       this.toastr.success('Imagen subida con éxito.');
-      console.log('Imagen subida con éxito.');
     };
     reader.readAsDataURL(file);
   } else {
@@ -2525,7 +2327,6 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
 }
 
 
-    console.log('[EMPRESA] Guardar datos de empresa. Modo edición:', this.empresaEditId !== null);
     if (!this.empresaName.trim()) {
       this.toastr.error('El nombre de la empresa es obligatorio.');
       console.error('[EMPRESA] El nombre de la empresa es obligatorio.');
@@ -2555,15 +2356,11 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       facebook: this.empresaFacebook,
       cuilCuit: this.empresaCuilCuit
     };
-    console.log('[EMPRESA] Datos a enviar:', formData);
-
     if (this.empresaEditId !== null) {
       // Modo edición: actualizar empresa existente
-      console.log('[EMPRESA] Llamando updateEmpresa con id:', this.empresaEditId);
       this.empresaService.updateEmpresa(this.empresaEditId, formData).subscribe({
-        next: (empresa) => {
+        next: () => {
           this.toastr.success('Empresa actualizada correctamente', 'Éxito');
-          console.log('[EMPRESA] Empresa actualizada correctamente:', empresa);
           this.getEmpresasByUserCode();
           this.limpiarEmpresaForm();
         },
@@ -2574,11 +2371,9 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       });
     } else {
       // Modo creación: crear nueva empresa
-      console.log('[EMPRESA] Llamando saveEmpresa');
       this.empresaService.saveEmpresa(formData).subscribe({
-        next: (empresa) => {
+        next: () => {
           this.toastr.success('Datos de la empresa guardados', 'Éxito');
-          console.log('[EMPRESA] Empresa creada correctamente:', empresa);
           this.getEmpresasByUserCode();
           this.limpiarEmpresaForm();
         },
@@ -2618,24 +2413,11 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
   onDateChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.budgetDate = input.value;
-    console.log('budgetDate cambiado:', this.budgetDate);
   }
 
 
 
 saveClientData0(form: NgForm): void {
-    console.log('Valores antes de enviar:', {
-      clientName: this.clientName,
-      clientContact: this.clientContact,
-      budgetDate: this.budgetDate,
-      additionalDetailsClient: this.additionalDetailsClient,
-      clientEmail: this.clientEmail,
-      clientClave: this.clientClave,
-      clientDireccion: this.clientDireccion,
-      userCode: this.userCode,
-      empresaId: this.selectedEmpresaId?.id
-    });
-
     if (!this.validateForm(form)) {
       return;
     }
@@ -2661,7 +2443,6 @@ saveClientData0(form: NgForm): void {
     this.clienteService.saveCliente(clientData).subscribe({
       next: (cliente) => {
         localStorage.setItem(`clientData_${cliente.id || Date.now()}`, JSON.stringify(cliente));
-        console.log('Cliente guardado con éxito:', cliente);
         this.toastr.success('Cliente guardado con éxito');
         this.clientName = '';
         this.clientContact = '';
@@ -2690,19 +2471,6 @@ saveClientData0(form: NgForm): void {
 
 
   saveClientData(form: NgForm): void {
-
-
-    console.log('Valores antes de enviar:', {
-      clientName: this.clientName,
-      clientContact: this.clientContact,
-      budgetDate: this.budgetDate,
-      additionalDetailsClient: this.additionalDetailsClient,
-      clientEmail: this.clientEmail,
-      clientClave: this.clientClave,
-      clientDireccion: this.clientDireccion,
-      userCode: this.userCode,
-      empresaId: this.selectedEmpresaId?.id
-    });
 
     if (!this.validateForm(form)) {
       return;
@@ -2783,7 +2551,6 @@ saveClientData0(form: NgForm): void {
     this.clienteService.saveCliente(clientData).subscribe({
       next: (cliente) => {
         localStorage.setItem(`clientData_${cliente.id || Date.now()}`, JSON.stringify(cliente));
-        console.log('Cliente guardado con éxito:', cliente);
         this.toastr.success('Cliente guardado con éxito');
         this.clientName = '';
         this.clientContact = '';
@@ -2915,8 +2682,6 @@ saveClientData0(form: NgForm): void {
 
   loadUserCode(): void {
     this.userCode = localStorage.getItem('userCode') || '';
-    const storedUserData = localStorage.getItem('userData');
-    console.log('Datos en localStorage (userData):', storedUserData ? JSON.parse(storedUserData) : null);
     if (this.userCode) {
       this.fetchUserData();
     } else {
@@ -2932,13 +2697,10 @@ getClientesByUserCode(): void {
       this.toastr.error('Código de usuario no encontrado', 'Error');
       return;
     }
-    console.log('Iniciando carga de clientes para userCode:', this.userCode);
     this.clienteService.getClienteByUserCode(this.userCode).subscribe({
       next: (clientes) => {
-        console.log('Respuesta del backend:', clientes);
         this.clientes = clientes || [];
           this.updatePaginatedClientes();
-        console.log('Clientes asignados:', this.clientes);
       },
       error: (error) => {
         console.error('Error en getClientesByUserCode:', error);
@@ -2961,16 +2723,14 @@ openListaClientesModal(): void {
     }
     const listaModal = new bootstrap.Modal(modalElement);
     listaModal.show();
-    console.log('Modal abierto');
 }
 
 
 fetchUserData(): void {
-  this.authService.getUserCode(this.userCode).subscribe(
+  this.authService.getUserCode(this.userCode).pipe(takeUntil(this.destroy$)).subscribe(
     response => {
       this.userData = response;
       localStorage.setItem('userData', JSON.stringify(this.userData));
-      console.log('Datos del usuario logueado:', this.userData); // Imprimir datos
       if (this.userData.fechaVencimiento) {
       this.calculateRemainingTime(this.userData.fechaVencimiento);
     }
@@ -2990,10 +2750,9 @@ fetchUserData(): void {
 
   loadProvincias(): void {
     if (this.userData?.pais) {
-      this.provinciaService.getProvinciasByPais(this.userData.pais).subscribe(
+      this.provinciaService.getProvinciasByPais(this.userData.pais).pipe(takeUntil(this.destroy$)).subscribe(
         provincias => {
           this.provincias = provincias;
-          console.log('Provincias cargadas:', provincias); // Depuración
         },
         error => {
           this.toastr.error('Error al cargar las provincias', 'Error');
@@ -3007,13 +2766,11 @@ fetchUserData(): void {
 
    onEmpresaSeleccionada1(empresa: any) {
     // Versión optimizada: obtiene clientes y tareas asociadas a cada cliente
-    console.log('Empresa seleccionada:', empresa);
     this.selectedEmpresaId = empresa;
     if (empresa && empresa.id) {
       localStorage.setItem('selectedEmpresaId', String(empresa.id));
       this.clienteService.getClientesByEmpresaId(empresa.id).subscribe({
         next: (clientes) => {
-          console.log('Clientes recibidos para empresa:', clientes);
           this.clientes = clientes || [];
           this.updatePaginatedClientes();
           // Obtener tareas asociadas a cada cliente
@@ -3021,8 +2778,7 @@ fetchUserData(): void {
             this.clientes.forEach(cliente => {
               if (cliente.id) {
                 this.userTareaService.getTareasByClienteId(cliente.id).subscribe({
-                  next: (tareas) => {
-                    console.log(`Tareas asociadas al cliente ${cliente.name} (ID: ${cliente.id}):`, tareas);
+                  next: (_tareas) => {
                   },
                   error: (error) => {
                     console.error(`Error al cargar tareas para cliente ${cliente.name} (ID: ${cliente.id}):`, error);
@@ -3059,7 +2815,6 @@ fetchUserData(): void {
   localStorage.removeItem('selectedPresupuestoName');
   this.presupuestoSeleccionado = null;
 
-  console.log('Empresa seleccionada:', empresa);
   this.selectedEmpresaId = empresa;
 
   // Limpiar cliente seleccionado al cambiar de empresa
@@ -3117,9 +2872,8 @@ fetchUserData(): void {
 
 
     // Cargar clientes
-    this.clienteService.getClientesByEmpresaId(empresa.id).subscribe({
+    this.clienteService.getClientesByEmpresaId(empresa.id).pipe(takeUntil(this.destroy$)).subscribe({
       next: (clientes) => {
-        console.log('Clientes recibidos para empresa:', clientes);
         this.clientes = clientes || [];
         this.updatePaginatedClientes();
 
@@ -3153,8 +2907,7 @@ if (clienteFinal) {
           this.clientes.forEach(cliente => {
             if (cliente.id) {
               this.userTareaService.getTareasByClienteId(cliente.id).subscribe({
-                next: (tareas) => {
-                  console.log(`Tareas asociadas al cliente ${cliente.name} (ID: ${cliente.id}):`, tareas);
+                next: (_tareas) => {
                 },
                 error: (error) => {
                   console.error(`Error al cargar tareas para cliente ${cliente.name} (ID: ${cliente.id}):`, error);
@@ -3208,7 +2961,6 @@ if (clienteFinal) {
 }
 
 onEmpresaSeleccionada0(empresa: Empresa) {
-  console.log('Empresa seleccionada:', empresa);
   this.selectedEmpresa = empresa; // Objeto completo
   this.selectedEmpresaId = empresa?.id || null; // ID separado
 
@@ -3242,7 +2994,6 @@ onEmpresaSeleccionada0(empresa: Empresa) {
     // Cargar clientes por empresa
     this.clienteService.getClientesByEmpresaId(empresa.id).subscribe({
       next: (clientes) => {
-        console.log('Clientes recibidos para empresa:', clientes);
         this.clientes = clientes || [];
         this.updatePaginatedClientes();
       },

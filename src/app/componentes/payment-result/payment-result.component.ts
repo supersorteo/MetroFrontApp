@@ -92,8 +92,6 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
     const params    = this.route.snapshot.queryParamMap;
     const paymentId = params.get('payment_id') || params.get('collection_id') || undefined;
 
-    console.log('[PaymentResult] Iniciando polling | externalId:', externalId, '| payment_id:', paymentId ?? 'none');
-
     // Primera consulta inmediata
     this.fetchStatus(externalId, paymentId);
 
@@ -101,12 +99,10 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
     if (!paymentId) {
       this.pollInterval = setInterval(() => {
         if (this.pollCount >= MAX_POLLS) {
-          console.log('[PaymentResult] Polling detenido — limite alcanzado');
           this.stopPolling();
           return;
         }
         this.pollCount++;
-        console.log('[PaymentResult] Poll #' + this.pollCount);
         this.fetchStatus(externalId);
       }, POLL_INTERVAL_MS);
     }
@@ -117,12 +113,10 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
       next: (order) => {
         this.order   = order;
         this.loading = false;
-        console.log('[PaymentResult] Estado:', order.status, '| Codigo:', order.accessCode ?? 'pendiente');
 
         if (order.status === 'PAID') {
           localStorage.removeItem('pendingPaymentId');
           this.stopPolling();
-          console.log('[PaymentResult] ✅ Pago confirmado — Codigo:', order.accessCode);
         } else if (order.status === 'REJECTED') {
           this.stopPolling();
         }

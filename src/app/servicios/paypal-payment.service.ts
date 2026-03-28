@@ -9,7 +9,8 @@ export interface CreatePayPalPaymentRequest {
   planMonths: number;
   payerName: string;
   payerEmail: string;
-  payerDocument: string;
+  payerPhone?: string;
+  payerDocument?: string;
   province: string;
   callbackUrl?: string;
 }
@@ -33,6 +34,7 @@ export interface PayPalPaymentStatusResponse {
   status: string;
   statusDetail: string | null;
   accessCode: string | null;
+  payerPhone: string | null;
   countryCode: string;
   currencyCode: string;
   planMonths: number;

@@ -54,21 +54,10 @@ export class PresupuestosGuardadosComponent implements OnInit{
 
   ngOnInit(): void {
 
-    /*console.log('%cPRESUPUESTOS GUARDADOS - INICIADO', 'color: #9C27B0; font-weight: bold');
-  if (this.clienteActual?.id) {
-    console.log('Cliente actual:', this.clienteActual.name, '(ID:', this.clienteActual.id, ')');
-    this.cargarPresupuestos();
-  } else {
-    console.warn('No hay cliente seleccionado aún');
-  }*/
 
-
-
-console.log('%cPRESUPUESTOS GUARDADOS - INICIADO', 'color: #9C27B0; font-weight: bold');
 
   this.budgetService.presupuestos$.subscribe(presupuestos => {
     this.presupuestos = presupuestos;
-    console.log('Presupuestos actualizados en componente:', this.presupuestos.length);
   });
 
   if (this.clienteActual?.id) {
@@ -77,18 +66,8 @@ console.log('%cPRESUPUESTOS GUARDADOS - INICIADO', 'color: #9C27B0; font-weight:
 
 }
 
-/*ngOnChanges(): void {
-  if (this.clienteActual?.id) {
-    console.log('%cCAMBIO DE CLIENTE DETECTADO → Recargando presupuestos', 'color: #FF9800');
-    this.cargarPresupuestos();
-  }
-
-
-}*/
-
 ngOnChanges(): void {
   if (this.clienteActual?.id) {
-    console.log('%cCAMBIO DE CLIENTE DETECTADO → Recargando presupuestos', 'color: #FF9800');
     this.cargarPresupuestos();
   }
 
@@ -101,9 +80,8 @@ ngOnChanges(): void {
 cargarPresupuestos() {
   if (!this.clienteActual?.id) return;
 
-  console.log('%cCARGANDO PRESUPUESTOS DEL CLIENTE ID:', 'color: #2196F3; font-size: 14px', this.clienteActual.id);
   this.budgetService.cargarPresupuestosPorCliente(this.clienteActual.id).subscribe({
-    next: () => console.log('%cPresupuestos cargados y actualizados en el BehaviorSubject', 'color: #4CAF50'),
+    next: () => {},
     error: () => console.error('%cFalló la carga de presupuestos', 'color: #F44336')
   });
 }
@@ -122,10 +100,6 @@ cargarPresupuestos() {
   }
 
   const nombre = this.nombreTemporal.trim() || `Presupuesto ${new Date().toLocaleDateString()}`;
-  console.log('%cGUARDAR PRESUPUESTO', 'color: #FF9800; font-weight: bold');
-  console.log('Nombre:', nombre);
-  console.log('Cliente:', this.clienteActual.name, '(ID:', this.clienteActual.id, ')');
-  console.log('Tareas a guardar:', this.tareasActuales.map(t => ({ id: t.id, tarea: t.tarea })));
 
   const payload = {
     name: nombre,
@@ -135,7 +109,6 @@ cargarPresupuestos() {
 
   this.budgetService.guardarPresupuesto(payload).subscribe({
     next: (nuevo) => {
-      console.log('%cPresupuesto guardado y añadido a la lista local', 'color: #4CAF50; font-weight: bold', nuevo);
       this.toastr.success('Presupuesto guardado');
       this.nombreTemporal = '';
     },
@@ -168,10 +141,6 @@ guardarPresupuestoActual1() {
   }
 
    //const nombre = this.nombreTemporal.trim() || `Presupuesto ${new Date().toLocaleDateString()}`;
-  console.log('%cGUARDAR PRESUPUESTO', 'color: #FF9800; font-weight: bold');
-  console.log('Nombre:', nombre);
-  console.log('Cliente:', this.clienteActual.name, '(ID:', this.clienteActual.id, ')');
-  console.log('Tareas a guardar:', this.tareasActuales.map(t => ({ id: t.id, tarea: t.tarea })));
 
   const payload = {
     name: nombre || `Presupuesto ${new Date().toLocaleDateString()}`,
@@ -279,11 +248,8 @@ if (isTrial) {
   eliminar0(presupuesto: SavedPresupuesto) {
   if (!presupuesto.id) return;
 
-  console.log('%cELIMINAR PRESUPUESTO ID:', 'color: #F44336; font-weight: bold', presupuesto.id, presupuesto.name);
-
   this.budgetService.eliminarPresupuesto(presupuesto.id).subscribe({
     next: () => {
-      console.log('%cPresupuesto eliminado correctamente', 'color: #4CAF50');
       this.toastr.info('Presupuesto eliminado');
        this.presupuestoEliminado.emit(presupuesto); // 👈 aviso al padre
     },
@@ -293,7 +259,6 @@ if (isTrial) {
 
 async eliminar(presupuesto: SavedPresupuesto) {
   if (!presupuesto.id) return;
- console.log('%cELIMINAR PRESUPUESTO ID:', 'color: #F44336; font-weight: bold', presupuesto.id, presupuesto.name);
 
   const result = await Swal.fire({
     title: 'Eliminar presupuesto',
@@ -459,7 +424,6 @@ get presupuestosFiltrados(): SavedPresupuesto[] {
 
   // opcional: guardar nombre del presupuesto
   localStorage.setItem('selectedPresupuestoName', presupuesto.name);
-  console.log('datos del presupuesto a descargar: ', presupuesto )
 
   this.router.navigate(['/presupuesto']);
 }
@@ -473,13 +437,6 @@ get presupuestosFiltrados(): SavedPresupuesto[] {
 
 
 editarPresupuesto(presupuesto: SavedPresupuesto) {
-  console.log('%cEDITAR PRESUPUESTO SELECCIONADO', 'color: #FFC107; font-weight: bold; font-size: 14px');
-  console.log('ID:', presupuesto.id);
-  console.log('Nombre:', presupuesto.name);
-  console.log('Cliente:', presupuesto.cliente);
-  console.log('Cantidad de tareas:', presupuesto.tareas?.length || 0);
-  console.log('Tareas completas:', presupuesto.tareas);
-
   // Copia profunda para editar sin afectar el original
   this.presupuestoEditando = {
     ...presupuesto,
@@ -494,7 +451,6 @@ editarPresupuesto(presupuesto: SavedPresupuesto) {
 quitarTareaEdicion(index: number) {
   if (this.presupuestoEditando) {
     this.presupuestoEditando.tareas.splice(index, 1);
-    console.log('Tarea quitada. Tareas restantes:', this.presupuestoEditando.tareas.length);
   }
 }
 
@@ -510,12 +466,8 @@ confirmarEdicion() {
     tareas: this.presupuestoEditando.tareas.map(t => ({ id: t.id }))
   };
 
-  console.log('%cENVIANDO ACTUALIZACIÓN AL BACKEND', 'color: #FF9800');
-  console.log('Payload:', payload);
-
   this.budgetService.updatePresupuesto(this.presupuestoEditando.id!, payload).subscribe({
     next: (actualizado) => {
-      console.log('%cPRESUPUESTO ACTUALIZADO', 'color: #4CAF50', actualizado);
       this.toastr.success('Presupuesto actualizado correctamente');
       bootstrap.Modal.getInstance(document.getElementById('editarPresupuestoModal')!)?.hide();
     },
@@ -555,21 +507,10 @@ agregarTareaAlPresupuesto() {
 
 onTareaSeleccionadaChange() {
   if (this.tareaAAgregarId === null) {
-    console.log('%cTarea deseleccionada', 'color: gray');
     return;
   }
 
   const tareaSeleccionada = this.tareasDelCliente.find(t => t.id === this.tareaAAgregarId);
-  if (tareaSeleccionada) {
-    console.log('%cTAREA SELECCIONADA PARA AGREGAR', 'color: #FFC107; font-weight: bold; font-size: 14px');
-    console.log('ID:', tareaSeleccionada.id);
-    console.log('Nombre:', tareaSeleccionada.tarea);
-    console.log('Costo:', tareaSeleccionada.costo);
-    console.log('Área:', tareaSeleccionada.area);
-    console.log('Total Cost:', tareaSeleccionada.totalCost);
-    console.log('Descripción:', tareaSeleccionada.descripcion);
-    console.log('Objeto completo:', tareaSeleccionada);
-  }
 }
 
 }

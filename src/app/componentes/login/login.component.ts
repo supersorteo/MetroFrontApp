@@ -88,8 +88,6 @@ constructor(private authService: AuthService,
   private payPalPaymentService: PayPalPaymentService){}
 
   ngOnInit(): void {
-    console.log('countries:', this.countries);
-    console.log('pais inicial:', this.pais);
     this.loadMembershipCatalog();
     this.activatedRoute.queryParamMap.subscribe(params => {
       const code = params.get('code');
@@ -119,7 +117,6 @@ login(): void {
         this.isAuthenticated = true;
         this.email = response.email;
         //localStorage.clear();
-        console.log('userData guardado en login:', response);
         this.route.navigate(['dashboard']);
         Swal.fire('Éxito', 'Login exitoso', 'success');
         localStorage.setItem('userCode', this.code);
@@ -138,31 +135,7 @@ login(): void {
 
 
 
-    /*register(): void {
-    this.authService.assignEmail({
-      code: this.code,
-      email: this.email,
-      //username: this.username,
-      telefono: this.telefono,
-      pais: this.pais ? this.pais.nombre : '',
-      provincia: this.provincia
-    }).subscribe(
-      response => {
-        if (response.message === 'Datos asignados con éxito') {
-          Swal.fire('Éxito', response.message, 'success');
-          console.log(response.message)
-           this.clearForm();
-        } else {
-          Swal.fire('Error', response.message, 'error');
-        }
-      },
-      error => {
-        Swal.fire('Error', error.message, 'error');
-      }
-    );
-  }*/
-
-   register(): void {
+  register(): void {
     this.validateForm();
     if (!this.isFormValid) {
       Swal.fire('Error', this.telefonoErrorMessage || 'Completa correctamente los datos del registro.', 'error');
@@ -179,7 +152,6 @@ login(): void {
       response => {
         if (response.message === 'Datos asignados con éxito') {
           Swal.fire('Éxito', response.message, 'success');
-          console.log(response.message);
           this.clearForm();
         } else {
           Swal.fire('Error', response.message, 'error');
@@ -210,7 +182,6 @@ login(): void {
     this.provinciaService.getAllProvincias().subscribe(
       response => {
         this.provincias = response;
-        console.log('provincias', response)
       },
       error => {
         Swal.fire('Error', 'Error al cargar las provincias', 'error');
@@ -220,35 +191,13 @@ login(): void {
 
 
 
-/*
- onPaisChange(): void {
-    console.log('onPaisChange pais:', this.pais);
-    if (this.pais) {
-      this.provincia = '';
-      this.provinciaService.getProvinciasByPais(this.pais.nombre).subscribe(
-        response => {
-          this.provincias = response;
-          console.log('Provincias cargadas:', response);
-        },
-        error => {
-          Swal.fire('Error', 'Error al cargar las provincias', 'error');
-        }
-      );
-    } else {
-      this.provincias = [];
-    }
-    this.validateForm();
-  }*/
-
   onPaisChange(): void {
-    console.log('onPaisChange pais:', this.pais);
     if (this.pais) {
       this.provincia = '';
       this.telefono = '';
-      this.provinciaService.getProvinciasByPais(this.pais).subscribe( // Cambiado a this.pais
+      this.provinciaService.getProvinciasByPais(this.pais).subscribe(
         response => {
           this.provincias = response;
-          console.log('Provincias cargadas:', response);
         },
         error => {
           Swal.fire('Error', 'Error al cargar las provincias', 'error');
@@ -282,7 +231,6 @@ login(): void {
   }
 
   activarModoPrueba(): void {
-     console.log('[DEMO] Click en PROBÁ EL SISTEMA');
   const trialUserData = {
     pais: 'Argentina',
     provincia: 'Buenos Aires',
@@ -468,7 +416,6 @@ const demoCliente = {
   localStorage.setItem('selectedClienteId', String(demoCliente.id));
   localStorage.setItem('selectedCliente', JSON.stringify(demoCliente));
   localStorage.removeItem('tareasAgregadas');
- console.log('[DEMO] Datos demo guardados, redirigiendo a dashboard');
   this.route.navigate(['dashboard']);
 }
 
@@ -500,7 +447,6 @@ openWebsite(): void {
       this.pais = null;
       this.provincia = '';
       this.isFormValid = false;
-      console.log('clearForm ejecutado, pais:', this.pais);
     }
 
     get selectedMembershipCountry(): MembershipCountryOption | undefined {
@@ -621,7 +567,8 @@ openWebsite(): void {
         planMonths: this.purchasePlanMonths,
         payerName: this.purchaseName.trim(),
         payerEmail: this.purchaseEmail.trim(),
-        payerDocument: this.purchaseDocument.trim(),
+        payerPhone: this.purchasePhone.trim() || undefined,
+        payerDocument: this.purchaseDocument.trim() || undefined,
         province: this.purchaseProvince.trim(),
         callbackUrl: `${window.location.origin}/payment-result`
       }).subscribe({
