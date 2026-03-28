@@ -49,7 +49,7 @@ export class LoginComponent implements OnInit{
 
   password: string = '';
   isContentVisible: boolean = false;
-  loginStep: 'home' | 'login' | 'join' = 'home';
+  loginStep: 'home' | 'login' | 'join' | 'register' | 'checkout' = 'home';
   websiteUrl: string = "https://wa.link/9lbeyq";
 
   errorMessage: string = '';

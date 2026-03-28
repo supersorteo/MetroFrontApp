@@ -346,6 +346,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 .login-form-card {
@@ -358,10 +359,16 @@
   padding: 32px 28px;
   text-align: center;
 
+  &--wide {
+    max-width: 480px;
+    text-align: left;
+  }
+
   &__icon {
     font-size: 2.8rem;
     color: #4fa3ff;
     margin-bottom: 8px;
+    text-align: center;
   }
 
   &__title {
@@ -369,6 +376,7 @@
     font-weight: 700;
     color: #fff;
     margin-bottom: 4px;
+    text-align: center;
   }
 
   &__sub {
@@ -376,7 +384,212 @@
     color: rgba(255,255,255,0.45);
     margin-bottom: 20px;
     line-height: 1.4;
+    text-align: center;
   }
+}
+
+/* ── Campos de formulario inline ── */
+.lf-field {
+  margin-bottom: 16px;
+}
+
+.lf-label {
+  display: block;
+  color: rgba(255,255,255,0.75);
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  letter-spacing: 0.2px;
+}
+
+.lf-label-hint {
+  font-weight: 400;
+  color: rgba(255,255,255,0.35);
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
+.lf-label-required {
+  color: #ff6b6b;
+  margin-left: 3px;
+}
+
+.login-input-field {
+  background: rgba(255,255,255,0.08) !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+
+  &::placeholder { color: rgba(255,255,255,0.3) !important; }
+
+  &:focus {
+    background: rgba(255,255,255,0.12) !important;
+    border-color: #4fa3ff !important;
+    box-shadow: 0 0 0 3px rgba(79,163,255,0.2) !important;
+    color: #fff !important;
+  }
+
+  &.is-invalid {
+    border-color: #ff6b6b !important;
+    box-shadow: 0 0 0 3px rgba(255,107,107,0.15) !important;
+  }
+
+  option {
+    background: #1a3a6b;
+    color: #fff;
+  }
+}
+
+.lf-error {
+  color: #ff9090;
+  font-size: 0.76rem;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Botones de acción del formulario de registro ── */
+.lf-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.login-btn-secondary {
+  flex: 1;
+  height: 44px;
+  background: rgba(255,255,255,0.07) !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  color: rgba(255,255,255,0.6) !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba(255,255,255,0.12) !important;
+    color: #fff !important;
+  }
+}
+
+.login-btn-primary-full {
+  flex: 2;
+  height: 44px;
+  background: linear-gradient(135deg, #2575fc, #1a56d9) !important;
+  border: none !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(37,117,252,0.35) !important;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37,117,252,0.45) !important;
+  }
+
+  &:disabled { opacity: 0.4; transform: none !important; }
+}
+
+/* ── Total destacado en checkout ── */
+.lf-total {
+  background: rgba(79,163,255,0.1);
+  border: 1px solid rgba(79,163,255,0.25);
+  color: #a8d4ff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  margin: 8px 0 20px;
+  display: flex;
+  align-items: center;
+
+  strong { color: #fff; margin-left: 4px; font-size: 1.05rem; }
+}
+
+/* ── Botones de pago en checkout ── */
+.lf-pay-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lf-pay-btn {
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s;
+
+  &:hover:not(:disabled) { transform: translateY(-2px); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  &--mp {
+    background: linear-gradient(135deg, #00b87a, #00965e);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(0,184,122,0.35);
+    &:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(0,184,122,0.45); }
+  }
+
+  &--pp {
+    background: linear-gradient(135deg, #f5a623, #e0930d);
+    color: #000;
+    box-shadow: 0 4px 16px rgba(245,166,35,0.3);
+    &:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(245,166,35,0.4); }
+  }
+}
+
+.lf-note {
+  color: rgba(255,255,255,0.4);
+  font-size: 0.78rem;
+  text-align: center;
+  margin: 0;
+}
+
+/* ── ng-select tema oscuro (formularios inline) ── */
+:host ::ng-deep .login-step .ng-select .ng-select-container {
+  background: rgba(255,255,255,0.08) !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  border-radius: 10px !important;
+  color: #fff !important;
+  min-height: 40px;
+}
+
+:host ::ng-deep .login-step .ng-select .ng-value-label,
+:host ::ng-deep .login-step .ng-select .ng-input input {
+  color: #fff !important;
+}
+
+:host ::ng-deep .login-step .ng-select .ng-placeholder {
+  color: rgba(255,255,255,0.3) !important;
+}
+
+:host ::ng-deep .login-step .ng-select.ng-select-focused .ng-select-container {
+  border-color: #4fa3ff !important;
+  box-shadow: 0 0 0 3px rgba(79,163,255,0.2) !important;
+}
+
+:host ::ng-deep .login-step .ng-dropdown-panel {
+  background: #152d5e !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5) !important;
+  margin-top: 4px;
+}
+
+:host ::ng-deep .login-step .ng-dropdown-panel .ng-option {
+  background: transparent !important;
+  color: rgba(255,255,255,0.8) !important;
+  padding: 9px 14px !important;
+  font-size: 0.9rem;
+
+  &:hover,
+  &.ng-option-marked  { background: rgba(79,163,255,0.15) !important; color: #fff !important; }
+  &.ng-option-selected { background: rgba(37,117,252,0.25) !important; color: #fff !important; }
 }
 
 .login-input {
@@ -457,217 +670,8 @@
   }
 }
 
-/* ═══════════════════════════════════════════════
-   MODALES — estilo oscuro / glassmorphism
-═══════════════════════════════════════════════ */
 
-/* Fondo del overlay más oscuro */
-:host ::ng-deep .modal-backdrop {
-  background-color: rgba(5, 15, 40, 0.75) !important;
-}
-
-.login-modal {
-  background: linear-gradient(160deg, #0f1c3f 0%, #152d5e 60%, #0d2540 100%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px !important;
-  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.05);
-  color: #fff;
-  overflow: hidden;
-
-  /* ── Header ── */
-  .modal-header {
-    background: rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 18px 24px;
-
-    .modal-title {
-      color: #fff;
-      font-weight: 700;
-      font-size: 1.05rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-      i { font-size: 1.1rem; }
-    }
-
-    .btn-close {
-      filter: invert(1) grayscale(1) brightness(2);
-      opacity: 0.6;
-      &:hover { opacity: 1; }
-    }
-  }
-
-  /* ── Body ── */
-  .modal-body {
-    padding: 24px;
-
-    p.small.text-muted {
-      color: rgba(255, 255, 255, 0.5) !important;
-    }
-
-    /* Labels */
-    label.col-form-label,
-    label {
-      color: rgba(255, 255, 255, 0.75);
-      font-size: 0.83rem;
-      font-weight: 600;
-      margin-bottom: 5px;
-
-      .text-danger { color: #ff6b6b !important; }
-      .text-muted  { color: rgba(255,255,255,0.4) !important; }
-    }
-
-    /* Inputs y selects nativos */
-    .form-control,
-    .form-select {
-      background: rgba(255, 255, 255, 0.08) !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
-      color: #fff !important;
-      border-radius: 10px !important;
-
-      &::placeholder { color: rgba(255, 255, 255, 0.3) !important; }
-
-      &:focus {
-        background: rgba(255, 255, 255, 0.12) !important;
-        border-color: #4fa3ff !important;
-        box-shadow: 0 0 0 3px rgba(79, 163, 255, 0.2) !important;
-        color: #fff !important;
-      }
-
-      &.is-invalid {
-        border-color: #ff6b6b !important;
-        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2) !important;
-      }
-
-      option {
-        background: #1a3a6b;
-        color: #fff;
-      }
-    }
-
-    /* Invalid feedback */
-    .invalid-feedback {
-      color: #ff9090 !important;
-      font-size: 0.78rem;
-    }
-
-    /* Alert total a pagar */
-    .alert-light {
-      background: rgba(79, 163, 255, 0.1) !important;
-      border: 1px solid rgba(79, 163, 255, 0.25) !important;
-      color: #a8d4ff !important;
-      border-radius: 10px;
-      font-size: 0.88rem;
-
-      strong { color: #fff; }
-    }
-  }
-
-  /* ── Footer ── */
-  .modal-footer {
-    background: rgba(255, 255, 255, 0.03);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 16px 24px;
-
-    /* Botones del footer */
-    .btn {
-      border-radius: 10px !important;
-      font-weight: 600 !important;
-      height: 44px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-
-      &:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.3) !important;
-      }
-    }
-
-    .btn-success {
-      background: linear-gradient(135deg, #00b87a, #00965e) !important;
-      border: none !important;
-      box-shadow: 0 4px 14px rgba(0,184,122,0.35) !important;
-    }
-
-    .btn-warning {
-      background: linear-gradient(135deg, #f5a623, #e8920e) !important;
-      border: none !important;
-      color: #000 !important;
-      box-shadow: 0 4px 14px rgba(245,166,35,0.3) !important;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #2575fc, #1a56d9) !important;
-      border: none !important;
-      box-shadow: 0 4px 14px rgba(37,117,252,0.35) !important;
-    }
-
-    .btn-secondary {
-      background: rgba(255,255,255,0.08) !important;
-      border: 1px solid rgba(255,255,255,0.15) !important;
-      color: rgba(255,255,255,0.65) !important;
-      &:hover { background: rgba(255,255,255,0.14) !important; color: #fff !important; }
-    }
-
-    .btn:disabled {
-      opacity: 0.4;
-      transform: none !important;
-    }
-
-    p.small.text-muted {
-      color: rgba(255,255,255,0.4) !important;
-    }
-  }
-}
-
-/* ── ng-select dentro del modal (tema oscuro) ── */
-:host ::ng-deep .modal .ng-select .ng-select-container {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-radius: 10px !important;
-  color: #fff !important;
-}
-
-:host ::ng-deep .modal .ng-select .ng-value-label,
-:host ::ng-deep .modal .ng-select .ng-placeholder,
-:host ::ng-deep .modal .ng-select .ng-input input {
-  color: rgba(255,255,255,0.85) !important;
-}
-
-:host ::ng-deep .modal .ng-select .ng-placeholder {
-  color: rgba(255,255,255,0.35) !important;
-}
-
-:host ::ng-deep .modal .ng-select.ng-select-focused .ng-select-container {
-  border-color: #4fa3ff !important;
-  box-shadow: 0 0 0 3px rgba(79,163,255,0.2) !important;
-}
-
-:host ::ng-deep .modal .ng-dropdown-panel {
-  background: #1a3a6b !important;
-  border: 1px solid rgba(255,255,255,0.15) !important;
-  border-radius: 10px !important;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.5) !important;
-}
-
-:host ::ng-deep .modal .ng-dropdown-panel .ng-option {
-  background: transparent !important;
-  color: rgba(255,255,255,0.8) !important;
-  padding: 8px 14px !important;
-
-  &:hover,
-  &.ng-option-marked {
-    background: rgba(79,163,255,0.15) !important;
-    color: #fff !important;
-  }
-
-  &.ng-option-selected {
-    background: rgba(37,117,252,0.25) !important;
-    color: #fff !important;
-  }
-}
-
-/* ── Modales: ajuste de estilos ── */
+/* ── ng-select base (fuera de modales) ── */
 :host ::ng-deep .ng-select .ng-select-container {
   cursor: default;
   display: flex;
