@@ -1,8 +1,291 @@
-.loading-overlay {
-	z-index: 10;
-	background: rgba(255,255,255,0.7);
-	border-radius: 16px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
+/* ═══════════════════════════════════════════════
+   Edit page — dark glassmorphism (shared style)
+   ═══════════════════════════════════════════════ */
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ── Page wrapper ─────────────────────────────── */
+.edit-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: radial-gradient(ellipse at 60% 20%, #1a3a6b 0%, #0f1c3f 45%, #0d2d52 100%);
+}
+
+/* ── Card ─────────────────────────────────────── */
+.edit-card {
+  width: 100%;
+  max-width: 540px;
+  background: linear-gradient(145deg, #0d1f3c 0%, #0a1628 60%, #06101e 100%);
+  border: 1px solid rgba(99, 179, 237, 0.22);
+  border-radius: 20px;
+  box-shadow: 0 28px 70px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.04);
+  overflow: hidden;
+  animation: fadeSlideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  position: relative;
+}
+
+/* ── Header ───────────────────────────────────── */
+.edit-header {
+  background: linear-gradient(90deg, rgba(28,55,105,0.9) 0%, rgba(13,32,66,0.9) 100%);
+  border-bottom: 1px solid rgba(99,179,237,0.18);
+  padding: 1.6rem 1.8rem 1.4rem;
+  text-align: center;
+}
+
+.edit-header__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 0.8rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e5bb8, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(37,99,235,0.45);
+}
+
+.edit-header__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #e8f0ff;
+  margin: 0 0 0.3rem;
+  letter-spacing: 0.3px;
+}
+
+.edit-header__sub {
+  font-size: 0.82rem;
+  color: #7eb8e8;
+  margin: 0;
+}
+
+/* ── Form ─────────────────────────────────────── */
+.edit-form {
+  padding: 1.5rem 1.8rem 1.8rem;
+}
+
+/* Section labels */
+.ef-section-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(126,184,232,0.5);
+  border-bottom: 1px solid rgba(99,179,237,0.12);
+  padding-bottom: 6px;
+  margin-bottom: 1rem;
+  margin-top: 1.4rem;
+
+  &:first-of-type { margin-top: 0; }
+}
+
+/* Two-column row */
+.ef-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* Field */
+.ef-field {
+  margin-bottom: 1rem;
+}
+
+.ef-field--icon {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin-bottom: 1rem;
+}
+
+.ef-field-icon {
+  font-size: 1.2rem;
+  margin-top: 1.6rem;
+  flex-shrink: 0;
+  width: 26px;
+  text-align: center;
+}
+
+.ef-field-body {
+  flex: 1;
+}
+
+.ef-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #7eb8e8;
+  margin-bottom: 6px;
+}
+
+.ef-optional {
+  font-weight: 400;
+  text-transform: none;
+  font-size: 0.75rem;
+  color: rgba(126,184,232,0.55);
+  letter-spacing: 0;
+}
+
+.ef-input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(99,179,237,0.25);
+  border-radius: 10px;
+  color: #ddeeff;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.92rem;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  outline: none;
+  box-sizing: border-box;
+
+  &::placeholder { color: rgba(150,190,225,0.38); }
+
+  &:focus {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(99,179,237,0.65);
+    box-shadow: 0 0 0 3px rgba(99,179,237,0.14);
+    color: #fff;
+  }
+}
+
+.ef-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.ef-file-input {
+  display: none;
+}
+
+/* ── Logo box ─────────────────────────────────── */
+.ef-logo-box {
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(99,179,237,0.3);
+  border-radius: 12px;
+  padding: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.ef-logo-preview {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+  flex-shrink: 0;
+}
+
+.ef-logo-empty {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(99,179,237,0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: rgba(126,184,232,0.4);
+  font-size: 0.68rem;
+  flex-shrink: 0;
+}
+
+.ef-logo-controls {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Buttons ──────────────────────────────────── */
+.ef-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.ef-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+
+  &:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+  &:not(:disabled):hover { transform: translateY(-1px); }
+}
+
+.ef-btn--primary {
+  background: linear-gradient(135deg, #1a52a8 0%, #2563eb 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+
+  &:not(:disabled):hover { box-shadow: 0 6px 20px rgba(37,99,235,0.55); }
+}
+
+.ef-btn--ghost {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.13);
+  color: #c8daf0;
+
+  &:not(:disabled):hover { background: rgba(255,255,255,0.13); }
+}
+
+.ef-btn--sm {
+  flex: 0;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+/* ── Loading overlay ──────────────────────────── */
+.edit-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(6,16,30,0.82);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+.edit-spinner {
+  width: 3rem;
+  height: 3rem;
+  border-width: 3px;
+  color: #2563eb;
+}
+
+.edit-overlay__text {
+  font-size: 0.9rem;
+  color: #7eb8e8;
+}
+
+/* ── Responsive ───────────────────────────────── */
+@media (max-width: 480px) {
+  .ef-row { grid-template-columns: 1fr; }
+  .edit-form { padding: 1.2rem 1.2rem 1.5rem; }
+  .edit-header { padding: 1.3rem 1.2rem 1.1rem; }
 }
