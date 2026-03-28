@@ -49,6 +49,7 @@ export class LoginComponent implements OnInit{
 
   password: string = '';
   isContentVisible: boolean = false;
+  loginStep: 'home' | 'login' | 'join' = 'home';
   websiteUrl: string = "https://wa.link/9lbeyq";
 
   errorMessage: string = '';
@@ -543,10 +544,7 @@ openWebsite(): void {
             return;
           }
           localStorage.setItem('pendingPaymentId', order.externalId);
-          window.open(order.redirectUrl, '_blank');
-          this.route.navigate(['/payment-result'], {
-            queryParams: { externalId: order.externalId }
-          });
+          window.location.href = order.redirectUrl;
         },
         error: (error) => {
           this.isStartingCheckout = false;

@@ -181,7 +181,4 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
     this.router.navigate(['/'], { queryParams: { code: this.order.accessCode, paid: '1' } });
   }
 
-  backToLogin(): void {
-    this.router.navigate(['/']);
-  }
 }

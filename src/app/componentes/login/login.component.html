@@ -1,3 +1,369 @@
+<div class="login-page" *ngIf="!isContentVisible">
+
+  <!-- ═══════════════════════════════════════════════
+       NUEVO DISEÑO
+  ═══════════════════════════════════════════════ -->
+
+  <!-- BRAND -->
+  <div class="login-brand">
+    <img src="https://www.metroapp.site/metrologo.jpg" class="login-brand__logo" alt="Metro logo" />
+    <h1 class="login-brand__name">MetroApp</h1>
+    <p class="login-brand__tagline">Gestión profesional para tu negocio</p>
+  </div>
+
+  <!-- ── PASO HOME: elegir camino ── -->
+  <div *ngIf="loginStep === 'home'" class="login-step">
+
+    <div class="login-cards">
+
+      <div class="login-card login-card--member" (click)="loginStep = 'login'">
+        <div class="login-card__glow"></div>
+        <div class="login-card__icon">
+          <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        <h3 class="login-card__title">Ya soy miembro</h3>
+        <p class="login-card__desc">Ingresá con tu código de acceso</p>
+        <span class="login-card__cta">
+          Ingresar&nbsp;<i class="bi bi-arrow-right-circle-fill"></i>
+        </span>
+      </div>
+
+      <div class="login-card login-card--join" (click)="loginStep = 'join'">
+        <div class="login-card__glow"></div>
+        <div class="login-card__icon">
+          <i class="bi bi-rocket-takeoff-fill"></i>
+        </div>
+        <h3 class="login-card__title">Quiero unirme</h3>
+        <p class="login-card__desc">Obtené tu membresía y empezá hoy</p>
+        <span class="login-card__cta">
+          Ver opciones&nbsp;<i class="bi bi-arrow-right-circle-fill"></i>
+        </span>
+      </div>
+
+    </div>
+
+    <div class="login-extras">
+      <button class="btn btn-sm btn-link text-muted" (click)="openCalculadora()">
+        <i class="bi bi-calculator me-1"></i>Calculadora de materiales
+      </button>
+      <button class="btn btn-sm btn-link text-muted" (click)="shareOnWhatsApp()">
+        <i class="bi bi-share me-1"></i>Compartir app
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── PASO LOGIN: ingresar con código ── -->
+  <div *ngIf="loginStep === 'login'" class="login-step login-step--form">
+
+    <button class="login-back" (click)="loginStep = 'home'">
+      <i class="bi bi-arrow-left"></i> Volver
+    </button>
+
+    <div class="login-form-card">
+      <div class="login-form-card__icon">
+        <i class="bi bi-person-badge-fill"></i>
+      </div>
+      <h3 class="login-form-card__title">Ingresá tu código</h3>
+      <p class="login-form-card__sub">Tu código de acceso fue enviado por WhatsApp o email</p>
+
+      <input
+        type="text"
+        class="form-control form-control-lg text-center mb-3 login-input"
+        [(ngModel)]="code"
+        placeholder="● ● ● ● ● ●"
+        autocomplete="current-password"
+      />
+
+      <button class="btn btn-primary btn-lg w-100 mb-2 login-btn login-btn--primary" (click)="login()">
+        <i class="bi bi-box-arrow-in-right me-2"></i>ENTRAR
+      </button>
+
+      <div class="login-divider"><span>o</span></div>
+
+      <button
+        type="button"
+        class="btn btn-outline-primary w-100 mb-2 login-btn"
+        data-bs-toggle="modal"
+        data-bs-target="#exampleModal"
+      >
+        <i class="bi bi-person-plus me-2"></i>Registrar mi código
+      </button>
+
+      <button class="btn btn-outline-secondary w-100 login-btn" (click)="activarModoPrueba()">
+        <i class="bi bi-play-circle me-2"></i>Probar el sistema
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── PASO JOIN: opciones para unirse ── -->
+  <div *ngIf="loginStep === 'join'" class="login-step">
+
+    <button class="login-back" (click)="loginStep = 'home'">
+      <i class="bi bi-arrow-left"></i> Volver
+    </button>
+
+    <h3 class="login-step__title">¿Cómo querés unirte?</h3>
+    <p class="login-step__sub">Elegí la opción que mejor se adapte a vos</p>
+
+    <div class="login-cards">
+
+      <div class="login-card login-card--online" data-bs-toggle="modal" data-bs-target="#membershipModal">
+        <div class="login-card__glow"></div>
+        <div class="login-card__icon">
+          <i class="bi bi-credit-card-2-front-fill"></i>
+        </div>
+        <h3 class="login-card__title">Pagar en línea</h3>
+        <p class="login-card__desc">Comprá tu membresía y recibí tu código automáticamente</p>
+        <div class="login-card__badges">
+          <span class="badge-mp"><i class="bi bi-bag-check-fill me-1"></i>Mercado Pago</span>
+          <span class="badge-pp"><i class="bi bi-paypal me-1"></i>PayPal</span>
+        </div>
+        <span class="login-card__cta">
+          Comprar ahora&nbsp;<i class="bi bi-arrow-right-circle-fill"></i>
+        </span>
+      </div>
+
+      <div class="login-card login-card--whatsapp" (click)="openWebsite()">
+        <div class="login-card__glow"></div>
+        <div class="login-card__icon">
+          <i class="bi bi-whatsapp"></i>
+        </div>
+        <h3 class="login-card__title">Pagar por WhatsApp</h3>
+        <p class="login-card__desc">Pagá en efectivo y recibí tu código por WhatsApp</p>
+        <div class="login-card__badges">
+          <span class="badge-ws"><i class="bi bi-cash-coin me-1"></i>Efectivo</span>
+          <span class="badge-ws"><i class="bi bi-chat-dots-fill me-1"></i>Entrega manual</span>
+        </div>
+        <span class="login-card__cta">
+          Contactar&nbsp;<i class="bi bi-arrow-right-circle-fill"></i>
+        </span>
+      </div>
+
+    </div>
+
+    <div class="login-already">
+      <i class="bi bi-key-fill me-1 text-muted"></i>
+      <span class="text-muted">¿Ya tenés tu código?</span>
+      <button class="btn btn-link p-0 ms-1 fw-semibold" (click)="loginStep = 'login'">
+        Ingresá aquí
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════
+       MODALES (sin cambios funcionales)
+  ════════════════════════════════════════ -->
+
+  <!-- Modal: Registrar código -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" #exampleModal>
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">
+            <i class="bi bi-person-plus me-2 text-primary"></i>Registrar código y email
+          </h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <label for="code" class="col-form-label">Código:</label>
+              <input type="text" class="form-control" id="code" [(ngModel)]="code" placeholder="Ingrese su código" name="code" (input)="validateForm()">
+            </div>
+            <div class="mb-3">
+              <label for="email" class="col-form-label">Email:</label>
+              <input type="email" class="form-control" id="email" [(ngModel)]="email" placeholder="Ingrese su correo" name="email" (input)="validateForm()">
+            </div>
+            <div class="mb-3">
+              <label for="telefono" class="col-form-label">Teléfono:</label>
+              <input
+                type="tel"
+                class="form-control"
+                [class.is-invalid]="telefono.trim().length > 0 && !!telefonoErrorMessage"
+                id="telefono"
+                [(ngModel)]="telefono"
+                [placeholder]="telefonoPlaceholder"
+                name="telefono"
+                (input)="onTelefonoInput()"
+              >
+              <div class="invalid-feedback" *ngIf="telefono.trim().length > 0 && telefonoErrorMessage">
+                {{ telefonoErrorMessage }}
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="pais" class="col-form-label">País:</label>
+              <ng-select
+                [items]="countries"
+                bindLabel="nombre"
+                bindValue="nombre"
+                [(ngModel)]="pais"
+                name="pais"
+                id="pais"
+                (change)="onPaisChange()"
+                placeholder="País"
+                [clearable]="true"
+              >
+                <ng-template ng-option-tmp let-item="item" let-selected="selected">
+                  <img [src]="item.flag" width="20" class="me-2" />
+                  {{ item.nombre }}
+                  <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
+                </ng-template>
+              </ng-select>
+            </div>
+            <div class="mb-3">
+              <label for="provincia" class="col-form-label">Provincia:</label>
+              <select class="form-select" id="provincia" [(ngModel)]="provincia" name="provincia" (change)="validateForm()">
+                <option value="" disabled selected>Seleccione una provincia</option>
+                <option *ngFor="let provincia of provincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="button" class="btn btn-primary" [disabled]="!isFormValid" (click)="register()">Registrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Comprar membresía -->
+  <div class="modal fade" id="membershipModal" tabindex="-1" aria-labelledby="membershipModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="membershipModalLabel">
+            <i class="bi bi-credit-card-2-front me-2 text-success"></i>Comprar membresía
+          </h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted mb-3" *ngIf="isLoadingCatalog">Cargando planes disponibles...</p>
+          <p class="small text-muted mb-3" *ngIf="!isLoadingCatalog">Serás redirigido a la plataforma de pago para completar la compra.</p>
+
+          <div class="mb-3">
+            <label for="purchaseCountry" class="col-form-label">País:</label>
+            <ng-select
+              [items]="membershipCountries"
+              bindLabel="nombre"
+              bindValue="codigo"
+              [(ngModel)]="purchaseCountryCode"
+              name="purchaseCountry"
+              id="purchaseCountry"
+              placeholder="Selecciona un país"
+              [clearable]="false"
+              (change)="onPurchaseCountryChange()"
+            >
+              <ng-template ng-option-tmp let-item="item">
+                <img *ngIf="item.flag" [src]="item.flag" width="20" class="me-2" />
+                {{ item.nombre }}
+              </ng-template>
+            </ng-select>
+          </div>
+
+          <div class="mb-3">
+            <label for="purchasePlan" class="col-form-label">Plan:</label>
+            <select class="form-select" id="purchasePlan" [(ngModel)]="purchasePlanMonths" name="purchasePlan">
+              <option [ngValue]="null" disabled>Selecciona un plan</option>
+              <option *ngFor="let plan of selectedMembershipCountry?.plans" [ngValue]="plan.months">
+                {{ plan.months }} meses — {{ plan.amount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}
+              </option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="purchaseName" class="col-form-label">Nombre completo:</label>
+            <input id="purchaseName" class="form-control" [(ngModel)]="purchaseName" name="purchaseName" />
+          </div>
+
+          <div class="mb-3">
+            <label for="purchaseEmail" class="col-form-label">Email:</label>
+            <input id="purchaseEmail" type="email" class="form-control" [(ngModel)]="purchaseEmail" name="purchaseEmail" />
+          </div>
+
+          <div class="mb-3">
+            <label for="purchasePhone" class="col-form-label">
+              Teléfono <span class="text-muted small">(opcional — para recibir el código por WhatsApp)</span>:
+            </label>
+            <input
+              id="purchasePhone"
+              type="tel"
+              class="form-control"
+              [class.is-invalid]="purchasePhone.trim().length > 0 && !!purchasePhoneErrorMessage"
+              [(ngModel)]="purchasePhone"
+              [placeholder]="purchasePhonePlaceholder"
+              name="purchasePhone"
+              (input)="onPurchasePhoneInput()"
+            />
+            <div class="invalid-feedback" *ngIf="purchasePhone.trim().length > 0 && purchasePhoneErrorMessage">
+              {{ purchasePhoneErrorMessage }}
+            </div>
+          </div>
+
+          <div class="mb-3" *ngIf="purchaseCountryCode === 'AR'">
+            <label for="purchaseDocument" class="col-form-label">
+              {{ selectedMembershipCountry?.documentLabel || 'Documento' }}: <span class="text-danger">*</span>
+            </label>
+            <input id="purchaseDocument" class="form-control" [(ngModel)]="purchaseDocument" name="purchaseDocument" placeholder="Solo requerido para Mercado Pago" />
+          </div>
+          <div class="mb-3" *ngIf="purchaseCountryCode && purchaseCountryCode !== 'AR'">
+            <label for="purchaseDocument" class="col-form-label">
+              {{ selectedMembershipCountry?.documentLabel || 'Documento' }}: <span class="text-muted small">(opcional)</span>
+            </label>
+            <input id="purchaseDocument" class="form-control" [(ngModel)]="purchaseDocument" name="purchaseDocument" />
+          </div>
+
+          <div class="mb-3">
+            <label for="purchaseProvince" class="col-form-label">Provincia:</label>
+            <select class="form-select" id="purchaseProvince" [(ngModel)]="purchaseProvince" name="purchaseProvince">
+              <option value="" disabled selected>Selecciona una provincia</option>
+              <option *ngFor="let provincia of purchaseProvincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
+            </select>
+          </div>
+
+          <div class="alert alert-light border" *ngIf="selectedPlanAmount !== null">
+            Total a pagar: <strong>{{ selectedPlanAmount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}</strong>
+          </div>
+        </div>
+        <div class="modal-footer d-flex flex-column gap-2 align-items-stretch">
+          <button
+            *ngIf="purchaseCountryCode === 'AR'"
+            type="button"
+            class="btn btn-success w-100"
+            [disabled]="!canStartCheckout || isStartingCheckout"
+            (click)="startMembershipCheckout()"
+          >
+            <i class="bi bi-bag-check me-2"></i>
+            {{ isStartingCheckout ? 'Redirigiendo...' : 'Pagar con Mercado Pago' }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-warning w-100"
+            [disabled]="!canStartCheckout || isStartingPayPal"
+            (click)="startPayPalCheckout()"
+          >
+            <i class="bi bi-paypal me-2"></i>
+            {{ isStartingPayPal ? 'Redirigiendo...' : 'Pagar con PayPal' }}
+          </button>
+          <p *ngIf="purchaseCountryCode && purchaseCountryCode !== 'AR'" class="small text-muted text-center mb-0">
+            Mercado Pago disponible solo para Argentina.
+          </p>
+          <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!--
+  ═══════════════════════════════════════════════
+  DISEÑO ANTERIOR (comentado — no eliminar)
+  ═══════════════════════════════════════════════
 <div class="dashboard-container">
   <div class="container" style="box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); max-width: 800px;">
     <div class="program-title" id="portada" style="border-radius: 10px;" *ngIf="!isContentVisible">
@@ -24,186 +390,8 @@
           <button id="whatsapp-share" class="btn btn-whatsapp" (click)="shareOnWhatsApp()">Compartir en WhatsApp</button>
         </div>
       </div>
-
-      <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" #exampleModal>
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h1 class="modal-title fs-5" id="exampleModalLabel">Registrar codigo y email</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <form>
-                <div class="mb-3">
-                  <label for="code" class="col-form-label">Codigo:</label>
-                  <input type="text" class="form-control" id="code" [(ngModel)]="code" placeholder="Ingrese su codigo" name="code" (input)="validateForm()">
-                </div>
-                <div class="mb-3">
-                  <label for="email" class="col-form-label">Email:</label>
-                  <input type="email" class="form-control" id="email" [(ngModel)]="email" placeholder="Ingrese su correo" name="email" (input)="validateForm()">
-                </div>
-                <div class="mb-3">
-                  <label for="telefono" class="col-form-label">Telefono:</label>
-                  <input
-                    type="tel"
-                    class="form-control"
-                    [class.is-invalid]="telefono.trim().length > 0 && !!telefonoErrorMessage"
-                    id="telefono"
-                    [(ngModel)]="telefono"
-                    [placeholder]="telefonoPlaceholder"
-                    name="telefono"
-                    (input)="onTelefonoInput()"
-                  >
-                  <div class="invalid-feedback" *ngIf="telefono.trim().length > 0 && telefonoErrorMessage">
-                    {{ telefonoErrorMessage }}
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label for="pais" class="col-form-label">Pais:</label>
-                  <ng-select
-                    [items]="countries"
-                    bindLabel="nombre"
-                    bindValue="nombre"
-                    [(ngModel)]="pais"
-                    name="pais"
-                    id="pais"
-                    (change)="onPaisChange()"
-                    placeholder="Pais"
-                    [clearable]="true"
-                  >
-                    <ng-template ng-option-tmp let-item="item" let-selected="selected">
-                      <img [src]="item.flag" width="20" class="me-2" />
-                      {{ item.nombre }}
-                      <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
-                    </ng-template>
-                  </ng-select>
-                </div>
-                <div class="mb-3">
-                  <label for="provincia" class="col-form-label">Provincia:</label>
-                  <select class="form-select" id="provincia" [(ngModel)]="provincia" name="provincia" (change)="validateForm()">
-                    <option value="" disabled selected>Seleccione una provincia</option>
-                    <option *ngFor="let provincia of provincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
-                  </select>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary" [disabled]="!isFormValid" (click)="register()">Registrar</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal fade" id="membershipModal" tabindex="-1" aria-labelledby="membershipModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h1 class="modal-title fs-5" id="membershipModalLabel">Comprar membresia con Mercado Pago</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-            <p class="small text-muted mb-3" *ngIf="isLoadingCatalog">Cargando planes disponibles...</p>
-            <p class="small text-muted mb-3" *ngIf="!isLoadingCatalog">Seras redirigido a Mercado Pago para completar el pago.</p>
-
-              <div class="mb-3">
-                <label for="purchaseCountry" class="col-form-label">Pais:</label>
-                <ng-select
-                  [items]="membershipCountries"
-                  bindLabel="nombre"
-                  bindValue="codigo"
-                  [(ngModel)]="purchaseCountryCode"
-                  name="purchaseCountry"
-                  id="purchaseCountry"
-                  placeholder="Selecciona un pais"
-                  [clearable]="false"
-                  (change)="onPurchaseCountryChange()"
-                >
-                  <ng-template ng-option-tmp let-item="item">
-                    <img *ngIf="item.flag" [src]="item.flag" width="20" class="me-2" />
-                    {{ item.nombre }}
-                  </ng-template>
-                </ng-select>
-              </div>
-
-              <div class="mb-3">
-                <label for="purchasePlan" class="col-form-label">Plan:</label>
-                <select class="form-select" id="purchasePlan" [(ngModel)]="purchasePlanMonths" name="purchasePlan">
-                  <option [ngValue]="null" disabled>Selecciona un plan</option>
-                  <option *ngFor="let plan of selectedMembershipCountry?.plans" [ngValue]="plan.months">
-                    {{ plan.months }} meses - {{ plan.amount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="mb-3">
-                <label for="purchaseName" class="col-form-label">Nombre completo:</label>
-                <input id="purchaseName" class="form-control" [(ngModel)]="purchaseName" name="purchaseName" />
-              </div>
-
-              <div class="mb-3">
-                <label for="purchaseEmail" class="col-form-label">Email:</label>
-                <input id="purchaseEmail" type="email" class="form-control" [(ngModel)]="purchaseEmail" name="purchaseEmail" />
-              </div>
-
-                <div class="mb-3">
-                  <label for="purchasePhone" class="col-form-label">Telefono <span class="text-muted small">(opcional — para recibir el codigo por WhatsApp)</span>:</label>
-                  <input
-                    id="purchasePhone"
-                    type="tel"
-                    class="form-control"
-                    [class.is-invalid]="purchasePhone.trim().length > 0 && !!purchasePhoneErrorMessage"
-                    [(ngModel)]="purchasePhone"
-                    [placeholder]="purchasePhonePlaceholder"
-                    name="purchasePhone"
-                    (input)="onPurchasePhoneInput()"
-                  />
-                  <div class="invalid-feedback" *ngIf="purchasePhone.trim().length > 0 && purchasePhoneErrorMessage">
-                    {{ purchasePhoneErrorMessage }}
-                  </div>
-                </div>
-
-              <div class="mb-3" *ngIf="purchaseCountryCode === 'AR'">
-                <label for="purchaseDocument" class="col-form-label">{{ selectedMembershipCountry?.documentLabel || 'Documento' }}: <span class="text-danger">*</span></label>
-                <input id="purchaseDocument" class="form-control" [(ngModel)]="purchaseDocument" name="purchaseDocument" placeholder="Solo requerido para Mercado Pago" />
-              </div>
-              <div class="mb-3" *ngIf="purchaseCountryCode && purchaseCountryCode !== 'AR'">
-                <label for="purchaseDocument" class="col-form-label">{{ selectedMembershipCountry?.documentLabel || 'Documento' }}: <span class="text-muted small">(opcional)</span></label>
-                <input id="purchaseDocument" class="form-control" [(ngModel)]="purchaseDocument" name="purchaseDocument" />
-              </div>
-
-              <div class="mb-3">
-                <label for="purchaseProvince" class="col-form-label">Provincia:</label>
-                <select class="form-select" id="purchaseProvince" [(ngModel)]="purchaseProvince" name="purchaseProvince">
-                  <option value="" disabled selected>Selecciona una provincia</option>
-                  <option *ngFor="let provincia of purchaseProvincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
-                </select>
-              </div>
-
-            <div class="alert alert-light border" *ngIf="selectedPlanAmount !== null">
-              Total a pagar: <strong>{{ selectedPlanAmount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}</strong>
-            </div>
-            </div>
-            <div class="modal-footer d-flex flex-column gap-2 align-items-stretch">
-              <button
-                *ngIf="purchaseCountryCode === 'AR'"
-                type="button"
-                class="btn btn-success w-100"
-                [disabled]="!canStartCheckout || isStartingCheckout"
-                (click)="startMembershipCheckout()">
-                {{ isStartingCheckout ? 'Redirigiendo...' : 'Pagar con Mercado Pago' }}
-              </button>
-              <button type="button" class="btn btn-warning w-100" [disabled]="!canStartCheckout || isStartingPayPal" (click)="startPayPalCheckout()">
-                {{ isStartingPayPal ? 'Redirigiendo...' : 'Pagar con PayPal' }}
-              </button>
-              <p *ngIf="purchaseCountryCode && purchaseCountryCode !== 'AR'" class="small text-muted text-center mb-0">
-                Mercado Pago disponible solo para Argentina.
-              </p>
-              <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-          </div>
-        </div>
-      </div>
+      [modales anteriores aquí...]
     </div>
   </div>
 </div>
+-->
