@@ -14,8 +14,27 @@
   <!-- ── PASO HOME: elegir camino ── -->
   <div *ngIf="loginStep === 'home'" class="login-step">
 
-    <div class="login-cards">
+    <div class="login-cards login-cards--home">
 
+      <!-- TARJETA 1: Probar el sistema (destacada, ancho completo) -->
+      <div class="login-card login-card--trial" (click)="activarModoPrueba()">
+        <div class="login-card__glow"></div>
+        <div class="login-card__trial-left">
+          <div class="login-card__icon">
+            <i class="bi bi-play-circle-fill"></i>
+          </div>
+          <span class="login-card__badge-new">¡GRATIS!</span>
+        </div>
+        <div class="login-card__trial-right">
+          <h3 class="login-card__title">Probar el sistema</h3>
+          <p class="login-card__desc">Explorá todas las funciones sin registrarte. Cero compromisos.</p>
+          <span class="login-card__cta">
+            Comenzar demo&nbsp;<i class="bi bi-arrow-right-circle-fill"></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- TARJETA 2: Ya soy miembro -->
       <div class="login-card login-card--member" (click)="loginStep = 'login'">
         <div class="login-card__glow"></div>
         <div class="login-card__icon">
@@ -28,6 +47,7 @@
         </span>
       </div>
 
+      <!-- TARJETA 3: Quiero unirme -->
       <div class="login-card login-card--join" (click)="loginStep = 'join'">
         <div class="login-card__glow"></div>
         <div class="login-card__icon">
@@ -90,9 +110,11 @@
         <i class="bi bi-person-plus me-2"></i>Registrar mi código
       </button>
 
+      <!-- Movido a la pantalla inicial como primera opción
       <button class="btn btn-outline-secondary w-100 login-btn" (click)="activarModoPrueba()">
         <i class="bi bi-play-circle me-2"></i>Probar el sistema
       </button>
+      -->
     </div>
 
   </div>
@@ -159,8 +181,8 @@
 
   <!-- Modal: Registrar código -->
   <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" #exampleModal>
-    <div class="modal-dialog">
-      <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content login-modal">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="exampleModalLabel">
             <i class="bi bi-person-plus me-2 text-primary"></i>Registrar código y email
@@ -233,7 +255,7 @@
   <!-- Modal: Comprar membresía -->
   <div class="modal fade" id="membershipModal" tabindex="-1" aria-labelledby="membershipModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
+      <div class="modal-content login-modal">
         <div class="modal-header">
           <h1 class="modal-title fs-5" id="membershipModalLabel">
             <i class="bi bi-credit-card-2-front me-2 text-success"></i>Comprar membresía

@@ -86,6 +86,24 @@
   }
 }
 
+/* Grid especial para home: trial arriba (ancho completo) + 2 tarjetas abajo */
+.login-cards--home {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+
+  .login-card--trial {
+    grid-column: 1 / -1; /* ocupa las 2 columnas */
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+
+    .login-card--trial {
+      grid-column: 1;
+    }
+  }
+}
+
 /* ── Card base ── */
 .login-card {
   position: relative;
@@ -160,6 +178,79 @@
     gap: 6px;
     margin-top: 4px;
   }
+}
+
+/* ── Card trial (ancho completo, layout horizontal) ── */
+.login-card--trial {
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  gap: 0;
+  padding: 22px 28px;
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.12) 0%, rgba(255, 87, 34, 0.10) 100%);
+  border-color: rgba(255, 193, 7, 0.3);
+
+  .login-card__glow {
+    background: radial-gradient(ellipse at 0% 50%, rgba(255,193,7,0.2), transparent 60%);
+  }
+
+  .login-card__trial-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-right: 20px;
+    flex-shrink: 0;
+  }
+
+  .login-card__trial-right {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .login-card__icon {
+    font-size: 2.6rem;
+    color: #ffc107;
+    margin-bottom: 0;
+  }
+
+  .login-card__title {
+    font-size: 1.15rem;
+  }
+
+  .login-card__desc {
+    font-size: 0.83rem;
+  }
+
+  .login-card__cta {
+    color: #ffc107;
+    font-size: 0.85rem;
+  }
+
+  &:hover {
+    border-color: rgba(255, 193, 7, 0.55);
+    box-shadow: 0 16px 40px rgba(255, 193, 7, 0.15);
+  }
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    text-align: center;
+
+    .login-card__trial-left { margin-right: 0; margin-bottom: 8px; }
+  }
+}
+
+.login-card__badge-new {
+  background: linear-gradient(135deg, #ffc107, #ff7043);
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  border-radius: 20px;
+  padding: 2px 8px;
+  white-space: nowrap;
 }
 
 /* ── Card variantes ── */
@@ -363,6 +454,216 @@
     font-size: 0.78rem;
     text-decoration: none;
     &:hover { color: rgba(255,255,255,0.7) !important; }
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   MODALES — estilo oscuro / glassmorphism
+═══════════════════════════════════════════════ */
+
+/* Fondo del overlay más oscuro */
+:host ::ng-deep .modal-backdrop {
+  background-color: rgba(5, 15, 40, 0.75) !important;
+}
+
+.login-modal {
+  background: linear-gradient(160deg, #0f1c3f 0%, #152d5e 60%, #0d2540 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px !important;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.05);
+  color: #fff;
+  overflow: hidden;
+
+  /* ── Header ── */
+  .modal-header {
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 18px 24px;
+
+    .modal-title {
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      i { font-size: 1.1rem; }
+    }
+
+    .btn-close {
+      filter: invert(1) grayscale(1) brightness(2);
+      opacity: 0.6;
+      &:hover { opacity: 1; }
+    }
+  }
+
+  /* ── Body ── */
+  .modal-body {
+    padding: 24px;
+
+    p.small.text-muted {
+      color: rgba(255, 255, 255, 0.5) !important;
+    }
+
+    /* Labels */
+    label.col-form-label,
+    label {
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 0.83rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+
+      .text-danger { color: #ff6b6b !important; }
+      .text-muted  { color: rgba(255,255,255,0.4) !important; }
+    }
+
+    /* Inputs y selects nativos */
+    .form-control,
+    .form-select {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      color: #fff !important;
+      border-radius: 10px !important;
+
+      &::placeholder { color: rgba(255, 255, 255, 0.3) !important; }
+
+      &:focus {
+        background: rgba(255, 255, 255, 0.12) !important;
+        border-color: #4fa3ff !important;
+        box-shadow: 0 0 0 3px rgba(79, 163, 255, 0.2) !important;
+        color: #fff !important;
+      }
+
+      &.is-invalid {
+        border-color: #ff6b6b !important;
+        box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2) !important;
+      }
+
+      option {
+        background: #1a3a6b;
+        color: #fff;
+      }
+    }
+
+    /* Invalid feedback */
+    .invalid-feedback {
+      color: #ff9090 !important;
+      font-size: 0.78rem;
+    }
+
+    /* Alert total a pagar */
+    .alert-light {
+      background: rgba(79, 163, 255, 0.1) !important;
+      border: 1px solid rgba(79, 163, 255, 0.25) !important;
+      color: #a8d4ff !important;
+      border-radius: 10px;
+      font-size: 0.88rem;
+
+      strong { color: #fff; }
+    }
+  }
+
+  /* ── Footer ── */
+  .modal-footer {
+    background: rgba(255, 255, 255, 0.03);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 16px 24px;
+
+    /* Botones del footer */
+    .btn {
+      border-radius: 10px !important;
+      font-weight: 600 !important;
+      height: 44px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3) !important;
+      }
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #00b87a, #00965e) !important;
+      border: none !important;
+      box-shadow: 0 4px 14px rgba(0,184,122,0.35) !important;
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #f5a623, #e8920e) !important;
+      border: none !important;
+      color: #000 !important;
+      box-shadow: 0 4px 14px rgba(245,166,35,0.3) !important;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2575fc, #1a56d9) !important;
+      border: none !important;
+      box-shadow: 0 4px 14px rgba(37,117,252,0.35) !important;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.08) !important;
+      border: 1px solid rgba(255,255,255,0.15) !important;
+      color: rgba(255,255,255,0.65) !important;
+      &:hover { background: rgba(255,255,255,0.14) !important; color: #fff !important; }
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      transform: none !important;
+    }
+
+    p.small.text-muted {
+      color: rgba(255,255,255,0.4) !important;
+    }
+  }
+}
+
+/* ── ng-select dentro del modal (tema oscuro) ── */
+:host ::ng-deep .modal .ng-select .ng-select-container {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 10px !important;
+  color: #fff !important;
+}
+
+:host ::ng-deep .modal .ng-select .ng-value-label,
+:host ::ng-deep .modal .ng-select .ng-placeholder,
+:host ::ng-deep .modal .ng-select .ng-input input {
+  color: rgba(255,255,255,0.85) !important;
+}
+
+:host ::ng-deep .modal .ng-select .ng-placeholder {
+  color: rgba(255,255,255,0.35) !important;
+}
+
+:host ::ng-deep .modal .ng-select.ng-select-focused .ng-select-container {
+  border-color: #4fa3ff !important;
+  box-shadow: 0 0 0 3px rgba(79,163,255,0.2) !important;
+}
+
+:host ::ng-deep .modal .ng-dropdown-panel {
+  background: #1a3a6b !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5) !important;
+}
+
+:host ::ng-deep .modal .ng-dropdown-panel .ng-option {
+  background: transparent !important;
+  color: rgba(255,255,255,0.8) !important;
+  padding: 8px 14px !important;
+
+  &:hover,
+  &.ng-option-marked {
+    background: rgba(79,163,255,0.15) !important;
+    color: #fff !important;
+  }
+
+  &.ng-option-selected {
+    background: rgba(37,117,252,0.25) !important;
+    color: #fff !important;
   }
 }
 
