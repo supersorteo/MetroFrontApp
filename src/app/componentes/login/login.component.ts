@@ -512,17 +512,20 @@ openWebsite(): void {
     }
 
     get canStartCheckout(): boolean {
+      const phoneEmpty = !this.purchasePhone.trim();
       const phoneValidation = this.validatePhoneByCountry(
         this.purchasePhone,
         this.selectedMembershipCountry?.nombre || null
       );
+      const phoneOk = phoneEmpty || phoneValidation.valid;
+      const documentRequired = this.purchaseCountryCode === 'AR';
       return !!(
         this.purchaseCountryCode &&
         this.purchasePlanMonths &&
         this.purchaseName.trim() &&
         this.purchaseEmail.trim() &&
-        phoneValidation.valid &&
-        this.purchaseDocument.trim() &&
+        phoneOk &&
+        (!documentRequired || this.purchaseDocument.trim()) &&
         this.purchaseProvince.trim()
       );
     }

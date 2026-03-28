@@ -147,7 +147,7 @@
               </div>
 
                 <div class="mb-3">
-                  <label for="purchasePhone" class="col-form-label">Telefono (para recibir el codigo por WhatsApp):</label>
+                  <label for="purchasePhone" class="col-form-label">Telefono <span class="text-muted small">(opcional — para recibir el codigo por WhatsApp)</span>:</label>
                   <input
                     id="purchasePhone"
                     type="tel"
@@ -163,8 +163,12 @@
                   </div>
                 </div>
 
-              <div class="mb-3">
-                <label for="purchaseDocument" class="col-form-label">{{ selectedMembershipCountry?.documentLabel || 'Documento' }}:</label>
+              <div class="mb-3" *ngIf="purchaseCountryCode === 'AR'">
+                <label for="purchaseDocument" class="col-form-label">{{ selectedMembershipCountry?.documentLabel || 'Documento' }}: <span class="text-danger">*</span></label>
+                <input id="purchaseDocument" class="form-control" [(ngModel)]="purchaseDocument" name="purchaseDocument" placeholder="Solo requerido para Mercado Pago" />
+              </div>
+              <div class="mb-3" *ngIf="purchaseCountryCode && purchaseCountryCode !== 'AR'">
+                <label for="purchaseDocument" class="col-form-label">{{ selectedMembershipCountry?.documentLabel || 'Documento' }}: <span class="text-muted small">(opcional)</span></label>
                 <input id="purchaseDocument" class="form-control" [(ngModel)]="purchaseDocument" name="purchaseDocument" />
               </div>
 
