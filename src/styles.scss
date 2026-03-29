@@ -1,3 +1,22 @@
+/* ═══════════════════════════════════════════════════════════
+   FONDO GLOBAL DE LA APP — cambiá entre las dos opciones
+   ═══════════════════════════════════════════════════════════
+   OPCIÓN A: Login dark (activa)
+   OPCIÓN B: Dashboard light (comentada)
+   ═══════════════════════════════════════════════════════════ */
+
+html, body {
+  min-height: 100%;
+}
+
+body {
+  /* ── OPCIÓN A: Dark navy (estilo login) ── */
+  /*background: radial-gradient(ellipse at 60% 20%, #1a3a6b 0%, #0f1c3f 45%, #0d2d52 100%) fixed;
+
+  /* ── OPCIÓN B: Light blue (estilo dashboard) ── */
+   background: linear-gradient(0deg, rgba(233,238,244,1) 0%, rgba(68,148,242,0.59) 49%, rgba(233,235,238,0.59) 100%) fixed;
+}
+
 // Forzar visibilidad de banderas en todos los ng-select
 .ng-select .ng-option img,
 .ng-select .ng-value img {
