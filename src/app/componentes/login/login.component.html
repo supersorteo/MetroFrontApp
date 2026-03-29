@@ -119,7 +119,10 @@
         <label class="lf-label">Código</label>
         <input type="text" class="form-control login-input-field"
                [(ngModel)]="code" placeholder="Ingresá tu código" name="code"
-               (input)="validateForm()">
+               (input)="onCodeInput()" (blur)="syncCountryWithCode()">
+        <div class="lf-error" *ngIf="codeCountry">
+          <i class="bi bi-geo-alt me-1"></i>Este codigo pertenece a {{ codeCountry }}.
+        </div>
       </div>
 
       <div class="lf-field">
@@ -140,7 +143,9 @@
           id="pais"
           (change)="onPaisChange()"
           placeholder="Seleccioná tu país"
-          [clearable]="true"
+          [clearable]="!codeCountry"
+          [searchable]="!codeCountry"
+          [disabled]="!!codeCountry"
         >
           <ng-template ng-option-tmp let-item="item" let-selected="selected">
             <img [src]="item.flag" width="20" class="me-2" />
@@ -173,6 +178,10 @@
         <div class="lf-error" *ngIf="telefono.trim().length > 0 && telefonoErrorMessage">
           <i class="bi bi-exclamation-circle me-1"></i>{{ telefonoErrorMessage }}
         </div>
+      </div>
+
+      <div class="lf-error" *ngIf="codeCountryErrorMessage">
+        <i class="bi bi-exclamation-circle me-1"></i>{{ codeCountryErrorMessage }}
       </div>
 
       <div class="lf-actions">

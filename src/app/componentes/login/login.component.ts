@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -59,6 +59,8 @@ export class LoginComponent implements OnInit{
   isFormValid: boolean = false;
   provincias: Provincia[] = [];
   telefonoErrorMessage: string = '';
+  codeCountry: string | null = null;
+  codeCountryErrorMessage: string = '';
   countries = [
    { nombre: 'Argentina', codigo: 'AR', flag: 'https://flagcdn.com/ar.svg' },
    { nombre: 'Colombia', codigo: 'CO', flag: 'https://flagcdn.com/co.svg' },
@@ -153,39 +155,60 @@ login(): void {
   register(): void {
     this.validateForm();
     if (!this.isFormValid) {
-      Swal.fire('Error', this.telefonoErrorMessage || 'Completa correctamente los datos del registro.', 'error');
+      Swal.fire('Error', this.codeCountryErrorMessage || this.telefonoErrorMessage || 'Completa correctamente los datos del registro.', 'error');
       return;
     }
 
-    this.authService.assignEmail({
-      code: this.code,
-      email: this.email,
-      telefono: this.telefono,
-      pais: this.pais || '',
-      provincia: this.provincia
-    }).subscribe(
-      response => {
-        if (response.message === 'Datos asignados con éxito') {
-          Swal.fire('Éxito', response.message, 'success');
-          this.clearForm();
-        } else {
-          Swal.fire('Error', response.message, 'error');
+    const normalizedCode = this.code.trim().toUpperCase();
+
+    this.authService.getUserCode(normalizedCode).subscribe({
+      next: (accessCode) => {
+        this.code = normalizedCode;
+        this.codeCountry = this.normalizeCountry(accessCode?.pais || null);
+        this.codeCountryErrorMessage = this.getCodeCountryMismatchMessage();
+
+        if (this.codeCountryErrorMessage) {
+          this.validateForm();
+          Swal.fire('Error', this.codeCountryErrorMessage, 'error');
+          return;
         }
+
+        this.authService.assignEmail({
+          code: this.code,
+          email: this.email,
+          telefono: this.telefono,
+          pais: this.pais || '',
+          provincia: this.provincia
+        }).subscribe(
+          response => {
+            if (response.message === 'Datos asignados con éxito') {
+              Swal.fire('Éxito', response.message, 'success');
+              this.clearForm();
+            } else {
+              Swal.fire('Error', response.message, 'error');
+            }
+          },
+          error => {
+            Swal.fire('Error', error.message, 'error');
+          }
+        );
       },
-      error => {
-        Swal.fire('Error', error.message, 'error');
+      error: (error) => {
+        Swal.fire('Error', error.message || 'No se pudo validar el codigo.', 'error');
       }
-    );
+    });
   }
 
     validateForm(): void {
       const phoneValidation = this.validatePhoneByCountry(this.telefono, this.pais);
       this.telefonoErrorMessage = phoneValidation.message;
+      this.codeCountryErrorMessage = this.getCodeCountryMismatchMessage();
       this.isFormValid = this.code.trim().length > 0 &&
       this.email.trim().length > 0 &&
       phoneValidation.valid &&
       this.provincia.trim().length > 0 &&
-      this.pais !== null;
+      this.pais !== null &&
+      !this.codeCountryErrorMessage;
     }
 
 
@@ -222,6 +245,47 @@ login(): void {
       this.provincias = [];
     }
     this.validateForm();
+  }
+
+  onCodeInput(): void {
+    this.code = this.code.trim().toUpperCase();
+    this.codeCountry = null;
+    this.codeCountryErrorMessage = '';
+    this.validateForm();
+  }
+
+  syncCountryWithCode(showErrors: boolean = true): void {
+    const normalizedCode = this.code.trim().toUpperCase();
+    if (!normalizedCode) {
+      this.codeCountry = null;
+      this.codeCountryErrorMessage = '';
+      this.validateForm();
+      return;
+    }
+
+    this.authService.getUserCode(normalizedCode).subscribe({
+      next: (accessCode) => {
+        this.code = normalizedCode;
+        const detectedCountry = this.normalizeCountry(accessCode?.pais || null);
+        this.codeCountry = detectedCountry;
+
+        if (detectedCountry && this.pais !== detectedCountry) {
+          this.pais = detectedCountry;
+          this.onPaisChange();
+          return;
+        }
+
+        this.validateForm();
+      },
+      error: (error) => {
+        this.codeCountry = null;
+        this.codeCountryErrorMessage = '';
+        this.validateForm();
+        if (showErrors) {
+          this.toastr.error(error?.message || 'No se pudo validar el codigo.');
+        }
+      }
+    });
   }
 
 
@@ -461,6 +525,9 @@ openWebsite(): void {
       this.telefono = '';
       this.pais = null;
       this.provincia = '';
+      this.codeCountry = null;
+      this.codeCountryErrorMessage = '';
+      this.telefonoErrorMessage = '';
       this.isFormValid = false;
     }
 
@@ -649,6 +716,39 @@ openWebsite(): void {
           return 'Ej: 300 123 4567 o +57 300 123 4567';
         default:
           return 'Telefono';
+      }
+    }
+
+    private getCodeCountryMismatchMessage(): string {
+      const detectedCountry = this.normalizeCountry(this.codeCountry);
+      const selectedCountry = this.normalizeCountry(this.pais);
+
+      if (!detectedCountry || !selectedCountry) {
+        return '';
+      }
+
+      return detectedCountry === selectedCountry
+        ? ''
+        : `El codigo ingresado pertenece a ${detectedCountry}.`;
+    }
+
+    private normalizeCountry(country: string | null): string | null {
+      if (!country) {
+        return null;
+      }
+
+      switch (country.trim().toLowerCase()) {
+        case 'ar':
+        case 'argentina':
+          return 'Argentina';
+        case 'uy':
+        case 'uruguay':
+          return 'Uruguay';
+        case 'co':
+        case 'colombia':
+          return 'Colombia';
+        default:
+          return country.trim();
       }
     }
 
