@@ -9,6 +9,7 @@ import { ProvinciaService } from '../../servicios/provincia.service';
 import { MembershipCatalogCountry, MembershipPaymentService } from '../../servicios/membership-payment.service';
 import { PayPalPaymentService } from '../../servicios/paypal-payment.service';
 import Swal from 'sweetalert2';
+import { AdminService, Admin } from '../../servicios/admin.service';
 declare var bootstrap: any;
 
 interface Provincia {
@@ -49,7 +50,7 @@ export class LoginComponent implements OnInit{
 
   password: string = '';
   isContentVisible: boolean = false;
-  loginStep: 'home' | 'login' | 'join' | 'register' | 'checkout' = 'home';
+  loginStep: 'home' | 'login' | 'join' | 'register' | 'checkout' | 'adminCountry' | 'adminLogin' = 'home';
   websiteUrl: string = "https://wa.link/9lbeyq";
 
   errorMessage: string = '';
@@ -77,6 +78,18 @@ export class LoginComponent implements OnInit{
   isStartingCheckout: boolean = false;
   isStartingPayPal: boolean = false;
 
+  // Admin login
+  adminCountries = [
+    { pais: 'argentina' as const, flag: '🇦🇷', nombre: 'Argentina' },
+    { pais: 'uruguay'   as const, flag: '🇺🇾', nombre: 'Uruguay'   },
+    { pais: 'colombia'  as const, flag: '🇨🇴', nombre: 'Colombia'  },
+  ];
+  selectedAdminPais: 'argentina' | 'uruguay' | 'colombia' | null = null;
+  adminUsername = '';
+  adminPassword = '';
+  adminLoginError = '';
+  showAdminPassword = false;
+
   @ViewChild('exampleModal') exampleModal!: ElementRef;
 
 constructor(private authService: AuthService,
@@ -86,7 +99,8 @@ constructor(private authService: AuthService,
   private toastr: ToastrService,
   private provinciaService: ProvinciaService,
   private membershipPaymentService: MembershipPaymentService,
-  private payPalPaymentService: PayPalPaymentService){}
+  private payPalPaymentService: PayPalPaymentService,
+  private adminService: AdminService){}
 
   ngOnInit(): void {
     this.loadMembershipCatalog();
@@ -637,6 +651,34 @@ openWebsite(): void {
           return 'Telefono';
       }
     }
+
+  selectAdminCountry(pais: 'argentina' | 'uruguay' | 'colombia'): void {
+    this.selectedAdminPais = pais;
+    this.adminUsername = '';
+    this.adminPassword = '';
+    this.adminLoginError = '';
+    this.loginStep = 'adminLogin';
+  }
+
+  adminLogin(): void {
+    if (!this.adminUsername.trim() || !this.adminPassword.trim()) {
+      this.adminLoginError = 'Complete usuario y contraseña.';
+      return;
+    }
+    this.adminLoginError = '';
+    this.adminService.login(this.adminUsername, this.adminPassword).subscribe(admin => {
+      if (!admin) {
+        this.adminLoginError = 'Credenciales incorrectas.';
+        return;
+      }
+      if (admin.pais !== this.selectedAdminPais) {
+        this.adminService.logout();
+        this.adminLoginError = 'Estas credenciales no corresponden a este país.';
+        return;
+      }
+      this.route.navigate(['/admin-generate-code']);
+    });
+  }
 
     private validatePhoneByCountry(rawPhone: string, country: string | null): { valid: boolean; message: string } {
       const phone = rawPhone.trim();
