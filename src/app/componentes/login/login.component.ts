@@ -653,6 +653,11 @@ openWebsite(): void {
     }
 
   selectAdminCountry(pais: 'argentina' | 'uruguay' | 'colombia'): void {
+    const current = this.adminService.getCurrentAdmin();
+    if (current && current.pais === pais) {
+      this.route.navigate(['/admin-generate-code']);
+      return;
+    }
     this.selectedAdminPais = pais;
     this.adminUsername = '';
     this.adminPassword = '';

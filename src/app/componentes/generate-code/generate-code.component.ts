@@ -52,6 +52,9 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   showGeneratedModal = false;
   showEditAdminPanel = false;
 
+  // Confirm toast
+  confirmToast: { icon: string; title: string; message: string; position: 'top' | 'bottom'; action: () => void } | null = null;
+
   // Edit admin form
   editAdminNombre = '';
   editAdminUsername = '';
@@ -89,8 +92,23 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.adminService.logout();
-    this.router.navigate(['/']);
+    this.showConfirm(
+      '🚪', 'Cerrar sesión', '¿Seguro que querés salir del panel?', 'top',
+      () => { this.adminService.logout(); this.router.navigate(['/']); }
+    );
+  }
+
+  private showConfirm(icon: string, title: string, message: string, position: 'top' | 'bottom', action: () => void): void {
+    this.confirmToast = { icon, title, message, position, action };
+  }
+
+  confirmYes(): void {
+    if (this.confirmToast) { this.confirmToast.action(); }
+    this.confirmToast = null;
+  }
+
+  confirmNo(): void {
+    this.confirmToast = null;
   }
 
   // ── Code loading ───────────────────────────────────────────
@@ -203,14 +221,15 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   // ── Delete ─────────────────────────────────────────────────
 
   confirmDeleteCode(code: string): void {
-    if (!window.confirm('¿Eliminar este código?')) return;
-    this.authService.deleteCode(code).subscribe({
-      next: () => {
-        this.toastr.success('Código eliminado', 'Éxito');
-        this.loadCodes();
-      },
-      error: () => this.toastr.error('Error al eliminar', 'Error')
-    });
+    this.showConfirm(
+      '🗑️', 'Eliminar código', `¿Eliminar el código ${code}? Esta acción no se puede deshacer.`, 'bottom',
+      () => {
+        this.authService.deleteCode(code).subscribe({
+          next: () => { this.toastr.success('Código eliminado', 'Éxito'); this.loadCodes(); },
+          error: () => this.toastr.error('Error al eliminar', 'Error')
+        });
+      }
+    );
   }
 
   copyToClipboard(code: string): void {
