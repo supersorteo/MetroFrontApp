@@ -8,6 +8,7 @@ import { ToastrService } from 'ngx-toastr';
 import { ProvinciaService } from '../../servicios/provincia.service';
 import { MembershipCatalogCountry, MembershipPaymentService } from '../../servicios/membership-payment.service';
 import { PayPalPaymentService } from '../../servicios/paypal-payment.service';
+import { countryDisplayName } from '../../core/country/country.util';
 import Swal from 'sweetalert2';
 import { AdminService, Admin } from '../../servicios/admin.service';
 declare var bootstrap: any;
@@ -164,7 +165,7 @@ login(): void {
     this.authService.getUserCode(normalizedCode).subscribe({
       next: (accessCode) => {
         this.code = normalizedCode;
-        this.codeCountry = this.normalizeCountry(accessCode?.pais || null);
+        this.codeCountry = countryDisplayName(accessCode?.pais || null);
         this.codeCountryErrorMessage = this.getCodeCountryMismatchMessage();
 
         if (this.codeCountryErrorMessage) {
@@ -266,7 +267,7 @@ login(): void {
     this.authService.getUserCode(normalizedCode).subscribe({
       next: (accessCode) => {
         this.code = normalizedCode;
-        const detectedCountry = this.normalizeCountry(accessCode?.pais || null);
+        const detectedCountry = countryDisplayName(accessCode?.pais || null);
         this.codeCountry = detectedCountry;
 
         if (detectedCountry && this.pais !== detectedCountry) {
@@ -720,8 +721,8 @@ openWebsite(): void {
     }
 
     private getCodeCountryMismatchMessage(): string {
-      const detectedCountry = this.normalizeCountry(this.codeCountry);
-      const selectedCountry = this.normalizeCountry(this.pais);
+      const detectedCountry = countryDisplayName(this.codeCountry);
+      const selectedCountry = countryDisplayName(this.pais);
 
       if (!detectedCountry || !selectedCountry) {
         return '';
@@ -730,26 +731,6 @@ openWebsite(): void {
       return detectedCountry === selectedCountry
         ? ''
         : `El codigo ingresado pertenece a ${detectedCountry}.`;
-    }
-
-    private normalizeCountry(country: string | null): string | null {
-      if (!country) {
-        return null;
-      }
-
-      switch (country.trim().toLowerCase()) {
-        case 'ar':
-        case 'argentina':
-          return 'Argentina';
-        case 'uy':
-        case 'uruguay':
-          return 'Uruguay';
-        case 'co':
-        case 'colombia':
-          return 'Colombia';
-        default:
-          return country.trim();
-      }
     }
 
   selectAdminCountry(pais: 'argentina' | 'uruguay' | 'colombia'): void {

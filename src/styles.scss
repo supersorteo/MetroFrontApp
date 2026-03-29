@@ -39,4 +39,46 @@ body.modal-open app-dashboard .floating-toolbar-container {
   z-index: 20000 !important;
 }
 
+#toast-container,
+.toast-container {
+  position: fixed !important;
+  z-index: 19000 !important;
+  pointer-events: none;
+}
+
+#toast-container.toast-top-right,
+.toast-container.toast-top-right {
+  top: 1rem !important;
+  right: 1rem !important;
+  left: auto !important;
+  bottom: auto !important;
+}
+
+#toast-container > .ngx-toastr,
+.toast-container .ngx-toastr {
+  position: relative !important;
+  pointer-events: auto;
+  min-width: 320px;
+  max-width: min(420px, calc(100vw - 2rem));
+  box-shadow: 0 16px 40px rgba(15, 28, 63, 0.22);
+  border-radius: 14px;
+}
+
+@media (max-width: 576px) {
+  #toast-container.toast-top-right,
+  .toast-container.toast-top-right {
+    top: 0.75rem !important;
+    right: 0.75rem !important;
+    left: 0.75rem !important;
+    bottom: auto !important;
+  }
+
+  #toast-container > .ngx-toastr,
+  .toast-container .ngx-toastr {
+    width: auto !important;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
 
