@@ -1,4 +1,4 @@
-﻿  <div class="fixed-image-container">
+  <div class="fixed-image-container">
     <img id="fixedImageIcon" class="fixed-image" src="#" alt="Logo Empresa" style="display: none;">
   </div>
 
@@ -44,6 +44,11 @@ aria-label="Menu"
       <li class="w-100 d-flex flex-column gap-2 mt-2">
         <button class="btn btn-primary btn-block w-100 animate">BIBLIOTECA</button>
       </li>
+      <li class="w-100 mt-2 text-center">
+        <button class="btn btn-primary btn-block w-100 animate" (click)="abrirGeneradorQR()" data-bs-dismiss="offcanvas">
+          <i class="fas fa-qrcode" aria-hidden="true" style="margin-right: 6px;"></i>GENERADOR QR
+        </button>
+      </li>
         <li class="w-100 text-center">
         <!--button-- class="btn btn-secondary logout-button1 w-100" data-bs-toggle="modal" data-bs-target="#confirmLogoutModal">
           cerrar session
@@ -55,6 +60,190 @@ aria-label="Menu"
 
       </li>
     </ul>
+  </div>
+</div>
+
+<div class="modal fade qr-modal" id="qrModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">GENERADOR QR</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="qr-grid row">
+          <div class="card col-md-5">
+            <div class="card-header fw-bold mb-2">Vista previa</div>
+            <div class="card-body">
+              <p class="text-center text-secondary mb-3" style="font-size: 0.85rem">UN CODIGO QR PUEDE AYUDARTE A CONECTAR MAS FACIL CON NUEVOS CLIENTES.</p>
+            </div>
+            <div class="card-body qr-preview-wrap text-center" id="qrPreviewWrap">
+              <div id="qrContainer" style="display:inline-block"></div>
+            </div>
+          </div>
+
+          <div class="card col-md-7">
+            <div class="card-header fw-bold mb-2">Opciones del QR</div>
+            <div class="card-body">
+              
+              <div class="btn-toolbar mb-3 d-flex gap-2" role="toolbar">
+                <div class="btn-group gap-1 flex-wrap" role="group">
+                  <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#qrSectionData" aria-expanded="true">
+                    <i class="fas fa-link"></i> Texto/URL
+                  </button>
+                  <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#qrSectionShape" aria-expanded="false">
+                    <i class="fas fa-th"></i> Puntos
+                  </button>
+                  <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#qrSectionBg" aria-expanded="false">
+                    <i class="fas fa-fill-drip"></i> Fondo
+                  </button>
+                  <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#qrSectionLogo" aria-expanded="false">
+                    <i class="fas fa-image"></i> Logo
+                  </button>
+                </div>
+                <div class="btn-group" role="group">
+                  <button id="qrBtnActualizar" class="btn btn-primary btn-sm" type="button" (click)="actualizarQR()">
+                    <i class="fas fa-sync-alt"></i> Actualizar
+                  </button>
+                </div>
+              </div>
+
+              <div id="qrOptionsAccordion">
+                <div id="qrSectionData" class="collapse show" data-bs-parent="#qrOptionsAccordion">
+                  <div class="mb-3">
+                    <label class="form-label">Texto / URL</label>
+                    <input id="qrDataInput" type="text" class="form-control" placeholder="https://tu-dominio.com" value="https://orbitasoftware.com.ar" (input)="actualizarQR()" />
+                  </div>
+                  <div class="row g-3">
+                    <div class="col-6">
+                      <label class="form-label">Tamaño (px)</label>
+                      <input id="qrSizeRange" type="range" class="form-range" min="180" max="600" step="10" value="280" (input)="updateSizeLabel($event); actualizarQR()">
+                      <div><small class="text-secondary">Actual: <span id="qrSizeOut">280</span> px</small></div>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Nivel de corrección</label>
+                      <select id="qrEcLevel" class="form-select" (change)="actualizarQR()">
+                        <option value="L">L (7%)</option>
+                        <option value="M" selected>M (15%)</option>
+                        <option value="Q">Q (25%)</option>
+                        <option value="H">H (30%)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="qrSectionShape" class="collapse" data-bs-parent="#qrOptionsAccordion">
+                  <div class="row g-3 mt-2">
+                    <div class="col-6">
+                      <label class="form-label">Forma de puntos</label>
+                      <select id="qrDotsType" class="form-select" (change)="actualizarQR()">
+                        <option value="square">Cuadrados</option>
+                        <option value="dots" selected>Puntos</option>
+                        <option value="rounded">Redondeado</option>
+                        <option value="classy">Classy</option>
+                        <option value="classy-rounded">Classy redondeado</option>
+                        <option value="extra-rounded">Extra redondeado</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Color de puntos</label>
+                      <input id="qrDotsColor" type="color" class="form-control form-control-color w-100" value="#111827" title="Elige color" (input)="actualizarQR()">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Esquinas (cuadros)</label>
+                      <select id="qrCornersSquare" class="form-select" (change)="actualizarQR()">
+                        <option value="square">Cuadradas</option>
+                        <option value="extra-rounded">Extra redondeadas</option>
+                        <option value="dot" selected>Puntos</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Esquinas (puntos)</label>
+                      <select id="qrCornersDot" class="form-select" (change)="actualizarQR()">
+                        <option value="square">Cuadradas</option>
+                        <option value="dot" selected>Puntos</option>
+                        <option value="extra-rounded">Extra redondeadas</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="qrSectionBg" class="collapse" data-bs-parent="#qrOptionsAccordion">
+                  <div class="row g-3 mt-2">
+                    <div class="col-12">
+                      <label class="form-label">Tipo de fondo</label>
+                      <div class="d-flex flex-wrap gap-3">
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="qrBgMode" id="qrBgModeSolid" value="solid" checked (change)="actualizarQR()">
+                          <label class="form-check-label" for="qrBgModeSolid">Color</label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="qrBgMode" id="qrBgModeTransparent" value="transparent" (change)="actualizarQR()">
+                          <label class="form-check-label" for="qrBgModeTransparent">Transparente</label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="qrBgMode" id="qrBgModeGradient" value="gradient" (change)="actualizarQR()">
+                          <label class="form-check-label" for="qrBgModeGradient">Gradiente</label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Color 1</label>
+                      <input id="qrBgColor" type="color" class="form-control form-control-color w-100" value="#ffffff" (input)="actualizarQR()">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Color 2</label>
+                      <input id="qrBgColor2" type="color" class="form-control form-control-color w-100" value="#dbeafe" (input)="actualizarQR()">
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">Orientacion del gradiente</label>
+                      <select id="qrBgGradientDirection" class="form-select" (change)="actualizarQR()">
+                        <option value="to bottom" selected>Abajo</option>
+                        <option value="to top">Arriba</option>
+                        <option value="to right">Derecha</option>
+                        <option value="to left">Izquierda</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="qrSectionLogo" class="collapse" data-bs-parent="#qrOptionsAccordion">
+                   <div class="row g-3 align-items-center mt-2">
+                     <div class="col-12">
+                       <label class="form-label">Logo central (opcional)</label>
+                       <input id="qrLogoFile" class="form-control" type="file" accept="image/*" (change)="onQrLogoFileChange($event); actualizarQR()">
+                     </div>
+                     <div class="col-8">
+                       <input id="qrLogoUrl" type="url" class="form-control" placeholder="URL del logo" [(ngModel)]="qrLogoUrlValue">
+                     </div>
+                     <div class="col-4">
+                       <button id="qrBtnSetLogo" class="btn btn-outline-secondary w-100" type="button" (click)="setQrLogoUrl()">Usar</button>
+                     </div>
+                     <div class="col-12 d-flex gap-3 align-items-center">
+                       <img id="qrLogoPreview" class="qr-logo-preview d-none" alt="logo" style="width: 40px; height: 40px; object-fit: contain;">
+                       <div class="flex-grow-1">
+                         <label class="form-label mb-1">Tamaño del logo (%)</label>
+                         <input id="qrLogoSize" type="range" class="form-range" min="5" max="40" step="1" value="18" (input)="actualizarQR()">
+                       </div>
+                     </div>
+                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+         <div class="d-flex gap-2">
+           <button id="qrBtnDescargarPng" class="btn btn-success" type="button" (click)="descargarQRPng()">
+             <i class="fas fa-file-image"></i> Descargar PNG
+           </button>
+           <button id="qrBtnDescargarSvg" class="btn btn-outline-success" type="button" (click)="descargarQRSvg()">
+             <i class="fas fa-file-code"></i> Descargar SVG
+           </button>
+         </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -148,6 +337,12 @@ aria-label="Menu"
 
 <div class="card table-card mt-2 mb-3">
   <div class="card-body">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <h5 class="card-title mb-0" style="color: #0b69a6; font-weight: bold;">Lista de tareas</h5>
+      <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="Cómo usar el buscador" style="width: auto; min-height: 34px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #cfe0ff; color: #1d68ff; box-shadow: 0 2px 6px rgba(29, 104, 255, 0.12); border-radius: 10px;">
+        <i class="fas fa-info"></i>cómo buscar
+      </button>
+    </div>
     <div class="containerbuscar">
       <div class="inputGroup">
       <input type="text" id="busqueda" required="" autocomplete="off" (input)="buscar($event)">
@@ -178,27 +373,16 @@ aria-label="Menu"
     </div>
 
     <div class="row mt-4">
-      <div class="w-100 d-flex justify-content-center mb-2">
-        <button type="button" class="btn btn-success animate" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" data-bs-toggle="modal" data-bs-target="#provinciaModal">
+      <div class="w-100 d-flex justify-content-center align-items-center mb-2" style="gap: 8px;">
+        <button type="button" class="btn btn-success animate flex-grow-1" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" data-bs-toggle="modal" data-bs-target="#provinciaModal">
           <i class="bi bi-geo-alt"></i> Seleccionar provincia
         </button>
-      </div>
-
-      <div class="col">
-        <div class="input-group" style="padding:5px; margin: 2px; z-index: 0;">
-          <input type="text" class="form-control" placeholder="%" [(ngModel)]="porcentajeBajar">
-          <div class="input-group-append">
-            <button class="btn btn-danger w-100" (click)="disminuirPrecios()">Bajar</button>
-          </div>
-        </div>
-      </div>
-      <div class="col">
-        <div class="input-group" style="padding:5px; margin: 2px; z-index: 0;">
-          <input type="text" class="form-control" placeholder="%" [(ngModel)]="porcentajeSubir">
-          <div class="input-group-append">
-            <button class="btn btn-success w-100" (click)="ajustarPrecios()">Subir</button>
-          </div>
-        </div>
+        <button id="recentTasksOpenButton" class="btn btn-success animate flex-grow-0 flex-shrink-0" type="button" data-bs-toggle="modal" data-bs-target="#recentTasksModal" aria-label="Ultimas tareas cotizadas" title="Ultimas tareas cotizadas" style="width: 42px; min-width: 42px; height: 42px; padding: 0; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px #0001;">
+          <i class="fas fa-history" aria-hidden="true"></i>
+        </button>
+        <button id="ajustesListaOpenButton" class="btn btn-success animate flex-grow-0 flex-shrink-0" type="button" data-bs-toggle="modal" data-bs-target="#ajustesListaModal" aria-label="Ajustes de la lista" title="Ajustes de la lista" style="width: 42px; min-width: 42px; height: 42px; padding: 0; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px #0001;">
+          <i class="fas fa-cog" aria-hidden="true"></i>
+        </button>
       </div>
     </div>
   </div>
@@ -227,7 +411,7 @@ aria-label="Menu"
         </div>
         <div class="tareas-agregadas__cliente" *ngIf="clienteSeleccionado">
           <!--span class="tareas-agregadas__cliente-nombre">{{ presupuestoSeleccionado?.name }}</!--span-->
-          <span class="tareas-agregadas__cliente-nombre"> {{ presupuestoSeleccionado?.name || clienteSeleccionado?.name }}</span>
+          <span class="tareas-agregadas__cliente-nombre"> {{ presupuestoSeleccionado?.name || clienteSeleccionado.name }}</span>
           <small class="tareas-agregadas__cliente-fecha" *ngIf="budgetDate">
             Presupuesto: {{ budgetDate | date:'dd/MM/yyyy' }}
           </small>
@@ -362,9 +546,12 @@ aria-label="Menu"
                 <label for="discount" class="text">Descuento (%):</label>
                 <input type="number" [(ngModel)]="tareaSeleccionada.descuento" name="descuento" class="form-control input" id="discount" value="0">
               </div>
-              <div class="modal-footer">
+              <div class="modal-footer d-flex" style="gap: 8px;">
                 <!--button-- type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</!button-->
-                <button type="button" (click)="agregarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Agregar</button>
+                <button type="button" id="openRecentTasksInAddModal" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#recentTasksModal">
+                  <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>ÚLTIMAS TAREAS
+                </button>
+                <button type="button" (click)="agregarTarea()" class="btn btn-primary flex-grow-1" data-bs-dismiss="modal">Agregar</button>
                 <!--button-- type="button" *ngIf="tareaSeleccionada.id" (click)="actualizarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Actualizar</!--button-->
               </div>
             </form>
@@ -1071,7 +1258,205 @@ aria-label="Menu"
 
 
 
+<div class="modal fade" id="recentTasksModal" tabindex="-1" role="dialog" aria-labelledby="recentTasksModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content" style="border-radius: 14px; border: 1px solid rgba(64,158,255,.2);">
+      <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6);">
+        <div class="modal-title" id="recentTasksModalLabel">
+          <h5 style="margin-bottom: 0;"><i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>Últimas tareas cotizadas</h5>
+          <div style="font-size: 8px; color: #4b5563; font-weight: normal; margin-top: 2px;">
+            toca una tarea para cargarla y editar
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" style="background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); max-height: 290px; overflow-y: auto;">
+        <div id="recentTasksList" class="list-group"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
+<div class="modal fade" id="buscadorInfoModal" tabindex="-1" role="dialog" aria-labelledby="buscadorInfoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content" style="border-radius: 14px; border: 1px solid rgba(64,158,255,.2);">
+      <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6);">
+        <h5 class="modal-title" id="buscadorInfoModalLabel">Cómo usar el buscador</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" style="background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); font-size: 12px;">
+        <p class="mb-2"><i class="fas fa-search mr-2 text-primary"></i> Podés buscar por palabras sueltas (ej: <em>colocacion puerta</em>).</p>
+        <p class="mb-2"><i class="fas fa-font mr-2 text-primary"></i> Ya funciona aunque escribas con acentos (ej: <em>medición</em> encuentra <em>medicion</em>).</p>
+        <p class="mb-2"><i class="fas fa-puzzle-piece mr-2 text-primary"></i> Podés buscar por fragmentos de palabras (ej: <em>coloc puert</em> para <em>colocación de puerta</em>).</p>
+        <p class="mb-2"><i class="fas fa-lightbulb mr-2 text-primary"></i> Probá con una palabra más general si no aparece exacto (ej: <em>caldera</em>, <em>zócalo</em>, <em>tablero</em>).</p>
+        <p class="mb-0"><i class="fas fa-plus-circle mr-2 text-primary"></i> Si no encontrás una tarea, usá <em>TAREA GENERICA</em> y completá descripción y precio.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+      </div>
+    </div>
+  </div>
+</div>
 
+<div class="modal fade" id="ajustesListaModal" tabindex="-1" role="dialog" aria-labelledby="ajustesListaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content" style="border-radius: 16px; border: 1px solid rgba(64,158,255,.2); box-shadow: 0 14px 35px rgba(0,0,0,.18);">
+      <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6); border-bottom: 1px solid rgba(11,105,166,.15);">
+        <h5 class="modal-title" id="ajustesListaModalLabel" style="color:#0b69a6; font-weight:700;">
+          <i class="fas fa-cog" aria-hidden="true" style="margin-right: 8px;"></i>Ajustes de la lista
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" style="padding: 14px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9);">
+        <p style="margin-bottom: 10px; color:#4b5563; font-size: 13px;">Ajustá precios y tamaño de texto de la lista de tareas.</p>
+        <div style="margin-bottom: 10px; background: rgba(103,165,246,.08); border: 1px solid rgba(64,158,255,.16); border-radius: 10px; padding: 10px;">
+          <div style="font-size: 12px; color:#0b69a6; font-weight:700; margin-bottom: 4px;">
+            <i class="fas fa-key" aria-hidden="true" style="margin-right: 6px;"></i>Código de acceso
+          </div>
+          <div id="ajustesListaCodigoAcceso" style="font-size: 20px; color:#1f2937; word-break: break-all;">No disponible</div>
+        </div>
+        <p style="font-size: 11px; color: #6b7280; margin-top: -5px; margin-bottom: 15px; padding-left: 5px;">
+          <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 4px;"></i> recibirás un whatapps para renovar tu acceso el día de vencimiento
+        </p>
+        <button type="button" class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#faqModalAjustes" data-bs-dismiss="modal">
+          PREGUNTAS FRECUENTES
+        </button>
+        <!-- Tour Guiado comentado por ahora -->
+        <!--button type="button" class="btn btn-outline-primary btn-sm btn-block mb-3" onclick="iniciarTourDesdeAjustes()">
+          <i class="fas fa-route" aria-hidden="true" style="margin-right: 6px;"></i>Ver tour guiado
+        </button-->
 
+        <div class="form-group mb-3" style="background: rgba(103,165,246,.08); border: 1px solid rgba(64,158,255,.16); border-radius: 10px; padding: 10px;">
+          <input type="range" id="fontSizeListaRange" class="form-range" min="10" max="24" step="1" value="12">
+          <div style="font-size: 12px; color:#4b5563;">
+            Tamaño actual: <strong id="fontSizeListaValue">12px</strong>
+          </div>
+        </div>
 
+        <button type="button" class="btn btn-outline-info w-100 mb-2" data-bs-toggle="collapse" data-bs-target="#ajustesListaInfoCollapse" aria-expanded="false" aria-controls="ajustesListaInfoCollapse">
+          <i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 6px;"></i>Cómo usar subir/bajar lista
+        </button>
+
+        <div class="collapse mb-3" id="ajustesListaInfoCollapse">
+          <div style="background: rgba(64,158,255,.09); border: 1px solid rgba(64,158,255,.22); border-radius: 10px; padding: 10px; font-size: 12px; color:#374151;">
+            <p style="margin-bottom: 8px;"><strong>Dinámica:</strong> escribí un porcentaje y tocá <strong>SUBIR</strong> para aumentar toda la lista, o <strong>BAJAR</strong> para reducirla. El ajuste se aplica de forma general a todos los ítems de la tabla.</p>
+            <p style="margin-bottom: 8px;"><strong>Ejemplos rápidos:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
+            <p style="margin-bottom: 0;"><strong>Beneficio para el constructor:</strong> te permite adaptar presupuestos en segundos según zona, complejidad, urgencia o variación de costos, sin editar tarea por tarea. Si querés volver al valor base, usá <strong>Reestablecer valor original de lista</strong>.</p>
+          </div>
+        </div>
+
+        <div class="form-group mb-2">
+          <label for="porcentajeBajar" style="color:#0b69a6;">Bajar lista (%)</label>
+          <div class="input-group" style="z-index: 0">
+            <input type="text" id="porcentajeBajar" class="form-control" placeholder="%" [(ngModel)]="porcentajeBajar">
+            <button class="btn btn-danger flex-grow-1" (click)="disminuirPrecios()">BAJAR</button>
+          </div>
+        </div>
+
+        <div class="form-group mb-3">
+          <label for="porcentaje" style="color:#0b69a6;">Subir lista (%)</label>
+          <div class="input-group" style="z-index: 0">
+            <input type="text" id="porcentaje" class="form-control" placeholder="%" [(ngModel)]="porcentajeSubir">
+            <button class="btn btn-success flex-grow-1" (click)="ajustarPrecios()">SUBIR</button>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-outline-primary w-100" (click)="reestablecerPreciosOriginalesLista()">
+          <i class="fas fa-undo-alt" aria-hidden="true" style="margin-right: 6px;"></i>Reestablecer valor original de lista
+        </button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: PREGUNTAS FRECUENTES (faqModalAjustes)
+     ============================================================ -->
+<div class="modal fade" id="faqModalAjustes" tabindex="-1" role="dialog" aria-labelledby="faqModalAjustesLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content" style="border-radius: 16px; border: 1px solid rgba(64,158,255,.2); box-shadow: 0 14px 35px rgba(0,0,0,.18);">
+      <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6); border-bottom: 1px solid rgba(11,105,166,.15);">
+        <h5 class="modal-title" id="faqModalAjustesLabel" style="color:#0b69a6; font-weight:700;">
+          <i class="fas fa-question-circle" aria-hidden="true" style="margin-right: 8px;"></i>Preguntas Frecuentes
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" style="padding: 18px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); max-height: 70vh; overflow-y: auto;">
+
+        <div class="accordion" id="faqAccordion">
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faq1">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-percent" style="margin-right: 8px;"></i>¿Cómo funciona subir o bajar los precios de la lista?
+              </button>
+            </h2>
+            <div id="faq1Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p>Escribí un porcentaje en el campo correspondiente y tocá <strong>SUBIR</strong> para aumentar todos los precios de la lista, o <strong>BAJAR</strong> para reducirlos. El ajuste se aplica de forma general a todos los ítems.</p>
+                <p style="margin-bottom:0;"><strong>Ejemplo:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faq2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-undo-alt" style="margin-right: 8px;"></i>¿Cómo restablezco los precios originales?
+              </button>
+            </h2>
+            <div id="faq2Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p style="margin-bottom:0;">Usá el botón <strong>"Reestablecer valor original de lista"</strong>. Esto recarga los precios desde el servidor, deshaciendo cualquier ajuste porcentual que hayas aplicado.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faq3">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-text-height" style="margin-right: 8px;"></i>¿Para qué sirve el control de tamaño de texto?
+              </button>
+            </h2>
+            <div id="faq3Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p style="margin-bottom:0;">El slider ajusta el tamaño de la fuente de la tabla de tareas. Útil para ver más ítems en pantalla (texto más chico) o para mejorar la legibilidad en dispositivos grandes (texto más grande).</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faq4">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-key" style="margin-right: 8px;"></i>¿Qué es el Código de Acceso?
+              </button>
+            </h2>
+            <div id="faq4Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p style="margin-bottom:0;">Es tu identificador único en el sistema. Lo usás para ingresar a la aplicación y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro. Antes del vencimiento recibirás un WhatsApp para renovarlo.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 0; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faq5">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-save" style="margin-right: 8px;"></i>¿Los cambios en los precios se guardan permanentemente?
+              </button>
+            </h2>
+            <div id="faq5Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p style="margin-bottom:0;">Sí, los cambios se guardan en tu lista de tareas activa. Si querés volver a los precios base, usá <strong>"Reestablecer valor original de lista"</strong>. Los precios de la tabla de referencia (buscador) nunca se modifican.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid rgba(11,105,166,.15);">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+      </div>
+    </div>
+  </div>
+</div>

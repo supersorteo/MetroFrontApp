@@ -1,0 +1,374 @@
+/* =============================================
+   PRESUPUESTO COMPONENT STYLES
+   Mirror fiel del diseño del legacy METROFINALPUBLICADO.html
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+:host {
+  display: block;
+  font-family: 'Inter', Arial, sans-serif;
+}
+
+.presupuesto-page {
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  min-height: 100vh;
+  font-family: 'Inter', Arial, sans-serif;
+}
+
+/* ============ CONTAINER ============ */
+.container {
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px;
+  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px,
+              rgba(17, 17, 26, 0.1) 0px 8px 24px,
+              rgba(17, 17, 26, 0.1) 0px 16px 56px;
+}
+
+/* ============ INFO SECTION (encabezado empresa + cliente) ============ */
+.info-section {
+  color: #0b69a6;
+  background-image: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6);
+  border-radius: 10px 10px 0 0;
+  box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px,
+              rgba(17, 17, 26, 0.1) 0px 8px 24px,
+              rgba(17, 17, 26, 0.1) 0px 16px 56px;
+  padding: 20px;
+  margin: 15px;
+  margin-bottom: 0;
+}
+
+.info-section p {
+  margin-bottom: 10px;
+}
+
+/* ============ GRID EMPRESA ============ */
+.company-header-grid {
+  display: grid;
+  grid-template-columns: 120px 1fr 1fr;
+  align-items: center;
+  column-gap: 14px;
+  margin-bottom: 10px;
+}
+
+.company-logo-cell {
+  align-self: stretch;
+  min-height: 60px;
+  display: flex;
+  align-items: stretch;
+}
+
+.company-logo-img {
+  width: 100%;
+  height: 100%;
+  min-width: 60px;
+  min-height: 60px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.company-name-row {
+  margin-bottom: 10px;
+}
+
+.company-name-row h2 {
+  margin: 0;
+}
+
+/* ============ TABLA ============ */
+.table th {
+  background-color: #007bff;
+  color: white;
+  font-weight: 700;
+  border: 1px solid #dee2e6;
+  text-align: center;
+  padding: 10px;
+}
+
+.table td {
+  border: 1px solid #dee2e6;
+  padding: 10px;
+  text-align: center;
+}
+
+.table tbody td:first-child {
+  text-align: left;
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: #f2f2f2;
+}
+
+#budgetListPrint {
+  font-size: small;
+}
+
+/* ============ TOTAL ============ */
+.total {
+  width: 100%;
+  display: block;
+  font-weight: bold;
+  font-size: 20px;
+  text-align: right;
+  margin-top: 20px;
+  margin-bottom: 50px;
+  padding: 14px 16px;
+  border-radius: 5px;
+  color: #0b69a6;
+  background-image: linear-gradient(to right top, #f7faff, #f1f7ff, #e8f2ff, #dcecff, #cfe4ff);
+  border: 1px solid rgba(11, 105, 166, 0.18);
+  box-shadow: rgba(17, 17, 26, 0.08) 0px 4px 12px;
+}
+
+/* ============ ESTADO VACÍO ============ */
+.budget-empty-state {
+  display: none;
+  margin: 24px 0;
+  padding: 24px 20px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+  border: 1px solid rgba(64, 158, 255, 0.25);
+  box-shadow: 0 18px 45px rgba(16, 24, 40, 0.12);
+  color: #1f3b63;
+
+  &.is-visible {
+    display: block;
+  }
+
+  h3 {
+    margin: 0 0 10px 0;
+    font-size: 22px;
+    color: #1459c9;
+  }
+
+  p {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    color: #4b5563;
+  }
+
+  ol {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 13px;
+    color: #334155;
+
+    li + li {
+      margin-top: 8px;
+    }
+  }
+}
+
+/* ============ CONTROLES DE VISTA PREVIA (flotantes) ============ */
+.preview-controls {
+  position: fixed;
+  left: 14px;
+  bottom: 62px;
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 240px;
+}
+
+.preview-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(64, 158, 255, 0.22);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: rgba(17, 17, 26, 0.12) 0px 4px 12px;
+  color: #1f3b63;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+
+  input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #2f7fe7;
+    cursor: pointer;
+  }
+}
+
+/* ============ BOTONES ESTILO LEGACY (button-82-front) ============ */
+.button-82-front.text {
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  padding: 12px 14px;
+  box-shadow: rgba(6, 24, 44, 0.18) 0px 4px 10px;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: rgba(6, 24, 44, 0.22) 0px 8px 16px;
+    filter: brightness(1.02);
+  }
+}
+
+/* Botón Descargar - fijo abajo izquierda */
+.download-trigger.button-82-front.text {
+  background-image: linear-gradient(to right top, #3768b1, #3b75c4, #3e82d7, #3f90eb, #409eff);
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  z-index: 9998;
+  width: auto;
+  max-width: 220px;
+  margin: 0 !important;
+  padding: 9px 12px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+/* Botón Volver - fijo arriba izquierda */
+.back-btn.button-82-front.text {
+  background-image: linear-gradient(to right, #5c6773, #7b8794);
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 9998;
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+/* ============ MODAL DE DESCARGA (overlay) ============ */
+.download-options-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+
+  &.is-open {
+    display: flex;
+  }
+}
+
+.download-options-modal {
+  background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+  width: 100%;
+  max-width: 420px;
+  border-radius: 18px;
+  border: 1px solid rgba(64, 158, 255, 0.25);
+  box-shadow: 0 18px 45px rgba(16, 24, 40, 0.22);
+  padding: 18px;
+  text-align: left;
+}
+
+.download-options-title {
+  margin: 0 0 6px 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: #1459c9;
+}
+
+.download-options-subtitle {
+  margin: 0 0 14px 0;
+  color: #4b5563;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.download-options-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  button {
+    width: 100%;
+    border: none;
+  }
+}
+
+/* Colores de los botones de descarga */
+.download-option-btn--pdf.button-82-front.text {
+  background-image: linear-gradient(to right, #1e88ff, #0b69f0);
+}
+
+.download-option-btn--html.button-82-front.text {
+  background-image: linear-gradient(to right, #2e6dd8, #224fb6);
+}
+
+.download-option-btn--cancel.button-82-front.text {
+  background-image: linear-gradient(to right, #7b8794, #5c6773);
+}
+
+/* ============ ESTILOS DE IMPRESIÓN ============ */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  tr, td, th {
+    page-break-inside: avoid;
+  }
+
+  .table th {
+    color: #ffffff !important;
+    background: #007bff !important;
+    border: 1px solid #adb5bd !important;
+  }
+
+  .table td {
+    border: 1px solid #ced4da !important;
+    background: #ffffff !important;
+  }
+
+  .table tbody tr:nth-child(odd),
+  .table tbody tr:nth-child(odd) td {
+    background: #f2f2f2 !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .container {
+    max-width: 900px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+  }
+
+  .info-section {
+    box-shadow: none !important;
+  }
+
+  .total {
+    box-shadow: none !important;
+    background-image: linear-gradient(to right top, #f7faff, #f1f7ff, #e8f2ff, #dcecff, #cfe4ff) !important;
+    color: #0b69a6 !important;
+  }
+}

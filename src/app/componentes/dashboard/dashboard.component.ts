@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -25,6 +25,7 @@ import { SavedPresupuesto } from '../../servicios/budget.service';
 
 
 declare var bootstrap: any;
+declare var QRCodeStyling: any;
 
 interface AccessCode {
   code: string;
@@ -71,7 +72,7 @@ function cleanupBootstrapModals(): void {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
 
   filtroCliente: string = '';
@@ -197,6 +198,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
 presupuestoSeleccionado: SavedPresupuesto | null = null;
 private presupuestoPendiente: SavedPresupuesto | null = null;
+
+  // Variables QR
+  qrCode: any = null;
+  qrLogoUrlValue: string = '';
 
 
 
@@ -735,96 +740,143 @@ ngAfterViewInit() {
 
 
 
-
-
-
-ngAfterViewInit0() {
-    const menuBtn = document.getElementById('menuToggleBtn');
-    const offcanvasElement = document.getElementById('offcanvasMenu');
-    if (menuBtn && offcanvasElement) {
-      offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
-        menuBtn.style.display = 'none';
+  initQR() {
+    if (typeof QRCodeStyling !== 'undefined') {
+      this.qrCode = new QRCodeStyling({
+        width: 280,
+        height: 280,
+        type: "svg",
+        data: "https://orbitasoftware.com.ar",
+        image: "",
+        dotsOptions: { color: "#111827", type: "dots" },
+        backgroundOptions: { color: "#ffffff", gradient: null },
+        cornersSquareOptions: { type: "dot" },
+        cornersDotOptions: { type: "dot" },
+        imageOptions: { crossOrigin: "anonymous", margin: 10, imageSize: 0.18 }
       });
-      offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-        menuBtn.style.display = 'flex';
-      });
-    }
 
-    // Limpiar modal-backdrop y restaurar foco para modales
-      const modals = ['exampleModal','listaEmpresasModal' ,'imageModal', 'clientModal', 'listaClientesModal', 'miModal', 'provinciaModal'];
-    modals.forEach(modalId => {
-      const modalElement = document.getElementById(modalId);
-      if (modalElement) {
-        modalElement.addEventListener('show.bs.modal', () => {
-          // Limpiar backdrops solo si hay más de uno para evitar conflictos
-          const backdrops = document.querySelectorAll('.modal-backdrop');
-          if (backdrops.length > 1) {
-            backdrops.forEach((backdrop, index) => {
-              if (index < backdrops.length - 1) backdrop.remove();
-            });
-          }
-        });
-        modalElement.addEventListener('hidden.bs.modal', () => {
-          const triggerButton = document.querySelector(`[data-bs-target="#${modalId}"]`) as HTMLElement;
-          if (triggerButton) triggerButton.focus();
-          // Limpiar backdrops solo si hay más de uno
-          const backdrops = document.querySelectorAll('.modal-backdrop');
-          if (backdrops.length > 1) {
-            backdrops.forEach((backdrop, index) => {
-              if (index < backdrops.length - 1) backdrop.remove();
-            });
+      const modalEl = document.getElementById('qrModal');
+      if (modalEl) {
+        modalEl.addEventListener('show.bs.modal', () => {
+          const qrContainer = document.getElementById('qrContainer');
+          if (qrContainer && !qrContainer.hasChildNodes()) {
+            this.qrCode.append(qrContainer);
           }
         });
       }
-    });
+    }
+  }
 
-    // Lógica para reabrir el modal de empresa al cerrar el de imagen
-    const imageModal = document.getElementById('imageModal');
-    if (imageModal) {
-      imageModal.addEventListener('hidden.bs.modal', () => {
-        const empresaModal = document.getElementById('exampleModal');
-        if (this.reabrirEmpresaModal && empresaModal && !empresaModal.classList.contains('show')) {
-          setTimeout(() => {
-            const modal = new bootstrap.Modal(empresaModal);
-            modal.show();
-            this.reabrirEmpresaModal = false;
-          }, 300);
+  abrirGeneradorQR() {
+    const modalEl = document.getElementById('qrModal');
+    if (modalEl) {
+      setTimeout(() => {
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+      }, 400); // Darle tiempo a Offcanvas para cerrar
+    }
+  }
+
+  updateSizeLabel(e: any) {
+    const val = e.target?.value || 280;
+    const label = document.getElementById('qrSizeOut');
+    if (label) label.innerText = val;
+  }
+
+  setQrLogoUrl() {
+    const preview = document.getElementById('qrLogoPreview') as HTMLImageElement;
+    if (this.qrLogoUrlValue && preview) {
+      preview.src = this.qrLogoUrlValue;
+      preview.classList.remove('d-none');
+    }
+  }
+
+  onQrLogoFileChange(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const preview = document.getElementById('qrLogoPreview') as HTMLImageElement;
+        if (preview) {
+          preview.src = e.target.result;
+          preview.classList.remove('d-none');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  actualizarQR() {
+    if (!this.qrCode) return;
+    try {
+      const dataStr = (document.getElementById('qrDataInput') as HTMLInputElement)?.value || '';
+      const sizeStr = (document.getElementById('qrSizeRange') as HTMLInputElement)?.value || '280';
+      const ecLevel = (document.getElementById('qrEcLevel') as HTMLSelectElement)?.value || 'M';
+      const dotsType = (document.getElementById('qrDotsType') as HTMLSelectElement)?.value || 'dots';
+      const dotsColor = (document.getElementById('qrDotsColor') as HTMLInputElement)?.value || '#111827';
+      const cornersSquareType = (document.getElementById('qrCornersSquare') as HTMLSelectElement)?.value || 'dot';
+      const cornersDotType = (document.getElementById('qrCornersDot') as HTMLSelectElement)?.value || 'dot';
+      const selectedBgMode = (document.querySelector('input[name="qrBgMode"]:checked') as HTMLInputElement)?.value || 'solid';
+      const bgColor1 = (document.getElementById('qrBgColor') as HTMLInputElement)?.value || '#ffffff';
+      const bgColor2 = (document.getElementById('qrBgColor2') as HTMLInputElement)?.value || '#dbeafe';
+      const bgDirection = (document.getElementById('qrBgGradientDirection') as HTMLSelectElement)?.value || 'to bottom';
+      const logoSizePercent = parseInt((document.getElementById('qrLogoSize') as HTMLInputElement)?.value || '18', 10);
+      const previewImg = document.getElementById('qrLogoPreview') as HTMLImageElement;
+
+      let gradientObj: any = null;
+      let finalBgColor = bgColor1;
+
+      if (selectedBgMode === 'transparent') {
+        finalBgColor = 'transparent';
+      } else if (selectedBgMode === 'gradient') {
+        finalBgColor = '';
+        let offset1 = 0; let offset2 = 1;
+        gradientObj = {
+          type: 'linear', rotation: bgDirection === 'to bottom' ? 1.5708 : bgDirection === 'to right' ? 0 : 0, // Simplified rotation
+          colorStops: [{ offset: offset1, color: bgColor1 }, { offset: offset2, color: bgColor2 }]
+        };
+      }
+
+      const parsedSize = parseInt(sizeStr, 10);
+      let logoUrl = '';
+      if (previewImg && !previewImg.classList.contains('d-none') && previewImg.src) {
+        logoUrl = previewImg.src;
+      }
+      const finalLogoSize = logoSizePercent / 100;
+
+      this.qrCode.update({
+        width: parsedSize,
+        height: parsedSize,
+        data: dataStr || 'https://orbitasoftware.com.ar',
+        image: logoUrl,
+        dotsOptions: { color: dotsColor, type: dotsType as any },
+        backgroundOptions: { color: finalBgColor, gradient: gradientObj },
+        cornersSquareOptions: { type: cornersSquareType as any },
+        cornersDotOptions: { type: cornersDotType as any },
+        qrOptions: { errorCorrectionLevel: ecLevel as any },
+        imageOptions: { crossOrigin: "anonymous", margin: Math.round(parsedSize * 0.02), imageSize: finalLogoSize }
+      });
+
+      const wrap = document.getElementById('qrPreviewWrap');
+      if (wrap) {
+        if (selectedBgMode === 'transparent') {
+          wrap.style.background = 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAOklEQVQYV2NkYGAwZmBgOMuAACA+EGxgINSAK8IiM2EaQDRMzEQIY/FchG4csknkGkR2A00TMI0EawAAet0X+flpIfkAAAAASUVORK5CYII=") repeat';
         } else {
-          this.reabrirEmpresaModal = false;
+          wrap.style.background = 'none';
         }
-      });
-    }
-
-    // Lógica para reabrir clientModal al cerrar listaClientesModal (comentada para evitar apertura automática)
-    /*
-    const listaClientesModal = document.getElementById('listaClientesModal');
-    if (listaClientesModal) {
-      listaClientesModal.addEventListener('hidden.bs.modal', () => {
-        const clientModal = document.getElementById('clientModal');
-        if (clientModal && !clientModal.classList.contains('show')) {
-          setTimeout(() => {
-            const modal = new bootstrap.Modal(clientModal);
-            modal.show();
-          }, 300);
-        }
-      });
-    }
-    */
-      // Lógica para reabrir el modal de empresa al cerrar el de listaEmpresasModal
-      const listaEmpresasModal = document.getElementById('listaEmpresasModal');
-      if (listaEmpresasModal) {
-        listaEmpresasModal.addEventListener('hidden.bs.modal', () => {
-          const empresaModal = document.getElementById('exampleModal');
-          if (empresaModal && !empresaModal.classList.contains('show')) {
-            setTimeout(() => {
-              const modal = new bootstrap.Modal(empresaModal);
-              modal.show();
-            }, 300);
-          }
-        });
       }
-}
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
+  descargarQRPng() {
+    if (this.qrCode) this.qrCode.download({ name: 'qr-generado', extension: 'png' });
+  }
+
+  descargarQRSvg() {
+    if (this.qrCode) this.qrCode.download({ name: 'qr-generado', extension: 'svg' });
+  }
 ngAfterViewInit() {
   const menuBtn = document.getElementById('menuToggleBtn');
   const offcanvasElement = document.getElementById('offcanvasMenu');
@@ -849,7 +901,7 @@ offcanvasEl?.addEventListener('hidden.bs.offcanvas', () => {
 
 
   // Limpiar modal-backdrop y restaurar foco para modales
-  const modals = ['exampleModal', 'listaEmpresasModal', 'imageModal', 'clientModal', 'listaClientesModal', 'miModal', 'provinciaModal'];
+  const modals = ['exampleModal', 'listaEmpresasModal', 'imageModal', 'clientModal', 'listaClientesModal', 'miModal', 'provinciaModal', 'qrModal', 'recentTasksModal', 'buscadorInfoModal', 'ajustesListaModal', 'faqModalAjustes'];
   modals.forEach(modalId => {
     const modalElement = document.getElementById(modalId);
     if (modalElement) {
@@ -929,8 +981,9 @@ offcanvasEl?.addEventListener('hidden.bs.offcanvas', () => {
       backdrops.forEach(backdrop => backdrop.remove());
     });
   }
-}
 
+  this.initQR();
+}
 
 obtenerTareas0(): void {
   if (this.userData?.pais) {
@@ -2654,13 +2707,14 @@ saveClientData0(form: NgForm): void {
       this.toastr.error('Por favor, ingrese un porcentaje válido para bajar', 'Error');
       return;
     }
-    this.tareasFiltradas = this.tareasFiltradas.map(tarea => ({
+    this.tareasAgregadas = this.tareasAgregadas.map(tarea => ({
       ...tarea,
       costo: tarea.costo * (1 - porcentaje / 100),
       totalCost: this.calcularTotalCosto({ ...tarea, costo: tarea.costo * (1 - porcentaje / 100) })
     }));
     this.toastr.success(`Lista reducida en ${porcentaje}%`, 'Éxito');
     this.porcentajeBajar = null;
+    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
   }
 
   ajustarPrecios(): void {
@@ -2669,13 +2723,58 @@ saveClientData0(form: NgForm): void {
       this.toastr.error('Por favor, ingrese un porcentaje válido para subir', 'Error');
       return;
     }
-    this.tareasFiltradas = this.tareasFiltradas.map(tarea => ({
+    this.tareasAgregadas = this.tareasAgregadas.map(tarea => ({
       ...tarea,
       costo: tarea.costo * (1 + porcentaje / 100),
       totalCost: this.calcularTotalCosto({ ...tarea, costo: tarea.costo * (1 + porcentaje / 100) })
     }));
     this.toastr.success(`Lista incrementada en ${porcentaje}%`, 'Éxito');
     this.porcentajeSubir = null;
+    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+  }
+
+  reestablecerPreciosOriginalesLista(): void {
+    if (!this.clienteSeleccionado?.id && !this.trialMode) {
+      this.toastr.warning('No hay un cliente seleccionado para restablecer los precios.', 'Atención');
+      return;
+    }
+
+    if (this.trialMode) {
+       this.toastr.info('Función limitada en modo de prueba', 'Aviso');
+       return;
+    }
+
+    this.userTareaService.getTareasByClienteId(this.clienteSeleccionado!.id as number).subscribe({
+      next: (tareasOriginales) => {
+        this.tareasAgregadas = tareasOriginales;
+        this.mostrarTabla = this.tareasAgregadas.length > 0;
+        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+        this.toastr.success('Precios restablecidos a los valores originales', 'Éxito');
+      },
+      error: () => {
+        this.toastr.error('Error al restablecer los precios originales', 'Error');
+      }
+    });
+  }
+
+  cambiarTamanoFuenteLista(accion: 'increase' | 'decrease'): void {
+    const tabla = document.getElementById('tabla');
+    if (!tabla) return;
+    
+    const currentSize = window.getComputedStyle(tabla).fontSize;
+    let newSize = parseFloat(currentSize);
+    
+    if (accion === 'increase') {
+      newSize += 1;
+    } else {
+      newSize -= 1;
+    }
+    
+    tabla.style.setProperty('font-size', `${newSize}px`, 'important');
+    const cells = tabla.querySelectorAll('td, th, span, div');
+    cells.forEach(cell => {
+      (cell as HTMLElement).style.setProperty('font-size', `${newSize}px`, 'important');
+    });
   }
 
 
