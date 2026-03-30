@@ -10,7 +10,7 @@ export class AuthLoggedGuard implements CanActivate {
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  canActivate(): boolean {
+  canActivate0(): boolean {
     if (this.authService.isLoggedIn()) {
       this.router.navigate(['/dashboard']);
        return false;
@@ -18,4 +18,23 @@ export class AuthLoggedGuard implements CanActivate {
          return true;
         }
       }
+
+canActivate1(): boolean {
+  if (this.authService.isLoggedIn()) {
+    this.router.navigate(['/dashboard']);
+    return false;
+  }
+  return true;
+}
+
+canActivate(): boolean {
+  if (this.authService.isLoggedIn() || this.authService.isTrialMode()) {
+    this.router.navigate(['/dashboard']);
+    return false;
+  }
+  return true;
+}
+
+
+
     }

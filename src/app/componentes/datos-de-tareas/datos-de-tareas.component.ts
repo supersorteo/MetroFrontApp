@@ -41,6 +41,8 @@ export class DatosDeTareasComponent implements OnInit {
   colorScheme: ColorScheme = { ...this.defaultColorScheme };
   private readonly colorSchemeStorageKey = 'metroColorScheme';
 
+  presupuestoNombre: string = '';
+
   constructor(
     private presupuestoService: PresupuestoService,
     private authService: AuthService,
@@ -67,9 +69,12 @@ export class DatosDeTareasComponent implements OnInit {
     }
     this.colorScheme = this.loadColorScheme();
     // Puedes agregar lógica para cargar datos adicionales si es necesario
-    console.log('Empresa seleccionada:', this.empresaSeleccionada);
-    console.log('Cliente seleccionado:', this.clienteSeleccionado);
-    console.log('Tareas asociadas:', this.tareasAgregadas);
+    const storedPresupuestoName = localStorage.getItem('selectedPresupuestoName');
+if (storedPresupuestoName) {
+  this.presupuestoNombre = storedPresupuestoName;
+}
+
+
   }
 
   calcularCostoTotal(): number {
@@ -77,9 +82,19 @@ export class DatosDeTareasComponent implements OnInit {
   }
 
 
-volverAlDashboard(){
+volverAlDashboard0(){
 this.route.navigate(['/dashboard'])
 }
+
+volverAlDashboard(): void {
+  const isTrial = localStorage.getItem('trialMode') === 'true';
+  if (isTrial) {
+    // asegura que el flag siga activo
+    localStorage.setItem('trialMode', 'true');
+  }
+  this.route.navigate(['/dashboard']);
+}
+
 
   async descargarPresupuesto() {
     const exportElement = document.getElementById('export-presupuesto');

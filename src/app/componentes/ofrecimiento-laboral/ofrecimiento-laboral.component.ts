@@ -118,13 +118,11 @@ export class OfrecimientoLaboralComponent implements OnInit {
     this.form.patchValue({ provincia: '' });
     const provinciaControl = this.form.get('provincia');
     const paisSeleccionado = this.form.get('pais')?.value;
-    console.log('País seleccionado:', paisSeleccionado);
     if (paisSeleccionado) {
       provinciaControl?.enable();
       this.provinciaService.getProvinciasByPais(paisSeleccionado).subscribe({
         next: (provincias) => {
           this.provincias = provincias;
-          console.log('Provincias cargadas:', provincias);
         },
         error: () => {
           this.provincias = [];
@@ -142,7 +140,6 @@ export class OfrecimientoLaboralComponent implements OnInit {
   }
 
   onSubmit() {
-    console.log('Datos del formulario:', this.form.value);
     if (this.form.valid) {
       // Guardar el nombre de la provincia en vez del id
       const formData = { ...this.form.value };

@@ -1,91 +1,490 @@
-<div class="dashboard-container">
-  <div class="container" style="box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); max-width: 800px;">
-    <div class="program-title" id="portada" style="border-radius: 10px;" *ngIf="!isContentVisible">
-      <h6 style="font-size: 12px; margin-bottom: 0px;">Orbita software</h6>
-    </div>
+<div class="login-page" *ngIf="!isContentVisible">
 
-    <div id="ingreso" class="ingreso" style="box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.897);" *ngIf="!isContentVisible">
-      <div class="imagen-container">
-        <img src="https://www.metroapp.site/metrologo.jpg" class="w-10rem logo-img" alt="Metro logo">
-      </div>
+  <!-- BRAND -->
+  <div class="login-brand">
+    <img src="https://www.metroapp.site/metrologo.jpg" class="login-brand__logo" alt="Metro logo" />
+    <h1 class="login-brand__name">MetroApp</h1>
+    <p class="login-brand__tagline">Gestión profesional para tu negocio</p>
+  </div>
 
-      <div class="text-center bg-gradient">
-        <h3>Bienvenido</h3>
-        <div class="form-group" id="ingreso-codigo" style="font-size: 20px; margin: 10px;">
-          <label for="password">Ingrese su código:</label>
-          <input type="text" id="password" class="form-control" [(ngModel)]="code" placeholder="Ingrese su código" autocomplete="current-password" style="font-size: 30px; text-align: center;">
-          <button class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="login()">ENTRAR</button>
-          <!--button-- id="mercadoPagoButton" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="ocultarContenido()">PROBÁ EL SISTEMA</!--button-->
-         <button id="mercadoPagoButton" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="activarModoPrueba()">PROBÁ EL SISTEMA</button>
-          <button type="button" class="btn btn-primary" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" data-bs-toggle="modal" data-bs-target="#exampleModal">REGISTRATE</button>
-          <button type="button" class="btn btn-gradient" (click)="openCalculadora()" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;">CALCULADORA DE MATERIALES</button>
-          <button type="button" class="btn btn-success" style="font-size: 16px; font-weight: bold; width: 100%; height: 50px; margin-top: 20px;" (click)="openWebsite()">Comprá un código por Whatsapp</button>
-          <p class="text-center mt-3" style="font-size: 12px;">Valor, $3.800 arg. Te dura 3 meses y tenés acceso a la calculadora de materiales</p>
-          <button id="whatsapp-share" class="btn btn-whatsapp" (click)="shareOnWhatsApp()">Compartir en WhatsApp</button>
+  <!-- ══════════════════════════════════════
+       PASO HOME
+  ══════════════════════════════════════ -->
+  <div *ngIf="loginStep === 'home'" class="login-step">
+
+    <div class="login-cards login-cards--home">
+
+      <div class="login-card login-card--trial" (click)="activarModoPrueba()">
+        <div class="login-card__glow"></div>
+        <div class="login-card__trial-left">
+          <div class="login-card__icon"><i class="bi bi-play-circle-fill"></i></div>
+          <span class="login-card__badge-new">¡GRATIS!</span>
+        </div>
+        <div class="login-card__trial-right">
+          <h3 class="login-card__title">Probar el sistema</h3>
+          <p class="login-card__desc">Explorá todas las funciones sin registrarte. Cero compromisos.</p>
+          <span class="login-card__cta">Comenzar demo&nbsp;<i class="bi bi-arrow-right-circle-fill"></i></span>
         </div>
       </div>
 
-      <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" #exampleModal>
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h1 class="modal-title fs-5" id="exampleModalLabel">Registrar Código y Email</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-              <form>
-                <div class="mb-3">
-                  <label for="code" class="col-form-label">Código:</label>
-                  <input type="text" class="form-control" id="code" [(ngModel)]="code" placeholder="Ingrese su código" name="code" (input)="validateForm()">
-                </div>
-                <div class="mb-3">
-                  <label for="email" class="col-form-label">Email:</label>
-                  <input type="email" class="form-control" id="email" [(ngModel)]="email" placeholder="Ingrese su correo" name="email" (input)="validateForm()">
-                </div>
-                <!--div-- class="mb-3">
-                  <label for="username" class="col-form-label">Username:</label>
-                  <input type="text" class="form-control" id="username" [(ngModel)]="username" placeholder="Ingrese su nombre de usuario" name="username" (input)="validateForm()">
-                </!--div-->
-                <div class="mb-3">
-                  <label for="telefono" class="col-form-label">Teléfono:</label>
-                  <input type="text" class="form-control" id="telefono" [(ngModel)]="telefono" placeholder="Teléfono" name="telefono" (input)="validateForm()">
-                </div>
-           <div class="mb-3">
-                  <label for="pais" class="col-form-label">País:</label>
-                  <ng-select
-                    [items]="countries"
-                    bindLabel="nombre"
-                    bindValue="nombre"
-                    [(ngModel)]="pais"
-                    name="pais"
-                    id="pais"
-                    (change)="onPaisChange()"
-                    placeholder="País"
-                    [clearable]="true"
-                  >
-                    <ng-template ng-option-tmp let-item="item" let-selected="selected">
-                      <img [src]="item.flag" width="20" class="me-2" />
-                      {{ item.nombre }}
-                      <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
-                    </ng-template>
-                  </ng-select>
-                </div>
-                <div class="mb-3">
-                  <label for="provincia" class="col-form-label">Provincia:</label>
-                  <select class="form-select" id="provincia" [(ngModel)]="provincia" name="provincia" (change)="validateForm()">
-                    <option value="" disabled selected>Seleccione una provincia</option>
-                    <option *ngFor="let provincia of provincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
-                  </select>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary" [disabled]="!isFormValid" (click)="register()">Registrar</button>
-            </div>
-          </div>
+      <div class="login-card login-card--member" (click)="loginStep = 'login'">
+        <div class="login-card__glow"></div>
+        <div class="login-card__icon"><i class="bi bi-shield-lock-fill"></i></div>
+        <h3 class="login-card__title">Ya soy miembro</h3>
+        <p class="login-card__desc">Ingresá con tu código de acceso</p>
+        <span class="login-card__cta">Ingresar&nbsp;<i class="bi bi-arrow-right-circle-fill"></i></span>
+      </div>
+
+      <div class="login-card login-card--join" (click)="loginStep = 'join'">
+        <div class="login-card__glow"></div>
+        <div class="login-card__icon"><i class="bi bi-rocket-takeoff-fill"></i></div>
+        <h3 class="login-card__title">Quiero unirme</h3>
+        <p class="login-card__desc">Obtené tu membresía y empezá hoy</p>
+        <span class="login-card__cta">Ver opciones&nbsp;<i class="bi bi-arrow-right-circle-fill"></i></span>
+      </div>
+
+    </div>
+
+    <div class="login-extras">
+      <button class="btn btn-sm btn-link text-muted" (click)="openCalculadora()">
+        <i class="bi bi-calculator me-1"></i>Calculadora de materiales
+      </button>
+      <button class="btn btn-sm btn-link text-muted" (click)="shareOnWhatsApp()">
+        <i class="bi bi-share me-1"></i>Compartir app
+      </button>
+    </div>
+
+    <!-- Admin access button -->
+    <div class="login-admin-btn-wrap" *ngIf="loginStep === 'home'">
+      <button class="login-admin-btn" (click)="loginStep = 'adminCountry'">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/>
+        </svg>
+        Acceso Admin
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PASO LOGIN: ingresar con código
+  ══════════════════════════════════════ -->
+  <div *ngIf="loginStep === 'login'" class="login-step login-step--form">
+
+    <button class="login-back" (click)="loginStep = 'home'">
+      <i class="bi bi-arrow-left"></i> Volver
+    </button>
+
+    <div class="login-form-card">
+      <div class="login-form-card__icon"><i class="bi bi-person-badge-fill"></i></div>
+      <h3 class="login-form-card__title">Ingresá tu código</h3>
+      <p class="login-form-card__sub">Tu código fue enviado por WhatsApp o email</p>
+
+      <input
+        type="text"
+        class="form-control form-control-lg text-center mb-3 login-input"
+        [(ngModel)]="code"
+        placeholder="● ● ● ● ● ●"
+        autocomplete="current-password"
+      />
+
+      <button class="btn btn-primary btn-lg w-100 mb-2 login-btn login-btn--primary" (click)="login()">
+        <i class="bi bi-box-arrow-in-right me-2"></i>ENTRAR
+      </button>
+
+      <div class="login-divider"><span>o</span></div>
+
+      <button type="button" class="btn btn-outline-primary w-100 login-btn" (click)="loginStep = 'register'">
+        <i class="bi bi-person-plus me-2"></i>Registrar mi código
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PASO REGISTER: formulario de registro
+  ══════════════════════════════════════ -->
+  <div *ngIf="loginStep === 'register'" class="login-step login-step--form">
+
+    <button class="login-back" (click)="loginStep = 'login'">
+      <i class="bi bi-arrow-left"></i> Volver
+    </button>
+
+    <div class="login-form-card login-form-card--wide">
+      <div class="login-form-card__icon"><i class="bi bi-person-plus-fill"></i></div>
+      <h3 class="login-form-card__title">Registrá tu código</h3>
+      <p class="login-form-card__sub">Asociá tu código de acceso a tu cuenta</p>
+
+      <div class="lf-field">
+        <label class="lf-label">Código</label>
+        <input type="text" class="form-control login-input-field"
+               [(ngModel)]="code" placeholder="Ingresá tu código" name="code"
+               (input)="onCodeInput()" (blur)="syncCountryWithCode()">
+        <div class="lf-error" *ngIf="codeCountry">
+          <i class="bi bi-geo-alt me-1"></i>Este codigo pertenece a {{ codeCountry }}.
+        </div>
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">Email</label>
+        <input type="email" class="form-control login-input-field"
+               [(ngModel)]="email" placeholder="tu@email.com" name="email"
+               (input)="validateForm()">
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">País</label>
+        <ng-select
+          [items]="countries"
+          bindLabel="nombre"
+          bindValue="nombre"
+          [(ngModel)]="pais"
+          name="pais"
+          id="pais"
+          (change)="onPaisChange()"
+          placeholder="Seleccioná tu país"
+          [clearable]="!codeCountry"
+          [searchable]="!codeCountry"
+          [disabled]="!!codeCountry"
+        >
+          <ng-template ng-option-tmp let-item="item" let-selected="selected">
+            <img [src]="item.flag" width="20" class="me-2" />
+            {{ item.nombre }}
+            <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
+          </ng-template>
+        </ng-select>
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">Provincia</label>
+        <select class="form-select login-input-field"
+                [(ngModel)]="provincia" name="provincia" (change)="validateForm()">
+          <option value="" disabled selected>Seleccioná tu provincia</option>
+          <option *ngFor="let p of provincias" [value]="p.nombre">{{ p.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">Teléfono</label>
+        <input
+          type="tel"
+          class="form-control login-input-field"
+          [class.is-invalid]="telefono.trim().length > 0 && !!telefonoErrorMessage"
+          [(ngModel)]="telefono"
+          [placeholder]="telefonoPlaceholder"
+          name="telefono"
+          (input)="onTelefonoInput()"
+        >
+        <div class="lf-error" *ngIf="telefono.trim().length > 0 && telefonoErrorMessage">
+          <i class="bi bi-exclamation-circle me-1"></i>{{ telefonoErrorMessage }}
+        </div>
+      </div>
+
+      <div class="lf-error" *ngIf="codeCountryErrorMessage">
+        <i class="bi bi-exclamation-circle me-1"></i>{{ codeCountryErrorMessage }}
+      </div>
+
+      <div class="lf-actions">
+        <button type="button" class="btn login-btn-secondary" (click)="loginStep = 'login'">
+          Cancelar
+        </button>
+        <button type="button" class="btn login-btn-primary-full" [disabled]="!isFormValid" (click)="register()">
+          <i class="bi bi-check-circle me-2"></i>Registrar
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PASO JOIN: opciones para unirse
+  ══════════════════════════════════════ -->
+  <div *ngIf="loginStep === 'join'" class="login-step">
+
+    <button class="login-back" (click)="loginStep = 'home'">
+      <i class="bi bi-arrow-left"></i> Volver
+    </button>
+
+    <h3 class="login-step__title">¿Cómo querés unirte?</h3>
+    <p class="login-step__sub">Elegí la opción que mejor se adapte a vos</p>
+
+    <div class="login-cards">
+
+      <div class="login-card login-card--online" (click)="loginStep = 'checkout'">
+        <div class="login-card__glow"></div>
+        <div class="login-card__icon"><i class="bi bi-credit-card-2-front-fill"></i></div>
+        <h3 class="login-card__title">Pagar en línea</h3>
+        <p class="login-card__desc">Comprá tu membresía y recibí tu código automáticamente</p>
+        <div class="login-card__badges">
+          <span class="badge-mp"><i class="bi bi-bag-check-fill me-1"></i>Mercado Pago</span>
+          <span class="badge-pp"><i class="bi bi-paypal me-1"></i>PayPal</span>
+        </div>
+        <span class="login-card__cta">Comprar ahora&nbsp;<i class="bi bi-arrow-right-circle-fill"></i></span>
+      </div>
+
+      <div class="login-card login-card--whatsapp" (click)="openWebsite()">
+        <div class="login-card__glow"></div>
+        <div class="login-card__icon"><i class="bi bi-whatsapp"></i></div>
+        <h3 class="login-card__title">Pagar por WhatsApp</h3>
+        <p class="login-card__desc">Pagá en efectivo y recibí tu código por WhatsApp</p>
+        <div class="login-card__badges">
+          <span class="badge-ws"><i class="bi bi-cash-coin me-1"></i>Efectivo</span>
+          <span class="badge-ws"><i class="bi bi-chat-dots-fill me-1"></i>Entrega manual</span>
+        </div>
+        <span class="login-card__cta">Contactar&nbsp;<i class="bi bi-arrow-right-circle-fill"></i></span>
+      </div>
+
+    </div>
+
+    <div class="login-already">
+      <i class="bi bi-key-fill me-1 text-muted"></i>
+      <span class="text-muted">¿Ya tenés tu código?</span>
+      <button class="btn btn-link p-0 ms-1 fw-semibold" (click)="loginStep = 'login'">
+        Ingresá aquí
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PASO CHECKOUT: formulario de membresía
+  ══════════════════════════════════════ -->
+  <div *ngIf="loginStep === 'checkout'" class="login-step login-step--form">
+
+    <button class="login-back" (click)="loginStep = 'join'">
+      <i class="bi bi-arrow-left"></i> Volver
+    </button>
+
+    <div class="login-form-card login-form-card--wide">
+      <div class="login-form-card__icon"><i class="bi bi-credit-card-2-front-fill"></i></div>
+      <h3 class="login-form-card__title">Comprar membresía</h3>
+      <p class="login-form-card__sub" *ngIf="isLoadingCatalog">Cargando planes disponibles...</p>
+      <p class="login-form-card__sub" *ngIf="!isLoadingCatalog">Completá tus datos para continuar con el pago</p>
+
+      <div class="lf-field">
+        <label class="lf-label">País</label>
+        <ng-select
+          [items]="membershipCountries"
+          bindLabel="nombre"
+          bindValue="codigo"
+          [(ngModel)]="purchaseCountryCode"
+          name="purchaseCountry"
+          placeholder="Seleccioná un país"
+          [clearable]="false"
+          (change)="onPurchaseCountryChange()"
+        >
+          <ng-template ng-option-tmp let-item="item">
+            <img *ngIf="item.flag" [src]="item.flag" width="20" class="me-2" />
+            {{ item.nombre }}
+          </ng-template>
+        </ng-select>
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">Plan</label>
+        <select class="form-select login-input-field" [(ngModel)]="purchasePlanMonths" name="purchasePlan">
+          <option [ngValue]="null" disabled>Seleccioná un plan</option>
+          <option *ngFor="let plan of selectedMembershipCountry?.plans" [ngValue]="plan.months">
+            {{ plan.months }} meses — {{ plan.amount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}
+          </option>
+        </select>
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">Nombre completo</label>
+        <input class="form-control login-input-field" [(ngModel)]="purchaseName" name="purchaseName" placeholder="Tu nombre completo" />
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">Email</label>
+        <input type="email" class="form-control login-input-field" [(ngModel)]="purchaseEmail" name="purchaseEmail" placeholder="tu@email.com" />
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">
+          Teléfono
+          <span class="lf-label-hint">(opcional — para recibir el código por WhatsApp)</span>
+        </label>
+        <input
+          type="tel"
+          class="form-control login-input-field"
+          [class.is-invalid]="purchasePhone.trim().length > 0 && !!purchasePhoneErrorMessage"
+          [(ngModel)]="purchasePhone"
+          [placeholder]="purchasePhonePlaceholder"
+          name="purchasePhone"
+          (input)="onPurchasePhoneInput()"
+        />
+        <div class="lf-error" *ngIf="purchasePhone.trim().length > 0 && purchasePhoneErrorMessage">
+          <i class="bi bi-exclamation-circle me-1"></i>{{ purchasePhoneErrorMessage }}
+        </div>
+      </div>
+
+      <div class="lf-field" *ngIf="purchaseCountryCode === 'AR'">
+        <label class="lf-label">
+          {{ selectedMembershipCountry?.documentLabel || 'Documento' }}
+          <span class="lf-label-required">*</span>
+          <span class="lf-label-hint">(requerido para Mercado Pago)</span>
+        </label>
+        <input class="form-control login-input-field" [(ngModel)]="purchaseDocument" name="purchaseDocument" placeholder="DNI / CUIT" />
+      </div>
+      <div class="lf-field" *ngIf="purchaseCountryCode && purchaseCountryCode !== 'AR'">
+        <label class="lf-label">
+          {{ selectedMembershipCountry?.documentLabel || 'Documento' }}
+          <span class="lf-label-hint">(opcional)</span>
+        </label>
+        <input class="form-control login-input-field" [(ngModel)]="purchaseDocument" name="purchaseDocument" />
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">Provincia</label>
+        <select class="form-select login-input-field" [(ngModel)]="purchaseProvince" name="purchaseProvince">
+          <option value="" disabled selected>Seleccioná una provincia</option>
+          <option *ngFor="let p of purchaseProvincias" [value]="p.nombre">{{ p.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Total destacado -->
+      <div class="lf-total" *ngIf="selectedPlanAmount !== null">
+        <i class="bi bi-tag-fill me-2"></i>
+        Total: <strong>{{ selectedPlanAmount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}</strong>
+      </div>
+
+      <!-- Botones de pago -->
+      <div class="lf-pay-actions">
+        <button
+          *ngIf="purchaseCountryCode === 'AR'"
+          type="button"
+          class="lf-pay-btn lf-pay-btn--mp"
+          [disabled]="!canStartCheckout || isStartingCheckout"
+          (click)="startMembershipCheckout()"
+        >
+          <i class="bi bi-bag-check me-2"></i>
+          {{ isStartingCheckout ? 'Redirigiendo...' : 'Pagar con Mercado Pago' }}
+        </button>
+
+        <button
+          type="button"
+          class="lf-pay-btn lf-pay-btn--pp"
+          [disabled]="!canStartCheckout || isStartingPayPal"
+          (click)="startPayPalCheckout()"
+        >
+          <i class="bi bi-paypal me-2"></i>
+          {{ isStartingPayPal ? 'Redirigiendo...' : 'Pagar con PayPal' }}
+        </button>
+
+        <p *ngIf="purchaseCountryCode && purchaseCountryCode !== 'AR'" class="lf-note">
+          <i class="bi bi-info-circle me-1"></i>Mercado Pago disponible solo para Argentina.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ── Admin: seleccionar país ─────────────────────── -->
+  <div class="login-step login-step--form" *ngIf="loginStep === 'adminCountry'">
+    <button class="login-back" (click)="loginStep = 'home'">← Volver</button>
+    <div class="login-step__title">Panel Administrador</div>
+    <div class="login-step__sub">Seleccioná tu país para continuar</div>
+    <div class="login-cards" style="max-width:480px;width:100%">
+      <div class="login-card admin-country-card" *ngFor="let c of adminCountries"
+           (click)="selectAdminCountry(c.pais)">
+        <span class="login-card__icon">{{ c.flag }}</span>
+        <p class="login-card__title">{{ c.nombre }}</p>
+        <span class="login-card__cta">Ingresar →</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Admin: formulario de login ─────────────────── -->
+  <div class="login-step login-step--form" *ngIf="loginStep === 'adminLogin'">
+    <button class="login-back" (click)="loginStep = 'adminCountry'">← Volver</button>
+    <div class="login-form-card" style="max-width:360px">
+      <div class="login-form-card__icon" style="font-size:2.5rem">
+        <ng-container *ngFor="let c of adminCountries">
+          <span *ngIf="c.pais === selectedAdminPais">{{ c.flag }}</span>
+        </ng-container>
+      </div>
+      <p class="login-form-card__title">Admin {{ selectedAdminPais | titlecase }}</p>
+      <p class="login-form-card__sub">Ingresá tus credenciales de administrador</p>
+      <div class="lf-field">
+        <label class="lf-label">Usuario</label>
+        <input class="form-control login-input-field" type="text"
+               [(ngModel)]="adminUsername" placeholder="admin_xx">
+      </div>
+      <div class="lf-field">
+        <label class="lf-label">Contraseña</label>
+        <div class="pw-wrap">
+          <input class="form-control login-input-field"
+                 [type]="showAdminPassword ? 'text' : 'password'"
+                 [(ngModel)]="adminPassword" placeholder="Contraseña">
+          <button type="button" class="pw-toggle" (click)="showAdminPassword = !showAdminPassword" tabindex="-1">
+            <svg *ngIf="!showAdminPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+              <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+            </svg>
+            <svg *ngIf="showAdminPassword" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7 7 0 0 0 2.79-.588M5.21 3.088A7 7 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474z"/>
+              <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <p class="lf-error" *ngIf="adminLoginError">⚠ {{ adminLoginError }}</p>
+      <div class="lf-actions" style="margin-top:1.2rem">
+        <button class="btn login-btn-secondary" (click)="loginStep = 'adminCountry'">Cancelar</button>
+        <button class="btn login-btn-primary-full" (click)="adminLogin()">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!--
+  ═══════════════════════════════════════════════
+  MODALES ANTERIORES (comentados — no eliminar)
+  ═══════════════════════════════════════════════
+
+  <div class="modal fade" id="exampleModal" ...>
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content login-modal">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5">Registrar código y email</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          [formulario de registro con campos: código, email, teléfono, país, provincia]
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button class="btn btn-primary" [disabled]="!isFormValid" (click)="register()">Registrar</button>
         </div>
       </div>
     </div>
   </div>
-</div>
+
+  <div class="modal fade" id="membershipModal" ...>
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content login-modal">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5">Comprar membresía</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          [formulario: país, plan, nombre, email, teléfono, documento, provincia, total]
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-success" (click)="startMembershipCheckout()">Pagar con Mercado Pago</button>
+          <button class="btn btn-warning" (click)="startPayPalCheckout()">Pagar con PayPal</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  DISEÑO ANTERIOR (comentado — no eliminar)
+  <div class="dashboard-container">
+    [diseño original con botones apilados]
+  </div>
+-->

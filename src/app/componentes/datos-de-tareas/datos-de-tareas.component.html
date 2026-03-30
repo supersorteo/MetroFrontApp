@@ -10,31 +10,46 @@
   }"
 >
 
- <button
+  <button
     class="btn btn-secondary btn-floating"
     style="position: fixed; top: 20px; right: 20px; z-index: 1000;"
     (click)="volverAlDashboard()"
-    title="Volver al Dashboard"
+    title="Cerrar"
   >
-    <i class="bi bi-house-door-fill"></i> inicio
+    <i class="bi bi-x-lg"></i>
   </button>
 
   <div *ngIf="empresaSeleccionada && clienteSeleccionado" class="empresa-asociada presupuesto-info mb-4">
+    <!--h3-- class="mb-3 presup">Nombre del presupuesto: {{ presupuestoNombre }}</!--h3-->
+     <h3 class="mb-3 presup">{{ presupuestoNombre }}</h3>
     <div class="empresa-card">
-      <div class="empresa-logo">
-        <img *ngIf="empresaSeleccionada.logoUrl" [src]="empresaSeleccionada.logoUrl" alt="Logo" />
-      </div>
-      <div class="empresa-info">
-        <div class="empresa-nombre">{{ empresaSeleccionada.name }}</div>
-                <div class="empresa-descripcion">{{ empresaSeleccionada.description }}</div>
 
-        <div class="empresa-telefono"><strong>Tel:</strong> {{ empresaSeleccionada.phone }}</div>
-        <div class="empresa-email"><strong>Email:</strong> {{ empresaSeleccionada.email }}</div>
-        <div class="empresa-cuil" *ngIf="empresaSeleccionada.cuilCuit"><strong>CUIL/CUIT:</strong> {{ empresaSeleccionada.cuilCuit }}</div>
-        <div class="empresa-website" *ngIf="empresaSeleccionada.website"><strong>SITIO WEB:</strong> {{ empresaSeleccionada.website }}</div>
-        <div class="empresa-social" *ngIf="empresaSeleccionada.tiktok"><strong>TIKTOK:</strong> {{ empresaSeleccionada.tiktok }}</div>
-        <div class="empresa-social" *ngIf="empresaSeleccionada.instagram"><strong>INSTAGRAM:</strong> {{ empresaSeleccionada.instagram }}</div>
-        <div class="empresa-social" *ngIf="empresaSeleccionada.facebook"><strong>FACEBOOK:</strong> {{ empresaSeleccionada.facebook }}</div>
+      <div class="empresa-grid-top">
+        <div class="empresa-logo">
+          <img *ngIf="empresaSeleccionada.logoUrl" [src]="empresaSeleccionada.logoUrl" alt="Logo" />
+        </div>
+        <div class="empresa-info">
+          <div class="empresa-nombre">{{ empresaSeleccionada.name }}</div>
+          <div class="empresa-descripcion">{{ empresaSeleccionada.description }}</div>
+          <div class="empresa-telefono"><strong>Tel:</strong> {{ empresaSeleccionada.phone }}</div>
+          <div class="empresa-email"><strong>Email:</strong> {{ empresaSeleccionada.email }}</div>
+          <div class="empresa-cuil" *ngIf="empresaSeleccionada.cuilCuit"><strong>CUIL/CUIT:</strong> {{ empresaSeleccionada.cuilCuit }}</div>
+          <div class="empresa-website" *ngIf="empresaSeleccionada.website"><strong>SITIO WEB:</strong> {{ empresaSeleccionada.website }}</div>
+        </div>
+      </div>
+      <div class="empresa-social-row" *ngIf="empresaSeleccionada.tiktok || empresaSeleccionada.instagram || empresaSeleccionada.facebook">
+        <div class="empresa-social-item" *ngIf="empresaSeleccionada.tiktok">
+          <span class="empresa-social-icon" aria-hidden="true"><i class="bi bi-tiktok"></i></span>
+          <span>{{ empresaSeleccionada.tiktok }}</span>
+        </div>
+        <div class="empresa-social-item" *ngIf="empresaSeleccionada.instagram">
+          <span class="empresa-social-icon" aria-hidden="true"><i class="bi bi-instagram"></i></span>
+          <span>{{ empresaSeleccionada.instagram }}</span>
+        </div>
+        <div class="empresa-social-item" *ngIf="empresaSeleccionada.facebook">
+          <span class="empresa-social-icon" aria-hidden="true"><i class="bi bi-facebook"></i></span>
+          <span>{{ empresaSeleccionada.facebook }}</span>
+        </div>
       </div>
     </div>
     <hr class="empresa-user-divider" />

@@ -46,6 +46,19 @@ export class EditarEmpresaComponent implements OnInit {
     }, 0);
     this.empresaId = this.route.snapshot.paramMap.get('id') || '';
     if (this.empresaId) {
+
+  const isTrial = localStorage.getItem('trialMode') === 'true';
+  if (isTrial) {
+    const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
+    const demoEmpresas = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
+    const empresa = demoEmpresas.find((e: any) => String(e.id) === this.empresaId);
+    if (empresa) {
+      this.empresa = { ...empresa };
+      this.imagePreview = this.empresa.logoUrl || null;
+    }
+    return;
+  }
+
       this.loading = true;
       this.empresaService.getEmpresaById(Number(this.empresaId)).subscribe({
         next: (data: any) => {
@@ -117,6 +130,24 @@ export class EditarEmpresaComponent implements OnInit {
     }).then((result) => {
       if (result.isConfirmed) {
         this.loading = true;
+
+
+        const isTrial = localStorage.getItem('trialMode') === 'true';
+if (isTrial) {
+  const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
+  const demoEmpresas = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
+  const idx = demoEmpresas.findIndex((e: any) => String(e.id) === this.empresaId);
+  if (idx !== -1) {
+    demoEmpresas[idx] = { ...demoEmpresas[idx], ...this.empresa };
+    localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresas));
+  }
+  Swal.fire('¡Guardado!', 'La empresa demo se actualizó correctamente.', 'success').then(() => {
+    this.router.navigate(['/dashboard']);
+  });
+  return;
+}
+
+
         this.empresaService.updateEmpresa(Number(this.empresaId), this.empresa).subscribe({
           next: (data: any) => {
             this.loading = false;

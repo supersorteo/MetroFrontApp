@@ -1,65 +1,142 @@
-<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh; position: relative;">
-	<div class="card shadow-lg position-relative" style="max-width: 430px; width: 100%; border-radius: 16px; margin: 0 auto;">
-		<div class="card-header bg-primary text-white text-center" style="border-radius: 16px 16px 0 0;">
-			<h5 class="mb-0">Editar datos de tu Empresa</h5>
-		</div>
-		<div class="card-body" style="padding: 18px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); border-radius: 0 0 16px 16px;">
-			<p style="text-align: center; font-size: 12px;">Podés editar estos datos las veces que quieras.</p>
-			<form (ngSubmit)="actualizarEmpresa()" class="empresa-form">
-				<div class="form-group mb-3">
-					<label for="name">Tu Empresa</label>
-					<input type="text" class="form-control" id="name" name="name" [(ngModel)]="empresa.name" placeholder="¿Cómo se llama?" required />
-				</div>
-				<div class="form-group mb-3">
-					<label for="phone">Teléfono:</label>
-					<input type="text" class="form-control" id="phone" name="phone" [(ngModel)]="empresa.phone" placeholder="Teléfono de tu empresa" required />
-				</div>
-				<div class="form-group mb-3">
-					<label for="email">Email:</label>
-					<input type="email" class="form-control" id="email" name="email" [(ngModel)]="empresa.email" placeholder="Email de tu empresa" required />
-				</div>
-				<div class="form-group mb-3">
-					<label for="description">Descripción de tu empresa:</label>
-					<textarea class="form-control" id="description" name="description" [(ngModel)]="empresa.description" rows="3" placeholder="Cuenta a tus clientes de qué se trata tu empresa"></textarea>
-				</div>
-        <div class="form-group mb-3">
-          <label for="website">Sitio web (opcional)</label>
-          <input type="url" class="form-control" id="website" name="website" [(ngModel)]="empresa.website" placeholder="https://..." />
-        </div>
-        <div class="form-group mb-3">
-          <label for="cuil">CUIL/CUIT (opcional)</label>
-          <input type="text" class="form-control" id="cuil" name="cuil" [(ngModel)]="empresa.cuilCuit" placeholder="00-00000000-0" />
-        </div>
-        <div class="form-group mb-3">
-          <label for="tiktok">TikTok (opcional)</label>
-          <input type="text" class="form-control" id="tiktok" name="tiktok" [(ngModel)]="empresa.tiktok" placeholder="@tuusuario o enlace" />
-        </div>
-        <div class="form-group mb-3">
-          <label for="instagram">Instagram (opcional)</label>
-          <input type="text" class="form-control" id="instagram" name="instagram" [(ngModel)]="empresa.instagram" placeholder="@tuusuario o enlace" />
-        </div>
-        <div class="form-group mb-3">
-          <label for="facebook">Facebook (opcional)</label>
-          <input type="text" class="form-control" id="facebook" name="facebook" [(ngModel)]="empresa.facebook" placeholder="URL de tu página" />
-        </div>
-				<div class="form-group mb-3 text-center">
-					<label for="logo">Logo de la empresa</label>
-					<div *ngIf="imagePreview" class="mb-2">
-						<img [src]="imagePreview" alt="Logo Empresa" style="max-width:120px;max-height:120px;display:block;margin:0 auto 8px auto;border-radius:8px;box-shadow:0 2px 8px #0002;">
-					</div>
-					<input type="file" id="logo" (change)="onFileChange($event)" accept="image/*" class="form-control mb-2" />
-					<button type="button" class="btn btn-primary w-100" (click)="subirImagen()" [disabled]="!selectedFile || loading">Subir imagen</button>
-				</div>
-						<div class="d-flex justify-content-between mt-4">
-							<button type="button" class="btn btn-secondary" (click)="router.navigate(['/dashboard'])">Cancelar</button>
-							<button type="submit" class="btn btn-primary" [disabled]="loading">Guardar cambios</button>
-						</div>
+<div class="edit-page">
 
-			</form>
-					<div *ngIf="loading" class="loading-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center" style="background:rgba(255,255,255,0.7); border-radius:16px; z-index:10;">
-						<span class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></span>
-						<span class="mt-2">Procesando...</span>
-			</div>
-		</div>
-	</div>
+  <!-- Formulario -->
+  <div class="edit-card">
+    <div class="edit-header">
+      <div class="edit-header__icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8.277.084a.5.5 0 0 0-.554 0l-7.5 5A.5.5 0 0 0 .5 6H2v2.528A2.5 2.5 0 0 0 .5 11v1a.5.5 0 0 0 .5.5h1v.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5v-.5h1a.5.5 0 0 0 .5-.5v-1a2.5 2.5 0 0 0-1.5-2.272V6h1.5a.5.5 0 0 0 .277-.916zM8 1.101l7 4.66V6H1v-.239z"/>
+        </svg>
+      </div>
+      <h2 class="edit-header__title">Editar Empresa</h2>
+      <p class="edit-header__sub">Podés editar estos datos las veces que quieras</p>
+    </div>
+
+    <form (ngSubmit)="actualizarEmpresa()" class="edit-form empresa-form">
+
+      <div class="ef-section-label">Información principal</div>
+
+      <div class="ef-field">
+        <label class="ef-label">Nombre de la empresa</label>
+        <input type="text" class="ef-input" id="name" name="name"
+               placeholder="¿Cómo se llama?"
+               [(ngModel)]="empresa.name" required />
+      </div>
+
+      <div class="ef-row">
+        <div class="ef-field">
+          <label class="ef-label">Teléfono</label>
+          <input type="text" class="ef-input" id="phone" name="phone"
+                 placeholder="+54 9 ..."
+                 [(ngModel)]="empresa.phone" required />
+        </div>
+        <div class="ef-field">
+          <label class="ef-label">Email</label>
+          <input type="email" class="ef-input" id="email" name="email"
+                 placeholder="correo@empresa.com"
+                 [(ngModel)]="empresa.email" required />
+        </div>
+      </div>
+
+      <div class="ef-field">
+        <label class="ef-label">Descripción</label>
+        <textarea class="ef-input ef-textarea" id="description" name="description"
+                  rows="3" placeholder="Contá de qué se trata tu empresa"
+                  [(ngModel)]="empresa.description"></textarea>
+      </div>
+
+      <div class="ef-section-label">Datos opcionales</div>
+
+      <div class="ef-row">
+        <div class="ef-field">
+          <label class="ef-label">Sitio web <span class="ef-optional">(opcional)</span></label>
+          <input type="url" class="ef-input" id="website" name="website"
+                 placeholder="https://..."
+                 [(ngModel)]="empresa.website" />
+        </div>
+        <div class="ef-field">
+          <label class="ef-label">CUIL / CUIT <span class="ef-optional">(opcional)</span></label>
+          <input type="text" class="ef-input" id="cuil" name="cuil"
+                 placeholder="00-00000000-0"
+                 [(ngModel)]="empresa.cuilCuit" />
+        </div>
+      </div>
+
+      <div class="ef-section-label">Redes sociales</div>
+
+      <div class="ef-field ef-field--icon">
+        <span class="ef-field-icon">&#128248;</span>
+        <div class="ef-field-body">
+          <label class="ef-label">TikTok <span class="ef-optional">(opcional)</span></label>
+          <input type="text" class="ef-input" id="tiktok" name="tiktok"
+                 placeholder="@tuusuario o enlace"
+                 [(ngModel)]="empresa.tiktok" />
+        </div>
+      </div>
+
+      <div class="ef-field ef-field--icon">
+        <span class="ef-field-icon">&#128247;</span>
+        <div class="ef-field-body">
+          <label class="ef-label">Instagram <span class="ef-optional">(opcional)</span></label>
+          <input type="text" class="ef-input" id="instagram" name="instagram"
+                 placeholder="@tuusuario o enlace"
+                 [(ngModel)]="empresa.instagram" />
+        </div>
+      </div>
+
+      <div class="ef-field ef-field--icon">
+        <span class="ef-field-icon">&#127760;</span>
+        <div class="ef-field-body">
+          <label class="ef-label">Facebook <span class="ef-optional">(opcional)</span></label>
+          <input type="url" class="ef-input" id="facebook" name="facebook"
+                 placeholder="URL de tu página"
+                 [(ngModel)]="empresa.facebook" />
+        </div>
+      </div>
+
+      <div class="ef-section-label">Logo de la empresa</div>
+
+      <div class="ef-logo-box">
+        <img *ngIf="imagePreview" [src]="imagePreview" alt="Logo" class="ef-logo-preview">
+        <div *ngIf="!imagePreview" class="ef-logo-empty">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z"/>
+          </svg>
+          <span>Sin logo</span>
+        </div>
+        <div class="ef-logo-controls">
+          <input type="file" id="logo" (change)="onFileChange($event)" accept="image/*" class="ef-file-input" #fileInput>
+          <button type="button" class="ef-btn ef-btn--ghost ef-btn--sm" (click)="fileInput.click()">
+            Elegir imagen
+          </button>
+          <button type="button" class="ef-btn ef-btn--primary ef-btn--sm"
+                  (click)="subirImagen()" [disabled]="!selectedFile || loading">
+            Subir
+          </button>
+        </div>
+      </div>
+
+      <div class="ef-actions">
+        <button type="submit" class="ef-btn ef-btn--primary" [disabled]="loading">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+          </svg>
+          Guardar cambios
+        </button>
+        <button type="button" class="ef-btn ef-btn--ghost" (click)="router.navigate(['/dashboard'])">
+          Cancelar
+        </button>
+      </div>
+
+    </form>
+
+    <!-- Loading overlay -->
+    <div *ngIf="loading" class="edit-overlay">
+      <span class="spinner-border edit-spinner"></span>
+      <span class="edit-overlay__text">Procesando...</span>
+    </div>
+
+  </div>
+
 </div>

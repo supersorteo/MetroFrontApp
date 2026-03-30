@@ -7,6 +7,8 @@ import { UserTarea } from '../../servicios/user-tarea.service';
 import { BudgetStorageService } from '../../servicios/budget-storage.service';
 import { ToastrService } from 'ngx-toastr';
 import { BudgetService, SavedPresupuesto } from '../../servicios/budget.service';
+import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 
 declare const html2pdf: any;
 declare const bootstrap: any
@@ -24,12 +26,16 @@ export class PresupuestosGuardadosComponent implements OnInit{
   @Input() empresaActual: Empresa | null = null;
   @Output() cargarPresupuesto = new EventEmitter<SavedPresupuesto>();
   @Input() tareasDelCliente: UserTarea[] = [];
+  @Output() presupuestoEliminado = new EventEmitter<SavedPresupuesto>();
+  @Input() presupuestoCargado: SavedPresupuesto | null = null;
+  @Output() presupuestoActualizado = new EventEmitter<SavedPresupuesto>();
+
 
   nombreTemporal = '';
   filtro = '';
   presupuestos$ = this.budgetStorageService.budgets$;
   //maxItems = this.budgetStorageService.maxItems;
-  maxItems = 10;
+  maxItems = 30;
   presupuestos: SavedPresupuesto[] = [];
 
  presupuestoEditando: SavedPresupuesto | null = null;
@@ -41,27 +47,17 @@ export class PresupuestosGuardadosComponent implements OnInit{
   constructor(
     private budgetStorageService: BudgetStorageService,
     private toastr: ToastrService,
-    private budgetService: BudgetService
+    private budgetService: BudgetService,
+     private router: Router
   ) {}
 
 
   ngOnInit(): void {
 
-    /*console.log('%cPRESUPUESTOS GUARDADOS - INICIADO', 'color: #9C27B0; font-weight: bold');
-  if (this.clienteActual?.id) {
-    console.log('Cliente actual:', this.clienteActual.name, '(ID:', this.clienteActual.id, ')');
-    this.cargarPresupuestos();
-  } else {
-    console.warn('No hay cliente seleccionado aún');
-  }*/
 
-
-
-console.log('%cPRESUPUESTOS GUARDADOS - INICIADO', 'color: #9C27B0; font-weight: bold');
 
   this.budgetService.presupuestos$.subscribe(presupuestos => {
     this.presupuestos = presupuestos;
-    console.log('Presupuestos actualizados en componente:', this.presupuestos.length);
   });
 
   if (this.clienteActual?.id) {
@@ -72,20 +68,20 @@ console.log('%cPRESUPUESTOS GUARDADOS - INICIADO', 'color: #9C27B0; font-weight:
 
 ngOnChanges(): void {
   if (this.clienteActual?.id) {
-    console.log('%cCAMBIO DE CLIENTE DETECTADO → Recargando presupuestos', 'color: #FF9800');
     this.cargarPresupuestos();
   }
 
-
+  if (this.presupuestoCargado) {
+    this.nombreTemporal = this.presupuestoCargado.name || '';
+  }
 }
 
 
 cargarPresupuestos() {
   if (!this.clienteActual?.id) return;
 
-  console.log('%cCARGANDO PRESUPUESTOS DEL CLIENTE ID:', 'color: #2196F3; font-size: 14px', this.clienteActual.id);
   this.budgetService.cargarPresupuestosPorCliente(this.clienteActual.id).subscribe({
-    next: () => console.log('%cPresupuestos cargados y actualizados en el BehaviorSubject', 'color: #4CAF50'),
+    next: () => {},
     error: () => console.error('%cFalló la carga de presupuestos', 'color: #F44336')
   });
 }
@@ -104,10 +100,6 @@ cargarPresupuestos() {
   }
 
   const nombre = this.nombreTemporal.trim() || `Presupuesto ${new Date().toLocaleDateString()}`;
-  console.log('%cGUARDAR PRESUPUESTO', 'color: #FF9800; font-weight: bold');
-  console.log('Nombre:', nombre);
-  console.log('Cliente:', this.clienteActual.name, '(ID:', this.clienteActual.id, ')');
-  console.log('Tareas a guardar:', this.tareasActuales.map(t => ({ id: t.id, tarea: t.tarea })));
 
   const payload = {
     name: nombre,
@@ -117,7 +109,6 @@ cargarPresupuestos() {
 
   this.budgetService.guardarPresupuesto(payload).subscribe({
     next: (nuevo) => {
-      console.log('%cPresupuesto guardado y añadido a la lista local', 'color: #4CAF50; font-weight: bold', nuevo);
       this.toastr.success('Presupuesto guardado');
       this.nombreTemporal = '';
     },
@@ -128,7 +119,7 @@ cargarPresupuestos() {
   });
 }
 
-guardarPresupuestoActual() {
+guardarPresupuestoActual1() {
   if (!this.clienteActual?.id) {
     this.toastr.error('Selecciona un cliente');
     return;
@@ -150,10 +141,6 @@ guardarPresupuestoActual() {
   }
 
    //const nombre = this.nombreTemporal.trim() || `Presupuesto ${new Date().toLocaleDateString()}`;
-  console.log('%cGUARDAR PRESUPUESTO', 'color: #FF9800; font-weight: bold');
-  console.log('Nombre:', nombre);
-  console.log('Cliente:', this.clienteActual.name, '(ID:', this.clienteActual.id, ')');
-  console.log('Tareas a guardar:', this.tareasActuales.map(t => ({ id: t.id, tarea: t.tarea })));
 
   const payload = {
     name: nombre || `Presupuesto ${new Date().toLocaleDateString()}`,
@@ -172,6 +159,83 @@ guardarPresupuestoActual() {
   });
 }
 
+guardarPresupuestoActual() {
+
+const isTrial = localStorage.getItem('trialMode') === 'true';
+if (isTrial) {
+  Swal.fire({
+    icon: 'info',
+    title: 'Modo demo',
+    text: 'Guardar presupuestos no está habilitado en el modo de prueba.',
+    confirmButtonText: 'Entendido'
+  });
+  return;
+}
+
+
+  if (!this.clienteActual?.id) {
+    this.toastr.error('Selecciona un cliente');
+    return;
+  }
+  if (this.tareasActuales.length === 0) {
+    this.toastr.error('Agrega tareas al presupuesto');
+    return;
+  }
+
+  const nombre = this.nombreTemporal.trim();
+  if (!nombre) {
+    this.toastr.error('El nombre del presupuesto es obligatorio');
+    return;
+  }
+
+  if (this.nombreYaExiste(nombre)) {
+    this.toastr.error('Ya existe un presupuesto con este nombre. Elige otro.');
+    return;
+  }
+
+  const payload = {
+    name: nombre,
+    cliente: { id: this.clienteActual.id },
+    tareas: this.tareasActuales.map(t => ({ id: t.id }))
+  };
+
+  // ✅ SI HAY PRESUPUESTO CARGADO → ACTUALIZAR
+  if (this.presupuestoCargado?.id) {
+    this.budgetService.updatePresupuesto(this.presupuestoCargado.id, payload).subscribe({
+      next: (actualizado) => {
+        this.toastr.success('Presupuesto actualizado correctamente');
+        this.presupuestoCargado = actualizado; // opcional, refleja el nuevo nombre
+        this.presupuestoActualizado.emit(actualizado);
+
+      // ✅ refrescar lista inmediatamente
+      if (this.clienteActual?.id) {
+        this.budgetService.cargarPresupuestosPorCliente(this.clienteActual.id).subscribe();
+      }
+
+      // ✅ avisar al padre para actualizar panel y tareas
+      this.presupuestoActualizado.emit(actualizado);
+
+      },
+      error: (err) => {
+        this.toastr.error(err.error?.error || 'Error al actualizar el presupuesto');
+      }
+    });
+    return;
+  }
+
+  // ✅ SI NO HAY → GUARDAR NUEVO
+  this.budgetService.guardarPresupuesto(payload).subscribe({
+    next: (nuevo) => {
+      this.toastr.success('Presupuesto guardado correctamente');
+      this.nombreTemporal = '';
+    },
+    error: (err) => {
+      this.toastr.error(err.error?.error || 'Error al guardar el presupuesto');
+    }
+  });
+}
+
+
   cargar(presupuesto: SavedPresupuesto) {
     this.cargarPresupuesto.emit(presupuesto);
   }
@@ -181,19 +245,42 @@ guardarPresupuestoActual() {
     this.toastr.info('Presupuesto eliminado', presupuesto.name);
   }*/
 
-  eliminar(presupuesto: SavedPresupuesto) {
+  eliminar0(presupuesto: SavedPresupuesto) {
   if (!presupuesto.id) return;
-
-  console.log('%cELIMINAR PRESUPUESTO ID:', 'color: #F44336; font-weight: bold', presupuesto.id, presupuesto.name);
 
   this.budgetService.eliminarPresupuesto(presupuesto.id).subscribe({
     next: () => {
-      console.log('%cPresupuesto eliminado correctamente', 'color: #4CAF50');
       this.toastr.info('Presupuesto eliminado');
+       this.presupuestoEliminado.emit(presupuesto); // 👈 aviso al padre
     },
     error: () => this.toastr.error('Error al eliminar')
   });
 }
+
+async eliminar(presupuesto: SavedPresupuesto) {
+  if (!presupuesto.id) return;
+
+  const result = await Swal.fire({
+    title: 'Eliminar presupuesto',
+    text: `¿Seguro que querés eliminar "${presupuesto.name}"? Esta acción no se puede deshacer.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Eliminar',
+    cancelButtonText: 'Cancelar',
+    reverseButtons: true
+  });
+
+  if (!result.isConfirmed) return;
+
+  this.budgetService.eliminarPresupuesto(presupuesto.id).subscribe({
+    next: () => {
+      this.toastr.info('Presupuesto eliminado');
+      this.presupuestoEliminado.emit(presupuesto);
+    },
+    error: () => this.toastr.error('Error al eliminar')
+  });
+}
+
 
 
 
@@ -212,13 +299,28 @@ get puedeGuardarr(): boolean {
   return this.tareasActuales.length > 0 && nombreValido && nombreUnico;
 }
 
-nombreYaExiste(nombre: string): boolean {
+nombreYaExiste0(nombre: string): boolean {
   if (!nombre.trim()) return false;
   const nombreLower = nombre.trim().toLowerCase();
   return this.presupuestosFiltrados.some(p =>
     p.name.toLowerCase() === nombreLower
   );
 }
+
+nombreYaExiste(nombre: string): boolean {
+  if (!nombre.trim()) return false;
+  const nombreLower = nombre.trim().toLowerCase();
+
+  // Si estamos editando y el nombre es el mismo, no es duplicado
+  if (this.presupuestoCargado && this.presupuestoCargado.name?.toLowerCase() === nombreLower) {
+    return false;
+  }
+
+  return this.presupuestosFiltrados.some(p =>
+    p.name.toLowerCase() === nombreLower
+  );
+}
+
 
 getMensajeBotonDeshabilitado(): string {
   if (this.tareasActuales.length === 0) {
@@ -314,6 +416,19 @@ get presupuestosFiltrados(): SavedPresupuesto[] {
     return wrapper;
   }
 
+  verPresupuesto(presupuesto: SavedPresupuesto) {
+  // guardar datos en localStorage para que DatosDeTareasComponent los lea
+  localStorage.setItem('selectedEmpresa', JSON.stringify(this.empresaActual));
+  localStorage.setItem('selectedCliente', JSON.stringify(presupuesto.cliente));
+  localStorage.setItem('selectedTareas', JSON.stringify(presupuesto.tareas));
+
+  // opcional: guardar nombre del presupuesto
+  localStorage.setItem('selectedPresupuestoName', presupuesto.name);
+
+  this.router.navigate(['/presupuesto']);
+}
+
+
   private calcularTotal(presupuesto: SavedPresupuesto): number {
     return presupuesto.tareas.reduce((acc, tarea) => acc + (tarea.totalCost || 0), 0);
   }
@@ -322,13 +437,6 @@ get presupuestosFiltrados(): SavedPresupuesto[] {
 
 
 editarPresupuesto(presupuesto: SavedPresupuesto) {
-  console.log('%cEDITAR PRESUPUESTO SELECCIONADO', 'color: #FFC107; font-weight: bold; font-size: 14px');
-  console.log('ID:', presupuesto.id);
-  console.log('Nombre:', presupuesto.name);
-  console.log('Cliente:', presupuesto.cliente);
-  console.log('Cantidad de tareas:', presupuesto.tareas?.length || 0);
-  console.log('Tareas completas:', presupuesto.tareas);
-
   // Copia profunda para editar sin afectar el original
   this.presupuestoEditando = {
     ...presupuesto,
@@ -343,7 +451,6 @@ editarPresupuesto(presupuesto: SavedPresupuesto) {
 quitarTareaEdicion(index: number) {
   if (this.presupuestoEditando) {
     this.presupuestoEditando.tareas.splice(index, 1);
-    console.log('Tarea quitada. Tareas restantes:', this.presupuestoEditando.tareas.length);
   }
 }
 
@@ -359,12 +466,8 @@ confirmarEdicion() {
     tareas: this.presupuestoEditando.tareas.map(t => ({ id: t.id }))
   };
 
-  console.log('%cENVIANDO ACTUALIZACIÓN AL BACKEND', 'color: #FF9800');
-  console.log('Payload:', payload);
-
   this.budgetService.updatePresupuesto(this.presupuestoEditando.id!, payload).subscribe({
     next: (actualizado) => {
-      console.log('%cPRESUPUESTO ACTUALIZADO', 'color: #4CAF50', actualizado);
       this.toastr.success('Presupuesto actualizado correctamente');
       bootstrap.Modal.getInstance(document.getElementById('editarPresupuestoModal')!)?.hide();
     },
@@ -404,21 +507,10 @@ agregarTareaAlPresupuesto() {
 
 onTareaSeleccionadaChange() {
   if (this.tareaAAgregarId === null) {
-    console.log('%cTarea deseleccionada', 'color: gray');
     return;
   }
 
   const tareaSeleccionada = this.tareasDelCliente.find(t => t.id === this.tareaAAgregarId);
-  if (tareaSeleccionada) {
-    console.log('%cTAREA SELECCIONADA PARA AGREGAR', 'color: #FFC107; font-weight: bold; font-size: 14px');
-    console.log('ID:', tareaSeleccionada.id);
-    console.log('Nombre:', tareaSeleccionada.tarea);
-    console.log('Costo:', tareaSeleccionada.costo);
-    console.log('Área:', tareaSeleccionada.area);
-    console.log('Total Cost:', tareaSeleccionada.totalCost);
-    console.log('Descripción:', tareaSeleccionada.descripcion);
-    console.log('Objeto completo:', tareaSeleccionada);
-  }
 }
 
 }

@@ -3,10 +3,19 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
-import { Router } from '@angular/router';
+import { AccessCodeService } from '../../servicios/access-code.service';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ProvinciaService } from '../../servicios/provincia.service';
+import { MembershipPaymentService } from '../../servicios/membership-payment.service';
+import { PayPalPaymentService } from '../../servicios/paypal-payment.service';
+import { countryDisplayName } from '../../core/country/country.util';
+import { accessCodeCountryMismatchMessage } from '../../core/country/access-code.util';
+import { phonePlaceholder, sanitizePhoneInput, validatePhoneByCountry } from '../../core/country/phone.util';
+import { buildMembershipCheckoutPayload, buildPayPalCheckoutPayload, mapMembershipCountryOption, MembershipCheckoutForm, MembershipCountryOption, validateMembershipCheckoutForm } from '../../core/membership/membership-checkout.util';
+import { extractApiErrorMessage } from '../../core/http/api-error.util';
 import Swal from 'sweetalert2';
+import { AdminService, AdminCountry } from '../../servicios/admin.service';
 declare var bootstrap: any;
 
 interface Provincia {
@@ -41,6 +50,7 @@ export class LoginComponent implements OnInit{
 
   password: string = '';
   isContentVisible: boolean = false;
+  loginStep: 'home' | 'login' | 'join' | 'register' | 'checkout' | 'adminCountry' | 'adminLogin' = 'home';
   websiteUrl: string = "https://wa.link/9lbeyq";
 
   errorMessage: string = '';
@@ -48,23 +58,65 @@ export class LoginComponent implements OnInit{
   modal:boolean = false;
   isFormValid: boolean = false;
   provincias: Provincia[] = [];
+  telefonoErrorMessage: string = '';
+  codeCountry: string | null = null;
+  codeCountryErrorMessage: string = '';
   countries = [
    { nombre: 'Argentina', codigo: 'AR', flag: 'https://flagcdn.com/ar.svg' },
    { nombre: 'Colombia', codigo: 'CO', flag: 'https://flagcdn.com/co.svg' },
-   { nombre: 'Peru', codigo: 'PE', flag: 'https://flagcdn.com/pe.svg' }
+   { nombre: 'Uruguay', codigo: 'UY', flag: 'https://flagcdn.com/uy.svg' }
   ];
+  membershipCountries: MembershipCountryOption[] = [];
+  purchaseCountryCode: string | null = null;
+  purchasePlanMonths: number | null = 3;
+  purchaseName: string = '';
+  purchaseEmail: string = '';
+  purchasePhone: string = '';
+  purchaseDocument: string = '';
+  purchaseProvince: string = '';
+  purchaseProvincias: Provincia[] = [];
+  purchasePhoneErrorMessage: string = '';
+  isLoadingCatalog: boolean = false;
+  isStartingCheckout: boolean = false;
+  isStartingPayPal: boolean = false;
+
+  // Admin login
+  adminCountries = [
+    { pais: 'argentina' as const, flag: 'AR', nombre: 'Argentina' },
+    { pais: 'uruguay'   as const, flag: 'UY', nombre: 'Uruguay'   },
+    { pais: 'colombia'  as const, flag: 'CO', nombre: 'Colombia'  },
+  ];
+  selectedAdminPais: AdminCountry | null = null;
+  adminUsername = '';
+  adminPassword = '';
+  adminLoginError = '';
+  showAdminPassword = false;
 
   @ViewChild('exampleModal') exampleModal!: ElementRef;
 
 constructor(private authService: AuthService,
+  private accessCodeService: AccessCodeService,
   private route:Router,
+  private activatedRoute: ActivatedRoute,
   private renderer: Renderer2,
   private toastr: ToastrService,
-  private provinciaService: ProvinciaService){}
+  private provinciaService: ProvinciaService,
+  private membershipPaymentService: MembershipPaymentService,
+  private payPalPaymentService: PayPalPaymentService,
+  private adminService: AdminService){}
 
   ngOnInit(): void {
-    console.log('countries:', this.countries);
-    console.log('pais inicial:', this.pais);
+    this.loadMembershipCatalog();
+    this.activatedRoute.queryParamMap.subscribe(params => {
+      const code = params.get('code');
+      const paid = params.get('paid');
+      if (code) {
+        this.code = code;
+      }
+      if (paid === '1') {
+        this.toastr.success('Tu codigo ya esta activado. Ingresa con el codigo recibido.', 'Pago confirmado');
+      }
+    });
   }
 
 
@@ -74,27 +126,26 @@ constructor(private authService: AuthService,
 
 login(): void {
   if (this.code.trim().length === 0) {
-    Swal.fire('Error', 'Debe ingresar su código', 'error');
+    Swal.fire('Error', 'Debe ingresar su codigo', 'error');
     return;
   }
   this.authService.login(this.code).subscribe(
     response => {
-      if (response.email && response.email !== 'Código no encontrado' && response.email !== 'Código existe pero no asignado a un usuario') {
+      if (response.email && response.email !== 'Codigo no encontrado' && response.email !== 'Codigo existe pero no asignado a un usuario') {
         this.isAuthenticated = true;
         this.email = response.email;
         //localStorage.clear();
-        console.log('userData guardado en login:', response);
         this.route.navigate(['dashboard']);
-        Swal.fire('Éxito', 'Login exitoso', 'success');
+        Swal.fire('Exito', 'Login exitoso', 'success');
         localStorage.setItem('userCode', this.code);
         localStorage.setItem('userEmail', this.email);
         localStorage.setItem('userData', JSON.stringify(response)); // Guardar objeto completo
       } else {
-        Swal.fire('Error', response.email || 'Error al iniciar sesión', 'error');
+        Swal.fire('Error', response.email || 'Error al iniciar sesion', 'error');
       }
     },
     error => {
-      const msg = error.error?.email || error.message || 'Error al iniciar sesión';
+      const msg = error.error?.email || error.message || 'Error al iniciar sesion';
       Swal.fire('Error', msg, 'error');
     }
   );
@@ -102,61 +153,63 @@ login(): void {
 
 
 
-    /*register(): void {
-    this.authService.assignEmail({
-      code: this.code,
-      email: this.email,
-      //username: this.username,
-      telefono: this.telefono,
-      pais: this.pais ? this.pais.nombre : '',
-      provincia: this.provincia
-    }).subscribe(
-      response => {
-        if (response.message === 'Datos asignados con éxito') {
-          Swal.fire('Éxito', response.message, 'success');
-          console.log(response.message)
-           this.clearForm();
-        } else {
-          Swal.fire('Error', response.message, 'error');
-        }
-      },
-      error => {
-        Swal.fire('Error', error.message, 'error');
-      }
-    );
-  }*/
+  register(): void {
+    this.validateForm();
+    if (!this.isFormValid) {
+      Swal.fire('Error', this.codeCountryErrorMessage || this.telefonoErrorMessage || 'Completa correctamente los datos del registro.', 'error');
+      return;
+    }
 
-   register(): void {
-    this.authService.assignEmail({
-      code: this.code,
-      email: this.email,
-      telefono: this.telefono,
-      pais: this.pais || '',
-      provincia: this.provincia
-    }).subscribe(
-      response => {
-        if (response.message === 'Datos asignados con éxito') {
-          Swal.fire('Éxito', response.message, 'success');
-          console.log(response.message);
-          this.clearForm();
-        } else {
-          Swal.fire('Error', response.message, 'error');
+    const normalizedCode = this.accessCodeService.normalizeCode(this.code);
+
+    this.accessCodeService.getCodeCountry(normalizedCode).subscribe({
+      next: (detectedCountry) => {
+        this.code = normalizedCode;
+        this.codeCountry = detectedCountry;
+        this.codeCountryErrorMessage = this.getCodeCountryMismatchMessage();
+
+        if (this.codeCountryErrorMessage) {
+          this.validateForm();
+          Swal.fire('Error', this.codeCountryErrorMessage, 'error');
+          return;
         }
+
+        this.authService.assignEmail({
+          code: this.code,
+          email: this.email,
+          telefono: this.telefono,
+          pais: this.pais || '',
+          provincia: this.provincia
+        }).subscribe(
+          response => {
+            if (response.message === 'Datos asignados con exito') {
+              Swal.fire('Exito', response.message, 'success');
+              this.clearForm();
+            } else {
+              Swal.fire('Error', response.message, 'error');
+            }
+          },
+          error => {
+            Swal.fire('Error', error.message, 'error');
+          }
+        );
       },
-      error => {
-        Swal.fire('Error', error.message, 'error');
+      error: (error) => {
+        Swal.fire('Error', error.message || 'No se pudo validar el codigo.', 'error');
       }
-    );
+    });
   }
 
     validateForm(): void {
+      const phoneValidation = validatePhoneByCountry(this.telefono, this.pais);
+      this.telefonoErrorMessage = phoneValidation.message;
+      this.codeCountryErrorMessage = this.getCodeCountryMismatchMessage();
       this.isFormValid = this.code.trim().length > 0 &&
       this.email.trim().length > 0 &&
-      //this.username.trim().length > 0 &&
-      this.telefono.trim().length > 0 &&
+      phoneValidation.valid &&
       this.provincia.trim().length > 0 &&
-      //this.pais.trim().length > 0;
-      this.pais !== null;
+      this.pais !== null &&
+      !this.codeCountryErrorMessage;
     }
 
 
@@ -168,7 +221,6 @@ login(): void {
     this.provinciaService.getAllProvincias().subscribe(
       response => {
         this.provincias = response;
-        console.log('provincias', response)
       },
       error => {
         Swal.fire('Error', 'Error al cargar las provincias', 'error');
@@ -178,34 +230,13 @@ login(): void {
 
 
 
-/*
- onPaisChange(): void {
-    console.log('onPaisChange pais:', this.pais);
-    if (this.pais) {
-      this.provincia = '';
-      this.provinciaService.getProvinciasByPais(this.pais.nombre).subscribe(
-        response => {
-          this.provincias = response;
-          console.log('Provincias cargadas:', response);
-        },
-        error => {
-          Swal.fire('Error', 'Error al cargar las provincias', 'error');
-        }
-      );
-    } else {
-      this.provincias = [];
-    }
-    this.validateForm();
-  }*/
-
   onPaisChange(): void {
-    console.log('onPaisChange pais:', this.pais);
     if (this.pais) {
       this.provincia = '';
-      this.provinciaService.getProvinciasByPais(this.pais).subscribe( // Cambiado a this.pais
+      this.telefono = '';
+      this.provinciaService.getProvinciasByPais(this.pais).subscribe(
         response => {
           this.provincias = response;
-          console.log('Provincias cargadas:', response);
         },
         error => {
           Swal.fire('Error', 'Error al cargar las provincias', 'error');
@@ -215,6 +246,46 @@ login(): void {
       this.provincias = [];
     }
     this.validateForm();
+  }
+
+  onCodeInput(): void {
+    this.code = this.accessCodeService.normalizeCode(this.code);
+    this.codeCountry = null;
+    this.codeCountryErrorMessage = '';
+    this.validateForm();
+  }
+
+  syncCountryWithCode(showErrors: boolean = true): void {
+    const normalizedCode = this.accessCodeService.normalizeCode(this.code);
+    if (!normalizedCode) {
+      this.codeCountry = null;
+      this.codeCountryErrorMessage = '';
+      this.validateForm();
+      return;
+    }
+
+    this.accessCodeService.getCodeCountry(normalizedCode).subscribe({
+      next: (detectedCountry) => {
+        this.code = normalizedCode;
+        this.codeCountry = detectedCountry;
+
+        if (detectedCountry && this.pais !== detectedCountry) {
+          this.pais = detectedCountry;
+          this.onPaisChange();
+          return;
+        }
+
+        this.validateForm();
+      },
+      error: (error) => {
+        this.codeCountry = null;
+        this.codeCountryErrorMessage = '';
+        this.validateForm();
+        if (showErrors) {
+          this.toastr.error(error?.message || 'No se pudo validar el codigo.');
+        }
+      }
+    });
   }
 
 
@@ -239,7 +310,6 @@ login(): void {
   }
 
   activarModoPrueba(): void {
-     console.log('[DEMO] Click en PROBÁ EL SISTEMA');
   const trialUserData = {
     pais: 'Argentina',
     provincia: 'Buenos Aires',
@@ -274,7 +344,7 @@ login(): void {
   const demoTareas = [
   {
     id: 1,
-    tarea: 'BASE ZAPATA ARMADO Y LLENADO Hº (1,00X1,00X0,80)',
+    tarea: 'BASE ZAPATA ARMADO Y LLENADO H O (1,00X1,00X0,80)',
     costo: 1234,
     rubro: 'Demo',
     categoria: 'Demo',
@@ -286,7 +356,7 @@ login(): void {
   },
   {
     id: 2,
-    tarea: 'BASE ZAPATA ARMADO Y LLENADO Hº X M3',
+    tarea: 'BASE ZAPATA ARMADO Y LLENADO H O X M3',
     costo: 1234,
     rubro: 'Demo',
     categoria: 'Demo',
@@ -322,7 +392,7 @@ login(): void {
   },
   {
     id: 5,
-    tarea: 'BASE Hº LIMPIEZA 5 CM DE ESPESOR Hº 180 A200 KG/M3 + CENTRADO ARMADURA',
+    tarea: 'BASE H O LIMPIEZA 5 CM DE ESPESOR H O 180 A200 KG/M3 + CENTRADO ARMADURA',
     costo: 1234,
     rubro: 'Demo',
     categoria: 'Demo',
@@ -394,24 +464,45 @@ login(): void {
   }
 ];
 
+const demoCliente = {
+    id: 5678,
+    name: 'Cliente Demo',
+    contact: '11 1111-1111',
+    budgetDate: new Date().toISOString().split('T')[0],
+    additionalDetails: 'Cliente de prueba',
+    userCode: 'demo',
+    email: 'cliente@metroapp.site',
+    clave: '20-00000000-0',
+    direccion: 'Direccion demo 123',
+    empresaId: 1234
+  };
+
+  Object.keys(localStorage)
+    .filter(key => key.startsWith('demoCliente_'))
+    .forEach(key => localStorage.removeItem(key));
+
+
 
   localStorage.setItem('trialMode', 'true');
   localStorage.setItem('userCode', 'demo');
   localStorage.setItem('userData', JSON.stringify(trialUserData));
   localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresa));
   localStorage.setItem('demoTareas', JSON.stringify(demoTareas));
+  localStorage.setItem(`demoCliente_${demoCliente.id}`, JSON.stringify(demoCliente));
   localStorage.removeItem('selectedEmpresaId');
+  localStorage.removeItem('selectedClienteId');
   localStorage.removeItem('selectedCliente');
+  localStorage.setItem('selectedClienteId', String(demoCliente.id));
+  localStorage.setItem('selectedCliente', JSON.stringify(demoCliente));
   localStorage.removeItem('tareasAgregadas');
- console.log('[DEMO] Datos demo guardados, redirigiendo a dashboard');
   this.route.navigate(['dashboard']);
 }
 
 
 
 openWebsite(): void {
-  const phone = '54 9 11 2863-4744'; // Reemplaza con el número real
-  const text = 'Hola! quiero una clave de membresía para "METRO"';
+  const phone = '54 9 11 2863-4744'; // Reemplaza con el numero real
+  const text = 'Hola! quiero una clave de membresia para "METRO"';
   const whatsappUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
   const fallbackUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
   try {
@@ -423,7 +514,7 @@ openWebsite(): void {
 
     shareOnWhatsApp(): void {
       const url = 'www.metroapp.site';
-      const text = `METRO, la app con precios de la construcción. Hacé tus presupuestos más fácil y rápido. ${url}`;
+      const text = `METRO, la app con precios de la construccion. Hace tus presupuestos mas facil y rapido. ${url}`;
       const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(text)}`; window.location.href = whatsappUrl;
     }
 
@@ -434,7 +525,191 @@ openWebsite(): void {
       this.telefono = '';
       this.pais = null;
       this.provincia = '';
+      this.codeCountry = null;
+      this.codeCountryErrorMessage = '';
+      this.telefonoErrorMessage = '';
       this.isFormValid = false;
-      console.log('clearForm ejecutado, pais:', this.pais);
     }
+
+    get selectedMembershipCountry(): MembershipCountryOption | undefined {
+      return this.membershipCountries.find(country => country.codigo === this.purchaseCountryCode);
+    }
+
+    get selectedPlanAmount(): number | null {
+      return this.selectedMembershipCountry?.plans.find(plan => plan.months === this.purchasePlanMonths)?.amount ?? null;
+    }
+
+    get canStartCheckout(): boolean {
+      return validateMembershipCheckoutForm(
+        this.purchaseCheckoutForm,
+        this.selectedMembershipCountry?.nombre || null
+      ).valid;
+    }
+
+    get purchaseCheckoutForm(): MembershipCheckoutForm {
+      return {
+        countryCode: this.purchaseCountryCode,
+        planMonths: this.purchasePlanMonths,
+        payerName: this.purchaseName,
+        payerEmail: this.purchaseEmail,
+        payerPhone: this.purchasePhone,
+        payerDocument: this.purchaseDocument,
+        province: this.purchaseProvince
+      };
+    }
+
+    loadMembershipCatalog(): void {
+      this.isLoadingCatalog = true;
+      this.membershipPaymentService.getCatalog().subscribe({
+        next: (catalog) => {
+          this.membershipCountries = Object.entries(catalog.countries)
+            .map(([countryCode, country]) => mapMembershipCountryOption(countryCode, country, this.countries))
+            .sort((left, right) => left.nombre.localeCompare(right.nombre));
+          this.isLoadingCatalog = false;
+        },
+        error: () => {
+          this.isLoadingCatalog = false;
+          this.toastr.error('No se pudo cargar el catalogo de membresias.');
+        }
+      });
+    }
+
+    onPurchaseCountryChange(): void {
+      this.purchaseProvince = '';
+      this.purchaseDocument = '';
+      this.purchasePhone = '';
+      this.purchasePhoneErrorMessage = '';
+      this.purchasePlanMonths = this.selectedMembershipCountry?.plans[0]?.months ?? null;
+      if (!this.purchaseCountryCode) {
+        this.purchaseProvincias = [];
+        return;
+      }
+      this.provinciaService.getProvinciasByPais(this.selectedMembershipCountry?.nombre || this.purchaseCountryCode).subscribe({
+        next: (provincias) => {
+          this.purchaseProvincias = provincias;
+        },
+        error: () => {
+          this.purchaseProvincias = [];
+          this.toastr.error('No se pudieron cargar las provincias para la compra.');
+        }
+      });
+    }
+
+    startMembershipCheckout(): void {
+      const validation = validateMembershipCheckoutForm(
+        this.purchaseCheckoutForm,
+        this.selectedMembershipCountry?.nombre || null
+      );
+      this.purchasePhoneErrorMessage = validation.phoneMessage;
+
+      if (!validation.valid || !this.purchaseCountryCode || !this.purchasePlanMonths) {
+        Swal.fire('Faltan datos', this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.', 'warning');
+        return;
+      }
+
+      this.isStartingCheckout = true;
+      this.membershipPaymentService.createCheckout(
+        buildMembershipCheckoutPayload(this.purchaseCheckoutForm, `${window.location.origin}/payment-result`)
+      ).subscribe({
+        next: (order) => {
+          this.isStartingCheckout = false;
+          if (!order.redirectUrl) {
+            this.toastr.error('La pasarela no devolvio una URL de pago.');
+            return;
+          }
+          localStorage.setItem('pendingPaymentId', order.externalId);
+          window.location.href = order.redirectUrl;
+        },
+        error: (error) => {
+          this.isStartingCheckout = false;
+          Swal.fire('Error', this.getCheckoutErrorMessage(error, 'No se pudo iniciar el checkout.'), 'error');
+        }
+      });
+    }
+
+    startPayPalCheckout(): void {
+      const validation = validateMembershipCheckoutForm(
+        this.purchaseCheckoutForm,
+        this.selectedMembershipCountry?.nombre || null
+      );
+      this.purchasePhoneErrorMessage = validation.phoneMessage;
+
+      if (!validation.valid || !this.purchaseCountryCode || !this.purchasePlanMonths) {
+        Swal.fire('Faltan datos', this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.', 'warning');
+        return;
+      }
+
+      this.isStartingPayPal = true;
+      this.payPalPaymentService.createCheckout(
+        buildPayPalCheckoutPayload(this.purchaseCheckoutForm, `${window.location.origin}/payment-result`)
+      ).subscribe({
+        next: (order) => {
+          this.isStartingPayPal = false;
+          if (!order.approvalUrl) {
+            this.toastr.error('PayPal no devolvio una URL de pago.');
+            return;
+          }
+          localStorage.setItem('pendingPaymentId', order.externalId);
+          window.location.href = order.approvalUrl;
+        },
+        error: (error) => {
+          this.isStartingPayPal = false;
+          Swal.fire('Error', this.getCheckoutErrorMessage(error, 'No se pudo iniciar el checkout con PayPal.'), 'error');
+        }
+      });
+    }
+
+    get telefonoPlaceholder(): string {
+      return phonePlaceholder(this.pais);
+    }
+
+    get purchasePhonePlaceholder(): string {
+      return phonePlaceholder(this.selectedMembershipCountry?.nombre || null);
+    }
+
+    onTelefonoInput(): void {
+      this.telefono = sanitizePhoneInput(this.telefono);
+      this.validateForm();
+    }
+
+    onPurchasePhoneInput(): void {
+      this.purchasePhone = sanitizePhoneInput(this.purchasePhone);
+      this.purchasePhoneErrorMessage = validateMembershipCheckoutForm(
+        this.purchaseCheckoutForm,
+        this.selectedMembershipCountry?.nombre || null
+      ).phoneMessage;
+    }
+
+    private getCodeCountryMismatchMessage(): string {
+      return accessCodeCountryMismatchMessage(this.codeCountry, this.pais);
+    }
+
+    private getCheckoutErrorMessage(error: unknown, fallback: string): string {
+      return extractApiErrorMessage(error, fallback);
+    }
+
+  selectAdminCountry(pais: AdminCountry): void {
+    const current = this.adminService.getCurrentAdmin();
+    if (current && current.pais === pais) {
+      this.route.navigate(['/admin-generate-code']);
+      return;
+    }
+    this.selectedAdminPais = pais;
+    this.adminUsername = '';
+    this.adminPassword = '';
+    this.adminLoginError = '';
+    this.loginStep = 'adminLogin';
+  }
+
+  adminLogin(): void {
+    this.adminLoginError = '';
+    this.adminService.loginForCountry(this.adminUsername, this.adminPassword, this.selectedAdminPais).subscribe(result => {
+      if (result.error) {
+        this.adminLoginError = result.error;
+        return;
+      }
+      this.route.navigate(['/admin-generate-code']);
+    });
+  }
+
 }

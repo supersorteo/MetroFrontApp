@@ -1,11 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../../servicios/auth.service';
-import { ToastrService } from 'ngx-toastr';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+import { AuthService } from '../../servicios/auth.service';
+import { Admin, AdminService } from '../../servicios/admin.service';
+
 interface AccessCode {
   code: string;
   email: any;
+  pais?: string;
   tipo?: string;
   username?: string;
   telefono?: string;
@@ -14,6 +18,7 @@ interface AccessCode {
   fechaVencimiento?: any;
   remainingTime?: string;
 }
+
 @Component({
   selector: 'app-generate-code',
   standalone: true,
@@ -21,255 +26,288 @@ interface AccessCode {
   templateUrl: './generate-code.component.html',
   styleUrl: './generate-code.component.scss'
 })
-export class GenerateCodeComponent implements OnInit {
+export class GenerateCodeComponent implements OnInit, OnDestroy {
+
+  admin!: Admin;
 
   code: string = '';
+  successMessage = '';
+  errorMessage = '';
 
-  successMessage: string = '';
-  errorMessage: string = '';
   codes: AccessCode[] = [];
-  //codes:any[]=[];
   filteredCodes: AccessCode[] = [];
   generatedCodes: AccessCode[] = [];
-  showGeneratedCodesModal: boolean = false;
-  generateCodesModal6:boolean = false;
-  filterText: string = '';
-  codeCount3: number = 1;
-  codeCount6: number = 1;
-  //remainingTime: string = '';
 
-  currentPage: number = 1;
-  itemsPerPage: number = 5;
-  totalPages: number = 0;
+  filterText = '';
+  codeCount3 = 1;
+  codeCount6 = 1;
 
-  constructor(private authService: AuthService, private toastr: ToastrService) {}
+  currentPage = 1;
+  itemsPerPage = 8;
+  totalPages = 0;
+
+  // Panel visibility
+  showGenerate3Panel = false;
+  showGenerate6Panel = false;
+  showGeneratedModal = false;
+  showEditAdminPanel = false;
+
+  // Confirm toast
+  confirmToast: { icon: string; title: string; message: string; position: 'top' | 'bottom'; action: () => void } | null = null;
+
+  // Edit admin form
+  editAdminNombre = '';
+  editAdminUsername = '';
+  editAdminPassword = '';
+  editAdminPasswordNew = '';
+  editAdminError = '';
+  showEditPassword = false;
+  showEditPasswordNew = false;
+
+  // Stats
+  totalCodes = 0;
+  activeCodes = 0;
+  expiredCodes = 0;
+  unregisteredCodes = 0;
+
+  private timer: any;
+
+  constructor(
+    private authService: AuthService,
+    private adminService: AdminService,
+    private router: Router,
+    private toastr: ToastrService
+  ) {}
 
   ngOnInit(): void {
+    const admin = this.adminService.getCurrentAdmin();
+    if (!admin) { this.router.navigate(['/']); return; }
+    this.admin = admin;
     this.loadCodes();
-
-
-    setInterval(
-      () => {
-      this.updateRemainingTimes();
-    }, 1000);
-
+    this.timer = setInterval(() => this.updateRemainingTimes(), 1000);
   }
 
+  ngOnDestroy(): void {
+    if (this.timer) clearInterval(this.timer);
+  }
+
+  logout(): void {
+    this.showConfirm(
+      '🚪', 'Cerrar sesión', '¿Seguro que querés salir del panel?', 'top',
+      () => { this.adminService.logout(); this.router.navigate(['/']); }
+    );
+  }
+
+  private showConfirm(icon: string, title: string, message: string, position: 'top' | 'bottom', action: () => void): void {
+    this.confirmToast = { icon, title, message, position, action };
+  }
+
+  confirmYes(): void {
+    if (this.confirmToast) { this.confirmToast.action(); }
+    this.confirmToast = null;
+  }
+
+  confirmNo(): void {
+    this.confirmToast = null;
+  }
+
+  // ── Code loading ───────────────────────────────────────────
+
+  loadCodes(): void {
+    this.authService.getCodesByPais(this.admin.pais).subscribe({
+      next: response => {
+        this.codes = response.map(code => ({
+          ...code,
+          tipo: code.code.length === 5 ? '3 meses' : '6 meses',
+          fechaRegistro: code.fechaRegistro || '',
+          fechaVencimiento: code.fechaVencimiento || '',
+        })).sort((a, b) => {
+          const dA = new Date(a.fechaRegistro).getTime();
+          const dB = new Date(b.fechaRegistro).getTime();
+          if (isNaN(dA) || isNaN(dB)) return isNaN(dA) ? 1 : -1;
+          return dB - dA;
+        });
+        this.applyFilter();
+        this.computeStats();
+      },
+      error: () => this.toastr.error('Error al cargar los códigos', 'Error')
+    });
+  }
+
+  applyFilter(): void {
+    const f = this.filterText.toLowerCase();
+    this.filteredCodes = f
+      ? this.codes.filter(c =>
+          (c.code?.toLowerCase().includes(f)) ||
+          (c.email?.toLowerCase().includes(f)) ||
+          (c.username?.toLowerCase().includes(f)) ||
+          (c.telefono?.toLowerCase().includes(f)) ||
+          (c.provincia?.toLowerCase().includes(f)) ||
+          (c.fechaRegistro?.toLowerCase().includes(f)) ||
+          (c.fechaVencimiento?.toLowerCase().includes(f))
+        )
+      : [...this.codes];
+    this.currentPage = 1;
+    this.updatePagination();
+  }
+
+  computeStats(): void {
+    const now = new Date().getTime();
+    this.totalCodes = this.codes.length;
+    this.unregisteredCodes = this.codes.filter(c => !c.email).length;
+    this.activeCodes = this.codes.filter(c => {
+      if (!c.fechaVencimiento) return false;
+      const exp = new Date(c.fechaVencimiento).getTime();
+      return !isNaN(exp) && exp > now;
+    }).length;
+    this.expiredCodes = this.codes.filter(c => {
+      if (!c.fechaVencimiento) return false;
+      const exp = new Date(c.fechaVencimiento).getTime();
+      return !isNaN(exp) && exp <= now;
+    }).length;
+  }
+
+  filterCodes(): void {
+    this.applyFilter();
+  }
+
+  // ── Generate ───────────────────────────────────────────────
 
   validateAndGenerateCode(): void {
-    if (this.code.trim().length === 0) {
-      this.toastr.error('Debe ingresar un código', 'Error');
-      return;
-    }
-    this.generateCode();
+    if (!this.code.trim()) { this.toastr.error('Debe ingresar un código', 'Error'); return; }
+    this.authService.agregarCode({ code: this.code, email: null, pais: this.admin.pais }).subscribe({
+      next: response => {
+        if (response.message === 'Código agregado con éxito') {
+          this.toastr.success(response.message, 'Éxito');
+          this.code = '';
+          this.loadCodes();
+        } else {
+          this.toastr.error(response.message, 'Error');
+        }
+      },
+      error: err => this.toastr.error(err.message, 'Error')
+    });
   }
 
-  generateCode(): void {
-    this.authService.agregarCode({
-      code: this.code,
-      email: null
-    }).subscribe(
-      response => {
-        if (response.message === 'Código agregado con éxito') {
-          this.successMessage = response.message;
-          this.errorMessage = '';
-          this.toastr.success(this.successMessage, 'Éxito');
-          this.loadCodes();
-          console.log('codigo: ', this.code)
-        } else {
-          this.errorMessage = response.message;
-          this.successMessage = '';
-          this.toastr.error(this.errorMessage, 'Error');
-        }
-      }, error => {
-        this.errorMessage = error.message;
-        this.successMessage = '';
-        this.toastr.error(this.errorMessage, 'Error');
-      } );
-    }
+  generateCodes(months: 3 | 6): void {
+    const count = months === 3 ? this.codeCount3 : this.codeCount6;
+    if (count <= 0) { this.toastr.error('Cantidad inválida', 'Error'); return; }
+    const length = months === 3 ? 5 : 6;
+    const newCodes: AccessCode[] = Array.from({ length: count }, () => ({
+      code: this.randomCode(length),
+      email: null,
+      pais: this.admin.pais,
+      tipo: months === 3 ? '3 meses' : '6 meses'
+    }));
+    this.generatedCodes = newCodes;
+    this.showGenerate3Panel = false;
+    this.showGenerate6Panel = false;
+    this.showGeneratedModal = true;
 
+    this.authService.agregarCodes(newCodes).subscribe({
+      next: res => {
+        this.toastr.success(res.message, 'Éxito');
+        this.loadCodes();
+      },
+      error: err => this.toastr.error(err.message, 'Error')
+    });
+  }
 
+  randomCode(length: number): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  }
 
+  // ── Delete ─────────────────────────────────────────────────
 
-        loadCodes(): void {
-          this.authService.getAllCodes().subscribe(
-              response => {
-                  this.codes = response
-                      .map(code => {
-                          const fechaRegistro = code.fechaRegistro || '';
-                          const fechaVencimiento = code.fechaVencimiento || '';
-                          console.log('Fecha de registro:', fechaRegistro);
-                          console.log('Fecha de vencimiento:', fechaVencimiento);
-                          return {
-                              ...code,
-                              tipo: code.code.length === 5 ? '3 meses' : '6 meses',
-                              fechaRegistro,
-                              fechaVencimiento
-                          };
-                      })
-                      .sort((a, b) => {
-                          const dateA = new Date(a.fechaRegistro).getTime();
-                          const dateB = new Date(b.fechaRegistro).getTime();
-                          if (isNaN(dateA) || isNaN(dateB)) {
-                              return isNaN(dateA) ? 1 : -1;
-                          }
-                          return dateB - dateA;
-                      });
-                  this.filteredCodes = this.codes;
-                  this.updatePagination();
-                  console.log(this.codes);
-              },
-              error => {
-                  this.toastr.error('Error al cargar los códigos', 'Error');
-              }
-          );
-      }
-
-
-
-      filterCodes(): void {
-        const filter = this.filterText.toLowerCase();
-        this.filteredCodes = this.codes.filter(
-            code =>
-                (code.code?.toLowerCase().includes(filter) || false) ||
-                (code.email?.toLowerCase().includes(filter) || false) ||
-                (code.username?.toLowerCase().includes(filter) || false) ||
-                (code.telefono?.toLowerCase().includes(filter) || false) ||
-                (code.provincia?.toLowerCase().includes(filter) || false) ||
-                (code.fechaRegistro?.toLowerCase().includes(filter) || false) ||
-                (code.fechaVencimiento?.toLowerCase().includes(filter) || false)
-        );
-        this.updatePagination();
-    }
-
-
-      editCode(item: AccessCode): void {
-        console.log('Editar código:', item);
-      }
-
-      deleteCode(code: string): void {
-        this.authService.deleteCode(code).subscribe( response => {
-          this.toastr.success('Código eliminado con éxito', 'Éxito');
-          this.loadCodes();
-        }, error => {
-          this.toastr.error('Error al eliminar el código', 'Error');
-        } );
-      }
-
-      confirmDeleteCode(code: string): void {
-        if (window.confirm('¿Estás seguro de eliminar este código?')) {
-          this.deleteCode(code);
-        }
-    }
-
-
-      generateCodes(months: number): void {
-
-        let codeCount = months === 3 ? this.codeCount3 : this.codeCount6;
-        if (codeCount <= 0) {
-
-          this.toastr.error('Debe ingresar la cantidad de códigos que desea generar', 'Error');
-          return;
-        }
-
-        let codeLength = months === 3 ? 5 : 6;
-        let codes: AccessCode[] = [];
-        for (let i = 0; i < codeCount; i++) {
-          codes.push({
-            code: this.generateRandomCode(codeLength),
-            email: null, tipo: months === 3 ? '3 meses' : '6 meses'
-          });
-        }
-        this.generatedCodes = codes;
-        this.generateCodesModal6 = false;
-        this.showGeneratedCodesModal = true;
-
-        console.log(`Códigos de ${months} meses:`);
-        codes.forEach(code => console.log(code.code));
-        this.authService.agregarCodes(codes).subscribe(
-          response => {
-            this.toastr.success(response.message, 'Éxito');
-            this.loadCodes();
-          },
-          error => {
-            this.toastr.error(error.message, 'Error');
-          } );
-        }
-
-    generateRandomCode(length: number): string {
-      let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let result = '';
-      for (let i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * characters.length));
-      } return result;
-    }
-
-
-
-    updateRemainingTimes(): void {
-      this.filteredCodes.forEach(
-        code => {
-          if (code.fechaVencimiento) {
-            code.remainingTime = this.calculateRemainingTime(code.fechaVencimiento);
-          }
+  confirmDeleteCode(code: string): void {
+    this.showConfirm(
+      '🗑️', 'Eliminar código', `¿Eliminar el código ${code}? Esta acción no se puede deshacer.`, 'bottom',
+      () => {
+        this.authService.deleteCode(code).subscribe({
+          next: () => { this.toastr.success('Código eliminado', 'Éxito'); this.loadCodes(); },
+          error: () => this.toastr.error('Error al eliminar', 'Error')
         });
       }
+    );
+  }
 
-      calculateRemainingTime(fechaVencimiento: string): string {
-        if (!fechaVencimiento) {
-          return 'Fecha de vencimiento no disponible';
-        }
-        const now = new Date().getTime();
-        const expiryDate = new Date(fechaVencimiento).getTime();
-        if (isNaN(expiryDate)) {
-          return 'Fecha inválida';
-        }
-        const timeDiff = expiryDate - now;
-        if (timeDiff <= 0) {
-          return 'Código expirado';
-        }
-        const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000); return `${days}d ${hours}h ${minutes}m ${seconds}s restantes`;
+  copyToClipboard(code: string): void {
+    navigator.clipboard.writeText(code).then(
+      () => this.toastr.success('Copiado', 'Éxito'),
+      () => this.toastr.error('Error al copiar', 'Error')
+    );
+  }
+
+  // ── Pagination ─────────────────────────────────────────────
+
+  getPaginatedCodes(): AccessCode[] {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    return this.filteredCodes.slice(start, start + this.itemsPerPage);
+  }
+
+  updatePagination(): void {
+    this.totalPages = Math.ceil(this.filteredCodes.length / this.itemsPerPage);
+    if (this.currentPage > this.totalPages) this.currentPage = 1;
+  }
+
+  changePage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  // ── Timers ─────────────────────────────────────────────────
+
+  updateRemainingTimes(): void {
+    this.filteredCodes.forEach(c => {
+      if (c.fechaVencimiento) c.remainingTime = this.calcRemaining(c.fechaVencimiento);
+    });
+  }
+
+  calcRemaining(fechaVencimiento: string): string {
+    if (!fechaVencimiento) return '—';
+    const diff = new Date(fechaVencimiento).getTime() - Date.now();
+    if (isNaN(diff)) return 'Fecha inválida';
+    if (diff <= 0) return 'Expirado';
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    return `${d}d ${h}h ${m}m ${s}s`;
+  }
+
+  // ── Edit admin ──────────────────────────────────────────────
+
+  openEditAdmin(): void {
+    this.editAdminNombre   = this.admin.nombre;
+    this.editAdminUsername = this.admin.username;
+    this.editAdminPassword = this.admin.password;
+    this.editAdminPasswordNew = '';
+    this.editAdminError = '';
+    this.showEditAdminPanel = true;
+  }
+
+  saveAdminChanges(): void {
+    if (!this.editAdminUsername.trim()) {
+      this.editAdminError = 'El usuario no puede estar vacío.'; return;
+    }
+    const newPass = this.editAdminPasswordNew.trim() || this.editAdminPassword;
+    this.adminService.updateAdmin(this.admin.id, {
+      nombre:   this.editAdminNombre,
+      username: this.editAdminUsername,
+      password: newPass,
+    }).subscribe(updated => {
+      if (!updated) {
+        this.editAdminError = 'Error al guardar cambios.';
+        return;
       }
-
-      copyToClipboard(code: string): void {
-        navigator.clipboard.writeText(code).then(
-          () => {
-            this.toastr.success('Código copiado al portapapeles', 'Éxito');
-            console.log('Código', code)
-          },
-          err => {
-            this.toastr.error('Error al copiar el código', 'Error');
-          } );
-        }
-
-        closeGeneratedCodesModal(): void {
-          this.showGeneratedCodesModal = false;
-      }
-
-      openModalGenerated() {
-       this.generateCodesModal6 = true
-        }
-        stopEventPropagation(event: MouseEvent): void {
-          event.stopPropagation();
-        }
-
-
-        changePage(page: number): void {
-          if (page < 1 || page > this.totalPages) {
-            return;
-          } this.currentPage = page;
-        }
-
-        getPaginatedCodes(): AccessCode[] {
-          const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-          return this.filteredCodes.slice(startIndex, startIndex + this.itemsPerPage);
-        }
-
-        updatePagination(): void {
-          this.totalPages = Math.ceil(this.filteredCodes.length / this.itemsPerPage);
-        }
-
+      this.admin = this.adminService.getCurrentAdmin()!;
+      this.toastr.success('Perfil actualizado', 'Éxito');
+      this.showEditAdminPanel = false;
+    });
+  }
 }

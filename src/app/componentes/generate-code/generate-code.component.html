@@ -1,198 +1,349 @@
-<div class="generate-code-container">
-  <div class="card generate-code-card">
-    <div class="card-header">
-      <h3>Generar Nuevo Código</h3>
+<div class="admin-page">
+
+  <!-- ── Header ─────────────────────────────── -->
+  <header class="admin-header">
+    <div class="admin-header__brand">
+      <span class="admin-header__flag">{{ admin?.flag }}</span>
+      <div>
+        <h1 class="admin-header__title">Panel Admin</h1>
+        <span class="admin-header__country">{{ admin?.pais | titlecase }}</span>
+      </div>
     </div>
-    <div class="card-body">
-      <form (ngSubmit)="validateAndGenerateCode()">
-        <div class="mb-3">
-          <label for="code" class="form-label">Código:</label>
-          <input type="text" class="form-control" id="code" [(ngModel)]="code" name="code" required>
+    <div class="admin-header__actions">
+      <button class="ah-btn ah-btn--ghost" (click)="openEditAdmin()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+        </svg>
+        Perfil
+      </button>
+      <button class="ah-btn ah-btn--danger" (click)="logout()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+          <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+        </svg>
+        Salir
+      </button>
+    </div>
+  </header>
+
+  <div class="admin-body">
+
+    <!-- ── Stats ────────────────────────────────── -->
+    <div class="admin-stats">
+      <div class="stat-card stat-card--total">
+        <span class="stat-card__value">{{ totalCodes }}</span>
+        <span class="stat-card__label">Total</span>
+      </div>
+      <div class="stat-card stat-card--active">
+        <span class="stat-card__value">{{ activeCodes }}</span>
+        <span class="stat-card__label">Activos</span>
+      </div>
+      <div class="stat-card stat-card--expired">
+        <span class="stat-card__value">{{ expiredCodes }}</span>
+        <span class="stat-card__label">Expirados</span>
+      </div>
+      <div class="stat-card stat-card--pending">
+        <span class="stat-card__value">{{ unregisteredCodes }}</span>
+        <span class="stat-card__label">Sin registrar</span>
+      </div>
+    </div>
+
+    <!-- ── Generate buttons ─────────────────────── -->
+    <div class="admin-generate">
+      <h2 class="admin-section-title">Generar Códigos</h2>
+      <div class="admin-generate__btns">
+        <button class="gen-btn gen-btn--3" (click)="showGenerate3Panel = true; showGenerate6Panel = false">
+          <span class="gen-btn__icon">🗝️</span>
+          <span class="gen-btn__text">3 Meses</span>
+          <span class="gen-btn__badge">5 chars</span>
+        </button>
+        <button class="gen-btn gen-btn--6" (click)="showGenerate6Panel = true; showGenerate3Panel = false">
+          <span class="gen-btn__icon">🔑</span>
+          <span class="gen-btn__text">6 Meses</span>
+          <span class="gen-btn__badge">6 chars</span>
+        </button>
+      </div>
+
+      <!-- Panel 3 meses -->
+      <div class="gen-panel" *ngIf="showGenerate3Panel">
+        <div class="gen-panel__inner">
+          <p class="gen-panel__title">Códigos de 3 meses</p>
+          <div class="gen-panel__row">
+            <label class="gen-panel__label">Cantidad</label>
+            <input type="number" class="gen-panel__input" [(ngModel)]="codeCount3" min="1" max="100">
+          </div>
+          <div class="gen-panel__actions">
+            <button class="gp-btn gp-btn--cancel" (click)="showGenerate3Panel = false">Cancelar</button>
+            <button class="gp-btn gp-btn--ok" (click)="generateCodes(3)">
+              Generar {{ codeCount3 }} código{{ codeCount3 !== 1 ? 's' : '' }}
+            </button>
+          </div>
         </div>
-        <!--div-- class="btn-group w-100">
-          <button type="submit" class="btn btn-primary w-50">Generar Código</button>
-          <button type="button" class="btn btn-secondary w-50" data-bs-toggle="modal" data-bs-target="#viewCodesModal">Ver Códigos</button>
-        </!--div-->
-        <div class="flex">
-          <button type="button" class="btn btn-primary w-50" data-bs-toggle="modal" data-bs-target="#generateCodesModal3">Códigos de 3 Meses</button>
-          <button type="button" class="btn btn-info w-50" data-bs-toggle="modal" data-bs-target="#generateCodesModal6">Códigos de 6 Meses</button>
+      </div>
 
+      <!-- Panel 6 meses -->
+      <div class="gen-panel" *ngIf="showGenerate6Panel">
+        <div class="gen-panel__inner">
+          <p class="gen-panel__title">Códigos de 6 meses</p>
+          <div class="gen-panel__row">
+            <label class="gen-panel__label">Cantidad</label>
+            <input type="number" class="gen-panel__input" [(ngModel)]="codeCount6" min="1" max="100">
+          </div>
+          <div class="gen-panel__actions">
+            <button class="gp-btn gp-btn--cancel" (click)="showGenerate6Panel = false">Cancelar</button>
+            <button class="gp-btn gp-btn--ok" (click)="generateCodes(6)">
+              Generar {{ codeCount6 }} código{{ codeCount6 !== 1 ? 's' : '' }}
+            </button>
+          </div>
         </div>
-
-        <button type="button" class="btn btn-secondary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#viewCodesModal">Ver Códigos</button>
-      </form>
-
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="viewCodesModal" tabindex="-1" aria-labelledby="viewCodesModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="viewCodesModalLabel">Códigos Generados</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
 
-        <div class="containerbuscar">
-          <div class="search-container">
-            <input class="input form-control" placeholder="Buscar tarea..."
-            type="text" id="busqueda" [(ngModel)]="filterText" (input)="filterCodes()" >
-
-          </div>
-          </div>
-
-          <div class="table-responsive">
-            <table class="table table-dark table-striped table-bordered">
-              <thead class="table-light">
-                <tr>
-
-                  <th scope="col">Código</th>
-                  <th scope="col">Email</th>
-                  <!--th-- scope="col">Tipo de Código</!--th-->
-                  <!--th scope="col">Username</!--th-->
-                  <!--th scope="col">Teléfono</!--th-->
-                  <!--th scope="col">Provincia</!--th-->
-                  <th scope="col">F.Registro</th>
-                  <th scope="col">F.Vencimiento</th>
-                  <th scope="col">Vigente</th>
-
-                  <th scope="col">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of getPaginatedCodes()">
-
-                  <td>{{ item.code }}</td>
-                  <td>{{ item.email }}</td>
-                  <!--td>{{ item.tipo }}</td-->
-                  <!--td>{{ item.username }}</!--td-->
-                  <!--td>{{ item.telefono }}</!--td-->
-                  <!--td>{{ item.provincia }}</!--td-->
-                  <td>{{ item.fechaRegistro }}</td>
-                  <td>{{ item.fechaVencimiento }}</td>
-                  <!--td>{{ calculateRemainingTime(item.fechaVencimiento) }}</td-->
-                  <td>{{item.remainingTime}}</td>
-
-                  <td >
-                    <div class="flex gap-3">
-                      <button type="button" class="btn btn-warning btn-sm" (click)="editCode(item)">Editar</button>
-                      <button type="button" class="btn btn-danger btn-sm" (click)="confirmDeleteCode(item.code)">Eliminar</button>
-                      <!--button-- type="button" class="btn btn-primary btn-sm" (click)="copyToClipboard(item.code)">Copiar</!--button-->
-                    </div>
-
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-
-
-
-      <nav aria-label="Page navigation example">
-        <ul class="pagination justify-content-center">
-          <li class="page-item" [class.disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
-            <a class="page-link">Previous</a>
-          </li>
-          <li class="page-item" *ngFor="let page of [].constructor(totalPages);
-          let i = index" [class.active]="currentPage === i + 1" (click)="changePage(i + 1)">
-          <a class="page-link">{{ i + 1 }}</a>
-        </li>
-        <li class="page-item" [class.disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
-          <a class="page-link">Next</a>
-        </li>
-      </ul>
-    </nav>
-    <div class="text-center"> Página {{ currentPage }} de {{ totalPages }}
-
-    </div>
-
+      <!-- Código manual -->
+      <div class="admin-manual">
+        <label class="admin-manual__label">Código manual personalizado</label>
+        <div class="admin-manual__row">
+          <input type="text" class="admin-manual__input" [(ngModel)]="code"
+                 placeholder="Ej: ABC12" maxlength="10">
+          <button class="gp-btn gp-btn--ok" (click)="validateAndGenerateCode()">Agregar</button>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
+    <!-- ── Codes table ───────────────────────────── -->
+    <div class="admin-table-section">
+      <div class="admin-table-header">
+        <h2 class="admin-section-title">
+          Códigos de {{ admin?.pais | titlecase }}
+          <span class="admin-section-title__count">{{ filteredCodes.length }}</span>
+        </h2>
+        <div class="admin-search">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="admin-search__icon">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414zm-5.242 1.6a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"/>
+          </svg>
+          <input type="text" class="admin-search__input" placeholder="Buscar código, email, provincia..."
+                 [(ngModel)]="filterText" (input)="filterCodes()">
+        </div>
+      </div>
 
-<div class="modal fade" id="generateCodesModal3" tabindex="-1" aria-labelledby="generateCodesModal3Label" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="generateCodesModal3Label">Generar Códigos de 3 Meses</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form>
-          <div class="mb-3">
-            <label for="codeCount3" class="col-form-label">Cantidad de Códigos:</label>
-            <input type="number" class="form-control" id="codeCount3" [(ngModel)]="codeCount3" name="codeCount3">
-          </div>
-          <div class="modal-footer">
-            <!--button-- type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</!--button-->
-            <button type="button" class="btn btn-primary" (click)="generateCodes(3)" data-bs-dismiss="modal" >Generar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="generateCodesModal6" tabindex="-1"  aria-labelledby="generateCodesModal6Label" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="generateCodesModal6Label">Generar Códigos de 6 Meses</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form>
-          <div class="mb-3">
-            <label for="codeCount6" class="col-form-label">Cantidad de Códigos:</label>
-            <input type="number" class="form-control" id="codeCount6" [(ngModel)]="codeCount6" name="codeCount6">
-          </div>
-          <div class="modal-footer">
-            <!--button-- type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</!--button-->
-            <button type="button" class="btn btn-primary" (click)="generateCodes(6)" data-bs-dismiss="modal">Generar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<div class="modal" tabindex="-1" id="showGeneratedCodesModal" [ngClass]="{ 'd-block': showGeneratedCodesModal }"  aria-labelledby="generateCodesModalLabel" aria-hidden="true" (click)="closeGeneratedCodesModal()">
-  <div class="modal-dialog" (click)="stopEventPropagation($event)">
-    <div class="modal-content" >
-      <div class="modal-header" id="generateCodesModalLabel">
-        <h5 class="modal-title">Códigos Generados</h5>
-        <!--button-- type="button" class="close" (click)="closeGeneratedCodesModal()">&times;</!--button-->
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"  (click)="closeGeneratedCodesModal()" ></button>
-      </div>
-      <div class="modal-body">
-        <table class="table1 table-striped">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
           <thead>
             <tr>
               <th>Código</th>
-              <th >Acciones</th>
+              <th>Tipo</th>
+              <th>Email / Usuario</th>
+              <th>Provincia</th>
+              <th>F. Registro</th>
+              <th>Vigente</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let code of generatedCodes">
-              <td>{{ code.code }}</td>
-
+            <tr *ngFor="let item of getPaginatedCodes()" [class.row--expired]="item.remainingTime === 'Expirado'" [class.row--pending]="!item.email">
               <td>
-                <button type="button" class="btn btn-primary btn-sm" (click)="copyToClipboard(code.code)">Copiar</button>
+                <span class="code-badge">{{ item.code }}</span>
               </td>
+              <td>
+                <span class="tipo-badge" [class.tipo-badge--3]="item.tipo === '3 meses'" [class.tipo-badge--6]="item.tipo === '6 meses'">
+                  {{ item.tipo }}
+                </span>
+              </td>
+              <td class="td--email">
+                <span *ngIf="item.email">{{ item.email }}</span>
+                <span *ngIf="!item.email" class="td--pending">Sin registrar</span>
+              </td>
+              <td>{{ item.provincia || '—' }}</td>
+              <td class="td--date">{{ item.fechaRegistro || '—' }}</td>
+              <td>
+                <span class="remaining" [class.remaining--expired]="item.remainingTime === 'Expirado'">
+                  {{ item.remainingTime || '—' }}
+                </span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button class="ra-btn ra-btn--copy" title="Copiar" (click)="copyToClipboard(item.code)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+                      <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+                    </svg>
+                  </button>
+                  <button class="ra-btn ra-btn--delete" title="Eliminar" (click)="confirmDeleteCode(item.code)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                      <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredCodes.length === 0">
+              <td colspan="7" class="td--empty">No hay códigos para mostrar</td>
             </tr>
           </tbody>
         </table>
       </div>
 
+      <!-- Pagination -->
+      <div class="admin-pagination" *ngIf="totalPages > 1">
+        <button class="pg-btn" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">&#8249;</button>
+        <button class="pg-btn" *ngFor="let p of pageNumbers"
+                [class.pg-btn--active]="p === currentPage"
+                (click)="changePage(p)">{{ p }}</button>
+        <button class="pg-btn" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">&#8250;</button>
+        <span class="pg-info">{{ currentPage }} / {{ totalPages }}</span>
+      </div>
+    </div>
+
+  </div><!-- /admin-body -->
+
+  <!-- ── Generated codes modal ─────────────────── -->
+  <div class="admin-overlay" *ngIf="showGeneratedModal" (click)="showGeneratedModal = false">
+    <div class="admin-modal" (click)="$event.stopPropagation()">
+      <div class="admin-modal__header">
+        <h3>Códigos generados</h3>
+        <button class="admin-modal__close" (click)="showGeneratedModal = false">&#x00D7;</button>
+      </div>
+      <div class="admin-modal__body">
+        <table class="admin-table">
+          <thead><tr><th>Código</th><th>Tipo</th><th>Copiar</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let c of generatedCodes">
+              <td><span class="code-badge">{{ c.code }}</span></td>
+              <td><span class="tipo-badge" [class.tipo-badge--3]="c.tipo === '3 meses'" [class.tipo-badge--6]="c.tipo === '6 meses'">{{ c.tipo }}</span></td>
+              <td>
+                <button class="ra-btn ra-btn--copy" (click)="copyToClipboard(c.code)">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+                    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
+
+  <!-- ── Confirm toast ────────────────────────────── -->
+  <div class="confirm-toast" [class.confirm-toast--top]="confirmToast!.position === 'top'" *ngIf="confirmToast">
+    <div class="confirm-toast__icon">{{ confirmToast.icon }}</div>
+    <div class="confirm-toast__content">
+      <p class="confirm-toast__title">{{ confirmToast.title }}</p>
+      <p class="confirm-toast__message">{{ confirmToast.message }}</p>
+      <div class="confirm-toast__actions">
+        <button class="ct-btn ct-btn--cancel" (click)="confirmNo()">Cancelar</button>
+        <button class="ct-btn ct-btn--confirm" (click)="confirmYes()">Confirmar</button>
+      </div>
+    </div>
+    <button class="confirm-toast__close" (click)="confirmNo()">&#x00D7;</button>
+  </div>
+
+  <!-- ── Edit admin modal ───────────────────────── -->
+  <div class="admin-overlay" *ngIf="showEditAdminPanel" (click)="showEditAdminPanel = false">
+    <div class="ea-card" (click)="$event.stopPropagation()">
+
+      <!-- Header con avatar -->
+      <div class="ea-header">
+        <div class="ea-avatar">{{ admin?.flag }}</div>
+        <div class="ea-header__info">
+          <span class="ea-header__name">{{ admin?.nombre }}</span>
+          <span class="ea-header__country">{{ admin?.pais | titlecase }}</span>
+        </div>
+        <button class="ea-close" (click)="showEditAdminPanel = false">&#x00D7;</button>
+      </div>
+
+      <div class="ea-body">
+
+        <!-- Información general -->
+        <p class="ea-section-label">Información general</p>
+
+        <div class="ea-field">
+          <label class="ea-label">Nombre completo</label>
+          <div class="ea-input-wrap">
+            <svg class="ea-input-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.029 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+            </svg>
+            <input class="ea-input" type="text" [(ngModel)]="editAdminNombre" placeholder="Nombre del administrador">
+          </div>
+        </div>
+
+        <div class="ea-field">
+          <label class="ea-label">Usuario</label>
+          <div class="ea-input-wrap">
+            <svg class="ea-input-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M13.106 7.222c0-2.967-2.249-5.032-5.482-5.032-3.35 0-5.646 2.318-5.646 5.702 0 3.493 2.235 5.708 5.762 5.708.862 0 1.689-.123 2.304-.335v-.862c-.43.199-1.354.328-2.29.328-2.926 0-4.813-1.88-4.813-4.798 0-2.844 1.921-4.881 4.594-4.881 2.735 0 4.608 1.688 4.608 4.156 0 1.682-.554 2.769-1.416 2.769-.492 0-.772-.28-.772-.76V5.206H8.923v.834h-.11c-.266-.595-.881-.964-1.6-.964-1.4 0-2.378 1.162-2.378 2.823 0 1.737.957 2.906 2.379 2.906.8 0 1.415-.39 1.709-1.087h.11c.081.67.703 1.148 1.503 1.148 1.572 0 2.57-1.415 2.57-3.643zm-7.177.704c0-1.197.54-1.907 1.456-1.907.93 0 1.524.738 1.524 1.907S8.308 9.84 7.371 9.84c-.895 0-1.442-.725-1.442-1.914z"/>
+            </svg>
+            <input class="ea-input" type="text" [(ngModel)]="editAdminUsername" placeholder="Nombre de usuario">
+          </div>
+        </div>
+
+        <!-- Contraseña -->
+        <p class="ea-section-label ea-section-label--mt">Seguridad</p>
+
+        <div class="ea-field">
+          <label class="ea-label">Contraseña actual</label>
+          <div class="ea-input-wrap ea-input-wrap--pw">
+            <svg class="ea-input-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"/>
+            </svg>
+            <input class="ea-input" [type]="showEditPassword ? 'text' : 'password'"
+                   [(ngModel)]="editAdminPassword" placeholder="Contraseña actual">
+            <button type="button" class="ea-pw-toggle" (click)="showEditPassword = !showEditPassword" tabindex="-1">
+              <svg *ngIf="!showEditPassword" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+              </svg>
+              <svg *ngIf="showEditPassword" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7 7 0 0 0 2.79-.588M5.21 3.088A7 7 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474z"/>
+                <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="ea-field">
+          <label class="ea-label">Nueva contraseña <span class="ea-label__opt">(opcional)</span></label>
+          <div class="ea-input-wrap ea-input-wrap--pw">
+            <svg class="ea-input-icon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/>
+            </svg>
+            <input class="ea-input" [type]="showEditPasswordNew ? 'text' : 'password'"
+                   [(ngModel)]="editAdminPasswordNew" placeholder="Dejar vacío para no cambiar">
+            <button type="button" class="ea-pw-toggle" (click)="showEditPasswordNew = !showEditPasswordNew" tabindex="-1">
+              <svg *ngIf="!showEditPasswordNew" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+                <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+              </svg>
+              <svg *ngIf="showEditPasswordNew" xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="m10.79 12.912-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7 7 0 0 0 2.79-.588M5.21 3.088A7 7 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474z"/>
+                <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829zm4.95.708-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829zm3.171 6-12-12 .708-.708 12 12z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <p class="ea-error" *ngIf="editAdminError">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+            <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+          </svg>
+          {{ editAdminError }}
+        </p>
+
+        <!-- Botones -->
+        <div class="ea-actions">
+          <button class="ea-btn ea-btn--cancel" (click)="showEditAdminPanel = false">Cancelar</button>
+          <button class="ea-btn ea-btn--save" (click)="saveAdminChanges()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+            </svg>
+            Guardar cambios
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 </div>
-
-
-

@@ -2,6 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
 
+import {  shareReplay } from 'rxjs/operators';
+
+import { APP_API_URL } from '../core/api/api.config';
+import { extractApiErrorMessage } from '../core/http/api-error.util';
+
+
 
 //interface Tarea { id?: number; nombre: string; costo: number; area: number; descripcion: string; descuento: number}
 
@@ -24,8 +30,13 @@ export interface Tarea {
   providedIn: 'root'
 })
 export class TareaService {
+
 //private apiUrl = 'http://localhost:8080/api/tareas'
-private apiUrl = 'https://adequate-education-production.up.railway.app/api/tareas';
+//private apiUrl = 'https://adequate-education-production.up.railway.app/api/tareas';
+private tareasCache = new Map<string, Observable<Tarea[]>>();
+
+private apiUrl = `${APP_API_URL}/tareas`;
+
 
   constructor(private http: HttpClient) { }
 
@@ -40,6 +51,21 @@ private apiUrl = 'https://adequate-education-production.up.railway.app/api/tarea
     return this.http.get<Tarea[]>(`${this.apiUrl}/by-pais?pais=${pais}`)
       .pipe(catchError(this.handleError));
   }
+
+  getTareasByPaisCached(pais: string, force = false): Observable<Tarea[]> {
+  if (!force && this.tareasCache.has(pais)) {
+    return this.tareasCache.get(pais)!;
+  }
+
+  const req$ = this.http.get<Tarea[]>(`${this.apiUrl}/by-pais?pais=${pais}`)
+    .pipe(
+      shareReplay(1),
+      catchError(this.handleError)
+    );
+
+  this.tareasCache.set(pais, req$);
+  return req$;
+}
 
   agregarTarea(tarea: Tarea): Observable<Tarea> {
     return this.http.post<Tarea>(this.apiUrl, tarea)
@@ -57,7 +83,13 @@ private apiUrl = 'https://adequate-education-production.up.railway.app/api/tarea
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('Ocurrió un error:', error);
-    return throwError('Algo salió mal; por favor, intente nuevamente más tarde.');
+    const errorMessage = extractApiErrorMessage(
+      error,
+      'Algo salio mal; por favor, intente nuevamente mas tarde.'
+    );
+    console.error('Ocurrio un error:', errorMessage, error);
+    return throwError(() => new Error(errorMessage));
   }
 }
+
+
