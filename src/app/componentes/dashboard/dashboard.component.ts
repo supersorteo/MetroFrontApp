@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { Subject } from 'rxjs';
+import { interval, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
@@ -212,83 +212,54 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
     private toastr: ToastrService,
     private http: HttpClient ){}
 
-  ngOnInit() {
-
-    this.trialMode = this.isTrialMode();
-
-if (this.trialMode) {
-  this.loadDemoData();
-  return;
-}
-
-    this.loadUserCode();
+  ngOnInit(): void {
+    this.initSession();
+    if (this.trialMode) return;
+    this.restorePendingBudget();
     this.loadTareasAgregadas();
+    this.initEmpresas();
+    this.initUiState();
+  }
 
-    // Obtener empresas para el ng-select al iniciar
-    setTimeout(() => {
-      if (this.userCode) {
-        this.getEmpresasByUserCode();
-      }
-    }, 0);
-
-    // Recargar clientes si se editó alguno
+  // ── Sesión: leer userCode, detectar demo, fetchUserData o redirigir ──────
+  private initSession(): void {
+    this.trialMode = this.isTrialMode();
+    if (this.trialMode) {
+      this.loadDemoData();
+      return;
+    }
+    this.loadUserCode();
     if (localStorage.getItem('reloadClientes')) {
       this.getClientesByUserCode();
       localStorage.removeItem('reloadClientes');
     }
+  }
 
-    // Persistencia: cargar empresa seleccionada y su imagen
-    setTimeout(() => {
-      const selectedId = localStorage.getItem('selectedEmpresaId');
-      if (selectedId && this.empresas && this.empresas.length > 0) {
-        const empresa = this.empresas.find(e => String(e.id) === selectedId);
-        if (empresa) {
-          this.selectedEmpresaId = empresa;
-          const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
-          if (empresa.logoUrl && imageElement) {
-            imageElement.src = empresa.logoUrl;
-            imageElement.style.display = 'block';
-          }
-        }
-      }
-      // Restaurar selección de cliente (objeto completo)
-      const storedCliente = localStorage.getItem('selectedCliente');
-      if (storedCliente) {
-        try {
-          const clienteObj = JSON.parse(storedCliente);
-          const cliente = this.clientes.find(c => c.id === clienteObj.id);
-          if (cliente) {
-            this.clienteSeleccionado = cliente;
-          }
-        } catch (e) {
-          console.error('Error restaurando cliente seleccionado:', e);
-        }
-      }
-    }, 500);
+  // ── Empresas: traer empresas → selección → clientes → presupuesto ────────
+  private initEmpresas(): void {
+    if (this.userCode) {
+      this.getEmpresasByUserCode();
+    }
+  }
 
+  // ── Presupuesto pendiente: leer antes de initEmpresas para que el ────────
+  //    callback de clientes lo encuentre en this.presupuestoPendiente ────────
+  private restorePendingBudget(): void {
+    const stored = localStorage.getItem('presupuestoCargado');
+    if (stored) {
+      this.presupuestoPendiente = JSON.parse(stored) as SavedPresupuesto;
+    }
+  }
 
-
-    setInterval(() => {
+  // ── UI auxiliar: countdown, colorScheme, fecha de presupuesto ────────────
+  private initUiState(): void {
+    interval(1000).pipe(takeUntil(this.destroy$)).subscribe(() => {
       if (this.userData?.fechaVencimiento) {
         this.calculateRemainingTime(this.userData.fechaVencimiento);
       }
-    }, 1000);
-    this.obtenerTareas();
+    });
     this.colorScheme = this.loadColorScheme();
-
-    const today = new Date();
-    this.budgetDate = today.toISOString().split('T')[0];
-    setTimeout(() => {
-      this.budgetDate = this.budgetDate;
-    }, 0);
-
-
-const storedPresupuesto = localStorage.getItem('presupuestoCargado');
-if (storedPresupuesto) {
-  this.presupuestoPendiente = JSON.parse(storedPresupuesto) as SavedPresupuesto;
-}
-
-
+    this.budgetDate = new Date().toISOString().split('T')[0];
   }
 
 

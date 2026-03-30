@@ -22,7 +22,6 @@ export interface AdminLoginResult {
 }
 
 const SESSION_KEY = 'metro_admin_session';
-const CODE_MAP_KEY = 'metro_code_country_map';
 const API_URL = `${API_BASE_URL}/admin-panel`;
 
 @Injectable({ providedIn: 'root' })
@@ -123,49 +122,4 @@ export class AdminService {
     );
   }
 
-  tagCodes(codes: string[], pais: string): void {
-    const map = this.getCodeCountryMap();
-    codes.forEach(code => {
-      map[code] = pais;
-    });
-    localStorage.setItem(CODE_MAP_KEY, JSON.stringify(map));
-  }
-
-  getCodeCountryMap(): { [code: string]: string } {
-    try {
-      const stored = localStorage.getItem(CODE_MAP_KEY);
-      return stored ? JSON.parse(stored) : {};
-    } catch {
-      return {};
-    }
-  }
-
-  removeCodeFromMap(code: string): void {
-    const map = this.getCodeCountryMap();
-    delete map[code];
-    localStorage.setItem(CODE_MAP_KEY, JSON.stringify(map));
-  }
-
-  getCountryOfProvince(provincia: string): string | null {
-    if (!provincia) return null;
-    const p = provincia.toLowerCase();
-
-    const AR = ['buenos aires', 'cordoba', 'santa fe', 'mendoza', 'tucuman', 'entre rios', 'salta',
-      'misiones', 'chaco', 'corrientes', 'santiago del estero', 'san juan', 'jujuy', 'rio negro',
-      'neuquen', 'formosa', 'chubut', 'san luis', 'catamarca', 'la rioja', 'la pampa', 'santa cruz',
-      'tierra del fuego'];
-    const UY = ['artigas', 'canelones', 'cerro largo', 'colonia', 'durazno', 'flores', 'florida',
-      'lavalleja', 'maldonado', 'montevideo', 'paysandu', 'rio negro', 'rivera', 'rocha', 'salto',
-      'san jose', 'soriano', 'tacuarembo', 'treinta y tres'];
-    const CO = ['bogota', 'antioquia', 'valle del cauca', 'cundinamarca', 'atlantico', 'bolivar',
-      'santander', 'narino', 'cordoba', 'tolima', 'cauca', 'norte de santander', 'huila', 'meta',
-      'magdalena', 'boyaca', 'cesar', 'risaralda', 'caldas', 'sucre', 'quindio', 'choco', 'arauca',
-      'casanare', 'putumayo', 'la guajira', 'amazonas', 'guainia', 'guaviare', 'vaupes', 'vichada',
-      'san andres', 'caqueta'];
-
-    if (AR.some(x => p.includes(x))) return 'argentina';
-    if (UY.some(x => p.includes(x))) return 'uruguay';
-    if (CO.some(x => p.includes(x))) return 'colombia';
-    return null;
-  }
 }
