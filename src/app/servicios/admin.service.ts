@@ -78,12 +78,13 @@ export class AdminService {
           return { admin: null, error: 'Credenciales incorrectas.' };
         }
 
-        if (admin.pais !== pais) {
+        const normalized = this.normalizeAdmin(admin);
+        if (normalized.pais !== pais) {
           this.logout();
           return { admin: null, error: 'Estas credenciales no corresponden a este pais.' };
         }
 
-        return { admin, error: '' };
+        return { admin: normalized, error: '' };
       })
     );
   }
