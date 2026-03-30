@@ -1,16 +1,21 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
+import { AccessCodeService } from '../../servicios/access-code.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { ProvinciaService } from '../../servicios/provincia.service';
-import { MembershipCatalogCountry, MembershipPaymentService } from '../../servicios/membership-payment.service';
+import { MembershipPaymentService } from '../../servicios/membership-payment.service';
 import { PayPalPaymentService } from '../../servicios/paypal-payment.service';
 import { countryDisplayName } from '../../core/country/country.util';
+import { accessCodeCountryMismatchMessage } from '../../core/country/access-code.util';
+import { phonePlaceholder, sanitizePhoneInput, validatePhoneByCountry } from '../../core/country/phone.util';
+import { buildMembershipCheckoutPayload, buildPayPalCheckoutPayload, mapMembershipCountryOption, MembershipCheckoutForm, MembershipCountryOption, validateMembershipCheckoutForm } from '../../core/membership/membership-checkout.util';
+import { extractApiErrorMessage } from '../../core/http/api-error.util';
 import Swal from 'sweetalert2';
-import { AdminService, Admin } from '../../servicios/admin.service';
+import { AdminService, AdminCountry } from '../../servicios/admin.service';
 declare var bootstrap: any;
 
 interface Provincia {
@@ -22,12 +27,6 @@ interface Country {
   nombre: string;
   codigo: string;
   flag: string;
-}
-
-interface MembershipCountryOption extends Country {
-  currency: string;
-  documentLabel: string;
-  plans: { months: number; amount: number }[];
 }
 
 @Component({
@@ -83,11 +82,11 @@ export class LoginComponent implements OnInit{
 
   // Admin login
   adminCountries = [
-    { pais: 'argentina' as const, flag: '🇦🇷', nombre: 'Argentina' },
-    { pais: 'uruguay'   as const, flag: '🇺🇾', nombre: 'Uruguay'   },
-    { pais: 'colombia'  as const, flag: '🇨🇴', nombre: 'Colombia'  },
+    { pais: 'argentina' as const, flag: 'AR', nombre: 'Argentina' },
+    { pais: 'uruguay'   as const, flag: 'UY', nombre: 'Uruguay'   },
+    { pais: 'colombia'  as const, flag: 'CO', nombre: 'Colombia'  },
   ];
-  selectedAdminPais: 'argentina' | 'uruguay' | 'colombia' | null = null;
+  selectedAdminPais: AdminCountry | null = null;
   adminUsername = '';
   adminPassword = '';
   adminLoginError = '';
@@ -96,6 +95,7 @@ export class LoginComponent implements OnInit{
   @ViewChild('exampleModal') exampleModal!: ElementRef;
 
 constructor(private authService: AuthService,
+  private accessCodeService: AccessCodeService,
   private route:Router,
   private activatedRoute: ActivatedRoute,
   private renderer: Renderer2,
@@ -126,26 +126,26 @@ constructor(private authService: AuthService,
 
 login(): void {
   if (this.code.trim().length === 0) {
-    Swal.fire('Error', 'Debe ingresar su código', 'error');
+    Swal.fire('Error', 'Debe ingresar su codigo', 'error');
     return;
   }
   this.authService.login(this.code).subscribe(
     response => {
-      if (response.email && response.email !== 'Código no encontrado' && response.email !== 'Código existe pero no asignado a un usuario') {
+      if (response.email && response.email !== 'Codigo no encontrado' && response.email !== 'Codigo existe pero no asignado a un usuario') {
         this.isAuthenticated = true;
         this.email = response.email;
         //localStorage.clear();
         this.route.navigate(['dashboard']);
-        Swal.fire('Éxito', 'Login exitoso', 'success');
+        Swal.fire('Exito', 'Login exitoso', 'success');
         localStorage.setItem('userCode', this.code);
         localStorage.setItem('userEmail', this.email);
         localStorage.setItem('userData', JSON.stringify(response)); // Guardar objeto completo
       } else {
-        Swal.fire('Error', response.email || 'Error al iniciar sesión', 'error');
+        Swal.fire('Error', response.email || 'Error al iniciar sesion', 'error');
       }
     },
     error => {
-      const msg = error.error?.email || error.message || 'Error al iniciar sesión';
+      const msg = error.error?.email || error.message || 'Error al iniciar sesion';
       Swal.fire('Error', msg, 'error');
     }
   );
@@ -160,12 +160,12 @@ login(): void {
       return;
     }
 
-    const normalizedCode = this.code.trim().toUpperCase();
+    const normalizedCode = this.accessCodeService.normalizeCode(this.code);
 
-    this.authService.getUserCode(normalizedCode).subscribe({
-      next: (accessCode) => {
+    this.accessCodeService.getCodeCountry(normalizedCode).subscribe({
+      next: (detectedCountry) => {
         this.code = normalizedCode;
-        this.codeCountry = countryDisplayName(accessCode?.pais || null);
+        this.codeCountry = detectedCountry;
         this.codeCountryErrorMessage = this.getCodeCountryMismatchMessage();
 
         if (this.codeCountryErrorMessage) {
@@ -182,8 +182,8 @@ login(): void {
           provincia: this.provincia
         }).subscribe(
           response => {
-            if (response.message === 'Datos asignados con éxito') {
-              Swal.fire('Éxito', response.message, 'success');
+            if (response.message === 'Datos asignados con exito') {
+              Swal.fire('Exito', response.message, 'success');
               this.clearForm();
             } else {
               Swal.fire('Error', response.message, 'error');
@@ -201,7 +201,7 @@ login(): void {
   }
 
     validateForm(): void {
-      const phoneValidation = this.validatePhoneByCountry(this.telefono, this.pais);
+      const phoneValidation = validatePhoneByCountry(this.telefono, this.pais);
       this.telefonoErrorMessage = phoneValidation.message;
       this.codeCountryErrorMessage = this.getCodeCountryMismatchMessage();
       this.isFormValid = this.code.trim().length > 0 &&
@@ -249,14 +249,14 @@ login(): void {
   }
 
   onCodeInput(): void {
-    this.code = this.code.trim().toUpperCase();
+    this.code = this.accessCodeService.normalizeCode(this.code);
     this.codeCountry = null;
     this.codeCountryErrorMessage = '';
     this.validateForm();
   }
 
   syncCountryWithCode(showErrors: boolean = true): void {
-    const normalizedCode = this.code.trim().toUpperCase();
+    const normalizedCode = this.accessCodeService.normalizeCode(this.code);
     if (!normalizedCode) {
       this.codeCountry = null;
       this.codeCountryErrorMessage = '';
@@ -264,10 +264,9 @@ login(): void {
       return;
     }
 
-    this.authService.getUserCode(normalizedCode).subscribe({
-      next: (accessCode) => {
+    this.accessCodeService.getCodeCountry(normalizedCode).subscribe({
+      next: (detectedCountry) => {
         this.code = normalizedCode;
-        const detectedCountry = countryDisplayName(accessCode?.pais || null);
         this.codeCountry = detectedCountry;
 
         if (detectedCountry && this.pais !== detectedCountry) {
@@ -345,7 +344,7 @@ login(): void {
   const demoTareas = [
   {
     id: 1,
-    tarea: 'BASE ZAPATA ARMADO Y LLENADO Hº (1,00X1,00X0,80)',
+    tarea: 'BASE ZAPATA ARMADO Y LLENADO H O (1,00X1,00X0,80)',
     costo: 1234,
     rubro: 'Demo',
     categoria: 'Demo',
@@ -357,7 +356,7 @@ login(): void {
   },
   {
     id: 2,
-    tarea: 'BASE ZAPATA ARMADO Y LLENADO Hº X M3',
+    tarea: 'BASE ZAPATA ARMADO Y LLENADO H O X M3',
     costo: 1234,
     rubro: 'Demo',
     categoria: 'Demo',
@@ -393,7 +392,7 @@ login(): void {
   },
   {
     id: 5,
-    tarea: 'BASE Hº LIMPIEZA 5 CM DE ESPESOR Hº 180 A200 KG/M3 + CENTRADO ARMADURA',
+    tarea: 'BASE H O LIMPIEZA 5 CM DE ESPESOR H O 180 A200 KG/M3 + CENTRADO ARMADURA',
     costo: 1234,
     rubro: 'Demo',
     categoria: 'Demo',
@@ -502,8 +501,8 @@ const demoCliente = {
 
 
 openWebsite(): void {
-  const phone = '54 9 11 2863-4744'; // Reemplaza con el número real
-  const text = 'Hola! quiero una clave de membresía para "METRO"';
+  const phone = '54 9 11 2863-4744'; // Reemplaza con el numero real
+  const text = 'Hola! quiero una clave de membresia para "METRO"';
   const whatsappUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
   const fallbackUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
   try {
@@ -515,7 +514,7 @@ openWebsite(): void {
 
     shareOnWhatsApp(): void {
       const url = 'www.metroapp.site';
-      const text = `METRO, la app con precios de la construcción. Hacé tus presupuestos más fácil y rápido. ${url}`;
+      const text = `METRO, la app con precios de la construccion. Hace tus presupuestos mas facil y rapido. ${url}`;
       const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(text)}`; window.location.href = whatsappUrl;
     }
 
@@ -541,22 +540,22 @@ openWebsite(): void {
     }
 
     get canStartCheckout(): boolean {
-      const phoneEmpty = !this.purchasePhone.trim();
-      const phoneValidation = this.validatePhoneByCountry(
-        this.purchasePhone,
+      return validateMembershipCheckoutForm(
+        this.purchaseCheckoutForm,
         this.selectedMembershipCountry?.nombre || null
-      );
-      const phoneOk = phoneEmpty || phoneValidation.valid;
-      const documentRequired = this.purchaseCountryCode === 'AR';
-      return !!(
-        this.purchaseCountryCode &&
-        this.purchasePlanMonths &&
-        this.purchaseName.trim() &&
-        this.purchaseEmail.trim() &&
-        phoneOk &&
-        (!documentRequired || this.purchaseDocument.trim()) &&
-        this.purchaseProvince.trim()
-      );
+      ).valid;
+    }
+
+    get purchaseCheckoutForm(): MembershipCheckoutForm {
+      return {
+        countryCode: this.purchaseCountryCode,
+        planMonths: this.purchasePlanMonths,
+        payerName: this.purchaseName,
+        payerEmail: this.purchaseEmail,
+        payerPhone: this.purchasePhone,
+        payerDocument: this.purchaseDocument,
+        province: this.purchaseProvince
+      };
     }
 
     loadMembershipCatalog(): void {
@@ -564,7 +563,7 @@ openWebsite(): void {
       this.membershipPaymentService.getCatalog().subscribe({
         next: (catalog) => {
           this.membershipCountries = Object.entries(catalog.countries)
-            .map(([countryCode, country]) => this.mapMembershipCountry(countryCode, country))
+            .map(([countryCode, country]) => mapMembershipCountryOption(countryCode, country, this.countries))
             .sort((left, right) => left.nombre.localeCompare(right.nombre));
           this.isLoadingCatalog = false;
         },
@@ -597,28 +596,21 @@ openWebsite(): void {
     }
 
     startMembershipCheckout(): void {
-      const phoneValidation = this.validatePhoneByCountry(
-        this.purchasePhone,
+      const validation = validateMembershipCheckoutForm(
+        this.purchaseCheckoutForm,
         this.selectedMembershipCountry?.nombre || null
       );
-      this.purchasePhoneErrorMessage = phoneValidation.message;
+      this.purchasePhoneErrorMessage = validation.phoneMessage;
 
-      if (!this.canStartCheckout || !this.purchaseCountryCode || !this.purchasePlanMonths) {
+      if (!validation.valid || !this.purchaseCountryCode || !this.purchasePlanMonths) {
         Swal.fire('Faltan datos', this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.', 'warning');
         return;
       }
 
       this.isStartingCheckout = true;
-      this.membershipPaymentService.createCheckout({
-        countryCode: this.purchaseCountryCode,
-        planMonths: this.purchasePlanMonths,
-        payerName: this.purchaseName.trim(),
-        payerEmail: this.purchaseEmail.trim(),
-        payerPhone: this.purchasePhone.trim(),
-        payerDocument: this.purchaseDocument.trim(),
-        province: this.purchaseProvince.trim(),
-        callbackUrl: `${window.location.origin}/payment-result`
-      }).subscribe({
+      this.membershipPaymentService.createCheckout(
+        buildMembershipCheckoutPayload(this.purchaseCheckoutForm, `${window.location.origin}/payment-result`)
+      ).subscribe({
         next: (order) => {
           this.isStartingCheckout = false;
           if (!order.redirectUrl) {
@@ -630,28 +622,27 @@ openWebsite(): void {
         },
         error: (error) => {
           this.isStartingCheckout = false;
-          Swal.fire('Error', error?.message || 'No se pudo iniciar el checkout.', 'error');
+          Swal.fire('Error', this.getCheckoutErrorMessage(error, 'No se pudo iniciar el checkout.'), 'error');
         }
       });
     }
 
     startPayPalCheckout(): void {
-      if (!this.canStartCheckout || !this.purchaseCountryCode || !this.purchasePlanMonths) {
-        Swal.fire('Faltan datos', 'Completa los datos para iniciar el pago.', 'warning');
+      const validation = validateMembershipCheckoutForm(
+        this.purchaseCheckoutForm,
+        this.selectedMembershipCountry?.nombre || null
+      );
+      this.purchasePhoneErrorMessage = validation.phoneMessage;
+
+      if (!validation.valid || !this.purchaseCountryCode || !this.purchasePlanMonths) {
+        Swal.fire('Faltan datos', this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.', 'warning');
         return;
       }
 
       this.isStartingPayPal = true;
-      this.payPalPaymentService.createCheckout({
-        countryCode: this.purchaseCountryCode,
-        planMonths: this.purchasePlanMonths,
-        payerName: this.purchaseName.trim(),
-        payerEmail: this.purchaseEmail.trim(),
-        payerPhone: this.purchasePhone.trim() || undefined,
-        payerDocument: this.purchaseDocument.trim() || undefined,
-        province: this.purchaseProvince.trim(),
-        callbackUrl: `${window.location.origin}/payment-result`
-      }).subscribe({
+      this.payPalPaymentService.createCheckout(
+        buildPayPalCheckoutPayload(this.purchaseCheckoutForm, `${window.location.origin}/payment-result`)
+      ).subscribe({
         next: (order) => {
           this.isStartingPayPal = false;
           if (!order.approvalUrl) {
@@ -663,77 +654,41 @@ openWebsite(): void {
         },
         error: (error) => {
           this.isStartingPayPal = false;
-          Swal.fire('Error', error?.error?.message || 'No se pudo iniciar el checkout con PayPal.', 'error');
+          Swal.fire('Error', this.getCheckoutErrorMessage(error, 'No se pudo iniciar el checkout con PayPal.'), 'error');
         }
       });
     }
 
-    private mapMembershipCountry(countryCode: string, country: MembershipCatalogCountry): MembershipCountryOption {
-      const current = this.countries.find(item => item.codigo === countryCode);
-      return {
-        nombre: country.displayName,
-        codigo: countryCode,
-        flag: current?.flag || '',
-        currency: country.currency,
-        documentLabel: country.documentLabel,
-        plans: Object.entries(country.plans)
-          .map(([months, amount]) => ({ months: Number(months), amount }))
-          .sort((left, right) => left.months - right.months)
-      };
-    }
-
     get telefonoPlaceholder(): string {
-      return this.getPhonePlaceholder(this.pais);
+      return phonePlaceholder(this.pais);
     }
 
     get purchasePhonePlaceholder(): string {
-      return this.getPhonePlaceholder(this.selectedMembershipCountry?.nombre || null);
+      return phonePlaceholder(this.selectedMembershipCountry?.nombre || null);
     }
 
     onTelefonoInput(): void {
-      this.telefono = this.sanitizePhoneInput(this.telefono);
+      this.telefono = sanitizePhoneInput(this.telefono);
       this.validateForm();
     }
 
     onPurchasePhoneInput(): void {
-      this.purchasePhone = this.sanitizePhoneInput(this.purchasePhone);
-      this.purchasePhoneErrorMessage = this.validatePhoneByCountry(
-        this.purchasePhone,
+      this.purchasePhone = sanitizePhoneInput(this.purchasePhone);
+      this.purchasePhoneErrorMessage = validateMembershipCheckoutForm(
+        this.purchaseCheckoutForm,
         this.selectedMembershipCountry?.nombre || null
-      ).message;
-    }
-
-    private sanitizePhoneInput(value: string): string {
-      return value.replace(/[^0-9+\s()-]/g, '');
-    }
-
-    private getPhonePlaceholder(country: string | null): string {
-      switch (country) {
-        case 'Argentina':
-          return 'Ej: 11 2345-6789 o +54 9 11 2345-6789';
-        case 'Uruguay':
-          return 'Ej: 091 234 567 o +598 91 234 567';
-        case 'Colombia':
-          return 'Ej: 300 123 4567 o +57 300 123 4567';
-        default:
-          return 'Telefono';
-      }
+      ).phoneMessage;
     }
 
     private getCodeCountryMismatchMessage(): string {
-      const detectedCountry = countryDisplayName(this.codeCountry);
-      const selectedCountry = countryDisplayName(this.pais);
-
-      if (!detectedCountry || !selectedCountry) {
-        return '';
-      }
-
-      return detectedCountry === selectedCountry
-        ? ''
-        : `El codigo ingresado pertenece a ${detectedCountry}.`;
+      return accessCodeCountryMismatchMessage(this.codeCountry, this.pais);
     }
 
-  selectAdminCountry(pais: 'argentina' | 'uruguay' | 'colombia'): void {
+    private getCheckoutErrorMessage(error: unknown, fallback: string): string {
+      return extractApiErrorMessage(error, fallback);
+    }
+
+  selectAdminCountry(pais: AdminCountry): void {
     const current = this.adminService.getCurrentAdmin();
     if (current && current.pais === pais) {
       this.route.navigate(['/admin-generate-code']);
@@ -747,74 +702,14 @@ openWebsite(): void {
   }
 
   adminLogin(): void {
-    if (!this.adminUsername.trim() || !this.adminPassword.trim()) {
-      this.adminLoginError = 'Complete usuario y contraseña.';
-      return;
-    }
     this.adminLoginError = '';
-    this.adminService.login(this.adminUsername, this.adminPassword).subscribe(admin => {
-      if (!admin) {
-        this.adminLoginError = 'Credenciales incorrectas.';
-        return;
-      }
-      if (admin.pais !== this.selectedAdminPais) {
-        this.adminService.logout();
-        this.adminLoginError = 'Estas credenciales no corresponden a este país.';
+    this.adminService.loginForCountry(this.adminUsername, this.adminPassword, this.selectedAdminPais).subscribe(result => {
+      if (result.error) {
+        this.adminLoginError = result.error;
         return;
       }
       this.route.navigate(['/admin-generate-code']);
     });
   }
 
-    private validatePhoneByCountry(rawPhone: string, country: string | null): { valid: boolean; message: string } {
-      const phone = rawPhone.trim();
-      if (!country) {
-        return { valid: false, message: 'Selecciona un pais antes de cargar el telefono.' };
-      }
-      if (!phone) {
-        return { valid: false, message: 'El telefono es obligatorio.' };
-      }
-
-      let digits = phone.replace(/\D/g, '');
-
-      switch (country) {
-        case 'Argentina':
-          if (digits.startsWith('54')) {
-            digits = digits.slice(2);
-          }
-          if (digits.startsWith('9') && digits.length >= 11) {
-            digits = digits.slice(1);
-          }
-          if (digits.startsWith('0') && digits.length >= 11) {
-            digits = digits.slice(1);
-          }
-          return digits.length >= 10 && digits.length <= 11
-            ? { valid: true, message: '' }
-            : { valid: false, message: 'El telefono de Argentina debe tener entre 10 y 11 digitos validos.' };
-
-        case 'Uruguay':
-          if (digits.startsWith('598')) {
-            digits = digits.slice(3);
-          }
-          if (digits.startsWith('0') && digits.length === 9) {
-            digits = digits.slice(1);
-          }
-          return digits.length === 8
-            ? { valid: true, message: '' }
-            : { valid: false, message: 'El telefono de Uruguay debe tener 8 digitos validos.' };
-
-        case 'Colombia':
-          if (digits.startsWith('57')) {
-            digits = digits.slice(2);
-          }
-          return digits.length === 10
-            ? { valid: true, message: '' }
-            : { valid: false, message: 'El telefono de Colombia debe tener 10 digitos validos.' };
-
-        default:
-          return digits.length >= 8 && digits.length <= 15
-            ? { valid: true, message: '' }
-            : { valid: false, message: 'El telefono no tiene un formato valido.' };
-      }
-    }
 }
