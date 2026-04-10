@@ -151,6 +151,8 @@ export class AuthService {
 
   getAllCodes(): Observable<AccessCode[]> { return this.http.get<AccessCode[]>(`${this.apiUrl}/codes`); }
 
+  getCodesByPais(pais: string): Observable<AccessCode[]> { return this.http.get<AccessCode[]>(`${this.apiUrl}/codes/pais/${pais}`).pipe(catchError(this.handleError1)); }
+
   getUserCode(code: string): Observable<AccessCode> { return this.http.get<AccessCode>(`${this.apiUrl}/codes/${code}`) .pipe( catchError(this.handleError1) ); }
 
   addCode(accessCode: AccessCode): Observable<AccessCode> { return this.http.post<AccessCode>(`${this.apiUrl}/codes`, accessCode); }

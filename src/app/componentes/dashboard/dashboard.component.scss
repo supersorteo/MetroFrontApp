@@ -294,7 +294,7 @@
   justify-content: center;
   align-items: center;
   padding: 0px;
-  background: linear-gradient(0deg, rgba(233, 238, 244, 1) 0%, rgba(68, 148, 242, 0.5858718487394958) 49%, rgba(233, 235, 238, 0.5858718487394958) 100%);
+  background: transparent;
 }
 
 .alineacion {
@@ -375,7 +375,7 @@ button{
   top: 0.5rem;
   margin: 0 0 0 7px;
   padding: 0 3px;
-background-image: linear-gradient(to bottom, #5781dd, #5179e1, #4f71e4, #4f68e6, #525ee7); 
+background-image: linear-gradient(to bottom, #5781dd, #5179e1, #4f71e4, #4f68e6, #525ee7);
 width: fit-content;
 border-radius: 4px;
 }
@@ -995,6 +995,7 @@ p {
   font-size: 1.15rem;
   font-weight: 800;
   color: #1f4bc1;
+  color: #115bcc;
   margin-bottom: 10px;
   display: flex;
   align-items: center;
@@ -1083,12 +1084,12 @@ p {
 }
 
 .cliente-card .card-text {
-  color: #2d3c55;
+  color: #2364cf;
   margin-bottom: 6px;
 }
 
 .cliente-card .card-text strong {
-  color: #0b2a59;
+  color: #206ee5;
   font-weight: 700;
 }
 
@@ -1261,7 +1262,7 @@ p {
   display: grid;
   grid-template-columns: repeat(5, minmax(70px, 1fr));
   gap: 10px;
- 
+
   border-radius: 12px;
 
   box-shadow: 0 10px 24px rgba(12, 44, 110, 0.18);
@@ -1270,7 +1271,7 @@ p {
         grid-template-columns: repeat(5, minmax(0, 1fr));
         border-radius: 10px;
         padding: 2px;
-   
+
         background-image: linear-gradient(to bottom, #e9e9e9, #edf3fa, #e8eef2, #f5fcff, #ffffff);
 }
 
@@ -1783,4 +1784,306 @@ p {
 
 .modal-zona-label {
   font-weight: 800;
+}
+
+
+/* ═════════════════════════════════════════════════════════
+   DASH-MODAL — Dark glassmorphism theme for all modals
+   ═════════════════════════════════════════════════════════ */
+
+/* Entrada animada */
+@keyframes dashModalIn {
+  from { opacity: 0; transform: translateY(-18px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)     scale(1);    }
+}
+
+/* Overlay */
+.modal-backdrop.show {
+  background-color: rgba(5, 15, 40, 0.82) !important;
+}
+
+/* Modal dialog position tweak */
+.modal.show .modal-dialog:has(.dash-modal) {
+  animation: dashModalIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Contenedor principal ───────────────────────────── */
+.dash-modal {
+  background: linear-gradient(145deg, #0d1f3c 0%, #0a1628 60%, #06101e 100%) !important;
+  border: 1px solid rgba(99, 179, 237, 0.22) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 28px 70px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04) !important;
+  color: #e2eaf6;
+  overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+.dash-modal .modal-header {
+  background: linear-gradient(90deg, rgba(28,55,105,0.9) 0%, rgba(13,32,66,0.9) 100%) !important;
+  border-bottom: 1px solid rgba(99, 179, 237, 0.18) !important;
+  border-radius: 18px 18px 0 0 !important;
+  padding: 1rem 1.4rem;
+}
+
+.dash-modal .modal-title {
+  color: #e8f0ff !important;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.3px;
+}
+
+.dash-modal .modal-header .btn-close {
+  filter: invert(1) brightness(1.8);
+  opacity: 0.65;
+}
+.dash-modal .modal-header .btn-close:hover { opacity: 1; }
+
+/* ── Body ───────────────────────────────────────────── */
+.dash-modal .modal-body {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  padding: 1.3rem 1.4rem !important;
+  color: #e2eaf6;
+}
+
+.dash-modal .modal-body .mb-3,
+.dash-modal .modal-body .coolinput {
+  margin-bottom: 1.1rem !important;
+}
+
+/* Labels */
+.dash-modal .modal-body label,
+.dash-modal .modal-body .form-label,
+.dash-modal .modal-body label.text,
+.dash-modal .modal-body .col-form-label {
+  color: #7eb8e8 !important;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  background: none !important;
+  background-image: none !important;
+}
+
+/* Inputs / Selects / Textareas (override inline styles too) */
+.dash-modal .modal-body input,
+.dash-modal .modal-body select,
+.dash-modal .modal-body textarea,
+.dash-modal .modal-body .form-control,
+.dash-modal .modal-body .form-select,
+.dash-modal .modal-body .input {
+  background: rgba(255,255,255,0.06) !important;
+  background-image: none !important;
+  border: 1px solid rgba(99,179,237,0.28) !important;
+  border-radius: 8px !important;
+  color: #ddeeff !important;
+  padding: 0.5rem 0.75rem !important;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dash-modal .modal-body input:focus,
+.dash-modal .modal-body select:focus,
+.dash-modal .modal-body textarea:focus,
+.dash-modal .modal-body .form-control:focus,
+.dash-modal .modal-body .form-select:focus {
+  background: rgba(255,255,255,0.1) !important;
+  border-color: rgba(99,179,237,0.65) !important;
+  box-shadow: 0 0 0 3px rgba(99,179,237,0.14) !important;
+  color: #fff !important;
+  outline: none !important;
+}
+
+.dash-modal .modal-body input::placeholder,
+.dash-modal .modal-body textarea::placeholder {
+  color: rgba(150,190,225,0.4) !important;
+}
+
+.dash-modal .modal-body select option {
+  background: #0d1f3c;
+  color: #e2eaf6;
+}
+
+/* Readonly inputs */
+.dash-modal .modal-body input[readonly],
+.dash-modal .modal-body textarea[readonly] {
+  background: rgba(255,255,255,0.03) !important;
+  color: rgba(200,218,240,0.6) !important;
+  cursor: default;
+}
+
+/* ── Tables ─────────────────────────────────────────── */
+.dash-modal .modal-body .table {
+  color: #c8daf0 !important;
+  border-color: rgba(99,179,237,0.12);
+  --bs-table-bg: transparent;
+  --bs-table-color: #c8daf0;
+  --bs-table-border-color: rgba(99,179,237,0.12);
+}
+
+.dash-modal .modal-body .table thead th {
+  background: rgba(25,52,100,0.75) !important;
+  color: #7eb8e8 !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(99,179,237,0.2) !important;
+}
+
+.dash-modal .modal-body .table tbody tr {
+  border-bottom: 1px solid rgba(99,179,237,0.07);
+  transition: background 0.15s;
+}
+
+.dash-modal .modal-body .table tbody tr:hover {
+  background: rgba(99,179,237,0.06) !important;
+}
+
+.dash-modal .modal-body .table tbody td {
+  vertical-align: middle;
+  color: #c8daf0 !important;
+  background: transparent !important;
+}
+
+/* ── Cards ──────────────────────────────────────────── */
+.dash-modal .modal-body .card {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(99,179,237,0.16) !important;
+  border-radius: 10px !important;
+  color: #e2eaf6 !important;
+}
+
+/* ── Pagination ─────────────────────────────────────── */
+.dash-modal .modal-body .page-link {
+  background: rgba(255,255,255,0.05) !important;
+  border-color: rgba(99,179,237,0.2) !important;
+  color: #7eb8e8 !important;
+}
+.dash-modal .modal-body .page-link:hover {
+  background: rgba(99,179,237,0.14) !important;
+  color: #e2eaf6 !important;
+}
+.dash-modal .modal-body .page-item.active .page-link {
+  background: linear-gradient(135deg, #1e5bb8, #2563eb) !important;
+  border-color: #2563eb !important;
+  color: #fff !important;
+}
+.dash-modal .modal-body .page-item.disabled .page-link {
+  background: transparent !important;
+  color: rgba(99,179,237,0.3) !important;
+}
+
+/* ── Alerts / badges ────────────────────────────────── */
+.dash-modal .modal-body .alert-info {
+  background: rgba(37,99,235,0.14) !important;
+  border-color: rgba(99,179,237,0.28) !important;
+  color: #93b4dc !important;
+  border-radius: 8px;
+}
+
+/* ── Footer ─────────────────────────────────────────── */
+.dash-modal .modal-footer {
+  background: rgba(8,18,36,0.7) !important;
+  border-top: 1px solid rgba(99,179,237,0.13) !important;
+  border-radius: 0 0 18px 18px !important;
+  padding: 0.8rem 1.4rem;
+}
+
+.dash-modal .modal-footer .btn-primary,
+.dash-modal .modal-footer .btn-success {
+  background: linear-gradient(135deg, #1a52a8 0%, #2563eb 100%) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 600;
+  padding: 0.45rem 1.2rem;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+}
+.dash-modal .modal-footer .btn-primary:hover,
+.dash-modal .modal-footer .btn-success:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.dash-modal .modal-footer .btn-secondary,
+.dash-modal .modal-footer .btn-danger {
+  background: rgba(255,255,255,0.07) !important;
+  border: 1px solid rgba(255,255,255,0.13) !important;
+  border-radius: 8px !important;
+  color: #c8daf0 !important;
+  font-weight: 600;
+  padding: 0.45rem 1.2rem;
+  transition: background 0.2s;
+}
+.dash-modal .modal-footer .btn-secondary:hover,
+.dash-modal .modal-footer .btn-danger:hover {
+  background: rgba(255,255,255,0.13) !important;
+}
+
+/* Buttons inside modal-body (Agregar, Guardar, etc.) */
+.dash-modal .modal-body .btn-primary,
+.dash-modal .modal-body .btn-success {
+  background: linear-gradient(135deg, #1a52a8 0%, #2563eb 100%) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+}
+.dash-modal .modal-body .btn-danger {
+  background: linear-gradient(135deg, #9b1a2a 0%, #dc2626 100%) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 600;
+}
+.dash-modal .modal-body .btn-secondary {
+  background: rgba(255,255,255,0.07) !important;
+  border: 1px solid rgba(255,255,255,0.13) !important;
+  color: #c8daf0 !important;
+  border-radius: 8px !important;
+}
+
+/* ── ng-select inside dash-modal ────────────────────── */
+:host ::ng-deep .dash-modal .ng-select .ng-select-container {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(99,179,237,0.28) !important;
+  border-radius: 8px !important;
+  color: #e2eaf6;
+}
+:host ::ng-deep .dash-modal .ng-select.ng-select-focused .ng-select-container {
+  border-color: rgba(99,179,237,0.65) !important;
+  box-shadow: 0 0 0 3px rgba(99,179,237,0.14) !important;
+}
+:host ::ng-deep .dash-modal .ng-select .ng-dropdown-panel {
+  background: #0d1f3c !important;
+  border: 1px solid rgba(99,179,237,0.3) !important;
+  border-radius: 8px !important;
+}
+:host ::ng-deep .dash-modal .ng-select .ng-option {
+  background: transparent !important;
+  color: #c8daf0 !important;
+}
+:host ::ng-deep .dash-modal .ng-select .ng-option:hover,
+:host ::ng-deep .dash-modal .ng-select .ng-option.ng-option-marked {
+  background: rgba(99,179,237,0.12) !important;
+  color: #fff !important;
+}
+:host ::ng-deep .dash-modal .ng-select .ng-option.ng-option-selected {
+  background: rgba(37,99,235,0.25) !important;
+  color: #e2eaf6 !important;
+}
+:host ::ng-deep .dash-modal .ng-select .ng-arrow-wrapper .ng-arrow {
+  border-color: #7eb8e8 transparent transparent !important;
+}
+:host ::ng-deep .dash-modal .ng-select .ng-value-label,
+:host ::ng-deep .dash-modal .ng-select .ng-placeholder {
+  color: #c8daf0 !important;
+}
+
+/* text-muted override inside dark modals */
+.dash-modal .text-muted,
+.dash-modal .modal-body .text-muted,
+.dash-modal .modal-footer .text-muted {
+  color: #7eb8e8 !important;
 }

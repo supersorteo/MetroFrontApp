@@ -13,7 +13,13 @@ export const appConfig: ApplicationConfig = {
         provideRouter(routes),
         provideHttpClient(withInterceptors([httpResilienceInterceptor])),
         provideAnimations(),
-        provideToastr({ timeOut: 900, preventDuplicates: true }),
+        provideToastr({
+                timeOut: 1800,
+                preventDuplicates: true,
+                positionClass: 'toast-top-right',
+                newestOnTop: true,
+                easeTime: 250
+        }),
         provideServiceWorker('ngsw-worker.js', {
                 enabled: !isDevMode(),
                 registrationStrategy: 'registerWhenStable:30000'

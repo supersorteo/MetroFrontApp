@@ -25,11 +25,11 @@ aria-label="Menu"
       <div *ngIf="weatherLoading" class="text-muted">Cargando...</div>
       <div *ngIf="weatherError && !weatherLoading" class="text-danger small">{{ weatherError }}</div>
       <div *ngIf="currentWeather && !weatherLoading">
-        <div class="weather-temp">{{ currentWeather.temperature | number:'1.0-0' }}Â°C</div>
+        <div class="weather-temp">{{ currentWeather.temperature | number:'1.0-0' }}°C</div>
         <div class="weather-desc">{{ weatherDescription(currentWeather.weathercode) }}</div>
         <small class="text-muted d-block">{{ currentWeather.location }}</small>
         <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#weatherModal" (click)="loadWeather()">
-          Ver pronÃ³stico
+          Ver pronóstico
         </button>
       </div>
     </div>
@@ -354,7 +354,7 @@ aria-label="Menu"
       </span>
     </div>
     </div>
-    <p style="text-align: center;">Si no encuentras una tarea, selecciona TAREA GENERICA y edita su precio y descripciÃ³n</p>
+    <p style="text-align: center;">Si no encuentras una tarea, selecciona TAREA GENERICA y edita su precio y descripción</p>
     <div class="table-responsive">
       <table class="table table-striped">
         <thead>
@@ -433,7 +433,7 @@ aria-label="Menu"
               <!--th-- class="text-center">Categorï¿½ï¿½a</!--th-->
               <!--th class="text-center">Descripciï¿½ï¿½n</!--th-->
               <!--th-- class="text-center">ï¿½?rea (mï¿½ï¿½/mï¿½ï¿½)</!--th-->
-              <th class="text-center">Ãrea (mÂ²/mÂ³)</th>
+              <th class="text-center">Área (m²/m³)</th>
               <th class="text-center">Costo</th>
               <th class="text-center">Total</th>
             </tr>
@@ -483,7 +483,7 @@ aria-label="Menu"
   </aside>
 <div class="modal fade" id="confirmDeleteTareaModal" tabindex="-1" aria-labelledby="confirmDeleteTareaLabel" aria-hidden="true" (hidden.bs.modal)="limpiarConfirmacionEliminarTarea()">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content dash-modal">
       <div class="modal-header">
         <h5 class="modal-title" id="confirmDeleteTareaLabel">Eliminar tarea</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -506,7 +506,7 @@ aria-label="Menu"
 
 <div class="modal fade" id="miModal" tabindex="-1" aria-labelledby="exampleModalLabel1" aria-hidden="true">
       <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content dash-modal">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel1">Agregar Tarea</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -524,7 +524,7 @@ aria-label="Menu"
                 <input type="text" [(ngModel)]="tareaSeleccionada.rubro" name="rubro" class="form-control" id="rubro" readonly>
               </div-->
               <!--div-- class="mb-3">
-                <label for="categoria" class="col-form-label">CategorÃ­a:</label>
+                <label for="categoria" class="col-form-label">Categoría:</label>
                 <input type="text" [(ngModel)]="tareaSeleccionada.categoria" name="categoria" class="form-control" id="categoria" readonly>
               </!div-->
               <div class="row mb-3">
@@ -563,7 +563,7 @@ aria-label="Menu"
 
 <div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true"  >
   <div class="modal-dialog">
-    <div class="modal-content">
+    <div class="modal-content dash-modal">
       <div class="modal-header">
         <h5 class="modal-title" id="clientModalLabel">Formulario de Datos del Cliente</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -583,12 +583,12 @@ aria-label="Menu"
           </div>
           <div class="form-group mb-3 coolinput">
             <label for="contact" class="text">Contacto:</label>
-            <input type="text" class="form-control input" id="contact" name="clientContact" [(ngModel)]="clientContact" required pattern="\+?\d{7,15}" placeholder="TelÃ©fono" #contact="ngModel">
+            <input type="text" class="form-control input" id="contact" name="clientContact" [(ngModel)]="clientContact" required pattern="\+?\d{7,15}" placeholder="Teléfono" #contact="ngModel">
             @if (contact.touched && contact.errors?.['required']) {
               <div class="text-danger">El contacto es obligatorio.</div>
             }
             @if (contact.touched && contact.errors?.['pattern']) {
-              <div class="text-danger">El contacto debe ser un nÃºmero de telÃ©fono vÃ¡lido (7-15 dÃ­gitos, puede incluir +).</div>
+              <div class="text-danger">El contacto debe ser un número de teléfono válido (7-15 dígitos, puede incluir +).</div>
             }
           </div>
           <div class="form-group mb-3 coolinput">
@@ -598,7 +598,7 @@ aria-label="Menu"
               <div class="text-danger">El email es obligatorio.</div>
             }
             @if (email.touched && email.errors?.['email']) {
-              <div class="text-danger">El email debe tener un formato vÃ¡lido.</div>
+              <div class="text-danger">El email debe tener un formato válido.</div>
             }
           </div>
           <div class="form-group mb-3 coolinput">
@@ -611,12 +611,12 @@ aria-label="Menu"
           </div>
           <div class="form-group mb-3 coolinput">
             <label for="direccion" class="text">Direccion:</label>
-            <input type="text" class="form-control input" id="direccion" name="clientDireccion" [(ngModel)]="clientDireccion" required minlength="5" placeholder="DirecciÃ³n" #direccion="ngModel">
+            <input type="text" class="form-control input" id="direccion" name="clientDireccion" [(ngModel)]="clientDireccion" required minlength="5" placeholder="Dirección" #direccion="ngModel">
             @if (direccion.touched && direccion.errors?.['required']) {
-              <div class="text-danger">La direcciÃ³n es obligatoria.</div>
+              <div class="text-danger">La dirección es obligatoria.</div>
             }
             @if (direccion.touched && direccion.errors?.['minlength']) {
-              <div class="text-danger">La direcciÃ³n debe tener al menos 5 caracteres.</div>
+              <div class="text-danger">La dirección debe tener al menos 5 caracteres.</div>
             }
           </div>
           <div class="form-group mb-3 coolinput">
@@ -648,7 +648,7 @@ aria-label="Menu"
 
 <!--div-- class="modal fade" id="listaClientesModal" aria-hidden="true" aria-labelledby="listaClientesLabel" tabindex="-1" (shown.bs.modal)="getClientesByUserCode()">
   <div class="modal-dialog modal-lg">
-    <div class="modal-content">
+    <div class="modal-content dash-modal">
       <div class="modal-header">
         <h5 class="modal-title" id="listaClientesLabel">Lista de Clientes Asociados</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -662,7 +662,7 @@ aria-label="Menu"
                 <th scope="col">Contacto</th>
                 <th scope="col">Email</th>
                 <th scope="col">CUIT/Clave</th>
-                <th scope="col">DirecciÃ³n</th>
+                <th scope="col">Dirección</th>
                 <th scope="col">Fecha</th>
                 <th scope="col">Detalles</th>
                 <th scope="col">Acciones</th>
@@ -691,7 +691,7 @@ aria-label="Menu"
           </table>
         </div>
 
-        <nav aria-label="PaginaciÃ³n de clientes" *ngIf="clientes.length > itemsPerPage">
+        <nav aria-label="Paginación de clientes" *ngIf="clientes.length > itemsPerPage">
           <ul class="pagination justify-content-center flex-wrap">
             <li class="page-item" [class.disabled]="currentPage === 1">
               <a class="page-link" (click)="previousPage()" aria-label="Anterior">
@@ -720,7 +720,7 @@ aria-label="Menu"
 
 <div class="modal fade" id="listaClientesModal" aria-hidden="true" aria-labelledby="listaClientesLabel" tabindex="-1" (shown.bs.modal)="onEmpresaSeleccionada(selectedEmpresaId)">
   <div class="modal-dialog modal-lg">
-    <div class="modal-content">
+    <div class="modal-content dash-modal">
       <div class="modal-header">
         <h5 class="modal-title" id="listaClientesLabel">Lista de Clientes</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -760,7 +760,7 @@ aria-label="Menu"
                   <p class="card-text mb-1"><strong>Tel:</strong> {{ cliente.contact }}</p>
                   <p class="card-text mb-1"><strong>Email:</strong> {{ cliente.email }}</p>
                   <p class="card-text mb-1"><strong>CUIT/Clave:</strong> {{ cliente.clave }}</p>
-                  <p class="card-text mb-1"><strong>DirecciÃ³n:</strong> {{ cliente.direccion }}</p>
+                  <p class="card-text mb-1"><strong>Dirección:</strong> {{ cliente.direccion }}</p>
                   <p class="card-text mb-1"><strong>Fecha:</strong> {{ cliente.budgetDate }}</p>
                   <p class="card-text mb-2"><strong>Detalles:</strong> {{ cliente.additionalDetails }}</p>
                   <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
@@ -775,8 +775,8 @@ aria-label="Menu"
             </div>
           </div>
         </div>
-        <!-- Controles de paginaciÃ³n -->
-        <nav aria-label="PaginaciÃ³n de clientes" *ngIf="clientes.length > itemsPerPage">
+        <!-- Controles de paginación -->
+        <nav aria-label="Paginación de clientes" *ngIf="clientes.length > itemsPerPage">
           <ul class="pagination justify-content-center flex-wrap">
             <li class="page-item" [class.disabled]="currentPage === 1">
               <a class="page-link" (click)="previousPage()" aria-label="Anterior">
@@ -806,25 +806,25 @@ aria-label="Menu"
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" >
   <div class="modal-dialog">
-    <div class="modal-content">
+    <div class="modal-content dash-modal">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Agregar datos de tu Empresa</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" style="padding: 10px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;">
         <p style="text-align: center; font-size: 12px;">
-          PodÃ©s editar estos datos las veces que quieras.
+          Podés editar estos datos las veces que quieras.
         </p>
         <div class="row g-2 align-items-end mb-3">
           <div class="col coolinput">
             <label for="empresaName" class="text">Tu Empresa/nombre personal</label>
-            <input type="text" class="form-control input" id="empresaName" [(ngModel)]="empresaName" placeholder="Â¿CÃ³mo se llama?">
+            <input type="text" class="form-control input" id="empresaName" [(ngModel)]="empresaName" placeholder="¿Cómo se llama?">
           </div>
 
         </div>
         <div class="form-group mb-3 coolinput">
           <label for="empresaPhone" class="text">Tel:</label>
-          <input type="text" class="form-control input" id="empresaPhone" [(ngModel)]="empresaPhone" placeholder="TelÃ©fono de tu empresa">
+          <input type="text" class="form-control input" id="empresaPhone" [(ngModel)]="empresaPhone" placeholder="Teléfono de tu empresa">
         </div>
         <div class="form-group mb-3 coolinput">
           <label for="empresaEmail" class="text">Email:</label>
@@ -832,7 +832,7 @@ aria-label="Menu"
         </div>
         <div class="form-group mb-3 coolinput">
           <label for="additionalDetailsempresa" class="text">Descripcion:</label>
-          <textarea class="form-control input" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de quÃ© se trata tu empresa"></textarea>
+          <textarea class="form-control input" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de qué se trata tu empresa"></textarea>
         </div>
         <div class="form-group mb-3 coolinput">
           <label for="empresaWebsite" class="text">Sitio web (opcional)</label>
@@ -880,7 +880,7 @@ aria-label="Menu"
 
 <div class="modal fade" id="listaEmpresasModal" aria-hidden="true" aria-labelledby="listaEmpresasLabel" tabindex="-1">
   <div class="modal-dialog modal-lg">
-    <div class="modal-content">
+    <div class="modal-content dash-modal">
       <div class="modal-header">
         <h5 class="modal-title" id="listaEmpresasLabel">Lista de Empresas</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -922,7 +922,7 @@ aria-label="Menu"
                   </h5>
                   <p class="card-text mb-1"><strong>Tel:</strong> {{ empresa.phone }}</p>
                   <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
-                  <p class="card-text mb-1"><strong>DescripciÃ³n:</strong> {{ empresa.description }}</p>
+                  <p class="card-text mb-1"><strong>Descripción:</strong> {{ empresa.description }}</p>
                   <div class="d-flex justify-content-end gap-1 mt-2">
                     <button class="btn btn-danger btn-xs px-3 py-1" style="font-size: 0.85rem; min-width: 80px;" (click)="empresa.id && solicitarConfirmacionEliminarEmpresa(empresa.id)">Eliminar</button>
                     <span style="width: 10px;"></span>
@@ -968,7 +968,7 @@ aria-label="Menu"
 
       <p class="card-text mb-1"><strong>Tel:</strong> {{ empresa.phone }}</p>
       <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
-      <p class="card-text mb-1"><strong>DescripciÃ³n:</strong> {{ empresa.description }}</p>
+      <p class="card-text mb-1"><strong>Descripción:</strong> {{ empresa.description }}</p>
 
       <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
         <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action"
@@ -993,8 +993,8 @@ aria-label="Menu"
             </div>
           </div>
         </div>
-        <!-- Controles de paginaciÃ³n -->
-        <nav aria-label="PaginaciÃ³n de empresas" *ngIf="empresas.length > itemsPerPageEmpresas">
+        <!-- Controles de paginación -->
+        <nav aria-label="Paginación de empresas" *ngIf="empresas.length > itemsPerPageEmpresas">
           <ul class="pagination justify-content-center flex-wrap">
             <li class="page-item" [class.disabled]="currentEmpresaPage === 1">
               <a class="page-link" (click)="previousEmpresaPage()" aria-label="Anterior">
@@ -1018,9 +1018,9 @@ aria-label="Menu"
             <thead class="table-light">
               <tr>
                 <th scope="col">Nombre</th>
-                <th scope="col">TelÃ©fono</th>
+                <th scope="col">Teléfono</th>
                 <th scope="col">Email</th>
-                <th scope="col">DescripciÃ³n</th>
+                <th scope="col">Descripción</th>
                 <th scope="col">Logo</th>
                 <th scope="col">Acciones</th>
               </tr>
@@ -1110,7 +1110,7 @@ aria-label="Menu"
 
 <div class="modal fade" id="confirmLogoutModal" tabindex="-1" aria-labelledby="confirmLogoutLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content dash-modal">
       <div class="modal-header">
         <h5 class="modal-title" id="confirmLogoutLabel">Cerrar sesion</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -1149,9 +1149,9 @@ aria-label="Menu"
 
 <div class="modal fade" id="weatherModal" tabindex="-1" aria-labelledby="weatherModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
+    <div class="modal-content dash-modal">
       <div class="modal-header">
-        <h5 class="modal-title" id="weatherModalLabel">PrÃ³ximos 5 dÃ­as</h5>
+        <h5 class="modal-title" id="weatherModalLabel">Próximos 5 días</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
@@ -1162,8 +1162,8 @@ aria-label="Menu"
                 <div class="fw-bold">{{ day.date | date:'EEEE d MMM' }}</div>
                 <div class="text-muted small">{{ weatherDescription(day.code) }}</div>
                 <div class="d-flex justify-content-between align-items-center mt-3">
-                  <span class="text-primary fw-bold">MÃ¡x: {{ day.max | number:'1.0-0' }}Â°C</span>
-                  <span class="text-secondary">MÃ­n: {{ day.min | number:'1.0-0' }}Â°C</span>
+                  <span class="text-primary fw-bold">Máx: {{ day.max | number:'1.0-0' }}°C</span>
+                  <span class="text-secondary">Mín: {{ day.min | number:'1.0-0' }}°C</span>
                 </div>
               </div>
             </div>
@@ -1183,14 +1183,14 @@ aria-label="Menu"
 
 <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" >
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+    <div class="modal-content dash-modal">
       <div class="modal-header">
         <h5 class="modal-title" id="imageModalLabel">Subir Imagen</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" style="text-align: center;">
         <div id="imageCircle" style="display: flex; justify-content: center;">
-          <img #modalImagePreview class="img-fluid" src="#" alt="PrevisualizaciÃ³n de la imagen" style="display: none; width: 80%; height: 80%;">
+          <img #modalImagePreview class="img-fluid" src="#" alt="Previsualización de la imagen" style="display: none; width: 80%; height: 80%;">
         </div>
         <p #uploadMessage style="margin-top: 10px; color: rgb(6, 113, 254); display: none;">Imagen subida</p>
         <input type="file" #imageInput accept="image/*" class="form-control" style="margin-top: 10px;" (change)="onImageChange($event)">
@@ -1215,7 +1215,7 @@ aria-label="Menu"
           </div>
           <div class="modal-body">
             <h6 id="zonaBloqueadaMensaje" class="text-danger mt-2" style="display: block;">
-              Esta funciÃ³n solo se activa con cÃ³digo de acceso.
+              Esta función solo se activa con código de acceso.
             </h6>
 
             <select class="form-select" id="provinciaSelect" [(ngModel)]="provinciaSeleccionada" name="provinciaSeleccionada">
@@ -1223,19 +1223,19 @@ aria-label="Menu"
               <option *ngFor="let provincia of provincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
             </select>
 
-            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el paÃ­s seleccionado.</div>
+            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el país seleccionado.</div>
 
             <div class="mt-3">
               <h6 class="modal-zona-title">valor sugerido de mano de obra pura sin cargas sociales</h6>
               <hr>
               <div class="modal-zona-card">
                 <span class="modal-zona-label">Zona 1:</span>
-                Buenos Aires, Santa Fe, Mendoza, CÃ³rdoba, TucumÃ¡n, Salta, Jujuy, Entre RÃ­os, Corrientes, Formosa,
+                Buenos Aires, Santa Fe, Mendoza, Córdoba, Tucumán, Salta, Jujuy, Entre Ríos, Corrientes, Formosa,
                 La Pampa, San Luis, La Rioja, Santiago del Estero, Chaco, Misiones, Catamarca, San Juan.
               </div>
               <div class="modal-zona-card">
                 <span class="modal-zona-label">Zona 2:</span>
-                NeuquÃ©n, RÃ­o Negro, Chubut.
+                Neuquén, Río Negro, Chubut.
               </div>
               <div class="modal-zona-card">
                 <span class="modal-zona-label">Zona 3:</span>
