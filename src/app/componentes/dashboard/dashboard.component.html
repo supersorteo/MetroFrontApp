@@ -1563,22 +1563,34 @@ aria-label="Menu"
                   </tr>
                 </thead>
                 <tbody [style.background-color]="presupuestoColorTablaCuerpo" [style.color]="presupuestoColorTexto">
-                  <tr>
-                    <td>REVOQUE GRUESO</td>
-                    <td>10.00</td>
-                    <td>$5.000,00</td>
-                  </tr>
-                  <tr>
-                    <td>REVOQUE FINO</td>
-                    <td>10.00</td>
-                    <td>$3.500,00</td>
-                  </tr>
+                  <ng-container *ngIf="tareasAgregadas.length > 0; else demoRows">
+                    <tr *ngFor="let t of tareasAgregadas | slice:0:3">
+                      <td>{{ t.tarea | uppercase }}</td>
+                      <td>{{ t.area | number:'1.2-2' }}</td>
+                      <td>${{ t.totalCost | number:'1.2-2' }}</td>
+                    </tr>
+                  </ng-container>
+                  <ng-template #demoRows>
+                    <tr>
+                      <td>REVOQUE GRUESO</td>
+                      <td>10.00</td>
+                      <td>$5.000,00</td>
+                    </tr>
+                    <tr>
+                      <td>REVOQUE FINO</td>
+                      <td>10.00</td>
+                      <td>$3.500,00</td>
+                    </tr>
+                  </ng-template>
                 </tbody>
               </table>
               <!-- Total -->
               <div class="text-end">
                 <div [style.background-color]="presupuestoColorPrimario" style="color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">
-                  TOTAL: $8.500,00
+                  <ng-container *ngIf="tareasAgregadas.length > 0; else demoTotal">
+                    TOTAL: ${{ calcularCostoTotal() | number:'1.2-2' }}
+                  </ng-container>
+                  <ng-template #demoTotal>TOTAL: $8.500,00</ng-template>
                 </div>
               </div>
               <!-- Professional Watermark -->

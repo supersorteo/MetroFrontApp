@@ -3492,36 +3492,41 @@ onEmpresaSeleccionada0(empresa: Empresa) {
   }
 
   aplicarPaletaManual(): void {
-    if (this.selectedEmpresaId) {
-      this.selectedEmpresaId.primaryColor = this.presupuestoColorPrimario;
-      this.selectedEmpresaId.secondaryColor = this.presupuestoColorSecundario;
-      this.selectedEmpresaId.secondaryColor2 = this.presupuestoColorSecundario2;
-      this.selectedEmpresaId.gradientAngle = this.presupuestoGradienteAngulo;
-      this.selectedEmpresaId.textColor = this.presupuestoColorTexto;
-      this.selectedEmpresaId.tableColor = this.presupuestoColorTabla;
-      this.selectedEmpresaId.tableTextColor = this.presupuestoColorTablaTexto;
-      this.selectedEmpresaId.tableBodyColor = this.presupuestoColorTablaCuerpo;
-      this.selectedEmpresaId.infoBoxColorHex = this.presupuestoInfoBoxColorHex;
-      this.selectedEmpresaId.infoBoxOpacity = this.presupuestoInfoBoxOpacity;
+    if (!this.selectedEmpresaId) return;
 
-      // Persistimos en localStorage para que todos los componentes lo vean
-      localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
-      
-      // Si estamos en modo demo, también actualizamos la lista en localStorage
-      if (this.trialMode) {
-        const demoEmpresasStr = localStorage.getItem('demoEmpresas');
-        if (demoEmpresasStr) {
-          let demoEmpresas = JSON.parse(demoEmpresasStr);
-          const index = demoEmpresas.findIndex((e: any) => e.id === this.selectedEmpresaId?.id);
-          if (index !== -1) {
-            demoEmpresas[index] = this.selectedEmpresaId;
-            localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresas));
-          }
+    this.selectedEmpresaId.primaryColor = this.presupuestoColorPrimario;
+    this.selectedEmpresaId.secondaryColor = this.presupuestoColorSecundario;
+    this.selectedEmpresaId.secondaryColor2 = this.presupuestoColorSecundario2;
+    this.selectedEmpresaId.gradientAngle = this.presupuestoGradienteAngulo;
+    this.selectedEmpresaId.textColor = this.presupuestoColorTexto;
+    this.selectedEmpresaId.tableColor = this.presupuestoColorTabla;
+    this.selectedEmpresaId.tableTextColor = this.presupuestoColorTablaTexto;
+    this.selectedEmpresaId.tableBodyColor = this.presupuestoColorTablaCuerpo;
+    this.selectedEmpresaId.infoBoxColorHex = this.presupuestoInfoBoxColorHex;
+    this.selectedEmpresaId.infoBoxOpacity = this.presupuestoInfoBoxOpacity;
+
+    localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
+
+    if (this.trialMode) {
+      const demoEmpresasStr = localStorage.getItem('demoEmpresas');
+      if (demoEmpresasStr) {
+        const demoEmpresas = JSON.parse(demoEmpresasStr);
+        const index = demoEmpresas.findIndex((e: any) => e.id === this.selectedEmpresaId?.id);
+        if (index !== -1) {
+          demoEmpresas[index] = this.selectedEmpresaId;
+          localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresas));
         }
       }
+      this.toastr.success('Colores aplicados (modo demo)', 'Paleta');
+      return;
     }
-    
-    this.toastr.success('Colores aplicados localmente. Recordá guardar para persistir definitivamente.', 'Paleta');
+
+    if (this.selectedEmpresaId.id) {
+      this.empresaService.updateEmpresa(this.selectedEmpresaId.id, this.selectedEmpresaId).subscribe({
+        next: () => this.toastr.success('Colores guardados correctamente', 'Paleta'),
+        error: (err) => this.toastr.error(`Error al guardar colores: ${err.message}`, 'Error')
+      });
+    }
   }
 }
 
