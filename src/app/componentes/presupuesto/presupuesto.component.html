@@ -2,7 +2,7 @@
      PRESUPUESTO COMPONENT - Vista previa del presupuesto
      Migrado fielmente desde METROFINALPUBLICADO.html
      ================================================ -->
-<div class="presupuesto-page">
+<div class="presupuesto-page" [style.background-color]="empresa.secondaryColor" [style.color]="empresa.textColor">
 
   <!-- ============ CONTROLES FLOTANTES (no-print) ============ -->
   <div class="preview-controls no-print" *ngIf="!isEmpty">
@@ -42,7 +42,7 @@
 
   <!-- ============ BOTÓN VOLVER (no-print) ============ -->
   <button type="button" class="no-print back-btn button-82-front text" (click)="volver()">
-    <i class="fas fa-arrow-left" style="margin-right: 6px;"></i>Volver
+    <i class="fas fa-times"></i>
   </button>
 
   <!-- ============ CONTENIDO IMPRIMIBLE ============ -->
@@ -50,7 +50,7 @@
 
     <!-- ENCABEZADO EMPRESA -->
     <div class="row">
-      <div class="col-lg-12 info-section">
+      <div class="col-lg-12 info-section" [style.background-image]="empresa.secondaryColor ? 'none' : ''" [style.background-color]="empresa.secondaryColor">
 
         <!-- Grid de cabecera: Logo | Nombre | (espacio) -->
         <div class="company-header-grid">
@@ -67,7 +67,7 @@
         </div>
 
         <div class="company-name-row">
-          <h2 class="font-weight-bold">{{ empresa.name }}</h2>
+          <h2 class="font-weight-bold" [style.color]="empresa.primaryColor">{{ empresa.name }}</h2>
         </div>
 
         <div class="row">
@@ -77,13 +77,16 @@
               <p *ngIf="empresa.email">Email: {{ empresa.email }}</p>
               <p *ngIf="empresa.description">{{ empresa.description }}</p>
               <p *ngIf="empresa.website">Web: {{ empresa.website }}</p>
+              <p *ngIf="empresa.tiktok">TikTok: {{ empresa.tiktok }}</p>
+              <p *ngIf="empresa.instagram">Instagram: {{ empresa.instagram }}</p>
+              <p *ngIf="empresa.facebook">Facebook: {{ empresa.facebook }}</p>
             </div>
           </div>
         </div>
 
         <hr />
 
-        <h5 class="font-weight-bold">Cliente</h5>
+        <h5 class="font-weight-bold" [style.color]="empresa.primaryColor">Cliente</h5>
         <h4 class="font-weight-bold">{{ cliente.name }}</h4>
         <p *ngIf="cliente.contact">Tel/cel.: {{ cliente.contact }}</p>
         <p>Fecha de este presupuesto: {{ budgetDate }}</p>
@@ -112,29 +115,29 @@
         <!-- Tabla -->
         <div class="table-responsive" *ngIf="!isEmpty">
           <table class="table table-bordered" id="budgetListPrint">
-            <thead>
+            <thead [style.backgroundColor]="empresa.tableColor" [style.color]="empresa.tableTextColor">
               <tr>
-                <th>Tipo de Trabajo</th>
-                <th [style.display]="hideDescription ? 'none' : ''">Descripción</th>
-                <th>Área (m²)</th>
-                <th [style.display]="hideCostPerM2 ? 'none' : ''">Costo por m²</th>
-                <th>Total</th>
+                <th style="color: inherit;">Tipo de Trabajo</th>
+                <th style="color: inherit;" [style.display]="hideDescription ? 'none' : ''">Descripción</th>
+                <th style="color: inherit;">Área (m²)</th>
+                <th style="color: inherit;" [style.display]="hideCostPerM2 ? 'none' : ''">Costo por m²</th>
+                <th style="color: inherit;">Total</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let tarea of tareasAgregadas">
-                <td style="text-align: left;">{{ tarea.tarea }}</td>
-                <td [style.display]="hideDescription ? 'none' : ''">{{ tarea.descripcion }}</td>
-                <td>{{ tarea.area | number:'1.2-2' }}</td>
-                <td [style.display]="hideCostPerM2 ? 'none' : ''">${{ tarea.costo | number:'1.2-2' }}</td>
-                <td>${{ tarea.totalCost | number:'1.2-2' }}</td>
+              <tr *ngFor="let tarea of tareasAgregadas" [style.backgroundColor]="empresa.tableBodyColor">
+                <td style="text-align: left;" [style.backgroundColor]="empresa.tableBodyColor">{{ tarea.tarea }}</td>
+                <td [style.display]="hideDescription ? 'none' : ''" [style.backgroundColor]="empresa.tableBodyColor">{{ tarea.descripcion }}</td>
+                <td [style.backgroundColor]="empresa.tableBodyColor">{{ tarea.area | number:'1.2-2' }}</td>
+                <td [style.display]="hideCostPerM2 ? 'none' : ''" [style.backgroundColor]="empresa.tableBodyColor">${{ tarea.costo | number:'1.2-2' }}</td>
+                <td [style.backgroundColor]="empresa.tableBodyColor">${{ tarea.totalCost | number:'1.2-2' }}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <!-- Total -->
-        <p class="total" *ngIf="!isEmpty">
+        <p class="total" *ngIf="!isEmpty" [style.background-image]="'none'" [style.background-color]="empresa.primaryColor" style="color: white; padding: 14px 16px; border-radius: 8px; border: none;">
           Total: ${{ formatCurrency(totalCosto) }}
         </p>
 

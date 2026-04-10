@@ -38,8 +38,7 @@
               rgba(17, 17, 26, 0.1) 0px 8px 24px,
               rgba(17, 17, 26, 0.1) 0px 16px 56px;
   padding: 20px;
-  margin: 15px;
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .info-section p {
@@ -109,7 +108,6 @@
 
 /* ============ TOTAL ============ */
 .total {
-  width: 100%;
   display: block;
   font-weight: bold;
   font-size: 20px;
@@ -241,8 +239,14 @@
   top: 14px;
   left: 14px;
   z-index: 9998;
-  padding: 9px 12px;
-  font-size: 13px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
 }
 
 /* ============ MODAL DE DESCARGA (overlay) ============ */

@@ -34,7 +34,6 @@
 
 /* ============ INFO SECTION (encabezado empresa + cliente) ============ */
 .info-section {
-  color: #0b69a6;
   background-image: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6);
   border-radius: 10px 10px 0 0;
   box-shadow:
@@ -42,8 +41,7 @@
     rgba(17, 17, 26, 0.1) 0px 8px 24px,
     rgba(17, 17, 26, 0.1) 0px 16px 56px;
   padding: 20px;
-  margin: 15px;
-  margin-bottom: 0;
+  margin: 0;
 
   p {
     margin-bottom: 10px;
@@ -54,13 +52,39 @@
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #0b69a6;
   }
 
   h4 {
     font-size: 20px;
-    color: #0a2d5a;
     margin-bottom: 6px;
+  }
+}
+
+/* ============ INFO BOX (Enterprise & Client wrappers) ============ */
+.info-box {
+  background-color: #f8f9fa; // Gris sutil
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  &.enterprise-box {
+    margin-top: 10px;
+  }
+
+  &.client-box {
+    margin-bottom: 10px;
+  }
+
+  p {
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  h5 {
+    margin-top: 0 !important;
+    margin-bottom: 12px !important;
   }
 }
 
@@ -139,9 +163,11 @@
     text-align: left;
   }
 
+/* 
   tbody tr:nth-child(odd) {
     background-color: #f2f2f2;
   }
+*/
 }
 
 #budgetListPrint {
@@ -150,7 +176,6 @@
 
 /* ============ TOTAL ============ */
 .total {
-  width: 100%;
   display: block;
   font-weight: bold;
   font-size: 20px;
@@ -279,8 +304,14 @@
   top: 14px;
   left: 14px;
   z-index: 9998;
-  padding: 9px 12px;
-  font-size: 13px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
 }
 
 /* ============ MODAL DE DESCARGA (overlay) ============ */
@@ -368,20 +399,20 @@
   }
 
   .table th {
-    color: #ffffff !important;
-    background: #007bff !important;
     border: 1px solid #adb5bd !important;
   }
 
   .table td {
     border: 1px solid #ced4da !important;
-    background: #ffffff !important;
+    /* background: #ffffff !important; */
   }
 
+/* 
   .table tbody tr:nth-child(odd),
   .table tbody tr:nth-child(odd) td {
     background: #f2f2f2 !important;
   }
+*/
 
   * {
     -webkit-print-color-adjust: exact !important;

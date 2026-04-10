@@ -15,6 +15,10 @@ interface ColorScheme {
   accentColor: string;
   textColor: string;
   tableTextColor: string;
+  secondaryColor2: string;
+  gradientAngle: string;
+  infoBoxColorRGBA: string;
+  tableBodyColor: string;
 }
 
 @Component({
@@ -44,7 +48,11 @@ export class DatosDeTareasComponent implements OnInit {
     secondaryColor: '#deecea',
     accentColor: '#5d8eea',
     textColor: '#0b69a6',
-    tableTextColor: '#132d6b'
+    tableTextColor: '#132d6b',
+    secondaryColor2: '#deecea',
+    gradientAngle: 'to bottom',
+    infoBoxColorRGBA: 'rgba(248, 249, 250, 1)',
+    tableBodyColor: '#ffffff'
   };
   colorScheme: ColorScheme = { ...this.defaultColorScheme };
   private readonly colorSchemeStorageKey = 'metroColorScheme';
@@ -58,8 +66,21 @@ export class DatosDeTareasComponent implements OnInit {
     private route: Router
   ) {}
 
+  private getBackgroundColorRgba(hex: string, alpha: number): string {
+    if (!hex || hex.length < 7) return `rgba(248, 249, 250, ${alpha})`;
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const red = isNaN(r) ? 248 : r;
+    const green = isNaN(g) ? 249 : g;
+    const blue = isNaN(b) ? 250 : b;
+    return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+  }
+
   ngOnInit(): void {
-    // Recuperar empresa
+    this.colorScheme = this.loadColorScheme();
+
+    // Recuperar empresa para datos descriptivos (nombre, logo, etc)
     const storedEmpresa = localStorage.getItem('selectedEmpresa');
     if (storedEmpresa) {
       this.empresaSeleccionada = JSON.parse(storedEmpresa);
@@ -83,7 +104,6 @@ export class DatosDeTareasComponent implements OnInit {
       this.presupuestoNombre = storedPresupuestoName;
     }
 
-    this.colorScheme = this.loadColorScheme();
     this.loadPreviewOptions();
   }
 
@@ -155,18 +175,29 @@ export class DatosDeTareasComponent implements OnInit {
     inlineStyle.innerHTML = `
       #export-presupuesto { background: #ffffff; }
       #export-presupuesto .info-section {
-        background: ${scheme.secondaryColor};
-        color: ${scheme.textColor};
+        background: linear-gradient(${scheme.gradientAngle}, ${scheme.secondaryColor}, ${scheme.secondaryColor2}) !important;
+        color: ${scheme.primaryColor} !important;
       }
-      #export-presupuesto table { width: 100%; border-collapse: collapse; }
-      #export-presupuesto table th, #export-presupuesto table td {
-        border: 1px solid rgba(13, 96, 164, 0.2); padding: 10px;
+      #export-presupuesto .info-box {
+        background-color: ${scheme.infoBoxColorRGBA} !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        padding: 15px !important;
+        margin-bottom: 20px !important;
       }
       #export-presupuesto table thead th {
-        background: ${scheme.accentColor}; color: #fff;
+        background-color: ${scheme.accentColor} !important;
+        color: ${scheme.tableTextColor} !important;
       }
-      #export-presupuesto table tbody td { color: ${scheme.tableTextColor}; }
-      #export-presupuesto .total { color: ${scheme.primaryColor}; }
+      #export-presupuesto table tbody tr {
+        background-color: ${scheme.tableBodyColor} !important;
+        color: ${scheme.textColor} !important;
+      }
+      #export-presupuesto .total {
+        background: linear-gradient(${scheme.gradientAngle}, ${scheme.secondaryColor}, ${scheme.secondaryColor2}) !important;
+        color: ${scheme.primaryColor} !important;
+        border-color: ${scheme.primaryColor}33 !important;
+      }
       .no-print { display: none !important; }
     `;
     document.head.appendChild(inlineStyle);
@@ -208,10 +239,43 @@ export class DatosDeTareasComponent implements OnInit {
 
   // ============ DESCARGA HTML ============
   descargarHTML(): void {
+    const scheme = this.loadColorScheme();
     // Crear copia sin elementos no imprimibles
     const clone = document.documentElement.cloneNode(true) as HTMLElement;
+    
+    // Inyectar estilos específicos para asegurar que los colores se mantengan sin CSS externo
+    const styleTag = document.createElement('style');
+    styleTag.innerHTML = `
+      #export-presupuesto .info-section {
+        background: linear-gradient(${scheme.gradientAngle}, ${scheme.secondaryColor}, ${scheme.secondaryColor2}) !important;
+        color: ${scheme.primaryColor} !important;
+      }
+      #export-presupuesto .info-box {
+        background-color: ${scheme.infoBoxColorRGBA} !important;
+        border-radius: 12px !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        padding: 15px !important;
+        margin-bottom: 20px !important;
+      }
+      #export-presupuesto table thead th {
+        background-color: ${scheme.accentColor} !important;
+        color: ${scheme.tableTextColor} !important;
+      }
+      #export-presupuesto table tbody tr {
+        background-color: ${scheme.tableBodyColor} !important;
+        color: ${scheme.textColor} !important;
+      }
+      #export-presupuesto .total {
+        background: linear-gradient(${scheme.gradientAngle}, ${scheme.secondaryColor}, ${scheme.secondaryColor2}) !important;
+        color: ${scheme.primaryColor} !important;
+        border-color: ${scheme.primaryColor}33 !important;
+      }
+    `;
+    clone.querySelector('head')?.appendChild(styleTag);
+    
     clone.querySelectorAll('.no-print').forEach(el => el.remove());
     const htmlContent = '<!DOCTYPE html>\n' + clone.outerHTML;
+    
     const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -237,11 +301,30 @@ export class DatosDeTareasComponent implements OnInit {
 
   private loadColorScheme(): ColorScheme {
     try {
+      // 1. Intentamos cargar el esquema guardado manualmente (si existe)
       const storedScheme = localStorage.getItem(this.colorSchemeStorageKey);
+      let scheme = { ...this.defaultColorScheme };
+
       if (storedScheme) {
-        const parsedScheme = JSON.parse(storedScheme);
-        return { ...this.defaultColorScheme, ...parsedScheme };
+        scheme = { ...scheme, ...JSON.parse(storedScheme) };
       }
+
+      // 2. Si hay empresa seleccionada, sus colores mandan sobre el manual
+      const storedEmpresa = localStorage.getItem('selectedEmpresa');
+      if (storedEmpresa) {
+        const empresa = JSON.parse(storedEmpresa);
+        if (empresa.primaryColor) scheme.primaryColor = empresa.primaryColor;
+        if (empresa.secondaryColor) scheme.secondaryColor = empresa.secondaryColor;
+        if (empresa.tableColor) scheme.accentColor = empresa.tableColor;
+        if (empresa.textColor) scheme.textColor = empresa.textColor;
+        if (empresa.tableTextColor) scheme.tableTextColor = empresa.tableTextColor;
+        if (empresa.secondaryColor2) scheme.secondaryColor2 = empresa.secondaryColor2;
+        if (empresa.gradientAngle) scheme.gradientAngle = empresa.gradientAngle;
+        if (empresa.tableBodyColor) scheme.tableBodyColor = empresa.tableBodyColor;
+        if (empresa.infoBoxColorHex) scheme.infoBoxColorRGBA = this.getBackgroundColorRgba(empresa.infoBoxColorHex, empresa.infoBoxOpacity ?? 1);
+      }
+
+      return scheme;
     } catch (error) {
       console.error('No se pudo cargar el esquema de colores.', error);
     }

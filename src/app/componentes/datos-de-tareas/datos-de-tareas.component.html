@@ -2,7 +2,7 @@
      DATOS-DE-TAREAS COMPONENT - Vista Previa del Presupuesto
      Diseño y funcionalidades migradas fielmente desde METROFINALPUBLICADO.html
      ================================================ -->
-<div class="presupuesto-page" id="export-presupuesto">
+<div class="presupuesto-page" id="export-presupuesto" [style.color]="colorScheme.textColor">
 
   <!-- ============ CONTROLES FLOTANTES - no-print ============ -->
   <div class="preview-controls no-print" *ngIf="!tareasAgregadas || tareasAgregadas.length > 0">
@@ -41,7 +41,7 @@
     class="no-print back-btn button-82-front text"
     (click)="volverAlDashboard()"
   >
-    <i class="fas fa-arrow-left" style="margin-right: 6px;"></i>Volver
+    <i class="fas fa-times"></i>
   </button>
 
   <!-- ============ MODAL DE OPCIONES DE DESCARGA - no-print ============ -->
@@ -84,73 +84,69 @@
     <div class="row">
 
       <!-- ENCABEZADO: empresa + cliente -->
-      <div class="col-lg-12 info-section">
+      <div class="col-lg-12 info-section" [style.color]="colorScheme.textColor" [style.background]="'linear-gradient(' + colorScheme.gradientAngle + ', ' + colorScheme.secondaryColor + ', ' + colorScheme.secondaryColor2 + ')'">
 
-        <!-- Grid logo + nombre empresa -->
-        <div class="company-header-grid">
-          <div class="company-logo-cell">
-            <img
-              *ngIf="empresaSeleccionada?.logoUrl"
-              [src]="empresaSeleccionada!.logoUrl"
-              class="company-logo-img"
-              alt="Logo empresa"
-            />
+        <!-- CONTENEDOR INFORMACIÓN EMPRESA -->
+        <div class="info-box enterprise-box" [style.background-color]="colorScheme.infoBoxColorRGBA">
+          <!-- Grid logo + nombre empresa -->
+          <div class="company-header-grid">
+            <div class="company-logo-cell">
+              <img
+                *ngIf="empresaSeleccionada?.logoUrl"
+                [src]="empresaSeleccionada!.logoUrl"
+                class="company-logo-img"
+                alt="Logo empresa"
+              />
+            </div>
+            <div class="company-name-cell"></div>
+            <div class="company-third-cell"></div>
           </div>
-          <div class="company-name-cell"></div>
-          <div class="company-third-cell"></div>
-        </div>
 
-        <!-- Nombre de la empresa -->
-        <div class="company-name-row">
-          <h2 class="font-weight-bold">{{ empresaSeleccionada?.name }}</h2>
-        </div>
+          <!-- Nombre de la empresa -->
+          <div class="company-name-row">
+            <h2 class="font-weight-bold" [style.color]="colorScheme.primaryColor">{{ empresaSeleccionada?.name }}</h2>
+          </div>
 
-        <!-- Datos de la empresa -->
-        <div class="row">
-          <div class="col-lg-12">
-            <div style="display: inline-block; width: 70%;">
-              <p *ngIf="empresaSeleccionada?.phone">Tel: {{ empresaSeleccionada?.phone }}</p>
-              <p *ngIf="empresaSeleccionada?.email">Email: {{ empresaSeleccionada?.email }}</p>
-              <p *ngIf="empresaSeleccionada?.description">{{ empresaSeleccionada?.description }}</p>
-              <p *ngIf="empresaSeleccionada?.cuilCuit">CUIL/CUIT: {{ empresaSeleccionada?.cuilCuit }}</p>
-              <p *ngIf="empresaSeleccionada?.website">Web: {{ empresaSeleccionada?.website }}</p>
+          <!-- Datos de la empresa -->
+          <div class="row">
+            <div class="col-lg-12">
+              <div>
+                <p *ngIf="empresaSeleccionada?.phone">Tel: {{ empresaSeleccionada?.phone }}</p>
+                <p *ngIf="empresaSeleccionada?.email">Email: {{ empresaSeleccionada?.email }}</p>
+                <p *ngIf="empresaSeleccionada?.description">{{ empresaSeleccionada?.description }}</p>
+                <p *ngIf="empresaSeleccionada?.cuilCuit">CUIL/CUIT: {{ empresaSeleccionada?.cuilCuit }}</p>
+                <p *ngIf="empresaSeleccionada?.website">Web: {{ empresaSeleccionada?.website }}</p>
+              </div>
             </div>
           </div>
+
+          <!-- Social -->
+          <div class="empresa-social-row" *ngIf="empresaSeleccionada?.tiktok || empresaSeleccionada?.instagram || empresaSeleccionada?.facebook">
+            <span *ngIf="empresaSeleccionada?.tiktok" class="empresa-social-item">
+              <i class="bi bi-tiktok"></i> {{ empresaSeleccionada?.tiktok }}
+            </span>
+            <span *ngIf="empresaSeleccionada?.instagram" class="empresa-social-item">
+              <i class="bi bi-instagram"></i> {{ empresaSeleccionada?.instagram }}
+            </span>
+            <span *ngIf="empresaSeleccionada?.facebook" class="empresa-social-item">
+              <i class="bi bi-facebook"></i> {{ empresaSeleccionada?.facebook }}
+            </span>
+          </div>
         </div>
 
-        <!-- Social -->
-        <div class="empresa-social-row" *ngIf="empresaSeleccionada?.tiktok || empresaSeleccionada?.instagram || empresaSeleccionada?.facebook">
-          <span *ngIf="empresaSeleccionada?.tiktok" class="empresa-social-item">
-            <i class="bi bi-tiktok"></i> {{ empresaSeleccionada?.tiktok }}
-          </span>
-          <span *ngIf="empresaSeleccionada?.instagram" class="empresa-social-item">
-            <i class="bi bi-instagram"></i> {{ empresaSeleccionada?.instagram }}
-          </span>
-          <span *ngIf="empresaSeleccionada?.facebook" class="empresa-social-item">
-            <i class="bi bi-facebook"></i> {{ empresaSeleccionada?.facebook }}
-          </span>
+        <!-- CONTENEDOR INFORMACIÓN CLIENTE -->
+        <div class="info-box client-box" [style.backgroundColor]="colorScheme.infoBoxColorRGBA">
+          <h5 class="font-weight-bold" [style.color]="colorScheme.textColor">Cliente</h5>
+          <h4 class="font-weight-bold" [style.color]="colorScheme.textColor">{{ clienteSeleccionado?.name }}</h4>
+          <p *ngIf="clienteSeleccionado?.contact">Tel/cel.: {{ clienteSeleccionado?.contact }}</p>
+          <p *ngIf="clienteSeleccionado?.budgetDate">Fecha de este presupuesto: {{ clienteSeleccionado?.budgetDate }}</p>
+          <p *ngIf="presupuestoNombre">Presupuesto: {{ presupuestoNombre }}</p>
+          <p *ngIf="clienteSeleccionado?.additionalDetails">Detalles: {{ clienteSeleccionado?.additionalDetails }}</p>
         </div>
 
-        <hr />
-
-        <!-- Datos del cliente -->
-        <h5 class="font-weight-bold">Cliente</h5>
-        <h4 class="font-weight-bold">{{ clienteSeleccionado?.name }}</h4>
-        <p *ngIf="clienteSeleccionado?.contact">Tel/cel.: {{ clienteSeleccionado?.contact }}</p>
-        <p *ngIf="clienteSeleccionado?.budgetDate">Fecha de este presupuesto: {{ clienteSeleccionado?.budgetDate }}</p>
-        <p *ngIf="presupuestoNombre">Presupuesto: {{ presupuestoNombre }}</p>
-        <p *ngIf="clienteSeleccionado?.additionalDetails">Detalles: {{ clienteSeleccionado?.additionalDetails }}</p>
-
-        <hr />
-      </div>
-    </div>
-
-    <!-- ============ TABLA DE TAREAS ============ -->
-    <div class="row">
-      <div class="col-lg-12">
-
+        <!-- ============ TABLA DE TAREAS (Movida adentro) ============ -->
         <!-- Estado vacío -->
-        <div class="budget-empty-state" [class.is-visible]="!tareasAgregadas || tareasAgregadas.length === 0">
+        <div class="budget-empty-state" [class.is-visible]="!tareasAgregadas || tareasAgregadas.length === 0" style="margin-top: 20px;">
           <h3>Presupuesto vacío</h3>
           <p>Todavía no agregaste tareas al presupuesto. Para ver la vista previa completa, primero cargá al menos una.</p>
           <ol>
@@ -163,31 +159,39 @@
         </div>
 
         <!-- Tabla -->
-        <div class="table-responsive" *ngIf="tareasAgregadas && tareasAgregadas.length > 0">
-          <table class="table table-bordered" id="budgetListPrint">
-            <thead>
-              <tr>
-                <th>Tipo de Trabajo</th>
-                <th [style.display]="hideDescription ? 'none' : ''">Descripción</th>
-                <th>Área (m²/m³)</th>
-                <th [style.display]="hideCostPerM2 ? 'none' : ''">Costo por m²</th>
-                <th>Total</th>
+        <div class="table-responsive" *ngIf="tareasAgregadas && tareasAgregadas.length > 0" 
+             [style.backgroundColor]="colorScheme.tableBodyColor"
+             style="margin-top: 20px; border-radius: 8px;">
+          <table class="table table-bordered" id="budgetListPrint" 
+                 [style.backgroundColor]="colorScheme.tableBodyColor"
+                 style="margin-bottom: 0;">
+            <thead [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">
+              <tr [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">
+                <th [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Tipo de Trabajo</th>
+                <th [style.display]="hideDescription ? 'none' : ''" [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Descripción</th>
+                <th [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Área (m²/m³)</th>
+                <th [style.display]="hideCostPerM2 ? 'none' : ''" [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Costo por m²</th>
+                <th [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Total</th>
               </tr>
             </thead>
-            <tbody>
-              <tr *ngFor="let tarea of tareasAgregadas">
-                <td style="text-align: left;">{{ tarea.tarea }}</td>
-                <td [style.display]="hideDescription ? 'none' : ''">{{ tarea.descripcion }}</td>
-                <td>{{ tarea.area | number:'1.2-2' }}</td>
-                <td [style.display]="hideCostPerM2 ? 'none' : ''">${{ tarea.costo | number:'1.2-2' }}</td>
-                <td>${{ tarea.totalCost | number:'1.2-2' }}</td>
+            <tbody [style.backgroundColor]="colorScheme.tableBodyColor">
+              <tr *ngFor="let tarea of tareasAgregadas" [style.backgroundColor]="colorScheme.tableBodyColor" [style.color]="colorScheme.textColor">
+                <td [style.backgroundColor]="colorScheme.tableBodyColor" style="text-align: left;">{{ tarea.tarea }}</td>
+                <td [style.backgroundColor]="colorScheme.tableBodyColor" [style.display]="hideDescription ? 'none' : ''">{{ tarea.descripcion }}</td>
+                <td [style.backgroundColor]="colorScheme.tableBodyColor">{{ tarea.area | number:'1.2-2' }}</td>
+                <td [style.backgroundColor]="colorScheme.tableBodyColor" [style.display]="hideCostPerM2 ? 'none' : ''">${{ tarea.costo | number:'1.2-2' }}</td>
+                <td [style.backgroundColor]="colorScheme.tableBodyColor">${{ tarea.totalCost | number:'1.2-2' }}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <!-- Total -->
-        <p class="total" *ngIf="tareasAgregadas && tareasAgregadas.length > 0">
+        <p class="total" *ngIf="tareasAgregadas && tareasAgregadas.length > 0" 
+           [style.color]="colorScheme.primaryColor" 
+           [style.background]="'linear-gradient(' + colorScheme.gradientAngle + ', ' + colorScheme.secondaryColor + ', ' + colorScheme.secondaryColor2 + ')'"
+           [style.border-color]="colorScheme.primaryColor + '33'"
+           style="margin-top: 20px; margin-bottom: 20px; border-radius: 8px;">
           Total: ${{ formatCurrency(calcularCostoTotal()) }}
         </p>
 

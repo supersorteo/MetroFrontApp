@@ -18,7 +18,16 @@ interface EmpresaData {
   email?: string;
   description?: string;
   website?: string;
+  tiktok?: string;
+  instagram?: string;
+  facebook?: string;
   logoUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  textColor?: string;
+  tableColor?: string;
+  tableTextColor?: string;
+  tableBodyColor?: string;
 }
 
 interface ClienteData {
@@ -85,7 +94,16 @@ export class PresupuestoComponent implements OnInit {
           email: empresa.email || '',
           description: empresa.description || '',
           website: empresa.website || '',
-          logoUrl: empresa.logoUrl || ''
+          tiktok: empresa.tiktok || '',
+          instagram: empresa.instagram || '',
+          facebook: empresa.facebook || '',
+          logoUrl: empresa.logoUrl || '',
+          primaryColor: empresa.primaryColor || '#0b69a6',
+          secondaryColor: empresa.secondaryColor || '#ffffff',
+          textColor: empresa.textColor || '#333333',
+          tableColor: empresa.tableColor || '#343a40',
+          tableTextColor: empresa.tableTextColor || '#ffffff',
+          tableBodyColor: empresa.tableBodyColor || '#ffffff'
         };
         this.logoUrl = empresa.logoUrl || '';
       } catch {}
