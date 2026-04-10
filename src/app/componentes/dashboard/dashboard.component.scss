@@ -2087,3 +2087,63 @@ p {
 .dash-modal .modal-footer .text-muted {
   color: #7eb8e8 !important;
 }
+
+/* ── Recent Task Cards (Historial) ─────────────────────── */
+.recent-task-card {
+  background: #ffffff !important;
+  border: 1px solid #dbe8ff !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: default;
+  box-shadow: 0 4px 6px rgba(36, 99, 211, 0.05) !important;
+}
+
+.recent-task-card:hover {
+  background: #f8fbff !important;
+  border-color: #3b82f6 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.12) !important;
+}
+
+.recent-task-card .badge {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+}
+
+.recent-task-card .card-title {
+  color: #2c3e50 !important;
+  letter-spacing: 0.1px;
+}
+
+.recent-task-card .text-muted {
+  color: #64748b !important;
+}
+
+.recent-task-card .btn-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  border: none !important;
+  transition: all 0.2s;
+}
+
+.recent-task-card .btn-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(37, 99, 235, 0.35);
+  filter: brightness(1.1);
+}
+
+/* Custom scrollbar for recent tasks modal body */
+#recentTasksModal .modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+#recentTasksModal .modal-body::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.1);
+}
+#recentTasksModal .modal-body::-webkit-scrollbar-thumb {
+  background: rgba(99, 179, 237, 0.25);
+  border-radius: 10px;
+}
+#recentTasksModal .modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 179, 237, 0.4);
+}
