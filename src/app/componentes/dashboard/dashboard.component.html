@@ -4,22 +4,17 @@
 
 
 
-<div class="offcanvas offcanvas-start"
-tabindex="-1"
-id="offcanvasMenu"
-aria-label="Menu"
+<div class="menu-panel-overlay" *ngIf="showMenuPanel" (click)="toggleMenuPanel()"></div>
 
-(shown.bs.offcanvas)="isSidebarOpen = true"
-(hidden.bs.offcanvas)="isSidebarOpen = false">
-
-
-  <div class="program-title" id="portada" style="border-radius: 10px;" *ngIf="!isContentVisible">
-      <h6 style="font-size: 12px; margin-bottom: 0px;">Orbita software</h6>
+<aside class="menu-panel" *ngIf="showMenuPanel" [class.open]="showMenuPanel">
+  <div class="menu-panel__header">
+    <div class="program-title" *ngIf="!isContentVisible">
+      <h6>Orbita software</h6>
     </div>
-  <div class="offcanvas-header">
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    <button type="button" class="btn-close ms-auto" (click)="toggleMenuPanel()" aria-label="Cerrar menú"></button>
   </div>
-  <div class="offcanvas-body">
+
+  <div class="menu-panel__body">
     <div class="weather-widget mb-3 w-100 text-center">
       <h6 class="mb-2">Clima actual</h6>
       <div *ngIf="weatherLoading" class="text-muted">Cargando...</div>
@@ -33,19 +28,19 @@ aria-label="Menu"
         </button>
       </div>
     </div>
+
     <ul class="list-unstyled d-flex flex-column align-items-center">
-      <li class="w-100 mb-3 text-center timer-info" style="font-size: 18px; font-weight: bold; color: #092865; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">
+      <li class="w-100 mb-3 text-center timer-info">
         {{ remainingTime }}
       </li>
-
       <li class="w-100 mt-3">
-        <button (click)="abrirGoogleSheets2()" id="mano-de-obra-button2" class="btn btn-primary btn-block animate w-100">PDF valor vivienda JULIO/2025</button>
+        <button (click)="abrirGoogleSheets2()" class="btn btn-primary btn-block animate w-100">PDF valor vivienda JULIO/2025</button>
       </li>
       <li class="w-100 d-flex flex-column gap-2 mt-2">
         <button class="btn btn-primary btn-block w-100 animate">BIBLIOTECA</button>
       </li>
       <li class="w-100 mt-2 text-center">
-        <button class="btn btn-primary btn-block w-100 animate" (click)="abrirGeneradorQR()" data-bs-dismiss="offcanvas">
+        <button class="btn btn-primary btn-block w-100 animate" (click)="abrirGeneradorQR(); toggleMenuPanel()">
           <i class="fas fa-qrcode" aria-hidden="true" style="margin-right: 6px;"></i>GENERADOR QR
         </button>
       </li>
@@ -54,19 +49,14 @@ aria-label="Menu"
           <i class="fas fa-download" aria-hidden="true" style="margin-right: 6px;"></i>INSTALAR APP
         </button>
       </li>
-      <li class="w-100 text-center">
-        <!--button-- class="btn btn-secondary logout-button1 w-100" data-bs-toggle="modal" data-bs-target="#confirmLogoutModal">
-          cerrar session
-        </!--button-->
-
+      <li class="w-100 text-center mt-2">
         <button class="btn btn-secondary logout-button1 w-100" (click)="logout()">
-        cerrar session
-      </button>
-
+          cerrar session
+        </button>
       </li>
     </ul>
   </div>
-</div>
+</aside>
 
 <div class="modal fade qr-modal" id="qrModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1044,7 +1034,7 @@ aria-label="Menu"
       </span>
       <span class="toolbar-item__label">Calculadora</span>
     </button>
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu" aria-label="Abrir menu">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" type="button" (click)="toggleMenuPanel()" aria-label="Abrir menu">
       <span class="toolbar-item__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48.61 42.53">
           <path fill="#5b748f" d="m41.27,0H7.34C3.29,0,0,3.29,0,7.34v27.85c0,4.05,3.29,7.34,7.34,7.34h33.93v-3H7.34c-2.39,0-4.34-1.95-4.34-4.34V7.34c0-2.39,1.95-4.34,4.34-4.34h33.93c2.39,0,4.34,1.95,4.34,4.34v27.85h3V7.34c0-4.05-3.29-7.34-7.34-7.34Z"/>

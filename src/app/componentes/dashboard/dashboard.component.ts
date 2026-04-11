@@ -128,6 +128,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.deferredPrompt = e;
   }
 
+  toggleMenuPanel(): void {
+    this.showMenuPanel = !this.showMenuPanel;
+  }
+
   installPwa() {
     if (!this.deferredPrompt) {
       return;
@@ -196,7 +200,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   showTareasPanel: boolean = false;
   tareasAgregadas: UserTarea[] = [];
   tareasDelCliente: UserTarea[] = [];
-  isSidebarOpen: boolean = false;
+  showMenuPanel: boolean = false;
   showSocialFields: boolean = false;
   weatherLoading: boolean = false;
   weatherError: string = '';
@@ -971,16 +975,8 @@ ngAfterViewInit() {
     });
     offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
       menuBtn.style.display = 'flex';
-       document.querySelectorAll('.offcanvas-backdrop').forEach(el => el.remove());
     });
-
-
   }
-
-  const offcanvasEl = document.getElementById('offcanvasMenu');
-offcanvasEl?.addEventListener('hidden.bs.offcanvas', () => {
-  document.querySelectorAll('.offcanvas-backdrop').forEach(el => el.remove());
-});
 
 
 
