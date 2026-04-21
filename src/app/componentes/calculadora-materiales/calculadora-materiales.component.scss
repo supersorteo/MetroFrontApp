@@ -18,8 +18,8 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
 // ── Page ───────────────────────────────────────────────────────────────────────
 .calc-page {
   min-height: 100vh;
-  background: $gray-100;
-  padding-bottom: 3rem;
+  background: transparent;
+  padding-bottom: 7rem;
 }
 
 // ── Header ────────────────────────────────────────────────────────────────────
@@ -65,11 +65,7 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
 
 // ── Search ────────────────────────────────────────────────────────────────────
 .calc-search-wrap {
-  background: linear-gradient(135deg, #2c3e50 0%, #3d5a74 100%);
-  padding: 0 1.5rem 1.5rem;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  display: none;
 }
 
 .calc-search {
@@ -89,24 +85,39 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
 
   &__input {
     width: 100%;
-    padding: .75rem 2.5rem .75rem 2.75rem;
-    border: 2px solid transparent;
-    border-radius: $radius;
-    font-size: .95rem;
-    background: $white;
-    box-shadow: $shadow;
-    transition: border-color .2s;
+    padding: .95rem 7rem .95rem 3.15rem;
+    border: 1px solid rgba(61, 90, 116, .22);
+    border-radius: 22px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #163042;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(248,251,255,.94) 100%);
+    box-shadow:
+      0 18px 38px rgba(15, 28, 63, .18),
+      0 4px 14px rgba(15, 28, 63, .08),
+      inset 0 1px 0 rgba(255,255,255,.9);
+    transition: border-color .2s, box-shadow .2s, transform .2s;
     box-sizing: border-box;
 
     &:focus {
       outline: none;
-      border-color: $primary;
+      border-color: rgba($primary, .78);
+      box-shadow:
+        0 22px 42px rgba(15, 28, 63, .2),
+        0 0 0 4px rgba($primary, .15),
+        inset 0 1px 0 rgba(255,255,255,.96);
+    }
+
+    &::placeholder {
+      color: rgba(52, 73, 94, .7);
+      font-weight: 500;
     }
   }
 
   &__clear {
     position: absolute;
-    right: .75rem;
+    right: 3.75rem;
     top: 50%;
     transform: translateY(-50%);
     background: none;
@@ -119,13 +130,43 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
 
     &:hover { color: $primary-dk; }
   }
+
+  &__menu {
+    position: absolute;
+    right: .6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2c3e50 0%, #3d5a74 100%);
+    color: $white;
+    box-shadow: 0 10px 22px rgba(15, 28, 63, .22);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: transform .16s ease, filter .2s ease, box-shadow .2s ease;
+
+    &:hover {
+      transform: translateY(-50%) scale(1.03);
+      filter: brightness(1.03);
+      box-shadow: 0 14px 26px rgba(15, 28, 63, .26);
+    }
+
+    &:active {
+      transform: translateY(-50%) scale(.97);
+    }
+  }
 }
 
 // ── Body ──────────────────────────────────────────────────────────────────────
 .calc-body {
   max-width: 800px;
   margin: 1.5rem auto 0;
-  padding: 0 1rem;
+  padding: 0 1rem 2rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -345,6 +386,7 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
   display: flex;
   gap: .5rem;
   flex-shrink: 0;
+  align-items: center;
 }
 
 .btn-calc {
@@ -384,6 +426,46 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
     border-color: #e74c3c;
     color: #e74c3c;
     background: #fdf2f2;
+  }
+}
+
+.btn-guardar-icon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1f8f5f 0%, #196c57 100%);
+  color: $white;
+  box-shadow: 0 8px 18px rgba(31, 143, 95, .24);
+  cursor: pointer;
+  transition: transform .14s ease, box-shadow .2s ease, filter .2s ease, opacity .2s ease;
+
+  i {
+    font-size: 1.1rem;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.03);
+    box-shadow: 0 12px 22px rgba(31, 143, 95, .28);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(.97);
+  }
+
+  &:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  &--saved {
+    background: linear-gradient(135deg, #2878d8 0%, #215ea8 100%);
+    box-shadow: 0 8px 18px rgba(40, 120, 216, .24);
   }
 }
 
@@ -501,13 +583,13 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
 .sidebar-panel {
   position: fixed;
   top: 0;
-  right: 0;
+  left: 0;
   width: 270px;
   height: 100%;
   background: $white;
   box-shadow: $shadow-lg;
   z-index: 101;
-  transform: translateX(100%);
+  transform: translateX(-100%);
   transition: transform .28s ease;
   display: flex;
   flex-direction: column;
@@ -515,8 +597,8 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
   &--open { transform: translateX(0); }
 
   &__close {
-    align-self: flex-end;
-    margin: .75rem .75rem 0;
+    align-self: flex-start;
+    margin: .75rem 0 0 .75rem;
     background: none;
     border: none;
     font-size: 1.1rem;
@@ -580,29 +662,21 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
 }
 
 // ── Sidebar btn in search ─────────────────────────────────────────────────────
-.calc-search__sidebar-btn {
-  position: absolute;
-  right: .5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: $primary;
-  border: none;
-  border-radius: $radius-sm;
-  color: $white;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 1.1rem;
-  transition: background .2s;
-
-  &:hover { background: $primary-dk; }
+.calc-search-floating {
+  position: fixed;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  width: min(860px, calc(100vw - 1.5rem));
+  z-index: 90;
 }
 
-.calc-search__input {
-  padding-right: 3.2rem !important;
+.calc-search--floating {
+  margin: 0;
+
+  .calc-search__input {
+    min-height: 58px;
+  }
 }
 
 // ── Modal últimas tareas ───────────────────────────────────────────────────────
@@ -707,4 +781,26 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
   .calc-input-actions { justify-content: flex-end; }
   .calc-results__grid { grid-template-columns: 1fr 1fr; }
   .calc-card__title { white-space: normal; }
+  .calc-search-floating {
+    width: calc(100vw - 1rem);
+    bottom: .75rem;
+  }
+
+  .calc-search {
+    &__input {
+      padding: .88rem 6.3rem .88rem 3rem;
+      min-height: 54px;
+    }
+
+    &__menu {
+      width: 38px;
+      height: 38px;
+      right: .55rem;
+      border-radius: 13px;
+    }
+
+    &__clear {
+      right: 3.35rem;
+    }
+  }
 }

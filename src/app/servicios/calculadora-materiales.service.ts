@@ -48,6 +48,12 @@ export class CalculadoraMaterialesService {
     );
   }
 
+  eliminarCalculo(calculoId: number, userCode: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${calculoId}?userCode=${encodeURIComponent(userCode)}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   obtenerHistorial(userCode: string, limit = 10): Observable<CalculoMaterialGuardado[]> {
     return this.http.get<CalculoMaterialGuardado[]>(`${this.apiUrl}/history/${encodeURIComponent(userCode)}?limit=${limit}`).pipe(
       catchError(this.handleError)

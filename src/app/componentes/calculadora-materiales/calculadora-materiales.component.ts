@@ -6,6 +6,7 @@ import {
   CalculoMaterialGuardado,
   TareaCalculadaResumen
 } from '../../servicios/calculadora-materiales.service';
+import { AppToastService } from '../../servicios/app-toast.service';
 
 export interface Material {
   nombre: string;
@@ -38,6 +39,8 @@ interface TareaResumen {
   unidad: string;
   createdAt?: string;
 }
+
+type SaveStatus = 'saved' | 'dirty';
 
 const ICONOS_MATERIALES: { icono: string; keywords: string[] }[] = [
   { icono: 'bi-building', keywords: ['cemento', 'hormigon', 'mortero'] },
@@ -627,6 +630,8 @@ export class CalculadoraMaterialesComponent implements OnInit {
   tareasVisibles = signal<Tarea[]>(this.isTrialMode ? seleccionarTareasAleatorias(DEMO_TASK_LIMIT) : TAREAS);
   ultimasTareas = signal<TareaResumen[]>([]);
   historialCalculos = signal<CalculoMaterialGuardado[]>([]);
+  saveStatus = signal<Record<number, SaveStatus | undefined>>({});
+  savedCalculosByTask = signal<Record<number, CalculoMaterialGuardado | undefined>>({});
 
   filteredTasks = computed(() => {
     const term = this.normalizar(this.searchTerm());
@@ -639,13 +644,17 @@ export class CalculadoraMaterialesComponent implements OnInit {
     );
   });
 
-  constructor(private calculadoraMaterialesService: CalculadoraMaterialesService) {}
+  constructor(
+    private calculadoraMaterialesService: CalculadoraMaterialesService,
+    private toast: AppToastService
+  ) {}
 
   ngOnInit(): void {
     if (this.isTrialMode) {
       const historialDemo = cargarHistorialDemoDesdeStorage().slice(0, DEMO_HISTORY_LIMIT);
       this.historialCalculos.set(historialDemo);
       this.ultimasTareas.set(construirResumenesDesdeHistorial(historialDemo, DEMO_HISTORY_LIMIT));
+      this.syncSavedCalculosByTask(historialDemo);
       return;
     }
 
@@ -711,13 +720,37 @@ export class CalculadoraMaterialesComponent implements OnInit {
     const set = new Set(this.expandedIds());
     set.add(tarea.id);
     this.expandedIds.set(set);
-    this.persistirCalculo(tarea, val, resultados);
+    this.saveStatus.update(status => ({ ...status, [tarea.id]: 'dirty' }));
+    this.toast.info('El cálculo quedó listo. Guárdalo solo si quieres sumarlo al historial.', 'Cálculo generado');
+  }
+
+  async confirmarBorrado(id: number): Promise<void> {
+    if (!this.hasResultados(id) && this.getInputValue(id) === null) {
+      return;
+    }
+
+    const hasPersisted = !!this.savedCalculosByTask()[id];
+    const confirmed = await this.toast.confirm(
+      hasPersisted
+        ? 'Este cálculo se eliminará de la vista actual y también del historial guardado.'
+        : 'Se limpiará el resultado calculado de esta tarea.'
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    this.eliminarCalculo(id);
   }
 
   borrar(id: number): void {
     this.inputValues.update(v => ({ ...v, [id]: null }));
     this.resultados.update(r => {
       const copy = { ...r };
+      delete copy[id];
+      return copy;
+    });
+    this.saveStatus.update(status => {
+      const copy = { ...status };
       delete copy[id];
       return copy;
     });
@@ -729,6 +762,14 @@ export class CalculadoraMaterialesComponent implements OnInit {
 
   getResultados(id: number): ResultadoMaterial[] {
     return this.resultados()[id] ?? [];
+  }
+
+  canGuardar(id: number): boolean {
+    return this.hasResultados(id) && this.saveStatus()[id] === 'dirty';
+  }
+
+  isGuardado(id: number): boolean {
+    return this.saveStatus()[id] === 'saved';
   }
 
   private normalizar(str: string): string {
@@ -750,10 +791,18 @@ export class CalculadoraMaterialesComponent implements OnInit {
   cerrarUltimasTareas(): void { this.ultimasTareasOpen.set(false); }
   abrirHistorial(): void { this.cerrarSidebar(); this.historialOpen.set(true); }
   cerrarHistorial(): void { this.historialOpen.set(false); }
+  trackHistorial(index: number, calculo: CalculoMaterialGuardado): string | number {
+    return calculo.id ?? `${calculo.tareaId}-${calculo.createdAt ?? index}`;
+  }
 
   irATarea(tarea: TareaResumen): void {
     this.cerrarUltimasTareas();
     this.searchTerm.set('');
+    const calculoGuardado = this.resolverCalculoGuardado(tarea);
+    if (calculoGuardado) {
+      this.restaurarHistorial(calculoGuardado);
+      return;
+    }
     this.ensureTaskVisible(tarea.id);
     const set = new Set(this.expandedIds());
     set.add(tarea.id);
@@ -764,6 +813,7 @@ export class CalculadoraMaterialesComponent implements OnInit {
   }
 
   restaurarHistorial(calculo: CalculoMaterialGuardado): void {
+    this.cerrarUltimasTareas();
     this.cerrarHistorial();
     this.searchTerm.set('');
     this.ensureTaskVisible(calculo.tareaId);
@@ -775,9 +825,33 @@ export class CalculadoraMaterialesComponent implements OnInit {
     const set = new Set(this.expandedIds());
     set.add(calculo.tareaId);
     this.expandedIds.set(set);
+    this.saveStatus.update(status => ({ ...status, [calculo.tareaId]: 'saved' }));
+    this.savedCalculosByTask.update(state => ({ ...state, [calculo.tareaId]: calculo }));
     setTimeout(() => {
       document.getElementById(`tarea-${calculo.tareaId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
+  }
+
+  async confirmarGuardado(tarea: Tarea): Promise<void> {
+    const valorIngresado = this.getInputValue(tarea.id);
+    const resultados = this.getResultados(tarea.id);
+
+    if (valorIngresado === null || valorIngresado <= 0 || resultados.length === 0) {
+      this.toast.warning('Primero debes calcular la tarea antes de poder guardarla.', 'Nada para guardar');
+      return;
+    }
+
+    if (!this.canGuardar(tarea.id)) {
+      this.toast.info('Ese cálculo ya está guardado o todavía no cambió.', 'Sin cambios');
+      return;
+    }
+
+    const confirmed = await this.toast.confirm('Este cálculo se agregará al historial y a últimas tareas.');
+    if (!confirmed) {
+      return;
+    }
+
+    this.persistirCalculo(tarea, valorIngresado, resultados);
   }
 
   formatearFecha(fecha?: string): string {
@@ -813,10 +887,14 @@ export class CalculadoraMaterialesComponent implements OnInit {
       this.historialCalculos.set(historial);
       this.ultimasTareas.set(construirResumenesDesdeHistorial(historial, DEMO_HISTORY_LIMIT));
       guardarHistorialDemoEnStorage(historial);
+      this.saveStatus.update(status => ({ ...status, [tarea.id]: 'saved' }));
+      this.savedCalculosByTask.update(state => ({ ...state, [tarea.id]: historial[0] }));
+      this.toast.success('El cálculo se guardó en el historial local del modo de prueba.', 'Guardado');
       return;
     }
 
     if (!this.userCode) {
+      this.toast.error('No se encontró el código del usuario autenticado para guardar el cálculo.');
       return;
     }
 
@@ -829,9 +907,12 @@ export class CalculadoraMaterialesComponent implements OnInit {
           .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
           .slice(0, USER_HISTORY_LIMIT);
         this.historialCalculos.set(historial);
+        this.saveStatus.update(status => ({ ...status, [tarea.id]: 'saved' }));
+        this.savedCalculosByTask.update(state => ({ ...state, [tarea.id]: saved }));
         this.cargarUltimasTareasBackend();
+        this.toast.success('El cálculo se guardó correctamente en tu historial.', 'Guardado');
       },
-      error: () => {
+      error: () => { this.toast.error('No se pudo guardar el cálculo. Intenta nuevamente.');
         // La UI ya muestra el cálculo localmente; si falla la persistencia se reintenta en el próximo cálculo.
       }
     });
@@ -839,8 +920,14 @@ export class CalculadoraMaterialesComponent implements OnInit {
 
   private cargarHistorialBackend(): void {
     this.calculadoraMaterialesService.obtenerHistorial(this.userCode, USER_HISTORY_LIMIT).subscribe({
-      next: historial => this.historialCalculos.set(historial),
-      error: () => this.historialCalculos.set([])
+      next: historial => {
+        this.historialCalculos.set(historial);
+        this.syncSavedCalculosByTask(historial);
+      },
+      error: () => {
+        this.historialCalculos.set([]);
+        this.savedCalculosByTask.set({});
+      }
     });
   }
 
@@ -872,6 +959,90 @@ export class CalculadoraMaterialesComponent implements OnInit {
     }
 
     this.tareasVisibles.update(actuales => [task, ...actuales]);
+  }
+
+  private eliminarCalculo(taskId: number): void {
+    const persisted = this.savedCalculosByTask()[taskId];
+
+    if (!persisted) {
+      this.borrar(taskId);
+      this.toast.success('El cálculo se eliminó de la vista actual.', 'Cálculo borrado');
+      return;
+    }
+
+    if (this.isTrialMode) {
+      const historial = this.historialCalculos().filter(calculo => !this.isSameCalculo(calculo, persisted));
+      this.historialCalculos.set(historial);
+      this.ultimasTareas.set(construirResumenesDesdeHistorial(historial, DEMO_HISTORY_LIMIT));
+      guardarHistorialDemoEnStorage(historial);
+      this.savedCalculosByTask.update(state => {
+        const copy = { ...state };
+        delete copy[taskId];
+        return copy;
+      });
+      this.borrar(taskId);
+      this.toast.success('El cálculo se eliminó del historial local.', 'Cálculo borrado');
+      return;
+    }
+
+    if (!persisted.id || !this.userCode) {
+      this.borrar(taskId);
+      this.toast.warning('Se limpió la vista, pero no se pudo identificar el cálculo guardado.');
+      return;
+    }
+
+    this.calculadoraMaterialesService.eliminarCalculo(persisted.id, this.userCode).subscribe({
+      next: () => {
+        const historial = this.historialCalculos().filter(calculo => calculo.id !== persisted.id);
+        this.historialCalculos.set(historial);
+        this.syncSavedCalculosByTask(historial);
+        this.cargarUltimasTareasBackend();
+        this.borrar(taskId);
+        this.toast.success('El cálculo se eliminó del historial.', 'Cálculo borrado');
+      },
+      error: () => {
+        this.toast.error('No se pudo eliminar el cálculo guardado.');
+      }
+    });
+  }
+
+  private syncSavedCalculosByTask(historial: CalculoMaterialGuardado[]): void {
+    const mapping: Record<number, CalculoMaterialGuardado | undefined> = {};
+    for (const calculo of historial) {
+      if (!mapping[calculo.tareaId]) {
+        mapping[calculo.tareaId] = calculo;
+      }
+    }
+    this.savedCalculosByTask.set(mapping);
+  }
+
+  private isSameCalculo(a: CalculoMaterialGuardado, b: CalculoMaterialGuardado): boolean {
+    if (a.id && b.id) {
+      return a.id === b.id;
+    }
+    return a.tareaId === b.tareaId && a.createdAt === b.createdAt;
+  }
+
+  private resolverCalculoGuardado(tarea: TareaResumen): CalculoMaterialGuardado | undefined {
+    const savedByTask = this.savedCalculosByTask()[tarea.id];
+    if (savedByTask) {
+      return savedByTask;
+    }
+
+    const historial = this.historialCalculos();
+    if (!historial.length) {
+      return undefined;
+    }
+
+    const matchingByTimestamp = tarea.createdAt
+      ? historial.find(calculo => calculo.tareaId === tarea.id && calculo.createdAt === tarea.createdAt)
+      : undefined;
+
+    if (matchingByTimestamp) {
+      return matchingByTimestamp;
+    }
+
+    return historial.find(calculo => calculo.tareaId === tarea.id);
   }
 
   getCategoriaIcono(cat: string): string {

@@ -1,6 +1,5 @@
 <div class="calc-page">
 
-  <!-- Sidebar -->
   @if (sidebarOpen()) {
     <div class="sidebar-overlay" (click)="cerrarSidebar()"></div>
   }
@@ -33,7 +32,6 @@
     </ul>
   </div>
 
-  <!-- Modal últimas tareas -->
   @if (ultimasTareasOpen()) {
     <div class="calc-modal-overlay" (click)="cerrarUltimasTareas()">
       <div class="calc-modal" (click)="$event.stopPropagation()">
@@ -49,7 +47,12 @@
               <li>
                 <button class="calc-modal__item" (click)="irATarea(t)">
                   <span class="calc-modal__item-num">#{{ t.id }}</span>
-                  <span class="calc-modal__item-title">{{ t.titulo }}</span>
+                  <span class="calc-modal__item-title">
+                    {{ t.titulo }}
+                    @if (formatearFecha(t.createdAt)) {
+                      <small class="d-block text-muted">{{ formatearFecha(t.createdAt) }}</small>
+                    }
+                  </span>
                   <i class="bi bi-arrow-right"></i>
                 </button>
               </li>
@@ -71,7 +74,7 @@
           <p class="calc-modal__empty">Todavía no hay cálculos guardados.</p>
         } @else {
           <ul class="calc-modal__list">
-            @for (calculo of historialCalculos(); track calculo.id ?? ($index + '-' + calculo.tareaId)) {
+            @for (calculo of historialCalculos(); track trackHistorial($index, calculo)) {
               <li>
                 <button class="calc-modal__item" (click)="restaurarHistorial(calculo)">
                   <span class="calc-modal__item-num">#{{ calculo.tareaId }}</span>
@@ -80,7 +83,7 @@
                     <small class="d-block text-muted">
                       {{ calculo.valorIngresado }} {{ calculo.unidad }}
                       @if (formatearFecha(calculo.createdAt)) {
-                        Â· {{ formatearFecha(calculo.createdAt) }}
+                        · {{ formatearFecha(calculo.createdAt) }}
                       }
                     </small>
                   </span>
@@ -94,7 +97,6 @@
     </div>
   }
 
-  <!-- Header -->
   <div class="calc-header">
     <div class="calc-header__inner">
       <div class="calc-header__icon">
@@ -103,36 +105,13 @@
       <div>
         <h1 class="calc-header__title">Calculadora de Materiales</h1>
         @if (isTrialMode) {
-          <p class="calc-header__sub">Modo de prueba: se muestran 3 tareas aleatorias y el historial local guarda solo los Ãºltimos 3 cÃ¡lculos.</p>
+          <p class="calc-header__sub">Modo de prueba: se muestran 3 tareas aleatorias y el historial local guarda solo los últimos 3 cálculos.</p>
         }
         <p class="calc-header__sub">Ingresá el área o volumen para obtener las cantidades exactas</p>
       </div>
     </div>
   </div>
 
-  <!-- Search -->
-  <div class="calc-search-wrap">
-    <div class="calc-search">
-      <i class="bi bi-search calc-search__icon"></i>
-      <input
-        class="calc-search__input"
-        type="text"
-        placeholder="Buscar tarea, categoría o mezcla..."
-        [ngModel]="searchTerm()"
-        (ngModelChange)="searchTerm.set($event)"
-      />
-      @if (searchTerm()) {
-        <button class="calc-search__clear" (click)="searchTerm.set('')">
-          <i class="bi bi-x-circle-fill"></i>
-        </button>
-      }
-      <button class="calc-search__sidebar-btn" (click)="abrirSidebar()" aria-label="Abrir menú">
-        <i class="bi bi-list"></i>
-      </button>
-    </div>
-  </div>
-
-  <!-- No results -->
   @if (filteredTasks().length === 0) {
     <div class="calc-empty">
       <i class="bi bi-search"></i>
@@ -140,7 +119,6 @@
     </div>
   }
 
-  <!-- Categories -->
   <div class="calc-body">
     @for (cat of categorias; track cat) {
       @if (isCategoriaVisible(cat)) {
@@ -155,7 +133,6 @@
             @for (tarea of filteredByCategoria(cat); track tarea.id) {
               <div class="calc-card" [id]="'tarea-' + tarea.id" [class.calc-card--expanded]="isExpanded(tarea.id)" [class.calc-card--done]="hasResultados(tarea.id)">
 
-                <!-- Card Header -->
                 <button class="calc-card__head" (click)="toggleExpand(tarea.id)">
                   <div class="calc-card__head-left">
                     <span class="calc-card__num">#{{ tarea.id }}</span>
@@ -175,11 +152,8 @@
                   </div>
                 </button>
 
-                <!-- Card Body -->
                 @if (isExpanded(tarea.id)) {
                   <div class="calc-card__body">
-
-                    <!-- Input row -->
                     <div class="calc-input-row">
                       <div class="calc-input-group">
                         <label class="calc-input-group__label">
@@ -204,14 +178,22 @@
                           <i class="bi bi-calculator"></i> Calcular
                         </button>
                         @if (hasResultados(tarea.id)) {
-                          <button class="btn-borrar" (click)="borrar(tarea.id)">
+                          <button
+                            class="btn-guardar-icon"
+                            type="button"
+                            (click)="confirmarGuardado(tarea)"
+                            [disabled]="!canGuardar(tarea.id)"
+                            [class.btn-guardar-icon--saved]="isGuardado(tarea.id)"
+                            [attr.aria-label]="isGuardado(tarea.id) ? 'Cálculo guardado' : 'Guardar cálculo'">
+                            <i class="bi" [class.bi-cloud-check-fill]="isGuardado(tarea.id)" [class.bi-cloud-arrow-up-fill]="!isGuardado(tarea.id)"></i>
+                          </button>
+                          <button class="btn-borrar" type="button" (click)="confirmarBorrado(tarea.id)">
                             <i class="bi bi-arrow-counterclockwise"></i> Borrar
                           </button>
                         }
                       </div>
                     </div>
 
-                    <!-- Results -->
                     @if (hasResultados(tarea.id)) {
                       <div class="calc-results">
                         <div class="calc-results__title">
@@ -242,7 +224,6 @@
                         </div>
                       </div>
                     }
-
                   </div>
                 }
 
@@ -252,6 +233,27 @@
         </div>
       }
     }
+  </div>
+
+  <div class="calc-search-floating">
+    <div class="calc-search calc-search--floating">
+      <i class="bi bi-search calc-search__icon"></i>
+      <input
+        class="calc-search__input"
+        type="text"
+        placeholder="Buscar tarea, categoría o mezcla..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+      />
+      @if (searchTerm()) {
+        <button class="calc-search__clear" type="button" (click)="searchTerm.set('')">
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+      }
+      <button class="calc-search__menu" type="button" (click)="abrirSidebar()" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+      </button>
+    </div>
   </div>
 
 </div>
