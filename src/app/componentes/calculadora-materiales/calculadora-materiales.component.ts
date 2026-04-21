@@ -42,6 +42,7 @@ interface TareaResumen {
 }
 
 type SaveStatus = 'saved' | 'dirty';
+type DemoMonthlyUsage = Record<string, number>;
 
 const ICONOS_MATERIALES: { icono: string; keywords: string[] }[] = [
   { icono: 'bi-building', keywords: ['cemento', 'hormigon', 'mortero'] },
@@ -555,8 +556,10 @@ const TAREAS: Tarea[] = [
 export const CATEGORIAS = [...new Set(TAREAS.map(t => t.categoria))];
 
 const DEMO_HISTORY_STORAGE_KEY = 'demoCalculadoraHistorial';
+const DEMO_MONTHLY_USAGE_STORAGE_KEY = 'demoCalculadoraMonthlyUsage';
 const DEMO_TASK_LIMIT = 3;
 const DEMO_HISTORY_LIMIT = 3;
+const DEMO_MONTHLY_CALC_LIMIT = 3;
 const USER_HISTORY_LIMIT = 10;
 const USER_LATEST_TASKS_LIMIT = 5;
 
@@ -574,6 +577,27 @@ function cargarHistorialDemoDesdeStorage(): CalculoMaterialGuardado[] {
 function guardarHistorialDemoEnStorage(historial: CalculoMaterialGuardado[]): void {
   try {
     localStorage.setItem(DEMO_HISTORY_STORAGE_KEY, JSON.stringify(historial.slice(0, DEMO_HISTORY_LIMIT)));
+  } catch {}
+}
+
+function getCurrentMonthKey(date = new Date()): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function cargarUsoMensualDemoDesdeStorage(): DemoMonthlyUsage {
+  try {
+    const raw = localStorage.getItem(DEMO_MONTHLY_USAGE_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as DemoMonthlyUsage : {};
+  } catch {
+    return {};
+  }
+}
+
+function guardarUsoMensualDemoEnStorage(usage: DemoMonthlyUsage): void {
+  try {
+    localStorage.setItem(DEMO_MONTHLY_USAGE_STORAGE_KEY, JSON.stringify(usage));
   } catch {}
 }
 
@@ -636,6 +660,7 @@ export class CalculadoraMaterialesComponent implements OnInit {
   historialCalculos = signal<CalculoMaterialGuardado[]>([]);
   saveStatus = signal<Record<number, SaveStatus | undefined>>({});
   savedCalculosByTask = signal<Record<number, CalculoMaterialGuardado | undefined>>({});
+  demoMonthlyCalculationsUsed = signal(this.isTrialMode ? this.getDemoMonthlyUsageCount() : 0);
 
   filteredTasks = computed(() => {
     const term = this.normalizar(this.searchTerm());
@@ -700,6 +725,13 @@ export class CalculadoraMaterialesComponent implements OnInit {
   calcular(tarea: Tarea): void {
     const val = this.getInputValue(tarea.id);
     if (val === null || isNaN(val) || val <= 0) return;
+    if (this.isTrialMode && this.isTrialCalculationLimitReached()) {
+      this.toast.warning(
+        'Ya alcanzaste el limite de 3 calculos del mes en el modo de prueba. Vuelve a intentarlo el proximo mes o usa el modo VIP.',
+        'Limite mensual alcanzado'
+      );
+      return;
+    }
 
     const resultados: ResultadoMaterial[] = tarea.materiales.map(m => {
       const cantidad = m.valor * val;
@@ -726,6 +758,9 @@ export class CalculadoraMaterialesComponent implements OnInit {
     set.add(tarea.id);
     this.expandedIds.set(set);
     this.saveStatus.update(status => ({ ...status, [tarea.id]: 'dirty' }));
+    if (this.isTrialMode) {
+      this.registerDemoCalculationUsage();
+    }
     this.toast.info('El cálculo quedó listo. Guárdalo solo si quieres sumarlo al historial.', 'Cálculo generado');
   }
 
@@ -775,6 +810,20 @@ export class CalculadoraMaterialesComponent implements OnInit {
 
   isGuardado(id: number): boolean {
     return this.saveStatus()[id] === 'saved';
+  }
+
+  getDemoMonthlyUsageLabel(): string {
+    if (!this.isTrialMode) {
+      return '';
+    }
+
+    const usados = this.demoMonthlyCalculationsUsed();
+    const restantes = Math.max(DEMO_MONTHLY_CALC_LIMIT - usados, 0);
+    return `Modo de prueba: ${usados}/${DEMO_MONTHLY_CALC_LIMIT} calculos usados este mes. Te quedan ${restantes}.`;
+  }
+
+  isTrialCalculationLimitReached(): boolean {
+    return this.isTrialMode && this.demoMonthlyCalculationsUsed() >= DEMO_MONTHLY_CALC_LIMIT;
   }
 
   private normalizar(str: string): string {
@@ -1097,6 +1146,19 @@ export class CalculadoraMaterialesComponent implements OnInit {
       'Cubiertas': 'bi-house-roof',
     };
     return map[cat] ?? 'bi-folder';
+  }
+
+  private getDemoMonthlyUsageCount(): number {
+    const usage = cargarUsoMensualDemoDesdeStorage();
+    return usage[getCurrentMonthKey()] ?? 0;
+  }
+
+  private registerDemoCalculationUsage(): void {
+    const usage = cargarUsoMensualDemoDesdeStorage();
+    const key = getCurrentMonthKey();
+    usage[key] = (usage[key] ?? 0) + 1;
+    guardarUsoMensualDemoEnStorage(usage);
+    this.demoMonthlyCalculationsUsed.set(usage[key]);
   }
 
   private getDetalleDias(nombre: string, horas: number): string | undefined {

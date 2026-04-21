@@ -127,6 +127,9 @@
       <div>
         <h1 class="calc-header__title">Calculadora de Materiales</h1>
         @if (isTrialMode) {
+          <p class="calc-header__sub">{{ getDemoMonthlyUsageLabel() }}</p>
+        }
+        @if (isTrialMode) {
           <p class="calc-header__sub">Modo de prueba: se muestran 3 tareas aleatorias y el historial local guarda solo los últimos 3 cálculos.</p>
         }
         <p class="calc-header__sub">Ingresá el área o volumen para obtener las cantidades exactas</p>
@@ -196,7 +199,7 @@
                         </div>
                       </div>
                       <div class="calc-input-actions">
-                        <button class="btn-calc" (click)="calcular(tarea)" [disabled]="!getInputValue(tarea.id)">
+                        <button class="btn-calc" (click)="calcular(tarea)" [disabled]="!getInputValue(tarea.id)" [class.btn-calc--limit]="isTrialCalculationLimitReached()">
                           <i class="bi bi-calculator"></i> Calcular
                         </button>
                         @if (hasResultados(tarea.id)) {

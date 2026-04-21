@@ -406,6 +406,11 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
   &:hover:not(:disabled) { background: $primary-dk; }
   &:active:not(:disabled) { transform: scale(.97); }
   &:disabled { opacity: .5; cursor: not-allowed; }
+
+  &--limit {
+    background: #c0392b;
+    &:hover { background: #a93226; }
+  }
 }
 
 .btn-borrar {
