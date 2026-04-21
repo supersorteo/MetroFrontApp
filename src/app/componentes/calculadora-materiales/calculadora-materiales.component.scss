@@ -584,10 +584,10 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
   position: fixed;
   top: 0;
   left: 0;
-  width: 270px;
+  width: 300px;
   height: 100%;
-  background: $white;
-  box-shadow: $shadow-lg;
+  background: linear-gradient(180deg, #102232 0%, #142a3f 55%, #0d1b29 100%);
+  box-shadow: 0 24px 60px rgba(2, 10, 22, .45);
   z-index: 101;
   transform: translateX(-100%);
   transition: transform .28s ease;
@@ -602,11 +602,75 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
     background: none;
     border: none;
     font-size: 1.1rem;
-    color: $gray-600;
+    color: rgba($white, .8);
     cursor: pointer;
     padding: .4rem;
     border-radius: $radius-sm;
-    &:hover { background: $gray-100; color: $gray-800; }
+    &:hover { background: rgba($white, .08); color: $white; }
+  }
+
+  &__profile {
+    margin: .75rem 1rem 1rem;
+    padding: 1rem;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 20px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.03) 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.08),
+      0 16px 30px rgba(0,0,0,.18);
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+  }
+
+  &__avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, rgba($primary, .95) 0%, rgba(#f39c12, .95) 100%);
+    color: $white;
+    box-shadow: 0 14px 28px rgba(230, 126, 34, .28);
+
+    i {
+      font-size: 1.7rem;
+    }
+  }
+
+  &__profile-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .18rem;
+  }
+
+  &__profile-mode {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.58);
+  }
+
+  &__profile-name {
+    font-size: 1rem;
+    line-height: 1.2;
+    color: $white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__profile-meta {
+    font-size: .78rem;
+    color: rgba(255,255,255,.68);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__list {
@@ -617,47 +681,48 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
     overflow-y: auto;
   }
 
-  &__wip {
-    padding: .75rem 1.25rem;
-    font-size: .75rem;
-    color: $gray-600;
-    font-style: italic;
-    i { margin-right: .4rem; }
-  }
-
   &__item {
-    border-top: 1px solid $gray-100;
+    border-top: 1px solid rgba(255,255,255,.08);
 
     button {
       width: 100%;
       display: flex;
       align-items: center;
       gap: .65rem;
-      padding: .85rem 1.25rem;
+      padding: .95rem 1.25rem;
       background: none;
       border: none;
       font-size: .9rem;
-      font-weight: 500;
-      color: $gray-800;
+      font-weight: 600;
+      color: rgba($white, .92);
       cursor: pointer;
       text-align: left;
-      transition: background .15s;
+      transition: background .15s, color .15s;
 
-      i { font-size: 1rem; color: $primary; width: 1.2rem; }
+      i { font-size: 1rem; color: #ffb25f; width: 1.2rem; }
 
-      &:hover:not(:disabled) { background: $gray-50; }
-      &:disabled { color: $gray-400; cursor: default; i { color: $gray-400; } }
+      &:hover:not(:disabled) {
+        background: rgba(255,255,255,.07);
+        color: $white;
+      }
+
+      &:disabled {
+        color: rgba(255,255,255,.4);
+        cursor: default;
+        i { color: rgba(255,255,255,.3); }
+      }
     }
   }
 
   &__badge {
     margin-left: auto;
-    background: $primary;
-    color: $white;
+    background: rgba($primary, .18);
+    color: #ffd7ab;
     font-size: .7rem;
     font-weight: 700;
-    padding: .1rem .45rem;
+    padding: .14rem .5rem;
     border-radius: 20px;
+    border: 1px solid rgba($primary, .28);
   }
 }
 

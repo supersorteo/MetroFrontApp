@@ -7,8 +7,30 @@
     <button class="sidebar-panel__close" (click)="cerrarSidebar()" aria-label="Cerrar menú">
       <i class="bi bi-x-lg"></i>
     </button>
+
+    <div class="sidebar-panel__profile">
+      <div class="sidebar-panel__avatar">
+        <i class="bi bi-person-circle"></i>
+      </div>
+      <div class="sidebar-panel__profile-copy">
+        <span class="sidebar-panel__profile-mode">{{ userModeLabel }}</span>
+        <strong class="sidebar-panel__profile-name">{{ userDisplayName }}</strong>
+        <span class="sidebar-panel__profile-meta">
+          @if (isTrialMode) {
+            Sesión local de demostración
+          } @else {
+            {{ userEmail || userCode }}
+          }
+        </span>
+      </div>
+    </div>
+
     <ul class="sidebar-panel__list">
-      <li class="sidebar-panel__wip"><i class="bi bi-tools"></i> Estamos trabajando en esta sección</li>
+      <li class="sidebar-panel__item">
+        <button (click)="irAlDashboard()">
+          <i class="bi bi-grid-1x2-fill"></i> Dashboard
+        </button>
+      </li>
       <li class="sidebar-panel__item">
         <button (click)="abrirUltimasTareas()">
           <i class="bi bi-clock-history"></i> Últimas tareas

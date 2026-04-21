@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   CalculadoraMaterialesService,
   CalculoMaterialGuardado,
@@ -619,6 +620,9 @@ export class CalculadoraMaterialesComponent implements OnInit {
   readonly categorias = CATEGORIAS;
   readonly isTrialMode = localStorage.getItem('trialMode') === 'true';
   readonly userCode = (localStorage.getItem('userCode') || '').trim();
+  readonly userEmail = (localStorage.getItem('userEmail') || '').trim();
+  readonly userDisplayName = this.buildUserDisplayName();
+  readonly userModeLabel = this.isTrialMode ? 'Modo de prueba' : 'Modo VIP';
 
   searchTerm = signal('');
   expandedIds = signal<Set<number>>(new Set());
@@ -646,7 +650,8 @@ export class CalculadoraMaterialesComponent implements OnInit {
 
   constructor(
     private calculadoraMaterialesService: CalculadoraMaterialesService,
-    private toast: AppToastService
+    private toast: AppToastService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -791,6 +796,10 @@ export class CalculadoraMaterialesComponent implements OnInit {
   cerrarUltimasTareas(): void { this.ultimasTareasOpen.set(false); }
   abrirHistorial(): void { this.cerrarSidebar(); this.historialOpen.set(true); }
   cerrarHistorial(): void { this.historialOpen.set(false); }
+  irAlDashboard(): void {
+    this.cerrarSidebar();
+    this.router.navigate(['/dashboard']);
+  }
   trackHistorial(index: number, calculo: CalculoMaterialGuardado): string | number {
     return calculo.id ?? `${calculo.tareaId}-${calculo.createdAt ?? index}`;
   }
@@ -1043,6 +1052,34 @@ export class CalculadoraMaterialesComponent implements OnInit {
     }
 
     return historial.find(calculo => calculo.tareaId === tarea.id);
+  }
+
+  private buildUserDisplayName(): string {
+    const storedNameKeys = ['userName', 'username', 'nombre', 'fullName', 'displayName'];
+    const storedName = storedNameKeys
+      .map(key => (localStorage.getItem(key) || '').trim())
+      .find(Boolean);
+
+    if (storedName) {
+      return storedName;
+    }
+
+    if (this.isTrialMode) {
+      return 'Usuario de prueba';
+    }
+
+    if (this.userEmail) {
+      const emailName = this.userEmail.split('@')[0]?.trim();
+      if (emailName) {
+        return emailName
+          .replace(/[._-]+/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .replace(/\b\w/g, letter => letter.toUpperCase());
+      }
+    }
+
+    return this.userCode || 'Usuario';
   }
 
   getCategoriaIcono(cat: string): string {
