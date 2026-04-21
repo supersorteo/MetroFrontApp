@@ -5,7 +5,7 @@ import { interval, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { Tarea, TareaService } from '../../servicios/tarea.service';
 import { Provincia, ProvinciaService } from '../../servicios/provincia.service';
@@ -64,6 +64,7 @@ function cleanupBootstrapModals(): void {
     CommonModule,
     HttpClientModule,
     FormsModule,
+    RouterModule,
     NgSelectModule,
     FilterClientePipe,
     FilterEmpresaPipe,

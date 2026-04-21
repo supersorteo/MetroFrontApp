@@ -537,6 +537,17 @@ const TAREAS: Tarea[] = [
 
 export const CATEGORIAS = [...new Set(TAREAS.map(t => t.categoria))];
 
+function cargarUltimasDesdeStorage(): Tarea[] {
+  try {
+    const raw = localStorage.getItem('ultimasTareas');
+    if (!raw) return [];
+    const ids: number[] = JSON.parse(raw);
+    return ids.map(id => TAREAS.find(t => t.id === id)).filter(Boolean) as Tarea[];
+  } catch {
+    return [];
+  }
+}
+
 @Component({
   selector: 'app-calculadora-materiales',
   standalone: true,
@@ -547,10 +558,15 @@ export const CATEGORIAS = [...new Set(TAREAS.map(t => t.categoria))];
 export class CalculadoraMaterialesComponent {
   readonly categorias = CATEGORIAS;
 
+  readonly MAX_ULTIMAS = 4;
+
   searchTerm = signal('');
   expandedIds = signal<Set<number>>(new Set());
   inputValues = signal<Record<number, number | null>>({});
   resultados = signal<Record<number, ResultadoMaterial[]>>({});
+  sidebarOpen = signal(false);
+  ultimasTareasOpen = signal(false);
+  ultimasTareas = signal<Tarea[]>(cargarUltimasDesdeStorage());
 
   filteredTasks = computed(() => {
     const term = this.normalizar(this.searchTerm());
@@ -616,6 +632,7 @@ export class CalculadoraMaterialesComponent {
     const set = new Set(this.expandedIds());
     set.add(tarea.id);
     this.expandedIds.set(set);
+    this.registrarUltimaTarea(tarea);
   }
 
   borrar(id: number): void {
@@ -646,6 +663,29 @@ export class CalculadoraMaterialesComponent {
       if (item.keywords.some(k => n.includes(k))) return item.icono;
     }
     return 'bi-box';
+  }
+
+  abrirSidebar(): void { this.sidebarOpen.set(true); }
+  cerrarSidebar(): void { this.sidebarOpen.set(false); }
+  abrirUltimasTareas(): void { this.cerrarSidebar(); this.ultimasTareasOpen.set(true); }
+  cerrarUltimasTareas(): void { this.ultimasTareasOpen.set(false); }
+
+  irATarea(tarea: Tarea): void {
+    this.cerrarUltimasTareas();
+    this.searchTerm.set('');
+    const set = new Set(this.expandedIds());
+    set.add(tarea.id);
+    this.expandedIds.set(set);
+    setTimeout(() => {
+      document.getElementById(`tarea-${tarea.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
+  private registrarUltimaTarea(tarea: Tarea): void {
+    const actuales = this.ultimasTareas().filter(t => t.id !== tarea.id);
+    const nuevas = [tarea, ...actuales].slice(0, this.MAX_ULTIMAS);
+    this.ultimasTareas.set(nuevas);
+    try { localStorage.setItem('ultimasTareas', JSON.stringify(nuevas.map(t => t.id))); } catch {}
   }
 
   getCategoriaIcono(cat: string): string {

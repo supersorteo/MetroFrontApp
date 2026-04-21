@@ -1,5 +1,58 @@
 <div class="calc-page">
 
+  <!-- Sidebar -->
+  @if (sidebarOpen()) {
+    <div class="sidebar-overlay" (click)="cerrarSidebar()"></div>
+  }
+  <div class="sidebar-panel" [class.sidebar-panel--open]="sidebarOpen()" role="dialog" aria-label="Menú">
+    <button class="sidebar-panel__close" (click)="cerrarSidebar()" aria-label="Cerrar menú">
+      <i class="bi bi-x-lg"></i>
+    </button>
+    <ul class="sidebar-panel__list">
+      <li class="sidebar-panel__wip"><i class="bi bi-tools"></i> Estamos trabajando en esta sección</li>
+      <li class="sidebar-panel__item">
+        <button (click)="abrirUltimasTareas()">
+          <i class="bi bi-clock-history"></i> Últimas tareas
+          @if (ultimasTareas().length) {
+            <span class="sidebar-panel__badge">{{ ultimasTareas().length }}</span>
+          }
+        </button>
+      </li>
+      <li class="sidebar-panel__item"><button disabled><i class="bi bi-star"></i> Favoritos</button></li>
+      <li class="sidebar-panel__item"><button disabled><i class="bi bi-journal-text"></i> Historial</button></li>
+      <li class="sidebar-panel__item"><button disabled><i class="bi bi-collection"></i> Biblioteca</button></li>
+      <li class="sidebar-panel__item"><button disabled><i class="bi bi-question-circle"></i> Ayuda</button></li>
+      <li class="sidebar-panel__item"><button disabled><i class="bi bi-envelope"></i> Contacto</button></li>
+    </ul>
+  </div>
+
+  <!-- Modal últimas tareas -->
+  @if (ultimasTareasOpen()) {
+    <div class="calc-modal-overlay" (click)="cerrarUltimasTareas()">
+      <div class="calc-modal" (click)="$event.stopPropagation()">
+        <div class="calc-modal__head">
+          <span><i class="bi bi-clock-history"></i> Últimas tareas calculadas</span>
+          <button (click)="cerrarUltimasTareas()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        @if (ultimasTareas().length === 0) {
+          <p class="calc-modal__empty">Todavía no calculaste ninguna tarea.</p>
+        } @else {
+          <ul class="calc-modal__list">
+            @for (t of ultimasTareas(); track t.id) {
+              <li>
+                <button class="calc-modal__item" (click)="irATarea(t)">
+                  <span class="calc-modal__item-num">#{{ t.id }}</span>
+                  <span class="calc-modal__item-title">{{ t.titulo }}</span>
+                  <i class="bi bi-arrow-right"></i>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+
   <!-- Header -->
   <div class="calc-header">
     <div class="calc-header__inner">
@@ -29,6 +82,9 @@
           <i class="bi bi-x-circle-fill"></i>
         </button>
       }
+      <button class="calc-search__sidebar-btn" (click)="abrirSidebar()" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+      </button>
     </div>
   </div>
 
@@ -53,7 +109,7 @@
 
           <div class="calc-tasks">
             @for (tarea of filteredByCategoria(cat); track tarea.id) {
-              <div class="calc-card" [class.calc-card--expanded]="isExpanded(tarea.id)" [class.calc-card--done]="hasResultados(tarea.id)">
+              <div class="calc-card" [id]="'tarea-' + tarea.id" [class.calc-card--expanded]="isExpanded(tarea.id)" [class.calc-card--done]="hasResultados(tarea.id)">
 
                 <!-- Card Header -->
                 <button class="calc-card__head" (click)="toggleExpand(tarea.id)">

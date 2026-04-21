@@ -490,6 +490,216 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
   p { font-size: .95rem; }
 }
 
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 100;
+}
+
+.sidebar-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 270px;
+  height: 100%;
+  background: $white;
+  box-shadow: $shadow-lg;
+  z-index: 101;
+  transform: translateX(100%);
+  transition: transform .28s ease;
+  display: flex;
+  flex-direction: column;
+
+  &--open { transform: translateX(0); }
+
+  &__close {
+    align-self: flex-end;
+    margin: .75rem .75rem 0;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: $gray-600;
+    cursor: pointer;
+    padding: .4rem;
+    border-radius: $radius-sm;
+    &:hover { background: $gray-100; color: $gray-800; }
+  }
+
+  &__list {
+    list-style: none;
+    margin: .5rem 0 0;
+    padding: 0;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  &__wip {
+    padding: .75rem 1.25rem;
+    font-size: .75rem;
+    color: $gray-600;
+    font-style: italic;
+    i { margin-right: .4rem; }
+  }
+
+  &__item {
+    border-top: 1px solid $gray-100;
+
+    button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      padding: .85rem 1.25rem;
+      background: none;
+      border: none;
+      font-size: .9rem;
+      font-weight: 500;
+      color: $gray-800;
+      cursor: pointer;
+      text-align: left;
+      transition: background .15s;
+
+      i { font-size: 1rem; color: $primary; width: 1.2rem; }
+
+      &:hover:not(:disabled) { background: $gray-50; }
+      &:disabled { color: $gray-400; cursor: default; i { color: $gray-400; } }
+    }
+  }
+
+  &__badge {
+    margin-left: auto;
+    background: $primary;
+    color: $white;
+    font-size: .7rem;
+    font-weight: 700;
+    padding: .1rem .45rem;
+    border-radius: 20px;
+  }
+}
+
+// ── Sidebar btn in search ─────────────────────────────────────────────────────
+.calc-search__sidebar-btn {
+  position: absolute;
+  right: .5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: $primary;
+  border: none;
+  border-radius: $radius-sm;
+  color: $white;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: background .2s;
+
+  &:hover { background: $primary-dk; }
+}
+
+.calc-search__input {
+  padding-right: 3.2rem !important;
+}
+
+// ── Modal últimas tareas ───────────────────────────────────────────────────────
+.calc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.calc-modal {
+  background: $white;
+  border-radius: $radius;
+  box-shadow: $shadow-lg;
+  width: 100%;
+  max-width: 440px;
+  overflow: hidden;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #2c3e50, #3d5a74);
+    color: $white;
+    font-weight: 700;
+    font-size: .95rem;
+
+    i { margin-right: .4rem; }
+
+    button {
+      background: none;
+      border: none;
+      color: rgba($white, .8);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: .2rem;
+      &:hover { color: $white; }
+    }
+  }
+
+  &__empty {
+    padding: 2rem;
+    text-align: center;
+    color: $gray-600;
+    font-size: .9rem;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .9rem 1.25rem;
+    background: none;
+    border: none;
+    border-bottom: 1px solid $gray-100;
+    cursor: pointer;
+    text-align: left;
+    transition: background .15s;
+
+    &:hover { background: $gray-50; }
+
+    i.bi-arrow-right { margin-left: auto; color: $primary; }
+  }
+
+  &__item-num {
+    font-size: .72rem;
+    font-weight: 700;
+    color: $white;
+    background: $primary;
+    border-radius: 6px;
+    padding: .15rem .4rem;
+    flex-shrink: 0;
+  }
+
+  &__item-title {
+    font-size: .875rem;
+    font-weight: 500;
+    color: $gray-800;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 // ── Responsive ────────────────────────────────────────────────────────────────
 @media (max-width: 600px) {
   .calc-header__title { font-size: 1.25rem; }
