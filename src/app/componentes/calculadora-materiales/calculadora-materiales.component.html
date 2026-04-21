@@ -1,0 +1,157 @@
+<div class="calc-page">
+
+  <!-- Header -->
+  <div class="calc-header">
+    <div class="calc-header__inner">
+      <div class="calc-header__icon">
+        <i class="bi bi-calculator"></i>
+      </div>
+      <div>
+        <h1 class="calc-header__title">Calculadora de Materiales</h1>
+        <p class="calc-header__sub">Ingresá el área o volumen para obtener las cantidades exactas</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="calc-search-wrap">
+    <div class="calc-search">
+      <i class="bi bi-search calc-search__icon"></i>
+      <input
+        class="calc-search__input"
+        type="text"
+        placeholder="Buscar tarea, categoría o mezcla..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+      />
+      @if (searchTerm()) {
+        <button class="calc-search__clear" (click)="searchTerm.set('')">
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- No results -->
+  @if (filteredTasks().length === 0) {
+    <div class="calc-empty">
+      <i class="bi bi-search"></i>
+      <p>No se encontraron tareas para <strong>"{{ searchTerm() }}"</strong></p>
+    </div>
+  }
+
+  <!-- Categories -->
+  <div class="calc-body">
+    @for (cat of categorias; track cat) {
+      @if (isCategoriaVisible(cat)) {
+        <div class="calc-category">
+          <div class="calc-category__header">
+            <i class="bi {{ getCategoriaIcono(cat) }}"></i>
+            <span>{{ cat }}</span>
+            <span class="calc-category__count">{{ filteredByCategoria(cat).length }}</span>
+          </div>
+
+          <div class="calc-tasks">
+            @for (tarea of filteredByCategoria(cat); track tarea.id) {
+              <div class="calc-card" [class.calc-card--expanded]="isExpanded(tarea.id)" [class.calc-card--done]="hasResultados(tarea.id)">
+
+                <!-- Card Header -->
+                <button class="calc-card__head" (click)="toggleExpand(tarea.id)">
+                  <div class="calc-card__head-left">
+                    <span class="calc-card__num">#{{ tarea.id }}</span>
+                    <div class="calc-card__info">
+                      <span class="calc-card__title">{{ tarea.titulo }}</span>
+                      @if (tarea.mezcla) {
+                        <span class="calc-card__mezcla">Mezcla {{ tarea.mezcla }}</span>
+                      }
+                    </div>
+                  </div>
+                  <div class="calc-card__head-right">
+                    <span class="calc-card__unidad">por {{ tarea.unidad }}</span>
+                    @if (hasResultados(tarea.id)) {
+                      <i class="bi bi-check-circle-fill calc-card__done-icon"></i>
+                    }
+                    <i class="bi calc-card__chevron" [class.bi-chevron-up]="isExpanded(tarea.id)" [class.bi-chevron-down]="!isExpanded(tarea.id)"></i>
+                  </div>
+                </button>
+
+                <!-- Card Body -->
+                @if (isExpanded(tarea.id)) {
+                  <div class="calc-card__body">
+
+                    <!-- Input row -->
+                    <div class="calc-input-row">
+                      <div class="calc-input-group">
+                        <label class="calc-input-group__label">
+                          Ingresar superficie / volumen
+                        </label>
+                        <div class="calc-input-group__field">
+                          <input
+                            class="calc-input-group__input"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            placeholder="0.00"
+                            [ngModel]="getInputValue(tarea.id)"
+                            (ngModelChange)="setInputValue(tarea.id, $event)"
+                            (keyup.enter)="calcular(tarea)"
+                          />
+                          <span class="calc-input-group__unit">{{ tarea.unidad }}</span>
+                        </div>
+                      </div>
+                      <div class="calc-input-actions">
+                        <button class="btn-calc" (click)="calcular(tarea)" [disabled]="!getInputValue(tarea.id)">
+                          <i class="bi bi-calculator"></i> Calcular
+                        </button>
+                        @if (hasResultados(tarea.id)) {
+                          <button class="btn-borrar" (click)="borrar(tarea.id)">
+                            <i class="bi bi-arrow-counterclockwise"></i> Borrar
+                          </button>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Results -->
+                    @if (hasResultados(tarea.id)) {
+                      <div class="calc-results">
+                        <div class="calc-results__title">
+                          <i class="bi bi-list-check"></i> Materiales necesarios para {{ getInputValue(tarea.id) }} {{ tarea.unidad }}
+                        </div>
+                        <div class="calc-results__grid">
+                          @for (res of getResultados(tarea.id); track res.nombre) {
+                            <div class="calc-result-item" [class.calc-result-item--labor]="res.nombre.toLowerCase().includes('hrs')">
+                              <div class="calc-result-item__icon">
+                                <i class="bi {{ res.icono }}"></i>
+                              </div>
+                              <div class="calc-result-item__data">
+                                <span class="calc-result-item__name">{{ res.nombre }}</span>
+                                <span class="calc-result-item__qty">
+                                  {{ res.cantidad | number:'1.2-2' }}
+                                  @if (res.detalleDias) {
+                                    <span class="calc-result-item__days">{{ res.detalleDias }}</span>
+                                  }
+                                </span>
+                                @if (res.bolsas) {
+                                  <span class="calc-result-item__bolsas">
+                                    <i class="bi bi-bag-fill"></i> {{ res.bolsas }} {{ res.bolsasLabel }}
+                                  </span>
+                                }
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+
+                  </div>
+                }
+
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+</div>
