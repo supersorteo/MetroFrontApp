@@ -1,6 +1,11 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {
+  CalculadoraMaterialesService,
+  CalculoMaterialGuardado,
+  TareaCalculadaResumen
+} from '../../servicios/calculadora-materiales.service';
 
 export interface Material {
   nombre: string;
@@ -24,6 +29,14 @@ export interface ResultadoMaterial {
   bolsas?: number;
   bolsasLabel?: string;
   detalleDias?: string;
+}
+
+interface TareaResumen {
+  id: number;
+  titulo: string;
+  categoria: string;
+  unidad: string;
+  createdAt?: string;
 }
 
 const ICONOS_MATERIALES: { icono: string; keywords: string[] }[] = [
@@ -537,15 +550,59 @@ const TAREAS: Tarea[] = [
 
 export const CATEGORIAS = [...new Set(TAREAS.map(t => t.categoria))];
 
-function cargarUltimasDesdeStorage(): Tarea[] {
+const DEMO_HISTORY_STORAGE_KEY = 'demoCalculadoraHistorial';
+const DEMO_TASK_LIMIT = 3;
+const DEMO_HISTORY_LIMIT = 3;
+const USER_HISTORY_LIMIT = 10;
+const USER_LATEST_TASKS_LIMIT = 5;
+
+function cargarHistorialDemoDesdeStorage(): CalculoMaterialGuardado[] {
   try {
-    const raw = localStorage.getItem('ultimasTareas');
+    const raw = localStorage.getItem(DEMO_HISTORY_STORAGE_KEY);
     if (!raw) return [];
-    const ids: number[] = JSON.parse(raw);
-    return ids.map(id => TAREAS.find(t => t.id === id)).filter(Boolean) as Tarea[];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
+}
+
+function guardarHistorialDemoEnStorage(historial: CalculoMaterialGuardado[]): void {
+  try {
+    localStorage.setItem(DEMO_HISTORY_STORAGE_KEY, JSON.stringify(historial.slice(0, DEMO_HISTORY_LIMIT)));
+  } catch {}
+}
+
+function seleccionarTareasAleatorias(limit: number): Tarea[] {
+  const shuffled = [...TAREAS].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, Math.min(limit, shuffled.length));
+}
+
+function construirResumenesDesdeHistorial(
+  historial: CalculoMaterialGuardado[],
+  limit: number
+): TareaResumen[] {
+  const seen = new Set<number>();
+  const resumenes: TareaResumen[] = [];
+
+  for (const calculo of historial) {
+    if (seen.has(calculo.tareaId)) {
+      continue;
+    }
+    seen.add(calculo.tareaId);
+    resumenes.push({
+      id: calculo.tareaId,
+      titulo: calculo.tareaTitulo,
+      categoria: calculo.categoria,
+      unidad: calculo.unidad,
+      createdAt: calculo.createdAt
+    });
+    if (resumenes.length >= limit) {
+      break;
+    }
+  }
+
+  return resumenes;
 }
 
 @Component({
@@ -555,10 +612,10 @@ function cargarUltimasDesdeStorage(): Tarea[] {
   templateUrl: './calculadora-materiales.component.html',
   styleUrl: './calculadora-materiales.component.scss'
 })
-export class CalculadoraMaterialesComponent {
+export class CalculadoraMaterialesComponent implements OnInit {
   readonly categorias = CATEGORIAS;
-
-  readonly MAX_ULTIMAS = 4;
+  readonly isTrialMode = localStorage.getItem('trialMode') === 'true';
+  readonly userCode = (localStorage.getItem('userCode') || '').trim();
 
   searchTerm = signal('');
   expandedIds = signal<Set<number>>(new Set());
@@ -566,17 +623,39 @@ export class CalculadoraMaterialesComponent {
   resultados = signal<Record<number, ResultadoMaterial[]>>({});
   sidebarOpen = signal(false);
   ultimasTareasOpen = signal(false);
-  ultimasTareas = signal<Tarea[]>(cargarUltimasDesdeStorage());
+  historialOpen = signal(false);
+  tareasVisibles = signal<Tarea[]>(this.isTrialMode ? seleccionarTareasAleatorias(DEMO_TASK_LIMIT) : TAREAS);
+  ultimasTareas = signal<TareaResumen[]>([]);
+  historialCalculos = signal<CalculoMaterialGuardado[]>([]);
 
   filteredTasks = computed(() => {
     const term = this.normalizar(this.searchTerm());
-    if (!term) return TAREAS;
-    return TAREAS.filter(t =>
+    const tasks = this.tareasVisibles();
+    if (!term) return tasks;
+    return tasks.filter(t =>
       this.normalizar(t.titulo).includes(term) ||
       this.normalizar(t.categoria).includes(term) ||
       (t.mezcla && this.normalizar(t.mezcla).includes(term))
     );
   });
+
+  constructor(private calculadoraMaterialesService: CalculadoraMaterialesService) {}
+
+  ngOnInit(): void {
+    if (this.isTrialMode) {
+      const historialDemo = cargarHistorialDemoDesdeStorage().slice(0, DEMO_HISTORY_LIMIT);
+      this.historialCalculos.set(historialDemo);
+      this.ultimasTareas.set(construirResumenesDesdeHistorial(historialDemo, DEMO_HISTORY_LIMIT));
+      return;
+    }
+
+    if (!this.userCode) {
+      return;
+    }
+
+    this.cargarHistorialBackend();
+    this.cargarUltimasTareasBackend();
+  }
 
   filteredByCategoria(cat: string): Tarea[] {
     return this.filteredTasks().filter(t => t.categoria === cat);
@@ -632,7 +711,7 @@ export class CalculadoraMaterialesComponent {
     const set = new Set(this.expandedIds());
     set.add(tarea.id);
     this.expandedIds.set(set);
-    this.registrarUltimaTarea(tarea);
+    this.persistirCalculo(tarea, val, resultados);
   }
 
   borrar(id: number): void {
@@ -669,10 +748,13 @@ export class CalculadoraMaterialesComponent {
   cerrarSidebar(): void { this.sidebarOpen.set(false); }
   abrirUltimasTareas(): void { this.cerrarSidebar(); this.ultimasTareasOpen.set(true); }
   cerrarUltimasTareas(): void { this.ultimasTareasOpen.set(false); }
+  abrirHistorial(): void { this.cerrarSidebar(); this.historialOpen.set(true); }
+  cerrarHistorial(): void { this.historialOpen.set(false); }
 
-  irATarea(tarea: Tarea): void {
+  irATarea(tarea: TareaResumen): void {
     this.cerrarUltimasTareas();
     this.searchTerm.set('');
+    this.ensureTaskVisible(tarea.id);
     const set = new Set(this.expandedIds());
     set.add(tarea.id);
     this.expandedIds.set(set);
@@ -681,11 +763,115 @@ export class CalculadoraMaterialesComponent {
     }, 100);
   }
 
-  private registrarUltimaTarea(tarea: Tarea): void {
-    const actuales = this.ultimasTareas().filter(t => t.id !== tarea.id);
-    const nuevas = [tarea, ...actuales].slice(0, this.MAX_ULTIMAS);
-    this.ultimasTareas.set(nuevas);
-    try { localStorage.setItem('ultimasTareas', JSON.stringify(nuevas.map(t => t.id))); } catch {}
+  restaurarHistorial(calculo: CalculoMaterialGuardado): void {
+    this.cerrarHistorial();
+    this.searchTerm.set('');
+    this.ensureTaskVisible(calculo.tareaId);
+    this.inputValues.update(values => ({ ...values, [calculo.tareaId]: calculo.valorIngresado }));
+    this.resultados.update(actuales => ({
+      ...actuales,
+      [calculo.tareaId]: calculo.resultados
+    }));
+    const set = new Set(this.expandedIds());
+    set.add(calculo.tareaId);
+    this.expandedIds.set(set);
+    setTimeout(() => {
+      document.getElementById(`tarea-${calculo.tareaId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
+  formatearFecha(fecha?: string): string {
+    if (!fecha) {
+      return '';
+    }
+
+    const parsed = new Date(fecha);
+    if (Number.isNaN(parsed.getTime())) {
+      return '';
+    }
+
+    return new Intl.DateTimeFormat('es-ES', {
+      dateStyle: 'short',
+      timeStyle: 'short'
+    }).format(parsed);
+  }
+
+  private persistirCalculo(tarea: Tarea, valorIngresado: number, resultados: ResultadoMaterial[]): void {
+    const calculo: CalculoMaterialGuardado = {
+      userCode: this.userCode || 'DEMO',
+      tareaId: tarea.id,
+      tareaTitulo: tarea.titulo,
+      categoria: tarea.categoria,
+      unidad: tarea.unidad,
+      valorIngresado,
+      resultados,
+      createdAt: new Date().toISOString()
+    };
+
+    if (this.isTrialMode) {
+      const historial = [calculo, ...this.historialCalculos()].slice(0, DEMO_HISTORY_LIMIT);
+      this.historialCalculos.set(historial);
+      this.ultimasTareas.set(construirResumenesDesdeHistorial(historial, DEMO_HISTORY_LIMIT));
+      guardarHistorialDemoEnStorage(historial);
+      return;
+    }
+
+    if (!this.userCode) {
+      return;
+    }
+
+    this.calculadoraMaterialesService.guardarCalculo({
+      ...calculo,
+      userCode: this.userCode
+    }).subscribe({
+      next: saved => {
+        const historial = [saved, ...this.historialCalculos()]
+          .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+          .slice(0, USER_HISTORY_LIMIT);
+        this.historialCalculos.set(historial);
+        this.cargarUltimasTareasBackend();
+      },
+      error: () => {
+        // La UI ya muestra el cálculo localmente; si falla la persistencia se reintenta en el próximo cálculo.
+      }
+    });
+  }
+
+  private cargarHistorialBackend(): void {
+    this.calculadoraMaterialesService.obtenerHistorial(this.userCode, USER_HISTORY_LIMIT).subscribe({
+      next: historial => this.historialCalculos.set(historial),
+      error: () => this.historialCalculos.set([])
+    });
+  }
+
+  private cargarUltimasTareasBackend(): void {
+    this.calculadoraMaterialesService.obtenerUltimasTareas(this.userCode, USER_LATEST_TASKS_LIMIT).subscribe({
+      next: tareas => this.ultimasTareas.set(this.mapearResumenes(tareas)),
+      error: () => this.ultimasTareas.set([])
+    });
+  }
+
+  private mapearResumenes(tareas: TareaCalculadaResumen[]): TareaResumen[] {
+    return tareas.map(t => ({
+      id: t.tareaId,
+      titulo: t.tareaTitulo,
+      categoria: t.categoria,
+      unidad: t.unidad,
+      createdAt: t.lastCalculatedAt
+    }));
+  }
+
+  private ensureTaskVisible(taskId: number): void {
+    if (this.tareasVisibles().some(t => t.id === taskId)) {
+      return;
+    }
+
+    const task = TAREAS.find(t => t.id === taskId);
+    if (!task) {
+      return;
+    }
+
+    this.tareasVisibles.update(actuales => [task, ...actuales]);
   }
 
   getCategoriaIcono(cat: string): string {

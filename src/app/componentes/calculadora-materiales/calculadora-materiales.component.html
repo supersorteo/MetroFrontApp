@@ -19,7 +19,14 @@
         </button>
       </li>
       <li class="sidebar-panel__item"><button disabled><i class="bi bi-star"></i> Favoritos</button></li>
-      <li class="sidebar-panel__item"><button disabled><i class="bi bi-journal-text"></i> Historial</button></li>
+      <li class="sidebar-panel__item">
+        <button (click)="abrirHistorial()">
+          <i class="bi bi-journal-text"></i> Historial
+          @if (historialCalculos().length) {
+            <span class="sidebar-panel__badge">{{ historialCalculos().length }}</span>
+          }
+        </button>
+      </li>
       <li class="sidebar-panel__item"><button disabled><i class="bi bi-collection"></i> Biblioteca</button></li>
       <li class="sidebar-panel__item"><button disabled><i class="bi bi-question-circle"></i> Ayuda</button></li>
       <li class="sidebar-panel__item"><button disabled><i class="bi bi-envelope"></i> Contacto</button></li>
@@ -53,6 +60,40 @@
     </div>
   }
 
+  @if (historialOpen()) {
+    <div class="calc-modal-overlay" (click)="cerrarHistorial()">
+      <div class="calc-modal" (click)="$event.stopPropagation()">
+        <div class="calc-modal__head">
+          <span><i class="bi bi-journal-text"></i> Historial de Cálculos</span>
+          <button (click)="cerrarHistorial()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        @if (historialCalculos().length === 0) {
+          <p class="calc-modal__empty">Todavía no hay cálculos guardados.</p>
+        } @else {
+          <ul class="calc-modal__list">
+            @for (calculo of historialCalculos(); track calculo.id ?? ($index + '-' + calculo.tareaId)) {
+              <li>
+                <button class="calc-modal__item" (click)="restaurarHistorial(calculo)">
+                  <span class="calc-modal__item-num">#{{ calculo.tareaId }}</span>
+                  <span class="calc-modal__item-title">
+                    {{ calculo.tareaTitulo }}
+                    <small class="d-block text-muted">
+                      {{ calculo.valorIngresado }} {{ calculo.unidad }}
+                      @if (formatearFecha(calculo.createdAt)) {
+                        Â· {{ formatearFecha(calculo.createdAt) }}
+                      }
+                    </small>
+                  </span>
+                  <i class="bi bi-arrow-repeat"></i>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+
   <!-- Header -->
   <div class="calc-header">
     <div class="calc-header__inner">
@@ -61,6 +102,9 @@
       </div>
       <div>
         <h1 class="calc-header__title">Calculadora de Materiales</h1>
+        @if (isTrialMode) {
+          <p class="calc-header__sub">Modo de prueba: se muestran 3 tareas aleatorias y el historial local guarda solo los Ãºltimos 3 cÃ¡lculos.</p>
+        }
         <p class="calc-header__sub">Ingresá el área o volumen para obtener las cantidades exactas</p>
       </div>
     </div>
