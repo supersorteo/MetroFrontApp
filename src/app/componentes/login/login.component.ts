@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
 import { AccessCodeService } from '../../servicios/access-code.service';
@@ -687,6 +687,18 @@ openWebsite(): void {
     private getCheckoutErrorMessage(error: unknown, fallback: string): string {
       return extractApiErrorMessage(error, fallback);
     }
+
+  @HostListener('document:keydown.control.alt.m', ['$event'])
+  onAdminShortcut(event: Event): void {
+    if (this.loginStep === 'home') {
+      event.preventDefault();
+      if (this.adminService.isLoggedIn()) {
+        this.route.navigate(['/admin-generate-code']);
+      } else {
+        this.loginStep = 'adminCountry';
+      }
+    }
+  }
 
   selectAdminCountry(pais: AdminCountry): void {
     const current = this.adminService.getCurrentAdmin();
