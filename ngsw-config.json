@@ -29,14 +29,42 @@
   ],
   "dataGroups": [
     {
-      "name": "api-backend",
+      "name": "tareas-catalogo",
       "urls": [
-        "http://localhost:8080/api/**"
+        "https://adequate-education-production.up.railway.app/api/tareas/**"
       ],
       "cacheConfig": {
-        "maxSize": 20,
-        "maxAge": "1h",
+        "maxSize": 5,
+        "maxAge": "7d",
         "timeout": "10s",
+        "strategy": "freshness"
+      }
+    },
+    {
+      "name": "provincias",
+      "urls": [
+        "https://adequate-education-production.up.railway.app/api/provincias/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 5,
+        "maxAge": "7d",
+        "timeout": "10s",
+        "strategy": "freshness"
+      }
+    },
+    {
+      "name": "api-datos-usuario",
+      "urls": [
+        "https://adequate-education-production.up.railway.app/api/empresas/**",
+        "https://adequate-education-production.up.railway.app/api/clientes/**",
+        "https://adequate-education-production.up.railway.app/api/presupuestos/**",
+        "https://adequate-education-production.up.railway.app/api/user-tareas/**",
+        "https://adequate-education-production.up.railway.app/api/calculadora-materiales/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "12h",
+        "timeout": "5s",
         "strategy": "freshness"
       }
     }
