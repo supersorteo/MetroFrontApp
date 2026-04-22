@@ -1,3 +1,11 @@
+.offcanvas-custom-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1044;
+  cursor: pointer;
+}
+
 :host ::ng-deep .toast-success.toast-tarea-agregada {
   color: #17aa41;
   font-weight: 600;
@@ -446,10 +454,10 @@ border-radius: 4px;
   text-align: center;
   font-size: 9px;
   //margin-bottom: 10px;
-  background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9);
-  border-radius: 10px;
-  border: solid 7px #f7feff18;
-  box-shadow: 4px 4px 10px rgba(0, 9, 30, 0.5);
+  //background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9);
+  //border-radius: 10px;
+ // border: solid 7px #f7feff18;
+  //box-shadow: 4px 4px 10px rgba(0, 9, 30, 0.5);
   width: 100%;
 }
 
@@ -1459,6 +1467,65 @@ p {
   transform: translateY(-2px);
 }
 
+.menu-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 28, 64, 0.5);
+  z-index: 9000;
+}
+
+.menu-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: min(320px, 100%);
+  background: #f7faff;
+  box-shadow: 12px 0 35px rgba(13, 43, 80, 0.22);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 9010;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+
+  &.open {
+    transform: translateX(0);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(33, 150, 243, 0.12);
+    min-height: 56px;
+
+    .program-title {
+      h6 {
+        font-size: 12px;
+        margin: 0;
+        color: #092865;
+        font-weight: 600;
+      }
+    }
+  }
+
+  &__body {
+    padding: 16px;
+    flex: 1;
+    overflow-y: auto;
+
+    .timer-info {
+      font-size: 18px;
+      font-weight: bold;
+      color: #092865;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+    }
+  }
+}
+
 .tareas-panel-overlay {
   position: fixed;
   inset: 0;
@@ -2086,4 +2153,64 @@ p {
 .dash-modal .modal-body .text-muted,
 .dash-modal .modal-footer .text-muted {
   color: #7eb8e8 !important;
+}
+
+/* ── Recent Task Cards (Historial) ─────────────────────── */
+.recent-task-card {
+  background: #ffffff !important;
+  border: 1px solid #dbe8ff !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: default;
+  box-shadow: 0 4px 6px rgba(36, 99, 211, 0.05) !important;
+}
+
+.recent-task-card:hover {
+  background: #f8fbff !important;
+  border-color: #3b82f6 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.12) !important;
+}
+
+.recent-task-card .badge {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+}
+
+.recent-task-card .card-title {
+  color: #2c3e50 !important;
+  letter-spacing: 0.1px;
+}
+
+.recent-task-card .text-muted {
+  color: #64748b !important;
+}
+
+.recent-task-card .btn-primary {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  border: none !important;
+  transition: all 0.2s;
+}
+
+.recent-task-card .btn-primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(37, 99, 235, 0.35);
+  filter: brightness(1.1);
+}
+
+/* Custom scrollbar for recent tasks modal body */
+#recentTasksModal .modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+#recentTasksModal .modal-body::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.1);
+}
+#recentTasksModal .modal-body::-webkit-scrollbar-thumb {
+  background: rgba(99, 179, 237, 0.25);
+  border-radius: 10px;
+}
+#recentTasksModal .modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 179, 237, 0.4);
 }

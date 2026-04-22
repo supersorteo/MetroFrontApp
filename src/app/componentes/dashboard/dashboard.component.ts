@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit, HostListener } from '@angular/core';
 import { interval, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { Tarea, TareaService } from '../../servicios/tarea.service';
 import { Provincia, ProvinciaService } from '../../servicios/provincia.service';
@@ -25,6 +25,7 @@ import { SavedPresupuesto } from '../../servicios/budget.service';
 
 
 declare var bootstrap: any;
+declare var QRCodeStyling: any;
 
 interface AccessCode {
   code: string;
@@ -63,6 +64,7 @@ function cleanupBootstrapModals(): void {
     CommonModule,
     HttpClientModule,
     FormsModule,
+    RouterModule,
     NgSelectModule,
     FilterClientePipe,
     FilterEmpresaPipe,
@@ -71,8 +73,9 @@ function cleanupBootstrapModals(): void {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
+  deferredPrompt: any;
 
   filtroCliente: string = '';
   filtroEmpresa: string = '';
@@ -94,6 +97,58 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   tareaAEliminar: number | null = null;
   tareaDescripcionAEliminar: string | null = null;
+
+  // --- COLORES PRESUPUESTO ---
+  presupuestoColorPrimario: string = '#0b69a6';
+  presupuestoColorSecundario: string = '#f0f4fa';
+  presupuestoColorSecundario2: string = '#f0f4fa';
+  presupuestoGradienteAngulo: string = 'to bottom';
+  presupuestoColorTexto: string = '#333333';
+  presupuestoColorTabla: string = '#343a40';
+  presupuestoColorTablaTexto: string = '#ffffff';
+  presupuestoColorTablaCuerpo: string = '#ffffff';
+  presupuestoInfoBoxColorHex: string = '#f8f9fa';
+  presupuestoInfoBoxOpacity: number = 1;
+
+  getBackgroundColorRgba(hex: string, alpha: number): string {
+    if (!hex || hex.length < 7) return `rgba(248, 249, 250, ${alpha})`;
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const red = isNaN(r) ? 248 : r;
+    const green = isNaN(g) ? 249 : g;
+    const blue = isNaN(b) ? 250 : b;
+    return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+  }
+
+  @HostListener('window:beforeinstallprompt', ['$event'])
+  onBeforeInstallPrompt(e: any) {
+    // Previene que se muestre el banner por defecto del navegador
+    e.preventDefault();
+    // Guarda el evento para poder dispararlo después
+    this.deferredPrompt = e;
+  }
+
+  toggleMenuPanel(): void {
+    this.showMenuPanel = !this.showMenuPanel;
+  }
+
+  installPwa() {
+    if (!this.deferredPrompt) {
+      return;
+    }
+    // Muestra el prompt de instalación
+    this.deferredPrompt.prompt();
+    // Espera la respuesta del usuario
+    this.deferredPrompt.userChoice.then((choiceResult: any) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the A2HS prompt');
+      } else {
+        console.log('User dismissed the A2HS prompt');
+      }
+      this.deferredPrompt = null;
+    });
+  }
 
   editarCliente(id: number) {
     this.route.navigate([`/editar-clientes`, id]);
@@ -146,7 +201,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   showTareasPanel: boolean = false;
   tareasAgregadas: UserTarea[] = [];
   tareasDelCliente: UserTarea[] = [];
-  isSidebarOpen: boolean = false;
+  showMenuPanel: boolean = false;
   showSocialFields: boolean = false;
   weatherLoading: boolean = false;
   weatherError: string = '';
@@ -180,6 +235,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   provinciaSeleccionada: string = '';
 
   isContentVisible: boolean = false;
+  showAjustesListaInfo: boolean = false;
   tareasAgregadasUser: UserTarea[] = [];
   clientes: Cliente[] = [];
 
@@ -187,6 +243,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   currentPage: number = 1;
   itemsPerPage: number = 5;
   totalPages: number = 1;
+
+  recentTasks: any[] = []; // Property to store the last 10 tasks
 
   logoUrl: string = '';
   trialMode: boolean = false;
@@ -197,6 +255,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
 presupuestoSeleccionado: SavedPresupuesto | null = null;
 private presupuestoPendiente: SavedPresupuesto | null = null;
+
+  // Variables QR
+  qrCode: any = null;
+  qrLogoUrlValue: string = '';
 
 
 
@@ -214,6 +276,7 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
 
   ngOnInit(): void {
     this.initSession();
+    this.loadRecentTasks(); // Load recent tasks from localStorage
     if (this.trialMode) return;
     this.restorePendingBudget();
     this.loadTareasAgregadas();
@@ -285,8 +348,34 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
   this.userData = demoUserData ? JSON.parse(demoUserData) : { pais: 'Argentina', provincia: 'Buenos Aires' };
   this.userCode = 'demo';
 
-  const demoEmpresas = localStorage.getItem('demoEmpresas');
-  this.empresas = demoEmpresas ? JSON.parse(demoEmpresas) : [];
+  const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
+  this.empresas = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
+
+  const demoEmpresaBase = {
+    id: 1,
+    name: 'Metro Constructora Demo',
+    phone: '11-2233-4455',
+    email: 'contacto@metrodemo.com',
+    description: 'Líderes en construcción modular y refacciones premium. Tu proyecto, nuestra pasión.',
+    logoUrl: 'assets/demo-logo/demo-logo.jpg',
+    userCode: 'demo',
+    website: 'www.metroconstructora.com.ar',
+    tiktok: '@MetroDemoConstruye',
+    instagram: '@metro_demo_ok',
+    facebook: 'MetroConstructoraOficial',
+    cuilCuit: '30-77889900-1'
+  };
+
+  if (this.empresas.length === 0) {
+    this.empresas = [demoEmpresaBase];
+  } else {
+    // Parchar siempre la empresa demo con los campos de redes para evitar datos stale
+    this.empresas = this.empresas.map(e =>
+      e.id === 1 ? { ...demoEmpresaBase, ...e, tiktok: demoEmpresaBase.tiktok, instagram: demoEmpresaBase.instagram, facebook: demoEmpresaBase.facebook, website: demoEmpresaBase.website } : e
+    );
+  }
+  localStorage.setItem('demoEmpresas', JSON.stringify(this.empresas));
+
   this.updatePaginatedEmpresas();
   this.selectedEmpresaId = this.empresas[0] || null;
 
@@ -313,6 +402,7 @@ this.actualizarImagenEmpresa(this.selectedEmpresaId);
 
 if (this.selectedEmpresaId) {
   this.onEmpresaSeleccionada(this.selectedEmpresaId);
+  localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
 }
 
 }
@@ -327,7 +417,7 @@ if (this.selectedEmpresaId) {
   localStorage.setItem('selectedCliente', JSON.stringify(cliente));
     }
 
-    cargarDatosEmpresaSeleccionada() {
+  cargarDatosEmpresaSeleccionada() {
     if (this.selectedEmpresaId) {
       this.empresaName = this.selectedEmpresaId.name || '';
       this.empresaPhone = this.selectedEmpresaId.phone || '';
@@ -338,6 +428,16 @@ if (this.selectedEmpresaId) {
       this.empresaInstagram = this.selectedEmpresaId.instagram || '';
       this.empresaFacebook = this.selectedEmpresaId.facebook || '';
       this.empresaCuilCuit = this.selectedEmpresaId.cuilCuit || '';
+      this.presupuestoColorPrimario = this.selectedEmpresaId.primaryColor || '#0b69a6';
+      this.presupuestoColorSecundario = this.selectedEmpresaId.secondaryColor || '#f0f4fa';
+      this.presupuestoColorSecundario2 = this.selectedEmpresaId.secondaryColor2 || '#f0f4fa';
+      this.presupuestoGradienteAngulo = this.selectedEmpresaId.gradientAngle || 'to bottom';
+      this.presupuestoColorTexto = this.selectedEmpresaId.textColor || '#333333';
+      this.presupuestoColorTabla = this.selectedEmpresaId.tableColor || '#343a40';
+      this.presupuestoColorTablaTexto = this.selectedEmpresaId.tableTextColor || '#ffffff';
+      this.presupuestoColorTablaCuerpo = this.selectedEmpresaId.tableBodyColor || '#ffffff';
+      this.presupuestoInfoBoxColorHex = this.selectedEmpresaId.infoBoxColorHex || '#f8f9fa';
+      this.presupuestoInfoBoxOpacity = this.selectedEmpresaId.infoBoxOpacity ?? 1;
       this.showSocialFields = this.hasSocialData();
       // Si hay logo, actualizar imagen
       this.actualizarImagenEmpresa(this.selectedEmpresaId);
@@ -351,9 +451,33 @@ if (this.selectedEmpresaId) {
       this.empresaInstagram = '';
       this.empresaFacebook = '';
       this.empresaCuilCuit = '';
+      this.presupuestoColorPrimario = '#0b69a6';
+      this.presupuestoColorSecundario = '#f0f4fa';
+      this.presupuestoColorSecundario2 = '#f0f4fa';
+      this.presupuestoGradienteAngulo = 'to bottom';
+      this.presupuestoColorTexto = '#333333';
+      this.presupuestoColorTabla = '#343a40';
+      this.presupuestoColorTablaTexto = '#ffffff';
+      this.presupuestoColorTablaCuerpo = '#ffffff';
+      this.presupuestoInfoBoxColorHex = '#f8f9fa';
+      this.presupuestoInfoBoxOpacity = 1;
       this.showSocialFields = false;
       this.actualizarImagenEmpresa(null);
     }
+  }
+
+  reiniciarColores() {
+    this.presupuestoColorPrimario = '#0b69a6';
+    this.presupuestoColorSecundario = '#f0f4fa';
+    this.presupuestoColorSecundario2 = '#f0f4fa';
+    this.presupuestoGradienteAngulo = 'to bottom';
+    this.presupuestoColorTexto = '#333333';
+    this.presupuestoColorTabla = '#343a40';
+    this.presupuestoColorTablaTexto = '#ffffff';
+    this.presupuestoColorTablaCuerpo = '#ffffff';
+    this.presupuestoInfoBoxColorHex = '#f8f9fa';
+    this.presupuestoInfoBoxOpacity = 1;
+    this.toastr.info('Colores reiniciados a valores por defecto');
   }
 
 
@@ -706,96 +830,143 @@ ngAfterViewInit() {
 
 
 
-
-
-
-ngAfterViewInit0() {
-    const menuBtn = document.getElementById('menuToggleBtn');
-    const offcanvasElement = document.getElementById('offcanvasMenu');
-    if (menuBtn && offcanvasElement) {
-      offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
-        menuBtn.style.display = 'none';
+  initQR() {
+    if (typeof QRCodeStyling !== 'undefined') {
+      this.qrCode = new QRCodeStyling({
+        width: 280,
+        height: 280,
+        type: "svg",
+        data: "https://orbitasoftware.com.ar",
+        image: "",
+        dotsOptions: { color: "#111827", type: "dots" },
+        backgroundOptions: { color: "#ffffff", gradient: null },
+        cornersSquareOptions: { type: "dot" },
+        cornersDotOptions: { type: "dot" },
+        imageOptions: { crossOrigin: "anonymous", margin: 10, imageSize: 0.18 }
       });
-      offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-        menuBtn.style.display = 'flex';
-      });
-    }
 
-    // Limpiar modal-backdrop y restaurar foco para modales
-      const modals = ['exampleModal','listaEmpresasModal' ,'imageModal', 'clientModal', 'listaClientesModal', 'miModal', 'provinciaModal'];
-    modals.forEach(modalId => {
-      const modalElement = document.getElementById(modalId);
-      if (modalElement) {
-        modalElement.addEventListener('show.bs.modal', () => {
-          // Limpiar backdrops solo si hay más de uno para evitar conflictos
-          const backdrops = document.querySelectorAll('.modal-backdrop');
-          if (backdrops.length > 1) {
-            backdrops.forEach((backdrop, index) => {
-              if (index < backdrops.length - 1) backdrop.remove();
-            });
-          }
-        });
-        modalElement.addEventListener('hidden.bs.modal', () => {
-          const triggerButton = document.querySelector(`[data-bs-target="#${modalId}"]`) as HTMLElement;
-          if (triggerButton) triggerButton.focus();
-          // Limpiar backdrops solo si hay más de uno
-          const backdrops = document.querySelectorAll('.modal-backdrop');
-          if (backdrops.length > 1) {
-            backdrops.forEach((backdrop, index) => {
-              if (index < backdrops.length - 1) backdrop.remove();
-            });
+      const modalEl = document.getElementById('qrModal');
+      if (modalEl) {
+        modalEl.addEventListener('show.bs.modal', () => {
+          const qrContainer = document.getElementById('qrContainer');
+          if (qrContainer && !qrContainer.hasChildNodes()) {
+            this.qrCode.append(qrContainer);
           }
         });
       }
-    });
+    }
+  }
 
-    // Lógica para reabrir el modal de empresa al cerrar el de imagen
-    const imageModal = document.getElementById('imageModal');
-    if (imageModal) {
-      imageModal.addEventListener('hidden.bs.modal', () => {
-        const empresaModal = document.getElementById('exampleModal');
-        if (this.reabrirEmpresaModal && empresaModal && !empresaModal.classList.contains('show')) {
-          setTimeout(() => {
-            const modal = new bootstrap.Modal(empresaModal);
-            modal.show();
-            this.reabrirEmpresaModal = false;
-          }, 300);
+  abrirGeneradorQR() {
+    const modalEl = document.getElementById('qrModal');
+    if (modalEl) {
+      setTimeout(() => {
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+      }, 400); // Darle tiempo a Offcanvas para cerrar
+    }
+  }
+
+  updateSizeLabel(e: any) {
+    const val = e.target?.value || 280;
+    const label = document.getElementById('qrSizeOut');
+    if (label) label.innerText = val;
+  }
+
+  setQrLogoUrl() {
+    const preview = document.getElementById('qrLogoPreview') as HTMLImageElement;
+    if (this.qrLogoUrlValue && preview) {
+      preview.src = this.qrLogoUrlValue;
+      preview.classList.remove('d-none');
+    }
+  }
+
+  onQrLogoFileChange(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const preview = document.getElementById('qrLogoPreview') as HTMLImageElement;
+        if (preview) {
+          preview.src = e.target.result;
+          preview.classList.remove('d-none');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  actualizarQR() {
+    if (!this.qrCode) return;
+    try {
+      const dataStr = (document.getElementById('qrDataInput') as HTMLInputElement)?.value || '';
+      const sizeStr = (document.getElementById('qrSizeRange') as HTMLInputElement)?.value || '280';
+      const ecLevel = (document.getElementById('qrEcLevel') as HTMLSelectElement)?.value || 'M';
+      const dotsType = (document.getElementById('qrDotsType') as HTMLSelectElement)?.value || 'dots';
+      const dotsColor = (document.getElementById('qrDotsColor') as HTMLInputElement)?.value || '#111827';
+      const cornersSquareType = (document.getElementById('qrCornersSquare') as HTMLSelectElement)?.value || 'dot';
+      const cornersDotType = (document.getElementById('qrCornersDot') as HTMLSelectElement)?.value || 'dot';
+      const selectedBgMode = (document.querySelector('input[name="qrBgMode"]:checked') as HTMLInputElement)?.value || 'solid';
+      const bgColor1 = (document.getElementById('qrBgColor') as HTMLInputElement)?.value || '#ffffff';
+      const bgColor2 = (document.getElementById('qrBgColor2') as HTMLInputElement)?.value || '#dbeafe';
+      const bgDirection = (document.getElementById('qrBgGradientDirection') as HTMLSelectElement)?.value || 'to bottom';
+      const logoSizePercent = parseInt((document.getElementById('qrLogoSize') as HTMLInputElement)?.value || '18', 10);
+      const previewImg = document.getElementById('qrLogoPreview') as HTMLImageElement;
+
+      let gradientObj: any = null;
+      let finalBgColor = bgColor1;
+
+      if (selectedBgMode === 'transparent') {
+        finalBgColor = 'transparent';
+      } else if (selectedBgMode === 'gradient') {
+        finalBgColor = '';
+        let offset1 = 0; let offset2 = 1;
+        gradientObj = {
+          type: 'linear', rotation: bgDirection === 'to bottom' ? 1.5708 : bgDirection === 'to right' ? 0 : 0, // Simplified rotation
+          colorStops: [{ offset: offset1, color: bgColor1 }, { offset: offset2, color: bgColor2 }]
+        };
+      }
+
+      const parsedSize = parseInt(sizeStr, 10);
+      let logoUrl = '';
+      if (previewImg && !previewImg.classList.contains('d-none') && previewImg.src) {
+        logoUrl = previewImg.src;
+      }
+      const finalLogoSize = logoSizePercent / 100;
+
+      this.qrCode.update({
+        width: parsedSize,
+        height: parsedSize,
+        data: dataStr || 'https://orbitasoftware.com.ar',
+        image: logoUrl,
+        dotsOptions: { color: dotsColor, type: dotsType as any },
+        backgroundOptions: { color: finalBgColor, gradient: gradientObj },
+        cornersSquareOptions: { type: cornersSquareType as any },
+        cornersDotOptions: { type: cornersDotType as any },
+        qrOptions: { errorCorrectionLevel: ecLevel as any },
+        imageOptions: { crossOrigin: "anonymous", margin: Math.round(parsedSize * 0.02), imageSize: finalLogoSize }
+      });
+
+      const wrap = document.getElementById('qrPreviewWrap');
+      if (wrap) {
+        if (selectedBgMode === 'transparent') {
+          wrap.style.background = 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAOklEQVQYV2NkYGAwZmBgOMuAACA+EGxgINSAK8IiM2EaQDRMzEQIY/FchG4csknkGkR2A00TMI0EawAAet0X+flpIfkAAAAASUVORK5CYII=") repeat';
         } else {
-          this.reabrirEmpresaModal = false;
+          wrap.style.background = 'none';
         }
-      });
-    }
-
-    // Lógica para reabrir clientModal al cerrar listaClientesModal (comentada para evitar apertura automática)
-    /*
-    const listaClientesModal = document.getElementById('listaClientesModal');
-    if (listaClientesModal) {
-      listaClientesModal.addEventListener('hidden.bs.modal', () => {
-        const clientModal = document.getElementById('clientModal');
-        if (clientModal && !clientModal.classList.contains('show')) {
-          setTimeout(() => {
-            const modal = new bootstrap.Modal(clientModal);
-            modal.show();
-          }, 300);
-        }
-      });
-    }
-    */
-      // Lógica para reabrir el modal de empresa al cerrar el de listaEmpresasModal
-      const listaEmpresasModal = document.getElementById('listaEmpresasModal');
-      if (listaEmpresasModal) {
-        listaEmpresasModal.addEventListener('hidden.bs.modal', () => {
-          const empresaModal = document.getElementById('exampleModal');
-          if (empresaModal && !empresaModal.classList.contains('show')) {
-            setTimeout(() => {
-              const modal = new bootstrap.Modal(empresaModal);
-              modal.show();
-            }, 300);
-          }
-        });
       }
-}
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
+  descargarQRPng() {
+    if (this.qrCode) this.qrCode.download({ name: 'qr-generado', extension: 'png' });
+  }
+
+  descargarQRSvg() {
+    if (this.qrCode) this.qrCode.download({ name: 'qr-generado', extension: 'svg' });
+  }
 ngAfterViewInit() {
   const menuBtn = document.getElementById('menuToggleBtn');
   const offcanvasElement = document.getElementById('offcanvasMenu');
@@ -805,44 +976,37 @@ ngAfterViewInit() {
     });
     offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
       menuBtn.style.display = 'flex';
-       document.querySelectorAll('.offcanvas-backdrop').forEach(el => el.remove());
     });
-
-
   }
-
-  const offcanvasEl = document.getElementById('offcanvasMenu');
-offcanvasEl?.addEventListener('hidden.bs.offcanvas', () => {
-  document.querySelectorAll('.offcanvas-backdrop').forEach(el => el.remove());
-});
 
 
 
 
   // Limpiar modal-backdrop y restaurar foco para modales
-  const modals = ['exampleModal', 'listaEmpresasModal', 'imageModal', 'clientModal', 'listaClientesModal', 'miModal', 'provinciaModal'];
+  const modals = ['exampleModal', 'listaEmpresasModal', 'imageModal', 'clientModal', 'listaClientesModal', 'miModal', 'provinciaModal', 'qrModal', 'recentTasksModal', 'buscadorInfoModal', 'ajustesListaModal', 'faqModalAjustes'];
   modals.forEach(modalId => {
     const modalElement = document.getElementById(modalId);
     if (modalElement) {
       modalElement.addEventListener('show.bs.modal', () => {
-        // Limpiar backdrops solo si hay más de uno para evitar conflictos
+        // Limpiar backdrops existentes antes de mostrar uno nuevo si ya hay alguno
         const backdrops = document.querySelectorAll('.modal-backdrop');
-        if (backdrops.length > 1) {
-          backdrops.forEach((backdrop, index) => {
-            if (index < backdrops.length - 1) backdrop.remove();
-          });
+        if (backdrops.length > 0) {
+          backdrops.forEach(b => b.remove());
+          document.body.classList.remove('modal-open');
         }
       });
+      
       modalElement.addEventListener('hidden.bs.modal', () => {
-        const triggerButton = document.querySelector(`[data-bs-target="#${modalId}"]`) as HTMLElement;
-        if (triggerButton) triggerButton.focus();
-        // Limpiar backdrops solo si hay más de uno
-        const backdrops = document.querySelectorAll('.modal-backdrop');
-        if (backdrops.length > 1) {
-          backdrops.forEach((backdrop, index) => {
-            if (index < backdrops.length - 1) backdrop.remove();
-          });
-        }
+        // Al ocultar, si no hay más modales visibles, limpiar todo
+        setTimeout(() => {
+          const visibleModals = document.querySelectorAll('.modal.show');
+          if (visibleModals.length === 0) {
+            document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.paddingRight = '';
+            document.body.style.overflow = '';
+          }
+        }, 100);
       });
     }
   });
@@ -900,8 +1064,9 @@ offcanvasEl?.addEventListener('hidden.bs.offcanvas', () => {
       backdrops.forEach(backdrop => backdrop.remove());
     });
   }
-}
 
+  this.initQR();
+}
 
 obtenerTareas0(): void {
   if (this.userData?.pais) {
@@ -1236,21 +1401,22 @@ agregarTarea1(): void {
 
 agregarTarea(): void {
 
-/*if (this.trialMode && this.tareasAgregadas.length >= 3) {
-  this.toastr.info('En modo demo solo podés agregar 3 tareas', 'Modo demo');
+/*if (this.trialMode && this.tareasAgregadas.length >= 7) {
+  this.toastr.info('En modo demo solo podés agregar 7 tareas', 'Modo demo');
   return;
 }*/
 
 if (this.trialMode) {
   const clienteId = this.clienteSeleccionado?.id ?? null;
 
-  if (this.tareasAgregadas.length >= 3) {
-    this.toastr.info('En modo demo solo podés agregar 3 tareas', 'Modo demo');
+  if (this.tareasAgregadas.length >= 7) {
+    this.toastr.info('En modo demo solo podés agregar 7 tareas', 'Modo demo');
     return;
   }
 
   const nuevaTarea: UserTarea = {
     ...this.tareaSeleccionada,
+    id: this.tareaSeleccionada.id || Date.now(),
     clienteId: clienteId ?? 0,
     pais: this.userData?.pais || 'Argentina',
     rubro: this.tareaSeleccionada.rubro || '',
@@ -1268,6 +1434,7 @@ if (this.trialMode) {
   this.toastr.success('Tarea agregada en modo demo', '', {
     toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
   });
+  this.saveToRecent(nuevaTarea); // Save even in demo
   this.resetTareaSeleccionada();
   return;
 }
@@ -1278,6 +1445,7 @@ if (this.trialMode) {
 
     const nuevaTarea: UserTarea = {
       ...this.tareaSeleccionada,
+      id: this.tareaSeleccionada.id || Date.now(),
       clienteId: clienteId ?? 0,
       pais: this.userData.pais,
       rubro: this.tareaSeleccionada.rubro || '',
@@ -1290,6 +1458,7 @@ if (this.trialMode) {
       this.mostrarTabla = true;
       localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
       this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+      this.saveToRecent(nuevaTarea); // Save to recent tasks
       if (mensaje) {
         this.toastr.info(mensaje, 'Informacion');
       }
@@ -1307,6 +1476,7 @@ if (this.trialMode) {
         this.mostrarTabla = true;
         localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
         this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+        this.saveToRecent(tarea); // Save to recent tasks
         this.toastr.success('Tarea agregada', 'Exito', {
           toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
         });
@@ -2276,7 +2446,17 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
     tiktok: this.empresaTikTok,
     instagram: this.empresaInstagram,
     facebook: this.empresaFacebook,
-    cuilCuit: this.empresaCuilCuit
+    cuilCuit: this.empresaCuilCuit,
+    primaryColor: this.presupuestoColorPrimario,
+    secondaryColor: this.presupuestoColorSecundario,
+    secondaryColor2: this.presupuestoColorSecundario2,
+    gradientAngle: this.presupuestoGradienteAngulo,
+    textColor: this.presupuestoColorTexto,
+    tableColor: this.presupuestoColorTabla,
+    tableTextColor: this.presupuestoColorTablaTexto,
+    tableBodyColor: this.presupuestoColorTablaCuerpo,
+    infoBoxColorHex: this.presupuestoInfoBoxColorHex,
+    infoBoxOpacity: this.presupuestoInfoBoxOpacity
   };
 
 /*if (soloDefault) {
@@ -2290,6 +2470,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
   this.updatePaginatedEmpresas();
   this.selectedEmpresaId = nuevaEmpresa;
   localStorage.setItem('selectedEmpresaId', String(nuevaEmpresa.id));
+  localStorage.setItem('selectedEmpresa', JSON.stringify(nuevaEmpresa));
 
   this.actualizarImagenEmpresa(nuevaEmpresa);
   this.toastr.success('Empresa creada en modo demo');
@@ -2325,7 +2506,17 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       tiktok: this.empresaTikTok,
       instagram: this.empresaInstagram,
       facebook: this.empresaFacebook,
-      cuilCuit: this.empresaCuilCuit
+      cuilCuit: this.empresaCuilCuit,
+      primaryColor: this.presupuestoColorPrimario,
+      secondaryColor: this.presupuestoColorSecundario,
+      secondaryColor2: this.presupuestoColorSecundario2,
+      gradientAngle: this.presupuestoGradienteAngulo,
+      textColor: this.presupuestoColorTexto,
+      tableColor: this.presupuestoColorTabla,
+      tableTextColor: this.presupuestoColorTablaTexto,
+      tableBodyColor: this.presupuestoColorTablaCuerpo,
+      infoBoxColorHex: this.presupuestoInfoBoxColorHex,
+      infoBoxOpacity: this.presupuestoInfoBoxOpacity
     };
     if (this.empresaEditId !== null) {
       // Modo edición: actualizar empresa existente
@@ -2625,13 +2816,14 @@ saveClientData0(form: NgForm): void {
       this.toastr.error('Por favor, ingrese un porcentaje válido para bajar', 'Error');
       return;
     }
-    this.tareasFiltradas = this.tareasFiltradas.map(tarea => ({
+    this.tareasAgregadas = this.tareasAgregadas.map(tarea => ({
       ...tarea,
       costo: tarea.costo * (1 - porcentaje / 100),
       totalCost: this.calcularTotalCosto({ ...tarea, costo: tarea.costo * (1 - porcentaje / 100) })
     }));
     this.toastr.success(`Lista reducida en ${porcentaje}%`, 'Éxito');
     this.porcentajeBajar = null;
+    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
   }
 
   ajustarPrecios(): void {
@@ -2640,13 +2832,58 @@ saveClientData0(form: NgForm): void {
       this.toastr.error('Por favor, ingrese un porcentaje válido para subir', 'Error');
       return;
     }
-    this.tareasFiltradas = this.tareasFiltradas.map(tarea => ({
+    this.tareasAgregadas = this.tareasAgregadas.map(tarea => ({
       ...tarea,
       costo: tarea.costo * (1 + porcentaje / 100),
       totalCost: this.calcularTotalCosto({ ...tarea, costo: tarea.costo * (1 + porcentaje / 100) })
     }));
     this.toastr.success(`Lista incrementada en ${porcentaje}%`, 'Éxito');
     this.porcentajeSubir = null;
+    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+  }
+
+  reestablecerPreciosOriginalesLista(): void {
+    if (!this.clienteSeleccionado?.id && !this.trialMode) {
+      this.toastr.warning('No hay un cliente seleccionado para restablecer los precios.', 'Atención');
+      return;
+    }
+
+    if (this.trialMode) {
+       this.toastr.info('Función limitada en modo de prueba', 'Aviso');
+       return;
+    }
+
+    this.userTareaService.getTareasByClienteId(this.clienteSeleccionado!.id as number).subscribe({
+      next: (tareasOriginales) => {
+        this.tareasAgregadas = tareasOriginales;
+        this.mostrarTabla = this.tareasAgregadas.length > 0;
+        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+        this.toastr.success('Precios restablecidos a los valores originales', 'Éxito');
+      },
+      error: () => {
+        this.toastr.error('Error al restablecer los precios originales', 'Error');
+      }
+    });
+  }
+
+  cambiarTamanoFuenteLista(accion: 'increase' | 'decrease'): void {
+    const tabla = document.getElementById('tabla');
+    if (!tabla) return;
+    
+    const currentSize = window.getComputedStyle(tabla).fontSize;
+    let newSize = parseFloat(currentSize);
+    
+    if (accion === 'increase') {
+      newSize += 1;
+    } else {
+      newSize -= 1;
+    }
+    
+    tabla.style.setProperty('font-size', `${newSize}px`, 'important');
+    const cells = tabla.querySelectorAll('td, th, span, div');
+    cells.forEach(cell => {
+      (cell as HTMLElement).style.setProperty('font-size', `${newSize}px`, 'important');
+    });
   }
 
 
@@ -2795,17 +3032,10 @@ fetchUserData(): void {
 
   if (empresa && empresa.id) {
     localStorage.setItem('selectedEmpresaId', String(empresa.id));
+    localStorage.setItem('selectedEmpresa', JSON.stringify(empresa));
 
     // Cargar datos de la empresa en el modal
-    this.empresaName = empresa.name || '';
-    this.empresaPhone = empresa.phone || '';
-    this.empresaEmail = empresa.email || '';
-    this.additionalDetailsEmpresa = empresa.description || '';
-    this.empresaWebsite = empresa.website || '';
-    this.empresaCuilCuit = empresa.cuilCuit || '';
-    this.empresaTikTok = empresa.tiktok || '';
-    this.empresaInstagram = empresa.instagram || '';
-    this.empresaFacebook = empresa.facebook || '';
+    this.cargarDatosEmpresaSeleccionada();
 
     // Actualizar imagen
     const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
@@ -2818,27 +3048,54 @@ fetchUserData(): void {
     }
 
     if (this.trialMode) {
-  const demoClientes = Object.keys(localStorage)
-    .filter(key => key.startsWith('demoCliente_'))
-    .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
-    .filter(c => c && c.empresaId === empresa.id);
+      const demoClientes = Object.keys(localStorage)
+        .filter(key => key.startsWith('demoCliente_'))
+        .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
+        .filter(c => c && c.empresaId === empresa.id);
 
-  this.clientes = demoClientes;
-  this.updatePaginatedClientes();
+      const testClients: Cliente[] = [
+        {
+          id: 10001,
+          name: 'Constructora del Sol S.A.',
+          contact: '11-4455-6677',
+          email: 'contacto@constructoradelsol.com',
+          direccion: 'Av. Libertador 1500, CABA',
+          budgetDate: new Date().toISOString().split('T')[0],
+          empresaId: empresa.id,
+          additionalDetails: 'Cliente corporativo - Refacción oficinas',
+          userCode: 'demo',
+          clave: '30-12345678-9'
+        },
+        {
+          id: 10002,
+          name: 'Ing. Ricardo Martínez',
+          contact: '221-555-0987',
+          email: 'rmartinez@email.com',
+          direccion: 'Calle 50 nro 123, La Plata',
+          budgetDate: new Date().toISOString().split('T')[0],
+          empresaId: empresa.id,
+          additionalDetails: 'Particular - Proyecto vivienda unifamiliar',
+          userCode: 'demo',
+          clave: '20-98765432-1'
+        }
+      ];
 
-  const storedClienteId = localStorage.getItem('selectedClienteId');
-  const clienteGuardado = storedClienteId
-    ? this.clientes.find(c => String(c.id) === storedClienteId)
-    : null;
+      this.clientes = [...testClients, ...demoClientes];
+      this.updatePaginatedClientes();
 
-  const clienteFinal = clienteGuardado || this.clientes[this.clientes.length - 1];
-  if (clienteFinal) {
-    this.seleccionarCliente(clienteFinal);
-    this.loadTareasAgregadas();
-  }
+      const storedClienteId = localStorage.getItem('selectedClienteId');
+      const clienteGuardado = storedClienteId
+        ? this.clientes.find(c => String(c.id) === storedClienteId)
+        : null;
 
-  return;
-}
+      const clienteFinal = clienteGuardado || this.clientes[0];
+      if (clienteFinal) {
+        this.seleccionarCliente(clienteFinal);
+        this.loadTareasAgregadas();
+      }
+
+      return;
+    }
 
 
 
@@ -2951,6 +3208,7 @@ onEmpresaSeleccionada0(empresa: Empresa) {
     this.empresaTikTok = empresa.tiktok || '';
     this.empresaInstagram = empresa.instagram || '';
     this.empresaFacebook = empresa.facebook || '';
+    this.showSocialFields = this.hasSocialData();
 
     // Actualizar imagen
     const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
@@ -3042,7 +3300,7 @@ onEmpresaSeleccionada0(empresa: Empresa) {
   }
 
   private hasSocialData(): boolean {
-    return !!(this.empresaTikTok || this.empresaInstagram || this.empresaFacebook);
+    return !!(this.empresaTikTok || this.empresaInstagram || this.empresaFacebook || this.empresaWebsite);
   }
 
   async loadWeather(): Promise<void> {
@@ -3120,6 +3378,152 @@ onEmpresaSeleccionada0(empresa: Empresa) {
       99: 'Tormenta fuerte'
     };
     return map[code] || 'Condición desconocida';
+  }
+
+  loadRecentTasks(): void {
+    const stored = localStorage.getItem('recentQuotedTasks');
+    this.recentTasks = stored ? JSON.parse(stored) : [];
+  }
+
+  saveToRecent(tarea: any): void {
+    if (!tarea || !tarea.tarea) return;
+
+    const taskToSave = {
+      tarea: tarea.tarea,
+      costo: tarea.costo,
+      rubro: tarea.rubro,
+      categoria: tarea.categoria,
+      pais: tarea.pais || (this.userData ? this.userData.pais : 'Argentina'),
+      descripcion: tarea.descripcion || '',
+      area: tarea.area || 1,
+      totalCost: tarea.totalCost || tarea.costo
+    };
+
+    // Use a unique key combining name and description
+    const taskKey = `${taskToSave.tarea}_${taskToSave.descripcion}`;
+
+    const index = this.recentTasks.findIndex(t => `${t.tarea}_${t.descripcion}` === taskKey);
+    if (index !== -1) {
+      this.recentTasks.splice(index, 1);
+    }
+
+    this.recentTasks.unshift(taskToSave);
+    this.recentTasks = this.recentTasks.slice(0, 10);
+    localStorage.setItem('recentQuotedTasks', JSON.stringify(this.recentTasks));
+  }
+
+  cargarTareaReciente(tarea: any): void {
+    this.tareaSeleccionada = { ...tarea };
+    
+    // Close the recent tasks modal
+    const modalEl = document.getElementById('recentTasksModal');
+    if (modalEl) {
+      const modalInstance = bootstrap.Modal.getInstance(modalEl);
+      if (modalInstance) modalInstance.hide();
+    }
+    
+    // Ensure the add task modal is open
+    const miModalEl = document.getElementById('miModal');
+    if (miModalEl) {
+      const miModalInstance = bootstrap.Modal.getInstance(miModalEl) || new bootstrap.Modal(miModalEl);
+      miModalInstance.show();
+    }
+    
+    this.toastr.info('Tarea cargada para editar', 'Historial');
+  }
+
+  borrarHistorialReciente(): void {
+    this.recentTasks = [];
+    localStorage.removeItem('recentQuotedTasks');
+    this.toastr.success('Historial de tareas limpiado');
+  }
+
+  abrirHistorialDesdeModal(): void {
+    // 1. Cerrar el modal actual (Agregar Tarea)
+    const miModalEl = document.getElementById('miModal');
+    if (miModalEl) {
+      const miModalInstance = bootstrap.Modal.getInstance(miModalEl);
+      if (miModalInstance) miModalInstance.hide();
+    }
+
+    // 2. Esperar un poquito y abrir el de historial
+    setTimeout(() => {
+      const recentTasksModalEl = document.getElementById('recentTasksModal');
+      if (recentTasksModalEl) {
+        const recentModalInstance = bootstrap.Modal.getInstance(recentTasksModalEl) || new bootstrap.Modal(recentTasksModalEl);
+        recentModalInstance.show();
+      }
+    }, 150);
+  }
+
+  abrirModalPaleta(): void {
+    const empresaModalEl = document.getElementById('exampleModal');
+    if (empresaModalEl) {
+      const inst = bootstrap.Modal.getInstance(empresaModalEl);
+      if (inst) inst.hide();
+    }
+
+    setTimeout(() => {
+      const paletaModalEl = document.getElementById('paletaModal');
+      if (paletaModalEl) {
+        const paletaModalInstance = new bootstrap.Modal(paletaModalEl);
+        paletaModalInstance.show();
+      }
+    }, 450);
+  }
+
+  volverAModalEmpresa(): void {
+    const paletaModalEl = document.getElementById('paletaModal');
+    if (paletaModalEl) {
+      const inst = bootstrap.Modal.getInstance(paletaModalEl);
+      if (inst) inst.hide();
+    }
+
+    setTimeout(() => {
+      const empresaModalEl = document.getElementById('exampleModal');
+      if (empresaModalEl) {
+        const empresaModalInstance = new bootstrap.Modal(empresaModalEl);
+        empresaModalInstance.show();
+      }
+    }, 450);
+  }
+
+  aplicarPaletaManual(): void {
+    if (!this.selectedEmpresaId) return;
+
+    this.selectedEmpresaId.primaryColor = this.presupuestoColorPrimario;
+    this.selectedEmpresaId.secondaryColor = this.presupuestoColorSecundario;
+    this.selectedEmpresaId.secondaryColor2 = this.presupuestoColorSecundario2;
+    this.selectedEmpresaId.gradientAngle = this.presupuestoGradienteAngulo;
+    this.selectedEmpresaId.textColor = this.presupuestoColorTexto;
+    this.selectedEmpresaId.tableColor = this.presupuestoColorTabla;
+    this.selectedEmpresaId.tableTextColor = this.presupuestoColorTablaTexto;
+    this.selectedEmpresaId.tableBodyColor = this.presupuestoColorTablaCuerpo;
+    this.selectedEmpresaId.infoBoxColorHex = this.presupuestoInfoBoxColorHex;
+    this.selectedEmpresaId.infoBoxOpacity = this.presupuestoInfoBoxOpacity;
+
+    localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
+
+    if (this.trialMode) {
+      const demoEmpresasStr = localStorage.getItem('demoEmpresas');
+      if (demoEmpresasStr) {
+        const demoEmpresas = JSON.parse(demoEmpresasStr);
+        const index = demoEmpresas.findIndex((e: any) => e.id === this.selectedEmpresaId?.id);
+        if (index !== -1) {
+          demoEmpresas[index] = this.selectedEmpresaId;
+          localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresas));
+        }
+      }
+      this.toastr.success('Colores aplicados (modo demo)', 'Paleta');
+      return;
+    }
+
+    if (this.selectedEmpresaId.id) {
+      this.empresaService.updateEmpresa(this.selectedEmpresaId.id, this.selectedEmpresaId).subscribe({
+        next: () => this.toastr.success('Colores guardados correctamente', 'Paleta'),
+        error: (err) => this.toastr.error(`Error al guardar colores: ${err.message}`, 'Error')
+      });
+    }
   }
 }
 

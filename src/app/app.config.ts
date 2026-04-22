@@ -14,11 +14,15 @@ export const appConfig: ApplicationConfig = {
         provideHttpClient(withInterceptors([httpResilienceInterceptor])),
         provideAnimations(),
         provideToastr({
-                timeOut: 1800,
+                timeOut: 2400,
                 preventDuplicates: true,
                 positionClass: 'toast-top-right',
                 newestOnTop: true,
-                easeTime: 250
+                easeTime: 250,
+                progressBar: true,
+                closeButton: true,
+                maxOpened: 4,
+                autoDismiss: true
         }),
         provideServiceWorker('ngsw-worker.js', {
                 enabled: !isDevMode(),

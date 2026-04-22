@@ -1,0 +1,280 @@
+<div class="calc-page">
+
+  @if (sidebarOpen()) {
+    <div class="sidebar-overlay" (click)="cerrarSidebar()"></div>
+  }
+  <div class="sidebar-panel" [class.sidebar-panel--open]="sidebarOpen()" role="dialog" aria-label="Menú">
+    <button class="sidebar-panel__close" (click)="cerrarSidebar()" aria-label="Cerrar menú">
+      <i class="bi bi-x-lg"></i>
+    </button>
+
+    <div class="sidebar-panel__profile">
+      <div class="sidebar-panel__avatar">
+        <i class="bi bi-person-circle"></i>
+      </div>
+      <div class="sidebar-panel__profile-copy">
+        <span class="sidebar-panel__profile-mode">{{ userModeLabel }}</span>
+        <strong class="sidebar-panel__profile-name">{{ userDisplayName }}</strong>
+        <span class="sidebar-panel__profile-meta">
+          @if (isTrialMode) {
+            Sesión local de demostración
+          } @else {
+            {{ userEmail || userCode }}
+          }
+        </span>
+      </div>
+    </div>
+
+    <ul class="sidebar-panel__list">
+      <li class="sidebar-panel__item">
+        <button (click)="irAlDashboard()">
+          <i class="bi bi-grid-1x2-fill"></i> Dashboard
+        </button>
+      </li>
+      <li class="sidebar-panel__item">
+        <button (click)="abrirUltimasTareas()">
+          <i class="bi bi-clock-history"></i> Últimas tareas
+          @if (ultimasTareas().length) {
+            <span class="sidebar-panel__badge">{{ ultimasTareas().length }}</span>
+          }
+        </button>
+      </li>
+      <li class="sidebar-panel__item"><button disabled><i class="bi bi-star"></i> Favoritos</button></li>
+      <li class="sidebar-panel__item">
+        <button (click)="abrirHistorial()">
+          <i class="bi bi-journal-text"></i> Historial
+          @if (historialCalculos().length) {
+            <span class="sidebar-panel__badge">{{ historialCalculos().length }}</span>
+          }
+        </button>
+      </li>
+      <li class="sidebar-panel__item"><button disabled><i class="bi bi-collection"></i> Biblioteca</button></li>
+      <li class="sidebar-panel__item"><button disabled><i class="bi bi-question-circle"></i> Ayuda</button></li>
+      <li class="sidebar-panel__item"><button disabled><i class="bi bi-envelope"></i> Contacto</button></li>
+    </ul>
+  </div>
+
+  @if (ultimasTareasOpen()) {
+    <div class="calc-modal-overlay" (click)="cerrarUltimasTareas()">
+      <div class="calc-modal" (click)="$event.stopPropagation()">
+        <div class="calc-modal__head">
+          <span><i class="bi bi-clock-history"></i> Últimas tareas calculadas</span>
+          <button (click)="cerrarUltimasTareas()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        @if (ultimasTareas().length === 0) {
+          <p class="calc-modal__empty">Todavía no calculaste ninguna tarea.</p>
+        } @else {
+          <ul class="calc-modal__list">
+            @for (t of ultimasTareas(); track t.id) {
+              <li>
+                <button class="calc-modal__item" (click)="irATarea(t)">
+                  <span class="calc-modal__item-num">#{{ t.id }}</span>
+                  <span class="calc-modal__item-title">
+                    {{ t.titulo }}
+                    @if (formatearFecha(t.createdAt)) {
+                      <small class="d-block text-muted">{{ formatearFecha(t.createdAt) }}</small>
+                    }
+                  </span>
+                  <i class="bi bi-arrow-right"></i>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+
+  @if (historialOpen()) {
+    <div class="calc-modal-overlay" (click)="cerrarHistorial()">
+      <div class="calc-modal" (click)="$event.stopPropagation()">
+        <div class="calc-modal__head">
+          <span><i class="bi bi-journal-text"></i> Historial de Cálculos</span>
+          <button (click)="cerrarHistorial()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        @if (historialCalculos().length === 0) {
+          <p class="calc-modal__empty">Todavía no hay cálculos guardados.</p>
+        } @else {
+          <ul class="calc-modal__list">
+            @for (calculo of historialCalculos(); track trackHistorial($index, calculo)) {
+              <li>
+                <button class="calc-modal__item" (click)="restaurarHistorial(calculo)">
+                  <span class="calc-modal__item-num">#{{ calculo.tareaId }}</span>
+                  <span class="calc-modal__item-title">
+                    {{ calculo.tareaTitulo }}
+                    <small class="d-block text-muted">
+                      {{ calculo.valorIngresado }} {{ calculo.unidad }}
+                      @if (formatearFecha(calculo.createdAt)) {
+                        · {{ formatearFecha(calculo.createdAt) }}
+                      }
+                    </small>
+                  </span>
+                  <i class="bi bi-arrow-repeat"></i>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="calc-header">
+    <div class="calc-header__inner">
+      <div class="calc-header__icon">
+        <i class="bi bi-calculator"></i>
+      </div>
+      <div>
+        <h1 class="calc-header__title">Calculadora de Materiales</h1>
+        @if (isTrialMode) {
+          <p class="calc-header__sub">{{ getDemoDailyUsageLabel() }}</p>
+        }
+        @if (isTrialMode) {
+          <p class="calc-header__sub">Modo de prueba: se muestran 3 tareas aleatorias y el historial local guarda solo los últimos 3 cálculos.</p>
+        }
+        <p class="calc-header__sub">Ingresá el área o volumen para obtener las cantidades exactas</p>
+      </div>
+    </div>
+  </div>
+
+  @if (filteredTasks().length === 0) {
+    <div class="calc-empty">
+      <i class="bi bi-search"></i>
+      <p>No se encontraron tareas para <strong>"{{ searchTerm() }}"</strong></p>
+    </div>
+  }
+
+  <div class="calc-body">
+    @for (cat of categorias; track cat) {
+      @if (isCategoriaVisible(cat)) {
+        <div class="calc-category">
+          <div class="calc-category__header">
+            <i class="bi {{ getCategoriaIcono(cat) }}"></i>
+            <span>{{ cat }}</span>
+            <span class="calc-category__count">{{ filteredByCategoria(cat).length }}</span>
+          </div>
+
+          <div class="calc-tasks">
+            @for (tarea of filteredByCategoria(cat); track tarea.id) {
+              <div class="calc-card" [id]="'tarea-' + tarea.id" [class.calc-card--expanded]="isExpanded(tarea.id)" [class.calc-card--done]="hasResultados(tarea.id)">
+
+                <button class="calc-card__head" (click)="toggleExpand(tarea.id)">
+                  <div class="calc-card__head-left">
+                    <span class="calc-card__num">#{{ tarea.id }}</span>
+                    <div class="calc-card__info">
+                      <span class="calc-card__title">{{ tarea.titulo }}</span>
+                      @if (tarea.mezcla) {
+                        <span class="calc-card__mezcla">Mezcla {{ tarea.mezcla }}</span>
+                      }
+                    </div>
+                  </div>
+                  <div class="calc-card__head-right">
+                    <span class="calc-card__unidad">por {{ tarea.unidad }}</span>
+                    @if (hasResultados(tarea.id)) {
+                      <i class="bi bi-check-circle-fill calc-card__done-icon"></i>
+                    }
+                    <i class="bi calc-card__chevron" [class.bi-chevron-up]="isExpanded(tarea.id)" [class.bi-chevron-down]="!isExpanded(tarea.id)"></i>
+                  </div>
+                </button>
+
+                @if (isExpanded(tarea.id)) {
+                  <div class="calc-card__body">
+                    <div class="calc-input-row">
+                      <div class="calc-input-group">
+                        <label class="calc-input-group__label">
+                          Ingresar superficie / volumen
+                        </label>
+                        <div class="calc-input-group__field">
+                          <input
+                            class="calc-input-group__input"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            placeholder="0.00"
+                            [ngModel]="getInputValue(tarea.id)"
+                            (ngModelChange)="setInputValue(tarea.id, $event)"
+                            (keyup.enter)="calcular(tarea)"
+                          />
+                          <span class="calc-input-group__unit">{{ tarea.unidad }}</span>
+                        </div>
+                      </div>
+                      <div class="calc-input-actions">
+                        <button class="btn-calc" (click)="calcular(tarea)" [disabled]="!getInputValue(tarea.id)" [class.btn-calc--limit]="isTrialCalculationLimitReached()">
+                          <i class="bi bi-calculator"></i> Calcular
+                        </button>
+                        @if (hasResultados(tarea.id)) {
+                          @if (isGuardado(tarea.id)) {
+                            <span class="btn-guardado-badge" aria-label="Cálculo guardado">
+                              <i class="bi bi-cloud-check-fill"></i> Guardado
+                            </span>
+                          }
+                          <button class="btn-borrar" type="button" (click)="confirmarBorrado(tarea.id)">
+                            <i class="bi bi-arrow-counterclockwise"></i> Borrar
+                          </button>
+                        }
+                      </div>
+                    </div>
+
+                    @if (hasResultados(tarea.id)) {
+                      <div class="calc-results">
+                        <div class="calc-results__title">
+                          <i class="bi bi-list-check"></i> Materiales necesarios para {{ getInputValue(tarea.id) }} {{ tarea.unidad }}
+                        </div>
+                        <div class="calc-results__grid">
+                          @for (res of getResultados(tarea.id); track res.nombre) {
+                            <div class="calc-result-item" [class.calc-result-item--labor]="res.nombre.toLowerCase().includes('hrs')">
+                              <div class="calc-result-item__icon">
+                                <i class="bi {{ res.icono }}"></i>
+                              </div>
+                              <div class="calc-result-item__data">
+                                <span class="calc-result-item__name">{{ res.nombre }}</span>
+                                <span class="calc-result-item__qty">
+                                  {{ res.cantidad | number:'1.2-2' }}
+                                  @if (res.detalleDias) {
+                                    <span class="calc-result-item__days">{{ res.detalleDias }}</span>
+                                  }
+                                </span>
+                                @if (res.bolsas) {
+                                  <span class="calc-result-item__bolsas">
+                                    <i class="bi bi-bag-fill"></i> {{ res.bolsas }} {{ res.bolsasLabel }}
+                                  </span>
+                                }
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <div class="calc-search-floating">
+    <div class="calc-search calc-search--floating">
+      <i class="bi bi-search calc-search__icon"></i>
+      <input
+        class="calc-search__input"
+        type="text"
+        placeholder="Buscar tarea, categoría o mezcla..."
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+      />
+      @if (searchTerm()) {
+        <button class="calc-search__clear" type="button" (click)="searchTerm.set('')">
+          <i class="bi bi-x-circle-fill"></i>
+        </button>
+      }
+      <button class="calc-search__menu" type="button" (click)="abrirSidebar()" aria-label="Abrir menú">
+        <i class="bi bi-list"></i>
+      </button>
+    </div>
+  </div>
+
+</div>

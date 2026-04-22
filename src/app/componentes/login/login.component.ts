@@ -323,7 +323,7 @@ login(): void {
       phone: '11 0000-0000',
       email: 'demo@metroapp.site',
       description: 'Empresa de prueba',
-      logoUrl: 'assets/demo-logo/demo.jpeg',
+      logoUrl: 'assets/demo-logo/demo-logo.jpg',
       userCode: 'demo'
     }
   ];

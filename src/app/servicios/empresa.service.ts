@@ -17,6 +17,16 @@ export interface Empresa {
   instagram?: string;
   facebook?: string;
   cuilCuit?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  textColor?: string;
+  tableColor?: string;
+  tableTextColor?: string;
+  secondaryColor2?: string;
+  gradientAngle?: string;
+  infoBoxColorHex?: string;
+  infoBoxOpacity?: number;
+  tableBodyColor?: string;
 }
 
 @Injectable({

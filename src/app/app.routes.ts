@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './componentes/login/login.component';
+import { CalculadoraMaterialesComponent } from './componentes/calculadora-materiales/calculadora-materiales.component';
 import { DashboardComponent } from './componentes/dashboard/dashboard.component';
 import { AuthGuard } from './guard/auth.guard';
 import { AuthLoggedGuard } from './guard/auth-logged.guard';
@@ -21,5 +22,6 @@ export const routes: Routes = [
   {path:'editar-clientes/:id', component: EditarClientesComponent, canActivate: [AuthGuard]},
   {path:'ofrecimiento', component: OfrecimientoLaboralComponent},
   {path:'editar-empresa/:id', component:EditarEmpresaComponent, canActivate: [AuthGuard]},
+  { path: 'calculadora', component: CalculadoraMaterialesComponent, canActivate: [AuthGuard] },
   {path:'**', redirectTo:'', pathMatch:'full'}
 ];

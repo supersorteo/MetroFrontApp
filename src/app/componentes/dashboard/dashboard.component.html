@@ -1,25 +1,18 @@
-﻿  <div class="fixed-image-container">
+  <div class="fixed-image-container">
     <img id="fixedImageIcon" class="fixed-image" src="#" alt="Logo Empresa" style="display: none;">
   </div>
 
+<div class="menu-panel-overlay" *ngIf="showMenuPanel" (click)="toggleMenuPanel()"></div>
 
-
-<div class="offcanvas offcanvas-start"
-tabindex="-1"
-id="offcanvasMenu"
-aria-label="Menu"
-
-(shown.bs.offcanvas)="isSidebarOpen = true"
-(hidden.bs.offcanvas)="isSidebarOpen = false">
-
-
-  <div class="program-title" id="portada" style="border-radius: 10px;" *ngIf="!isContentVisible">
-      <h6 style="font-size: 12px; margin-bottom: 0px;">Orbita software</h6>
+<aside class="menu-panel" *ngIf="showMenuPanel" [class.open]="showMenuPanel">
+  <div class="menu-panel__header">
+    <div class="program-title" *ngIf="!isContentVisible">
+      <h6>Orbita software</h6>
     </div>
-  <div class="offcanvas-header">
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    <button type="button" class="btn-close ms-auto" (click)="toggleMenuPanel()" aria-label="Cerrar menú"></button>
   </div>
-  <div class="offcanvas-body">
+
+  <div class="menu-panel__body">
     <div class="weather-widget mb-3 w-100 text-center">
       <h6 class="mb-2">Clima actual</h6>
       <div *ngIf="weatherLoading" class="text-muted">Cargando...</div>
@@ -33,31 +26,219 @@ aria-label="Menu"
         </button>
       </div>
     </div>
+
     <ul class="list-unstyled d-flex flex-column align-items-center">
-      <li class="w-100 mb-3 text-center timer-info" style="font-size: 18px; font-weight: bold; color: #092865; padding: 10px; background-color: #f0f0f0; border-radius: 5px;">
+      <li class="w-100 mb-3 text-center timer-info">
         {{ remainingTime }}
       </li>
-
       <li class="w-100 mt-3">
-        <button (click)="abrirGoogleSheets2()" id="mano-de-obra-button2" class="btn btn-primary btn-block animate w-100">PDF valor vivienda JULIO/2025</button>
+        <button (click)="abrirGoogleSheets2()" class="btn btn-primary btn-block animate w-100">PDF valor vivienda JULIO/2025</button>
       </li>
       <li class="w-100 d-flex flex-column gap-2 mt-2">
         <button class="btn btn-primary btn-block w-100 animate">BIBLIOTECA</button>
       </li>
-        <li class="w-100 text-center">
-        <!--button-- class="btn btn-secondary logout-button1 w-100" data-bs-toggle="modal" data-bs-target="#confirmLogoutModal">
-          cerrar session
-        </!--button-->
-
+      <li class="w-100 mt-2 text-center">
+        <button class="btn btn-primary btn-block w-100 animate" (click)="abrirGeneradorQR(); toggleMenuPanel()">
+          <i class="fas fa-qrcode" aria-hidden="true" style="margin-right: 6px;"></i>GENERADOR QR
+        </button>
+      </li>
+      <li class="w-100 mt-2 text-center" *ngIf="deferredPrompt">
+        <button class="btn btn-warning btn-block w-100 animate" (click)="installPwa()" style="font-weight: bold; background-color: #ffc107; border-color: #ffc107; color: #000;">
+          <i class="fas fa-download" aria-hidden="true" style="margin-right: 6px;"></i>INSTALAR APP
+        </button>
+      </li>
+      <li class="w-100 text-center mt-2">
         <button class="btn btn-secondary logout-button1 w-100" (click)="logout()">
-        cerrar session
-      </button>
-
+          cerrar session
+        </button>
       </li>
     </ul>
   </div>
-</div>
+</aside>
 
+<div class="modal fade qr-modal" id="qrModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">GENERADOR QR</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="qr-grid row">
+          <div class="card col-md-5">
+            <div class="card-header fw-bold mb-2">Vista previa</div>
+            <div class="card-body">
+              <p class="text-center text-secondary mb-3" style="font-size: 0.85rem">UN CODIGO QR PUEDE AYUDARTE A CONECTAR MAS FACIL CON NUEVOS CLIENTES.</p>
+            </div>
+            <div class="card-body qr-preview-wrap text-center" id="qrPreviewWrap">
+              <div id="qrContainer" style="display:inline-block"></div>
+            </div>
+          </div>
+
+          <div class="card col-md-7">
+            <div class="card-header fw-bold mb-2">Opciones del QR</div>
+            <div class="card-body">
+
+              <div class="btn-toolbar mb-3 d-flex gap-2" role="toolbar">
+                <div class="btn-group gap-1 flex-wrap" role="group">
+                  <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#qrSectionData" aria-expanded="true">
+                    <i class="fas fa-link"></i> Texto/URL
+                  </button>
+                  <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#qrSectionShape" aria-expanded="false">
+                    <i class="fas fa-th"></i> Puntos
+                  </button>
+                  <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#qrSectionBg" aria-expanded="false">
+                    <i class="fas fa-fill-drip"></i> Fondo
+                  </button>
+                  <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#qrSectionLogo" aria-expanded="false">
+                    <i class="fas fa-image"></i> Logo
+                  </button>
+                </div>
+                <div class="btn-group" role="group">
+                  <button id="qrBtnActualizar" class="btn btn-primary btn-sm" type="button" (click)="actualizarQR()">
+                    <i class="fas fa-sync-alt"></i> Actualizar
+                  </button>
+                </div>
+              </div>
+
+              <div id="qrOptionsAccordion">
+                <div id="qrSectionData" class="collapse show" data-bs-parent="#qrOptionsAccordion">
+                  <div class="mb-3">
+                    <label class="form-label">Texto / URL</label>
+                    <input id="qrDataInput" type="text" class="form-control" placeholder="https://tu-dominio.com" value="https://orbitasoftware.com.ar" (input)="actualizarQR()" />
+                  </div>
+                  <div class="row g-3">
+                    <div class="col-6">
+                      <label class="form-label">Tamaño (px)</label>
+                      <input id="qrSizeRange" type="range" class="form-range" min="180" max="600" step="10" value="280" (input)="updateSizeLabel($event); actualizarQR()">
+                      <div><small class="text-secondary">Actual: <span id="qrSizeOut">280</span> px</small></div>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Nivel de corrección</label>
+                      <select id="qrEcLevel" class="form-select" (change)="actualizarQR()">
+                        <option value="L">L (7%)</option>
+                        <option value="M" selected>M (15%)</option>
+                        <option value="Q">Q (25%)</option>
+                        <option value="H">H (30%)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="qrSectionShape" class="collapse" data-bs-parent="#qrOptionsAccordion">
+                  <div class="row g-3 mt-2">
+                    <div class="col-6">
+                      <label class="form-label">Forma de puntos</label>
+                      <select id="qrDotsType" class="form-select" (change)="actualizarQR()">
+                        <option value="square">Cuadrados</option>
+                        <option value="dots" selected>Puntos</option>
+                        <option value="rounded">Redondeado</option>
+                        <option value="classy">Classy</option>
+                        <option value="classy-rounded">Classy redondeado</option>
+                        <option value="extra-rounded">Extra redondeado</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Color de puntos</label>
+                      <input id="qrDotsColor" type="color" class="form-control form-control-color w-100" value="#111827" title="Elige color" (input)="actualizarQR()">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Esquinas (cuadros)</label>
+                      <select id="qrCornersSquare" class="form-select" (change)="actualizarQR()">
+                        <option value="square">Cuadradas</option>
+                        <option value="extra-rounded">Extra redondeadas</option>
+                        <option value="dot" selected>Puntos</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Esquinas (puntos)</label>
+                      <select id="qrCornersDot" class="form-select" (change)="actualizarQR()">
+                        <option value="square">Cuadradas</option>
+                        <option value="dot" selected>Puntos</option>
+                        <option value="extra-rounded">Extra redondeadas</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="qrSectionBg" class="collapse" data-bs-parent="#qrOptionsAccordion">
+                  <div class="row g-3 mt-2">
+                    <div class="col-12">
+                      <label class="form-label">Tipo de fondo</label>
+                      <div class="d-flex flex-wrap gap-3">
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="qrBgMode" id="qrBgModeSolid" value="solid" checked (change)="actualizarQR()">
+                          <label class="form-check-label" for="qrBgModeSolid">Color</label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="qrBgMode" id="qrBgModeTransparent" value="transparent" (change)="actualizarQR()">
+                          <label class="form-check-label" for="qrBgModeTransparent">Transparente</label>
+                        </div>
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="qrBgMode" id="qrBgModeGradient" value="gradient" (change)="actualizarQR()">
+                          <label class="form-check-label" for="qrBgModeGradient">Gradiente</label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Color 1</label>
+                      <input id="qrBgColor" type="color" class="form-control form-control-color w-100" value="#ffffff" (input)="actualizarQR()">
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Color 2</label>
+                      <input id="qrBgColor2" type="color" class="form-control form-control-color w-100" value="#dbeafe" (input)="actualizarQR()">
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label">Orientacion del gradiente</label>
+                      <select id="qrBgGradientDirection" class="form-select" (change)="actualizarQR()">
+                        <option value="to bottom" selected>Abajo</option>
+                        <option value="to top">Arriba</option>
+                        <option value="to right">Derecha</option>
+                        <option value="to left">Izquierda</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="qrSectionLogo" class="collapse" data-bs-parent="#qrOptionsAccordion">
+                   <div class="row g-3 align-items-center mt-2">
+                     <div class="col-12">
+                       <label class="form-label">Logo central (opcional)</label>
+                       <input id="qrLogoFile" class="form-control" type="file" accept="image/*" (change)="onQrLogoFileChange($event); actualizarQR()">
+                     </div>
+                     <div class="col-8">
+                       <input id="qrLogoUrl" type="url" class="form-control" placeholder="URL del logo" [(ngModel)]="qrLogoUrlValue">
+                     </div>
+                     <div class="col-4">
+                       <button id="qrBtnSetLogo" class="btn btn-outline-secondary w-100" type="button" (click)="setQrLogoUrl()">Usar</button>
+                     </div>
+                     <div class="col-12 d-flex gap-3 align-items-center">
+                       <img id="qrLogoPreview" class="qr-logo-preview d-none" alt="logo" style="width: 40px; height: 40px; object-fit: contain;">
+                       <div class="flex-grow-1">
+                         <label class="form-label mb-1">Tamaño del logo (%)</label>
+                         <input id="qrLogoSize" type="range" class="form-range" min="5" max="40" step="1" value="18" (input)="actualizarQR()">
+                       </div>
+                     </div>
+                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+         <div class="d-flex gap-2">
+           <button id="qrBtnDescargarPng" class="btn btn-success" type="button" (click)="descargarQRPng()">
+             <i class="fas fa-file-image"></i> Descargar PNG
+           </button>
+           <button id="qrBtnDescargarSvg" class="btn btn-outline-success" type="button" (click)="descargarQRSvg()">
+             <i class="fas fa-file-code"></i> Descargar SVG
+           </button>
+         </div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="dashboard-container">
 
   <div id="successAlert" style="display: none;" class="alert alert-success">Datos guardados</div>
@@ -66,89 +247,14 @@ aria-label="Menu"
 
   <div class="card dashboard-card">
 
-    <!-- Segunda tarjeta: Botones Empresa y Cliente verticales -->
-    <div class="card mb-3 w-100">
-      <div class="card-body d-flex gap-2 px-2">
-        <div class="flex-fill">
-          <button class="btn btn-primary btn-block w-100 animate" data-bs-toggle="modal" data-bs-target="#exampleModal" (click)="cargarDatosEmpresaSeleccionada()">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52.29 52.35" width="18" height="18" aria-hidden="true" focusable="false" style="margin-right: 6px;">
-              <path fill="#ffffff" d="m51.18,8.07c-.24-.54-.73-.93-1.32-1.07-.63-.1-1.22.1-1.66.54l-5.89,5.89-3.02-.39-.44-3.07,5.94-5.89c.39-.44.58-1.02.49-1.66-.15-.58-.54-1.07-1.07-1.32-5.11-2.19-10.91-1.07-14.81,2.83-3.36,3.36-4.63,8.18-3.51,12.76l-6.19,6.24-3.02,3.02c-4.53-1.17-9.45.15-12.76,3.51C.04,33.31-1.08,39.3,1.11,44.27c.24.54.78.93,1.36,1.07.58.1,1.22-.1,1.61-.54l5.89-5.89,3.07.39.39,3.07-5.89,5.89c-.44.44-.63,1.02-.49,1.66.1.58.49,1.07,1.07,1.32,1.7.73,3.51,1.12,5.31,1.12,3.46,0,6.87-1.36,9.45-3.95,2.44-2.44,3.8-5.65,3.95-8.96l-3.7-.78c.1,2.68-.88,5.26-2.82,7.16-2.14,2.14-5.07,3.12-7.94,2.78l4.29-4.29c.39-.39.58-.97.54-1.51l-.73-5.36c-.1-.83-.73-1.51-1.56-1.61l-5.31-.63c-.58-.1-1.12.1-1.56.49l-4.29,4.34c-.34-2.87.63-5.89,2.78-7.99,2.63-2.68,6.53-3.56,10.13-2.29.63.2,1.36.05,1.9-.44l3.75-3.8c.1-.05.15-.15.19-.24l6.77-6.72c.49-.54.68-1.27.44-1.9-1.22-3.6-.34-7.5,2.29-10.13,2.14-2.14,5.07-3.12,7.99-2.78l-4.34,4.29c-.39.39-.58.97-.49,1.51l.68,5.36c.1.83.78,1.51,1.56,1.61l5.36.63c.54.1,1.12-.1,1.51-.49l4.34-4.34c.34,2.87-.68,5.89-2.78,7.99-2.68,2.68-6.53,3.56-10.13,2.29-.68-.2-1.41-.05-1.9.44l-3.8,3.8s-.15.15-.2.24l-6.77,6.72c-.24.29-.44.63-.44.97l3.8.88,6.19-6.24c.1-.05.15-.15.2-.19l2.82-2.83c4.58,1.17,9.5-.15,12.81-3.51,3.85-3.85,4.97-9.84,2.78-14.81Z"/>
-            </svg>
-            DATOS DE TU EMPRESA/PERSONA
-          </button>
-        </div>
-  <!--ng-select--
-    [items]="empresas"
-    bindLabel="name"
-    bindValue="id"
-    [(ngModel)]="selectedEmpresaId"
-    placeholder="Selecciona una empresa"
-    (change)="onEmpresaSeleccionada($event)"
-    [clearable]="false"
-    class="form-select w-100 animate"
-    [ngClass]="{'is-invalid': !selectedEmpresaId}"
-    style="height: 40px; font-weight: bold; font-size: 16px; border-radius: 8px; box-shadow: 0 2px 8px #0001;">
-    <ng-template ng-option-tmp let-item="item" let-selected="selected">
-      <img *ngIf="item.logoUrl" [src]="item.logoUrl" width="24" class="me-2" style="object-fit:cover; border-radius:50%;">
-      {{ item.name }}
-      <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
-    </ng-template>
-  </!--ng-select-->
-
-  	<!--ng-select
-		[items]="empresas"
-		bindLabel="name"
-		bindValue="id"
-		[(ngModel)]="selectedEmpresaId"
-		(change)="onEmpresaSeleccionada($event)"
-		[ngClass]="{'is-invalid': !selectedEmpresaId}"
-		placeholder="Selecciona una empresa"
-		[clearable]="false"
-     style="height: 40px; font-weight: bold; font-size: 16px; border-radius: 15px; box-shadow: 0 2px 8px #0001;"
-    >
-		<ng-template ng-option-tmp let-item="item" let-selected="selected">
-      <img *ngIf="item.logoUrl" [src]="item.logoUrl" width="24" class="me-2" style="object-fit:cover; border-radius:50%;">
-      {{ item.name }}
-      <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
-    </ng-template>
-	</ng-select-->
-
-
-<!--ng-select--
-  [items]="clientes"
-  bindLabel="name"
-  [(ngModel)]="clienteSeleccionado"
-  (ngModelChange)="loadTareasAgregadas()"
-  [ngClass]="{'is-invalid': !clienteSeleccionado}"
-  placeholder="Selecciona un cliente"
-  [clearable]="false"
-  style="height: 40px; font-weight: bold; font-size: 16px; border-radius: 15px; box-shadow: 0 2px 8px #0001;"
->
-  <ng-template ng-option-tmp let-item="item" let-selected="selected">
-    <span>{{ item.name }}</span>
-    <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
-  </ng-template>
-</!--ng-select-->
-
-<!-- Modal Lista de Empresas -->
-
-  <!-- <button class="btn btn-primary btn-block  w-100 animate" data-bs-toggle="modal" data-bs-target="#clientModal">DATOS DEL CLIENTE</button> -->
-
-        <div class="flex-fill">
-          <button class="btn btn-primary btn-block w-100 animate" data-bs-toggle="modal" data-bs-target="#listaClientesModal">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42.97 48.65" width="18" height="18" aria-hidden="true" focusable="false" style="margin-right: 6px;">
-              <path fill="#ffffff" d="m36.34,0H6.63C2.98,0,0,2.98,0,6.63v35.38c0,3.66,2.98,6.63,6.63,6.63h31.39v-3.24h-8.43v-5.96h.43c1.99,0,3.6-1.61,3.6-3.6v-10.89c0-1.99-1.61-3.6-3.6-3.6H12.95c-1.99,0-3.6,1.61-3.6,3.6v10.89c0,1.99,1.61,3.6,3.6,3.6h.43v5.96h-6.74c-1.87,0-3.39-1.52-3.39-3.39V6.63c0-1.87,1.52-3.39,3.39-3.39h29.71c1.87,0,3.39,1.52,3.39,3.39v36.8h3.24V6.63c0-3.66-2.98-6.63-6.63-6.63Z"/>
-              <path fill="#ffffff" d="m15.79,13.65c0,3.15,2.55,5.7,5.7,5.7s5.7-2.55,5.7-5.7-2.55-5.7-5.7-5.7-5.7,2.55-5.7,5.7Zm7.18-2.83c0,.55-.45,1-1,1-1.23,0-2.24,1-2.24,2.24,0,.55-.45,1-1,1s-1-.45-1-1c0-2.34,1.9-4.24,4.24-4.24.55,0,1,.44,1,1Z"/>
-            </svg>
-            CLIENTES
-          </button>
-        </div>
-      </div>
-    </div>
-
 <div class="card table-card mt-2 mb-3">
   <div class="card-body">
     <div class="containerbuscar">
+      <div class="d-flex align-items-center justify-content-end mb-2" style="margin-top: 8px;">
+        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="Cómo usar el buscador" style="width: auto; min-height: 34px; padding: 5px 10px 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #cfe0ff; color: #1d68ff; box-shadow: 0 2px 6px rgba(29, 104, 255, 0.12); border-radius: 10px;">
+          <i class="fas fa-info"></i>cómo buscar
+        </button>
+      </div>
       <div class="inputGroup">
       <input type="text" id="busqueda" required="" autocomplete="off" (input)="buscar($event)">
       <label for="busqueda">Buscar tarea</label>
@@ -178,34 +284,41 @@ aria-label="Menu"
     </div>
 
     <div class="row mt-4">
-      <div class="w-100 d-flex justify-content-center mb-2">
-        <button type="button" class="btn btn-success animate" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" data-bs-toggle="modal" data-bs-target="#provinciaModal">
+      <div class="w-100 d-flex justify-content-center align-items-center mb-2" style="gap: 8px;">
+        <button type="button" class="btn btn-success animate flex-grow-1" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" data-bs-toggle="modal" data-bs-target="#provinciaModal">
           <i class="bi bi-geo-alt"></i> Seleccionar provincia
+        </button>
+        <button id="recentTasksOpenButton" class="btn btn-success animate flex-grow-0 flex-shrink-0" type="button" data-bs-toggle="modal" data-bs-target="#recentTasksModal" aria-label="Ultimas tareas cotizadas" title="Ultimas tareas cotizadas" style="width: 42px; min-width: 42px; height: 42px; padding: 0; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px #0001;">
+          <i class="fas fa-history" aria-hidden="true"></i>
+        </button>
+        <button id="ajustesListaOpenButton" class="btn btn-success animate flex-grow-0 flex-shrink-0" type="button" data-bs-toggle="modal" data-bs-target="#ajustesListaModal" aria-label="Ajustes de la lista" title="Ajustes de la lista" style="width: 42px; min-width: 42px; height: 42px; padding: 0; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px #0001;">
+          <i class="fas fa-cog" aria-hidden="true"></i>
         </button>
       </div>
 
-      <div class="col">
-        <div class="input-group" style="padding:5px; margin: 2px; z-index: 0;">
-          <input type="text" class="form-control" placeholder="%" [(ngModel)]="porcentajeBajar">
-          <div class="input-group-append">
-            <button class="btn btn-danger w-100" (click)="disminuirPrecios()">Bajar</button>
-          </div>
-        </div>
-      </div>
-      <div class="col">
-        <div class="input-group" style="padding:5px; margin: 2px; z-index: 0;">
-          <input type="text" class="form-control" placeholder="%" [(ngModel)]="porcentajeSubir">
-          <div class="input-group-append">
-            <button class="btn btn-success w-100" (click)="ajustarPrecios()">Subir</button>
-          </div>
-        </div>
+      <div class="w-100 d-flex justify-content-center align-items-center mb-2" style="gap: 8px;">
+        <button class="btn btn-success animate flex-grow-1" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" data-bs-toggle="modal" data-bs-target="#exampleModal" (click)="cargarDatosEmpresaSeleccionada()">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52.29 52.35" width="18" height="18" aria-hidden="true" focusable="false" style="margin-right: 6px;">
+            <path fill="#ffffff" d="m51.18,8.07c-.24-.54-.73-.93-1.32-1.07-.63-.1-1.22.1-1.66.54l-5.89,5.89-3.02-.39-.44-3.07,5.94-5.89c.39-.44.58-1.02.49-1.66-.15-.58-.54-1.07-1.07-1.32-5.11-2.19-10.91-1.07-14.81,2.83-3.36,3.36-4.63,8.18-3.51,12.76l-6.19,6.24-3.02,3.02c-4.53-1.17-9.45.15-12.76,3.51C.04,33.31-1.08,39.3,1.11,44.27c.24.54.78.93,1.36,1.07.58.1,1.22-.1,1.61-.54l5.89-5.89,3.07.39.39,3.07-5.89,5.89c-.44.44-.63,1.02-.49,1.66.1.58.49,1.07,1.07,1.32,1.7.73,3.51,1.12,5.31,1.12,3.46,0,6.87-1.36,9.45-3.95,2.44-2.44,3.8-5.65,3.95-8.96l-3.7-.78c.1,2.68-.88,5.26-2.82,7.16-2.14,2.14-5.07,3.12-7.94,2.78l4.29-4.29c.39-.39.58-.97.54-1.51l-.73-5.36c-.1-.83-.73-1.51-1.56-1.61l-5.31-.63c-.58-.1-1.12.1-1.56.49l-4.29,4.34c-.34-2.87.63-5.89,2.78-7.99,2.63-2.68,6.53-3.56,10.13-2.29.63.2,1.36.05,1.9-.44l3.75-3.8c.1-.05.15-.15.19-.24l6.77-6.72c.49-.54.68-1.27.44-1.9-1.22-3.6-.34-7.5,2.29-10.13,2.14-2.14,5.07-3.12,7.99-2.78l-4.34,4.29c-.39.39-.58.97-.49,1.51l.68,5.36c.1.83.78,1.51,1.56,1.61l5.36.63c.54.1,1.12-.1,1.51-.49l4.34-4.34c.34,2.87-.68,5.89-2.78,7.99-2.68,2.68-6.53,3.56-10.13,2.29-.68-.2-1.41-.05-1.9.44l-3.8,3.8s-.15.15-.2.24l-6.77,6.72c-.24.29-.44.63-.44.97l3.8.88,6.19-6.24c.1-.05.15-.15.2-.19l2.82-2.83c4.58,1.17,9.5-.15,12.81-3.51,3.85-3.85,4.97-9.84,2.78-14.81Z"/>
+          </svg>
+          EMPRESA
+        </button>
+        <button class="btn btn-success animate flex-grow-1" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" data-bs-toggle="modal" data-bs-target="#listaClientesModal">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42.97 48.65" width="18" height="18" aria-hidden="true" focusable="false" style="margin-right: 6px;">
+            <path fill="#ffffff" d="m36.34,0H6.63C2.98,0,0,2.98,0,6.63v35.38c0,3.66,2.98,6.63,6.63,6.63h31.39v-3.24h-8.43v-5.96h.43c1.99,0,3.6-1.61,3.6-3.6v-10.89c0-1.99-1.61-3.6-3.6-3.6H12.95c-1.99,0-3.6,1.61-3.6,3.6v10.89c0,1.99,1.61,3.6,3.6,3.6h.43v5.96h-6.74c-1.87,0-3.39-1.52-3.39-3.39V6.63c0-1.87,1.52-3.39,3.39-3.39h29.71c1.87,0,3.39,1.52,3.39,3.39v36.8h3.24V6.63c0-3.66-2.98-6.63-6.63-6.63Z"/>
+            <path fill="#ffffff" d="m15.79,13.65c0,3.15,2.55,5.7,5.7,5.7s5.7-2.55,5.7-5.7-2.55-5.7-5.7-5.7-5.7,2.55-5.7,5.7Zm7.18-2.83c0,.55-.45,1-1,1-1.23,0-2.24,1-2.24,2.24,0,.55-.45,1-1,1s-1-.45-1-1c0-2.34,1.9-4.24,4.24-4.24.55,0,1,.44,1,1Z"/>
+          </svg>
+          CLIENTES
+        </button>
       </div>
     </div>
   </div>
 </div>
 
-</div>
 
+    <!-- Segunda tarjeta: Botones Empresa y Cliente -->
+
+</div>
 </div>
 
 
@@ -227,7 +340,7 @@ aria-label="Menu"
         </div>
         <div class="tareas-agregadas__cliente" *ngIf="clienteSeleccionado">
           <!--span class="tareas-agregadas__cliente-nombre">{{ presupuestoSeleccionado?.name }}</!--span-->
-          <span class="tareas-agregadas__cliente-nombre"> {{ presupuestoSeleccionado?.name || clienteSeleccionado?.name }}</span>
+          <span class="tareas-agregadas__cliente-nombre"> {{ presupuestoSeleccionado?.name || clienteSeleccionado.name }}</span>
           <small class="tareas-agregadas__cliente-fecha" *ngIf="budgetDate">
             Presupuesto: {{ budgetDate | date:'dd/MM/yyyy' }}
           </small>
@@ -322,12 +435,12 @@ aria-label="Menu"
 
 <div class="modal fade" id="miModal" tabindex="-1" aria-labelledby="exampleModalLabel1" aria-hidden="true">
       <div class="modal-dialog">
-        <div class="modal-content dash-modal">
+        <div class="modal-content modal-zona">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel1">Agregar Tarea</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body" style="padding: 10px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;">
+          <div class="modal-body">
             <form>
               <div class="mb-3 coolinput tarea-textarea-wrap">
                 <label for="tarea" class="text">Tarea:</label>
@@ -351,7 +464,7 @@ aria-label="Menu"
                 <div class="col-6 coolinput">
                   <label for="modal-cost" class="text">Costo por m2/m3/ml:</label>
                   <input type="number" [(ngModel)]="tareaSeleccionada.costo" name="costo" class="form-control input" id="cost"
-                    style="color: #ab1444; font-weight: bold; text-align: center;" placeholder="Ingresa el costo" step="0.01" required>
+                    [readonly]="trialMode" style="color: #ab1444; font-weight: bold; text-align: center;" placeholder="Ingresa el costo" step="0.01" required>
                 </div>
               </div>
               <div class="mb-3 coolinput">
@@ -362,9 +475,12 @@ aria-label="Menu"
                 <label for="discount" class="text">Descuento (%):</label>
                 <input type="number" [(ngModel)]="tareaSeleccionada.descuento" name="descuento" class="form-control input" id="discount" value="0">
               </div>
-              <div class="modal-footer">
+              <div class="modal-footer d-flex" style="gap: 8px;">
                 <!--button-- type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</!button-->
-                <button type="button" (click)="agregarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Agregar</button>
+                <button type="button" class="btn btn-outline-primary" (click)="abrirHistorialDesdeModal()">
+                  <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>ÚLTIMAS TAREAS
+                </button>
+                <button type="button" (click)="agregarTarea()" class="btn btn-primary flex-grow-1" data-bs-dismiss="modal">Agregar</button>
                 <!--button-- type="button" *ngIf="tareaSeleccionada.id" (click)="actualizarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Actualizar</!--button-->
               </div>
             </form>
@@ -376,7 +492,7 @@ aria-label="Menu"
 
 <div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true"  >
   <div class="modal-dialog">
-    <div class="modal-content dash-modal">
+    <div class="modal-content modal-zona">
       <div class="modal-header">
         <h5 class="modal-title" id="clientModalLabel">Formulario de Datos del Cliente</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -533,7 +649,7 @@ aria-label="Menu"
 
 <div class="modal fade" id="listaClientesModal" aria-hidden="true" aria-labelledby="listaClientesLabel" tabindex="-1" (shown.bs.modal)="onEmpresaSeleccionada(selectedEmpresaId)">
   <div class="modal-dialog modal-lg">
-    <div class="modal-content dash-modal">
+    <div class="modal-content modal-zona">
       <div class="modal-header">
         <h5 class="modal-title" id="listaClientesLabel">Lista de Clientes</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -557,7 +673,10 @@ aria-label="Menu"
               >
                 <div class="card-body position-relative cliente-card__body">
                   <div class="cliente-card__header">
-                    <h5 class="card-title cliente-card__title">{{ cliente.name }}</h5>
+                    <h5 class="card-title cliente-card__title">
+                      <span *ngIf="trialMode" style="color: #ff6b6b; font-weight: bold; font-size: 0.85rem;">CLIENTE DEMO: </span>
+                      {{ cliente.name }}
+                    </h5>
                     <label class="cliente-check">
                       <input
                         type="checkbox"
@@ -619,12 +738,12 @@ aria-label="Menu"
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" >
   <div class="modal-dialog">
-    <div class="modal-content dash-modal">
+    <div class="modal-content modal-zona">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">Agregar datos de tu Empresa</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body" style="padding: 10px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); border-radius: 10px; box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;">
+      <div class="modal-body">
         <p style="text-align: center; font-size: 12px;">
           Podés editar estos datos las veces que quieras.
         </p>
@@ -648,10 +767,6 @@ aria-label="Menu"
           <textarea class="form-control input" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de qué se trata tu empresa"></textarea>
         </div>
         <div class="form-group mb-3 coolinput">
-          <label for="empresaWebsite" class="text">Sitio web (opcional)</label>
-          <input type="url" class="form-control input" id="empresaWebsite" [(ngModel)]="empresaWebsite" placeholder="https://..." />
-        </div>
-        <div class="form-group mb-3 coolinput">
           <label for="empresaCuilCuit" class="text">CUIL/CUIT (opcional)</label>
           <input type="text" class="form-control input" id="empresaCuilCuit" [(ngModel)]="empresaCuilCuit" placeholder="00-00000000-0" />
         </div>
@@ -666,6 +781,10 @@ aria-label="Menu"
        </div>
         <div *ngIf="showSocialFields">
           <div class="form-group mb-3 coolinput">
+            <label for="empresaWebsite" class="text">Sitio web (opcional)</label>
+            <input type="url" class="form-control input" id="empresaWebsite" [(ngModel)]="empresaWebsite" placeholder="https://..." />
+          </div>
+          <div class="form-group mb-3 coolinput">
             <label for="empresaTikTok" class="text">TikTok (opcional)</label>
             <input type="text" class="form-control input" id="empresaTikTok" [(ngModel)]="empresaTikTok" placeholder="@tuusuario o enlace" />
           </div>
@@ -678,6 +797,10 @@ aria-label="Menu"
             <input type="text" class="form-control input" id="empresaFacebook" [(ngModel)]="empresaFacebook" placeholder="URL de tu pagina" />
           </div>
         </div>
+
+        <button class="btn btn-outline-secondary w-100 mt-2" type="button" (click)="abrirModalPaleta()">
+          <i class="fas fa-palette" aria-hidden="true" style="margin-right: 6px;"></i>PALETA DEL PRESPUESTO
+        </button>
 
 
       </div>
@@ -693,7 +816,7 @@ aria-label="Menu"
 
 <div class="modal fade" id="listaEmpresasModal" aria-hidden="true" aria-labelledby="listaEmpresasLabel" tabindex="-1">
   <div class="modal-dialog modal-lg">
-    <div class="modal-content dash-modal">
+    <div class="modal-content modal-zona">
       <div class="modal-header">
         <h5 class="modal-title" id="listaEmpresasLabel">Lista de Empresas</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -901,7 +1024,7 @@ aria-label="Menu"
       </span>
       <span class="toolbar-item__label">Gestor</span>
     </button>
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" type="button" aria-label="Calculadora">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" type="button" aria-label="Calculadora" [routerLink]="['/calculadora']">
       <span class="toolbar-item__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 51.84 47.66">
           <path fill="#5b748f" d="m51.83,33.62v-6.52s0-.1,0-.15v-1.13c0-.78-.44-1.46-1.17-1.7l-10.87-4.36V6.62c0-.75-.46-1.42-1.15-1.7L26.6.13c-.44-.17-.91-.17-1.35,0l-12.04,4.8c-.69.28-1.15.95-1.15,1.7v13.15L1.15,24.11C.46,24.39,0,25.06,0,25.81v1.22s0,.02,0,.03v13.34c0,.72.42,1.37,1.08,1.66l12.05,5.44c.24.11.49.16.75.16s.51-.05.75-.16l11.31-5.11,11.28,5.12c.24.1.49.15.73.15.29,0,.54-.05.78-.15l12.03-5.46c.68-.29,1.07-.93,1.07-1.66v-2.78l-3.65,1.61-10.23,4.58-10.21-4.57v-9.51l9.54,3.87c.22.09.45.13.68.13s.47-.05.68-.13l9.53-3.86v5.5l3.65-1.61ZM25.22,14.54c.23.09.47.14.7.14s.48-.05.7-.14l9.52-3.97v9.19l-10.21,4.09-10.23-4.07v-9.21l9.51,3.97Zm-11.57,8.54l8.82,3.37-8.59,3.48-8.65-3.5,8.42-3.35ZM25.92,3.79l8.68,3.46-8.68,3.62-8.68-3.62,8.68-3.46Zm-12.04,40.03l-10.22-4.61v-9.49l9.54,3.87c.22.09.45.13.69.13s.47-.05.69-.13l9.51-3.86v9.49l-10.19,4.6Zm24.09-13.9l-8.6-3.48,8.79-3.36,8.45,3.34-8.64,3.5Z"/>
@@ -909,7 +1032,7 @@ aria-label="Menu"
       </span>
       <span class="toolbar-item__label">Calculadora</span>
     </button>
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu" aria-label="Abrir menu">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" type="button" (click)="toggleMenuPanel()" aria-label="Abrir menu">
       <span class="toolbar-item__icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48.61 42.53">
           <path fill="#5b748f" d="m41.27,0H7.34C3.29,0,0,3.29,0,7.34v27.85c0,4.05,3.29,7.34,7.34,7.34h33.93v-3H7.34c-2.39,0-4.34-1.95-4.34-4.34V7.34c0-2.39,1.95-4.34,4.34-4.34h33.93c2.39,0,4.34,1.95,4.34,4.34v27.85h3V7.34c0-4.05-3.29-7.34-7.34-7.34Z"/>
@@ -1071,7 +1194,408 @@ aria-label="Menu"
 
 
 
+<div class="modal fade" id="recentTasksModal" tabindex="-1" role="dialog" aria-labelledby="recentTasksModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content modal-zona" style="border-radius: 14px;">
+      <div class="modal-header">
+        <div class="modal-title" id="recentTasksModalLabel">
+          <h5 style="margin-bottom: 0;"><i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>Últimas tareas cotizadas</h5>
+          <div style="font-size: 10px; color: #4b5563; font-weight: normal; margin-top: 2px;">
+            toca "AGREGAR" para cargar la tarea y editarla
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" style="max-height: 400px; overflow-y: auto; padding: 12px;">
+        <div *ngIf="recentTasks.length === 0" class="text-center py-4">
+          <i class="fas fa-info-circle text-muted mb-2" style="font-size: 24px;"></i>
+          <p class="text-muted">No tenés tareas recientes en este dispositivo.</p>
+        </div>
 
+        <div class="row g-2">
+          <div class="col-12" *ngFor="let rt of recentTasks">
+            <div class="card h-100 shadow-sm recent-task-card" style="border-radius: 12px; border: 1px solid rgba(0,0,0,0.05); transition: transform 0.2s;">
+              <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h6 class="card-title mb-0" style="font-weight: 700; font-size: 14px;">{{ rt.tarea }}</h6>
+                  <span class="badge bg-light text-dark" style="font-size: 10px;">${{ rt.costo | number:'1.0-0' }}</span>
+                </div>
+                <p class="card-text text-muted mb-3" style="font-size: 12px; line-height: 1.4;">
+                  {{ rt.descripcion || 'Sin descripción adicional' }}
+                </p>
+                <div class="d-flex justify-content-between align-items-center">
+                   <div style="font-size: 10px; color: #9ca3af;">
+                     {{ rt.rubro || 'General' }}
+                   </div>
+                   <button class="btn btn-sm btn-primary px-3" (click)="cargarTareaReciente(rt)" style="border-radius: 8px; font-size: 11px; font-weight: 600;">
+                     <i class="fas fa-plus me-1"></i> AGREGAR
+                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <button type="button" class="btn btn-sm btn-outline-danger" (click)="borrarHistorialReciente()" *ngIf="recentTasks.length > 0">
+          Limpiar historial
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
+<div class="modal fade" id="buscadorInfoModal" tabindex="-1" role="dialog" aria-labelledby="buscadorInfoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content" style="border-radius: 14px; border: 1px solid rgba(64,158,255,.2);">
+      <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6);">
+        <h5 class="modal-title" id="buscadorInfoModalLabel">Cómo usar el buscador</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" style="background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); font-size: 12px;">
+        <p class="mb-2"><i class="fas fa-search mr-2 text-primary"></i> Podés buscar por palabras sueltas (ej: <em>colocacion puerta</em>).</p>
+        <p class="mb-2"><i class="fas fa-font mr-2 text-primary"></i> Ya funciona aunque escribas con acentos (ej: <em>medición</em> encuentra <em>medicion</em>).</p>
+        <p class="mb-2"><i class="fas fa-puzzle-piece mr-2 text-primary"></i> Podés buscar por fragmentos de palabras (ej: <em>coloc puert</em> para <em>colocación de puerta</em>).</p>
+        <p class="mb-2"><i class="fas fa-lightbulb mr-2 text-primary"></i> Probá con una palabra más general si no aparece exacto (ej: <em>caldera</em>, <em>zócalo</em>, <em>tablero</em>).</p>
+        <p class="mb-0"><i class="fas fa-plus-circle mr-2 text-primary"></i> Si no encontrás una tarea, usá <em>TAREA GENERICA</em> y completá descripción y precio.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+      </div>
+    </div>
+  </div>
+</div>
 
+<div class="modal fade" id="ajustesListaModal" tabindex="-1" role="dialog" aria-labelledby="ajustesListaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content" style="border-radius: 16px; border: 1px solid rgba(64,158,255,.2); box-shadow: 0 14px 35px rgba(0,0,0,.18);">
+      <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6); border-bottom: 1px solid rgba(11,105,166,.15);">
+        <h5 class="modal-title" id="ajustesListaModalLabel" style="color:#0b69a6; font-weight:700;">
+          <i class="fas fa-cog" aria-hidden="true" style="margin-right: 8px;"></i>Ajustes de la lista
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" style="padding: 14px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9);">
+        <p style="margin-bottom: 10px; color:#4b5563; font-size: 13px;">Ajustá precios y tamaño de texto de la lista de tareas.</p>
+        <div style="margin-bottom: 10px; background: rgba(103,165,246,.08); border: 1px solid rgba(64,158,255,.16); border-radius: 10px; padding: 10px;">
+          <div style="font-size: 12px; color:#0b69a6; font-weight:700; margin-bottom: 4px;">
+            <i class="fas fa-key" aria-hidden="true" style="margin-right: 6px;"></i>Código de acceso
+          </div>
+          <div id="ajustesListaCodigoAcceso" style="font-size: 20px; color:#1f2937; word-break: break-all;">No disponible</div>
+        </div>
+        <p style="font-size: 11px; color: #6b7280; margin-top: -5px; margin-bottom: 15px; padding-left: 5px;">
+          <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 4px;"></i> recibirás un whatapps para renovar tu acceso el día de vencimiento
+        </p>
+        <button type="button" class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#faqModalAjustes" data-bs-dismiss="modal">
+          PREGUNTAS FRECUENTES
+        </button>
+        <!-- Tour Guiado comentado por ahora -->
+        <!--button type="button" class="btn btn-outline-primary btn-sm btn-block mb-3" onclick="iniciarTourDesdeAjustes()">
+          <i class="fas fa-route" aria-hidden="true" style="margin-right: 6px;"></i>Ver tour guiado
+        </button-->
 
+        <div class="form-group mb-3" style="background: rgba(103,165,246,.08); border: 1px solid rgba(64,158,255,.16); border-radius: 10px; padding: 10px;">
+          <input type="range" id="fontSizeListaRange" class="form-range" min="10" max="24" step="1" value="12">
+          <div style="font-size: 12px; color:#4b5563;">
+            Tamaño actual: <strong id="fontSizeListaValue">12px</strong>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-outline-info w-100 mb-2" (click)="showAjustesListaInfo = !showAjustesListaInfo">
+          <i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 6px;"></i>Cómo usar subir/bajar lista
+        </button>
+
+        <div class="collapse mb-3" [class.show]="showAjustesListaInfo" id="ajustesListaInfoCollapse">
+          <div style="background: rgba(64,158,255,.09); border: 1px solid rgba(64,158,255,.22); border-radius: 10px; padding: 10px; font-size: 12px; color:#374151;">
+            <p style="margin-bottom: 8px;"><strong>Dinámica:</strong> escribí un porcentaje y tocá <strong>SUBIR</strong> para aumentar toda la lista, o <strong>BAJAR</strong> para reducirla. El ajuste se aplica de forma general a todos los ítems de la tabla.</p>
+            <p style="margin-bottom: 8px;"><strong>Ejemplos rápidos:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
+            <p style="margin-bottom: 0;"><strong>Beneficio para el constructor:</strong> te permite adaptar presupuestos en segundos según zona, complejidad, urgencia o variación de costos, sin editar tarea por tarea. Si querés volver al valor base, usá <strong>Reestablecer valor original de lista</strong>.</p>
+          </div>
+        </div>
+
+        <div class="form-group mb-2">
+          <label for="porcentajeBajar" style="color:#0b69a6;">Bajar lista (%)</label>
+          <div class="input-group" style="z-index: 0">
+            <input type="text" id="porcentajeBajar" class="form-control" placeholder="%" [(ngModel)]="porcentajeBajar">
+            <button class="btn btn-danger flex-grow-1" (click)="disminuirPrecios()">BAJAR</button>
+          </div>
+        </div>
+
+        <div class="form-group mb-3">
+          <label for="porcentaje" style="color:#0b69a6;">Subir lista (%)</label>
+          <div class="input-group" style="z-index: 0">
+            <input type="text" id="porcentaje" class="form-control" placeholder="%" [(ngModel)]="porcentajeSubir">
+            <button class="btn btn-success flex-grow-1" (click)="ajustarPrecios()">SUBIR</button>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-outline-primary w-100" (click)="reestablecerPreciosOriginalesLista()">
+          <i class="fas fa-undo-alt" aria-hidden="true" style="margin-right: 6px;"></i>Reestablecer valor original de lista
+        </button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: PREGUNTAS FRECUENTES (faqModalAjustes)
+     ============================================================ -->
+<div class="modal fade" id="faqModalAjustes" tabindex="-1" role="dialog" aria-labelledby="faqModalAjustesLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content" style="border-radius: 16px; border: 1px solid rgba(64,158,255,.2); box-shadow: 0 14px 35px rgba(0,0,0,.18);">
+      <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6); border-bottom: 1px solid rgba(11,105,166,.15);">
+        <h5 class="modal-title" id="faqModalAjustesLabel" style="color:#0b69a6; font-weight:700;">
+          <i class="fas fa-question-circle" aria-hidden="true" style="margin-right: 8px;"></i>Preguntas Frecuentes
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" style="padding: 18px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); max-height: 70vh; overflow-y: auto;">
+
+        <div class="accordion" id="faqAccordion">
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faq1">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-percent" style="margin-right: 8px;"></i>¿Cómo funciona subir o bajar los precios de la lista?
+              </button>
+            </h2>
+            <div id="faq1Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p>Escribí un porcentaje en el campo correspondiente y tocá <strong>SUBIR</strong> para aumentar todos los precios de la lista, o <strong>BAJAR</strong> para reducirlos. El ajuste se aplica de forma general a todos los ítems.</p>
+                <p style="margin-bottom:0;"><strong>Ejemplo:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faq2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-undo-alt" style="margin-right: 8px;"></i>¿Cómo restablezco los precios originales?
+              </button>
+            </h2>
+            <div id="faq2Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p style="margin-bottom:0;">Usá el botón <strong>"Reestablecer valor original de lista"</strong>. Esto recarga los precios desde el servidor, deshaciendo cualquier ajuste porcentual que hayas aplicado.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faq3">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-text-height" style="margin-right: 8px;"></i>¿Para qué sirve el control de tamaño de texto?
+              </button>
+            </h2>
+            <div id="faq3Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p style="margin-bottom:0;">El slider ajusta el tamaño de la fuente de la tabla de tareas. Útil para ver más ítems en pantalla (texto más chico) o para mejorar la legibilidad en dispositivos grandes (texto más grande).</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faq4">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-key" style="margin-right: 8px;"></i>¿Qué es el Código de Acceso?
+              </button>
+            </h2>
+            <div id="faq4Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p style="margin-bottom:0;">Es tu identificador único en el sistema. Lo usás para ingresar a la aplicación y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro. Antes del vencimiento recibirás un WhatsApp para renovarlo.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 0; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faq5">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-save" style="margin-right: 8px;"></i>¿Los cambios en los precios se guardan permanentemente?
+              </button>
+            </h2>
+            <div id="faq5Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p style="margin-bottom:0;">Sí, los cambios se guardan en tu lista de tareas activa. Si querés volver a los precios base, usá <strong>"Reestablecer valor original de lista"</strong>. Los precios de la tabla de referencia (buscador) nunca se modifican.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid rgba(11,105,166,.15);">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: PALETA DEL PRESUPUESTO (paletaModal)
+     ============================================================ -->
+<div class="modal fade" id="paletaModal" tabindex="-1" role="dialog" aria-labelledby="paletaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content modal-zona" style="border-radius: 16px;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="paletaModalLabel" style="color:#0b69a6; font-weight:700;">
+          <i class="fas fa-palette" aria-hidden="true" style="margin-right: 8px;"></i>Personalizar Colores del Presupuesto
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div class="row">
+          <!-- Columna Izquierda: Controles -->
+          <div class="col-md-5">
+            <h6 class="mb-3" style="font-weight: 700; color: #4b5563;">Ajustes de Color</h6>
+
+            <div class="form-group mb-3 coolinput">
+              <label class="text">Color Principal (Encabezado/Botones)</label>
+              <div class="d-flex gap-2 align-items-center">
+                <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorPrimario" style="width: 50px;">
+                <input type="text" class="form-control input" [(ngModel)]="presupuestoColorPrimario" style="font-size: 12px;">
+              </div>
+            </div>
+
+            <!-- Sección Gradient -->
+            <div class="p-2 mb-3 border rounded bg-light">
+              <label class="form-label small fw-bold text-primary mb-2">Fondo (Gradiente)</label>
+              <div class="row g-2">
+                <div class="col-6">
+                  <label class="x-small mb-1">Color 1</label>
+                  <input type="color" class="form-control form-control-color w-100" [(ngModel)]="presupuestoColorSecundario">
+                </div>
+                <div class="col-6">
+                  <label class="x-small mb-1">Color 2</label>
+                  <input type="color" class="form-control form-control-color w-100" [(ngModel)]="presupuestoColorSecundario2">
+                </div>
+                <div class="col-12">
+                  <label class="x-small mb-1">Dirección</label>
+                  <select class="form-select form-select-sm" [(ngModel)]="presupuestoGradienteAngulo">
+                    <option value="to bottom">Abajo ↓</option>
+                    <option value="to top">Arriba ↑</option>
+                    <option value="to right">Derecha →</option>
+                    <option value="to left">Izquierda ←</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group mb-3 coolinput">
+              <label class="text">Color de Texto General</label>
+              <div class="d-flex gap-2 align-items-center">
+                <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorTexto" style="width: 50px;">
+                <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTexto" style="font-size: 12px;">
+              </div>
+            </div>
+
+            <div class="form-group mb-3 coolinput">
+              <label class="text">Fondo Encabezado Tabla</label>
+              <div class="d-flex gap-2 align-items-center">
+                <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorTabla" style="width: 50px;">
+                <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTabla" style="font-size: 12px;">
+              </div>
+            </div>
+
+            <div class="form-group mb-3 coolinput">
+              <label class="text">Fondo Cuerpo Tabla</label>
+              <div class="d-flex gap-2 align-items-center">
+                <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorTablaCuerpo" style="width: 50px;">
+                <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTablaCuerpo" style="font-size: 12px;">
+              </div>
+            </div>
+
+            <div class="form-group mb-3 coolinput">
+              <label class="text">Texto Encabezado Tabla</label>
+              <div class="d-flex gap-2 align-items-center">
+                <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorTablaTexto" style="width: 50px;">
+                <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTablaTexto" style="font-size: 12px;">
+              </div>
+            </div>
+            <div class="form-group mb-3 coolinput">
+              <label class="text">Fondo Cajas Info (Empresa/Cliente)</label>
+              <div class="d-flex gap-2 align-items-center">
+                <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoInfoBoxColorHex" style="width: 50px;">
+                <input type="range" class="form-range flex-grow-1" min="0" max="1" step="0.05" [(ngModel)]="presupuestoInfoBoxOpacity" title="Transparencia">
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Vista Previa Miniatura -->
+          <div class="col-md-7">
+            <h6 class="mb-3 text-center" style="font-weight: 700; color: #4b5563;">Vista Previa (Miniatura)</h6>
+            <div class="budget-miniature shadow-sm"
+                 [style.background]="'linear-gradient(' + presupuestoGradienteAngulo + ', ' + presupuestoColorSecundario + ', ' + presupuestoColorSecundario2 + ')'"
+                 [style.color]="presupuestoColorTexto"
+                 style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; position: relative; min-height: 350px; overflow: hidden; transform: scale(0.95); transform-origin: top;">
+              <!-- Header -->
+              <div class="d-flex flex-column align-items-start mb-3" [style.background-color]="getBackgroundColorRgba(presupuestoInfoBoxColorHex, presupuestoInfoBoxOpacity)" [style.color]="presupuestoColorTexto" style="padding: 10px; border-radius: 8px; gap: 8px;">
+                <div [style.background-color]="presupuestoColorPrimario" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+                <div class="text-start" style="text-align: left; width: 100%;">
+                   <div [style.color]="presupuestoColorPrimario" style="font-weight: bold; font-size: 14px;">{{ empresaName || 'TU EMPRESA' }}</div>
+                   <div [style.color]="presupuestoColorTexto" style="font-size: 10px; opacity: 0.8;">{{ empresaPhone || 'Tel: 1234-5678' }}</div>
+                </div>
+              </div>
+              <hr style="margin: 10px 0; opacity: 0.1;">
+              <!-- Cliente Section -->
+              <div class="mb-3" [style.background-color]="getBackgroundColorRgba(presupuestoInfoBoxColorHex, presupuestoInfoBoxOpacity)" [style.color]="presupuestoColorTexto" style="padding: 10px; border-radius: 8px;">
+                <div style="font-size: 10px; font-weight: bold;">CLIENTE</div>
+                <div style="font-weight: bold; font-size: 12px;">JUAN PEREZ</div>
+              </div>
+              <!-- Table Preview -->
+              <table class="table table-bordered table-sm mb-3" [style.color]="presupuestoColorTexto" style="font-size: 9px; line-height: 1;">
+                <thead [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">
+                  <tr>
+                    <th [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">ITEM</th>
+                    <th [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">AREA</th>
+                    <th [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">VALOR</th>
+                  </tr>
+                </thead>
+                <tbody [style.background-color]="presupuestoColorTablaCuerpo" [style.color]="presupuestoColorTexto">
+                  <ng-container *ngIf="tareasAgregadas.length > 0; else demoRows">
+                    <tr *ngFor="let t of tareasAgregadas | slice:0:3">
+                      <td>{{ t.tarea | uppercase }}</td>
+                      <td>{{ t.area | number:'1.2-2' }}</td>
+                      <td>${{ t.totalCost | number:'1.2-2' }}</td>
+                    </tr>
+                  </ng-container>
+                  <ng-template #demoRows>
+                    <tr>
+                      <td>REVOQUE GRUESO</td>
+                      <td>10.00</td>
+                      <td>$5.000,00</td>
+                    </tr>
+                    <tr>
+                      <td>REVOQUE FINO</td>
+                      <td>10.00</td>
+                      <td>$3.500,00</td>
+                    </tr>
+                  </ng-template>
+                </tbody>
+              </table>
+              <!-- Total -->
+              <div class="text-end">
+                <div [style.background-color]="presupuestoColorPrimario" style="color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">
+                  <ng-container *ngIf="tareasAgregadas.length > 0; else demoTotal">
+                    TOTAL: ${{ calcularCostoTotal() | number:'1.2-2' }}
+                  </ng-container>
+                  <ng-template #demoTotal>TOTAL: $8.500,00</ng-template>
+                </div>
+              </div>
+              <!-- Professional Watermark -->
+              <div style="position: absolute; bottom: 5px; right: 8px; font-size: 8px; opacity: 0.3;">
+                METRO - Software de Cotización
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="volverAModalEmpresa()">Volver</button>
+        <button type="button" class="btn btn-outline-danger" (click)="reiniciarColores()">
+          <i class="fas fa-undo"></i> Reiniciar
+        </button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="aplicarPaletaManual()">Aplicar Cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
