@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { Component, ElementRef, HostListener, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
 import { AccessCodeService } from '../../servicios/access-code.service';
@@ -110,11 +110,19 @@ constructor(private authService: AuthService,
     this.activatedRoute.queryParamMap.subscribe(params => {
       const code = params.get('code');
       const paid = params.get('paid');
+      const adminShortcut = params.get('admin');
       if (code) {
         this.code = code;
       }
       if (paid === '1') {
         this.toastr.success('Tu codigo ya esta activado. Ingresa con el codigo recibido.', 'Pago confirmado');
+      }
+      if (adminShortcut === '1') {
+        if (this.adminService.isLoggedIn()) {
+          this.route.navigate(['/admin-generate-code']);
+          return;
+        }
+        this.loginStep = 'adminCountry';
       }
     });
   }
@@ -687,18 +695,6 @@ openWebsite(): void {
     private getCheckoutErrorMessage(error: unknown, fallback: string): string {
       return extractApiErrorMessage(error, fallback);
     }
-
-  @HostListener('document:keydown.control.alt.m', ['$event'])
-  onAdminShortcut(event: Event): void {
-    if (this.loginStep === 'home') {
-      event.preventDefault();
-      if (this.adminService.isLoggedIn()) {
-        this.route.navigate(['/admin-generate-code']);
-      } else {
-        this.loginStep = 'adminCountry';
-      }
-    }
-  }
 
   selectAdminCountry(pais: AdminCountry): void {
     const current = this.adminService.getCurrentAdmin();
