@@ -413,6 +413,21 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
   }
 }
 
+.btn-guardado-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .5rem .85rem;
+  background: #eafaf1;
+  color: #1e8449;
+  border: 1.5px solid #a9dfbf;
+  border-radius: $radius-sm;
+  font-size: .8rem;
+  font-weight: 600;
+  pointer-events: none;
+  i { font-size: .95rem; }
+}
+
 .btn-borrar {
   display: inline-flex;
   align-items: center;

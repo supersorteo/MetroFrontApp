@@ -127,7 +127,7 @@
       <div>
         <h1 class="calc-header__title">Calculadora de Materiales</h1>
         @if (isTrialMode) {
-          <p class="calc-header__sub">{{ getDemoMonthlyUsageLabel() }}</p>
+          <p class="calc-header__sub">{{ getDemoDailyUsageLabel() }}</p>
         }
         @if (isTrialMode) {
           <p class="calc-header__sub">Modo de prueba: se muestran 3 tareas aleatorias y el historial local guarda solo los últimos 3 cálculos.</p>
@@ -203,15 +203,11 @@
                           <i class="bi bi-calculator"></i> Calcular
                         </button>
                         @if (hasResultados(tarea.id)) {
-                          <button
-                            class="btn-guardar-icon"
-                            type="button"
-                            (click)="confirmarGuardado(tarea)"
-                            [disabled]="!canGuardar(tarea.id)"
-                            [class.btn-guardar-icon--saved]="isGuardado(tarea.id)"
-                            [attr.aria-label]="isGuardado(tarea.id) ? 'Cálculo guardado' : 'Guardar cálculo'">
-                            <i class="bi" [class.bi-cloud-check-fill]="isGuardado(tarea.id)" [class.bi-cloud-arrow-up-fill]="!isGuardado(tarea.id)"></i>
-                          </button>
+                          @if (isGuardado(tarea.id)) {
+                            <span class="btn-guardado-badge" aria-label="Cálculo guardado">
+                              <i class="bi bi-cloud-check-fill"></i> Guardado
+                            </span>
+                          }
                           <button class="btn-borrar" type="button" (click)="confirmarBorrado(tarea.id)">
                             <i class="bi bi-arrow-counterclockwise"></i> Borrar
                           </button>
