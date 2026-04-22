@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -76,7 +76,8 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private adminService: AdminService,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private location: Location
   ) {}
 
   ngOnInit(): void {
@@ -96,6 +97,10 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       '🚪', 'Cerrar sesión', '¿Seguro que querés salir del panel?', 'top',
       () => { this.adminService.logout(); this.router.navigate(['/']); }
     );
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
   private showConfirm(icon: string, title: string, message: string, position: 'top' | 'bottom', action: () => void): void {

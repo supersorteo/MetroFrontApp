@@ -110,11 +110,19 @@ constructor(private authService: AuthService,
     this.activatedRoute.queryParamMap.subscribe(params => {
       const code = params.get('code');
       const paid = params.get('paid');
+      const adminShortcut = params.get('admin');
       if (code) {
         this.code = code;
       }
       if (paid === '1') {
         this.toastr.success('Tu codigo ya esta activado. Ingresa con el codigo recibido.', 'Pago confirmado');
+      }
+      if (adminShortcut === '1') {
+        if (this.adminService.isLoggedIn()) {
+          this.route.navigate(['/admin-generate-code']);
+          return;
+        }
+        this.loginStep = 'adminCountry';
       }
     });
   }

@@ -1,5 +1,34 @@
 
 <router-outlet />
 
+@if (!offlineStatus.isOnline()) {
+  <div class="offline-bar">
+    <div class="offline-bar__inner">
+      @if (offlineSync.isSyncing()) {
+        <span class="offline-bar__icon offline-bar__icon--syncing">
+          <i class="bi bi-arrow-repeat"></i>
+        </span>
+        <span>Sincronizando cambios...</span>
+      } @else {
+        <span class="offline-bar__icon">
+          <i class="bi bi-wifi-off"></i>
+        </span>
+        <span>Sin conexión · La app sigue funcionando</span>
+        @if (offlineSync.hasPendingOps()) {
+          <span class="offline-bar__badge">
+            <i class="bi bi-clock-history"></i> Cambios pendientes de sync
+          </span>
+        }
+      }
+    </div>
+  </div>
+}
 
-
+@if (offlineStatus.isOnline() && offlineSync.hasPendingOps() && !offlineSync.isSyncing()) {
+  <div class="offline-bar offline-bar--pending">
+    <div class="offline-bar__inner">
+      <span class="offline-bar__icon"><i class="bi bi-cloud-upload"></i></span>
+      <span>Tenés cambios guardados offline. Sincronizando...</span>
+    </div>
+  </div>
+}

@@ -1,8 +1,9 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, Observable, throwError } from 'rxjs';
+import { catchError, from, mergeMap, Observable, of, tap, throwError, map } from 'rxjs';
 import { APP_API_URL } from '../core/api/api.config';
 import { extractApiErrorMessage } from '../core/http/api-error.util';
+import { OfflineSyncService } from './offline-sync.service';
 
 export interface Cliente {
   id?: number;
@@ -17,21 +18,16 @@ export interface Cliente {
   empresaId: number;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ClienteService {
+  private readonly apiUrl = `${APP_API_URL}/clientes`;
 
+  constructor(
+    private http: HttpClient,
+    private offlineSync: OfflineSyncService
+  ) {}
 
- // private apiUrl = 'http://localhost:8080/api/clientes';
-  //private apiUrl = 'https://adequate-education-production.up.railway.app/api/clientes'
-
-  private apiUrl = `${APP_API_URL}/clientes`;
-
-
-  constructor(private http: HttpClient) { }
-
-getClienteByUserCode(userCode: string): Observable<Cliente[]> {
+  getClienteByUserCode(userCode: string): Observable<Cliente[]> {
     return this.http.get<Cliente[]>(`${this.apiUrl}/${userCode}`)
       .pipe(catchError(this.handleError));
   }
@@ -41,66 +37,58 @@ getClienteByUserCode(userCode: string): Observable<Cliente[]> {
       .pipe(catchError(this.handleError));
   }
 
-   getClientesByEmpresaId(empresaId: number): Observable<Cliente[]> {
-    return this.http.get<Cliente[]>(`${this.apiUrl}/by-empresa/${empresaId}`)
-      .pipe(catchError(this.handleError));
+  getClientesByEmpresaId(empresaId: number): Observable<Cliente[]> {
+    return this.http.get<Cliente[]>(`${this.apiUrl}/by-empresa/${empresaId}`).pipe(
+      tap(clientes => this.offlineSync.cacheClientes(empresaId, clientes)),
+      catchError(() =>
+        from(this.offlineSync.getCachedClientes(empresaId)).pipe(
+          mergeMap(cached =>
+            cached
+              ? of(cached as Cliente[])
+              : throwError(() => new Error('Sin conexión y sin datos en caché para los clientes.'))
+          )
+        )
+      )
+    );
   }
 
-
   saveCliente(cliente: Cliente): Observable<Cliente> {
+    if (!navigator.onLine) {
+      return from(
+        this.offlineSync.addToQueue('cliente', 'create', cliente, this.apiUrl, 'POST')
+      ).pipe(map(() => ({ ...cliente, id: -Date.now() })));
+    }
     return this.http.post<Cliente>(this.apiUrl, cliente)
       .pipe(catchError(this.handleError));
   }
 
   updateCliente(id: number, cliente: Cliente): Observable<Cliente> {
+    if (!navigator.onLine) {
+      return from(
+        this.offlineSync.addToQueue('cliente', 'update', cliente, `${this.apiUrl}/id/${id}`, 'PUT')
+      ).pipe(map(() => cliente));
+    }
     return this.http.put<Cliente>(`${this.apiUrl}/id/${id}`, cliente)
       .pipe(catchError(this.handleError));
   }
 
   deleteCliente(id: number): Observable<void> {
+    if (!navigator.onLine) {
+      return from(
+        this.offlineSync.addToQueue('cliente', 'delete', { id }, `${this.apiUrl}/id/${id}`, 'DELETE')
+      ).pipe(map(() => void 0));
+    }
     return this.http.delete<void>(`${this.apiUrl}/id/${id}`)
       .pipe(catchError(this.handleError));
   }
 
-  private handleError0(error: any): Observable<never> {
+  private handleError(error: any): Observable<never> {
     let errorMessage = 'Error desconocido';
-    if (error.error instanceof ErrorEvent) {
-      errorMessage = `Error: ${error.error.message}`;
-    } else if (error.error && error.error.error) {
-      errorMessage = error.error.error; // Use backend error message
+    if (error.status === 400 && error.error?.error) {
+      errorMessage = error.error.error;
     } else {
       errorMessage = extractApiErrorMessage(error);
     }
-    console.error('Error en ClienteService:', errorMessage);
     return throwError(() => new Error(errorMessage));
   }
-
-
-  private handleError(error: any): Observable<never> {
-    let errorMessage = 'Error desconocido';
-    if (error.error instanceof ErrorEvent) {
-        // Error del lado del cliente (e.g., problema de red)
-        errorMessage = `Error: ${error.error.message}`;
-    } else if (error.status === 400 && error.error && error.error.error) {
-        // Error 400 con mensaje personalizado del backend
-        errorMessage = error.error.error;
-    } else {
-        // Otros errores HTTP
-        errorMessage = extractApiErrorMessage(error);
-        // Incluir mensaje del backend si está disponible
-        if (error.error && typeof error.error === 'string') {
-            errorMessage = error.error;
-        } else if (error.error && error.error.message) {
-            errorMessage = error.error.message;
-        }
-    }
-    console.error('Error en ClienteService:', errorMessage, error);
-    return throwError(() => new Error(errorMessage));
 }
-
-
-
-
-
-}
-

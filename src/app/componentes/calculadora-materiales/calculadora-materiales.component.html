@@ -26,11 +26,11 @@
     </div>
 
     <ul class="sidebar-panel__list">
-      <li class="sidebar-panel__item">
+      <!-- <li class="sidebar-panel__item">
         <button (click)="irAlDashboard()">
           <i class="bi bi-grid-1x2-fill"></i> Dashboard
         </button>
-      </li>
+      </li> -->
       <li class="sidebar-panel__item">
         <button (click)="abrirUltimasTareas()">
           <i class="bi bi-clock-history"></i> Últimas tareas
@@ -53,6 +53,13 @@
       <li class="sidebar-panel__item"><button disabled><i class="bi bi-envelope"></i> Contacto</button></li>
     </ul>
   </div>
+
+  <button class="calc-back-fab" type="button" (click)="goBack()" aria-label="Volver a la pantalla anterior">
+    <span class="calc-back-fab__icon">
+      <i class="bi bi-arrow-left"></i>
+    </span>
+    <span class="calc-back-fab__label">Volver</span>
+  </button>
 
   @if (ultimasTareasOpen()) {
     <div class="calc-modal-overlay" (click)="cerrarUltimasTareas()">

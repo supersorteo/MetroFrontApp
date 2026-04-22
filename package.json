@@ -22,6 +22,7 @@
     "@ng-select/ng-select": "^12.0.0",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
+    "dexie": "^4.4.2",
     "html2pdf.js": "^0.12.0",
     "ngx-toastr": "^19.0.0",
     "rxjs": "~7.8.0",
