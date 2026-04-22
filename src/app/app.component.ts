@@ -23,8 +23,9 @@ export class AppComponent {
   ) {}
 
   @HostListener('document:keydown.control.alt.m', ['$event'])
-  onAdminShortcut(event: KeyboardEvent): void {
-    event.preventDefault();
+  onAdminShortcut(event: Event): void {
+    const keyboardEvent = event as KeyboardEvent;
+    keyboardEvent.preventDefault();
     if (this.adminService.isLoggedIn()) {
       this.router.navigate(['/admin-generate-code']);
       return;
