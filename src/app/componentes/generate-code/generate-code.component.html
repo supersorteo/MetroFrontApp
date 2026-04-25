@@ -11,10 +11,10 @@
   <!-- ── Header ─────────────────────────────── -->
   <header class="admin-header">
     <div class="admin-header__brand">
-      <span class="admin-header__flag">{{ admin?.flag }}</span>
+      <span class="admin-header__flag">{{ admin.flag }}</span>
       <div>
         <h1 class="admin-header__title">Panel Admin</h1>
-        <span class="admin-header__country">{{ admin?.pais | titlecase }}</span>
+        <span class="admin-header__country">{{ admin.pais | titlecase }}</span>
       </div>
     </div>
     <div class="admin-header__actions">
@@ -121,7 +121,7 @@
     <div class="admin-table-section">
       <div class="admin-table-header">
         <h2 class="admin-section-title">
-          Códigos de {{ admin?.pais | titlecase }}
+          Códigos de {{ admin.pais | titlecase }}
           <span class="admin-section-title__count">{{ filteredCodes.length }}</span>
         </h2>
         <div class="admin-search">
@@ -253,10 +253,10 @@
 
       <!-- Header con avatar -->
       <div class="ea-header">
-        <div class="ea-avatar">{{ admin?.flag }}</div>
+        <div class="ea-avatar">{{ admin.flag }}</div>
         <div class="ea-header__info">
-          <span class="ea-header__name">{{ admin?.nombre }}</span>
-          <span class="ea-header__country">{{ admin?.pais | titlecase }}</span>
+          <span class="ea-header__name">{{ admin.nombre }}</span>
+          <span class="ea-header__country">{{ admin.pais | titlecase }}</span>
         </div>
         <button class="ea-close" (click)="showEditAdminPanel = false">&#x00D7;</button>
       </div>

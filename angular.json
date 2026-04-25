@@ -28,7 +28,6 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.webmanifest",
               "src/manifest.webmanifest"
             ],
             "styles": [
@@ -68,6 +67,18 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "pwa-development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "serviceWorker": "ngsw-config.json",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.pwa-dev.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -83,6 +94,9 @@
             },
             "development": {
               "buildTarget": "pruebaw:build:development"
+            },
+            "pwa-development": {
+              "buildTarget": "pruebaw:build:pwa-development"
             }
           },
           "defaultConfiguration": "development"
@@ -105,7 +119,6 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.webmanifest",
               "src/manifest.webmanifest"
             ],
             "styles": [

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
 
 interface BudgetItem {
   tarea: string;
@@ -60,16 +61,26 @@ export class PresupuestoComponent implements OnInit {
 
   readonly PREVIEW_OPTIONS_KEY = 'metroBudgetPreviewVisibility';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private localStore: OfflineLocalStoreService
+  ) {}
 
   ngOnInit(): void {
     this.loadData();
     this.loadPreviewOptions();
   }
 
-  loadData(): void {
+  async loadData(): Promise<void> {
+    const activePreview = await this.localStore.getState<any>('budget:active-preview');
+    if (activePreview) {
+      this.applyPreviewData(activePreview);
+      this.calcularTotal();
+      return;
+    }
+
     // Cargar tareas del localStorage
-    const tareasRaw = localStorage.getItem('tareasAgregadas');
+    const tareasRaw = localStorage.getItem('selectedTareas') || localStorage.getItem('tareasAgregadas');
     if (tareasRaw) {
       try {
         this.tareasAgregadas = JSON.parse(tareasRaw).map((t: any) => ({
@@ -135,6 +146,54 @@ export class PresupuestoComponent implements OnInit {
     }
 
     this.calcularTotal();
+  }
+
+  private applyPreviewData(activePreview: any): void {
+    const empresa = activePreview?.empresa || activePreview?.presupuesto?.empresa || {};
+    const cliente = activePreview?.cliente || activePreview?.presupuesto?.cliente || {};
+    const tareas = activePreview?.tareas || activePreview?.presupuesto?.tareas || [];
+
+    this.tareasAgregadas = Array.isArray(tareas)
+      ? tareas.map((t: any) => ({
+          tarea: t.tarea || '',
+          descripcion: t.descripcion || '',
+          area: Number(t.area) || 0,
+          costo: Number(t.costo) || 0,
+          descuento: Number(t.descuento) || 0,
+          totalCost: Number(t.totalCost) || 0
+        }))
+      : [];
+
+    this.empresa = {
+      name: empresa.name || '',
+      phone: empresa.phone || '',
+      email: empresa.email || '',
+      description: empresa.description || '',
+      website: empresa.website || '',
+      tiktok: empresa.tiktok || '',
+      instagram: empresa.instagram || '',
+      facebook: empresa.facebook || '',
+      logoUrl: empresa.logoUrl || '',
+      primaryColor: empresa.primaryColor || '#0b69a6',
+      secondaryColor: empresa.secondaryColor || '#ffffff',
+      textColor: empresa.textColor || '#333333',
+      tableColor: empresa.tableColor || '#343a40',
+      tableTextColor: empresa.tableTextColor || '#ffffff',
+      tableBodyColor: empresa.tableBodyColor || '#ffffff'
+    };
+    this.logoUrl = empresa.logoUrl || '';
+
+    this.cliente = {
+      name: cliente.name || '',
+      contact: cliente.phone || cliente.contact || '',
+      email: cliente.email || '',
+      direccion: cliente.direccion || ''
+    };
+
+    const budgetDate = activePreview?.budgetDate || activePreview?.presupuesto?.createdAt;
+    this.budgetDate = budgetDate
+      ? new Date(budgetDate).toLocaleDateString('es-AR')
+      : new Date().toLocaleDateString('es-AR');
   }
 
   calcularTotal(): void {

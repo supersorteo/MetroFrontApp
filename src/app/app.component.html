@@ -16,8 +16,9 @@
         <span>Sin conexión · La app sigue funcionando</span>
         @if (offlineSync.hasPendingOps()) {
           <span class="offline-bar__badge">
-            <i class="bi bi-clock-history"></i> Cambios pendientes de sync
+            <i class="bi bi-clock-history"></i> {{ offlineSync.pendingOpsCount() }} cambio(s) pendiente(s)
           </span>
+          <span class="offline-bar__hint">Se sincronizarán automáticamente al volver la conexión</span>
         }
       }
     </div>
@@ -28,7 +29,23 @@
   <div class="offline-bar offline-bar--pending">
     <div class="offline-bar__inner">
       <span class="offline-bar__icon"><i class="bi bi-cloud-upload"></i></span>
-      <span>Tenés cambios guardados offline. Sincronizando...</span>
+      <span>Tenés {{ offlineSync.pendingOpsCount() }} cambio(s) guardado(s) offline.</span>
+      <button
+        type="button"
+        class="offline-bar__action offline-bar__action--primary"
+        (click)="triggerManualSync()">
+        <i class="bi bi-arrow-repeat"></i>
+        Sincronizar ahora
+      </button>
+    </div>
+  </div>
+}
+
+@if (offlineStatus.isOnline() && offlineSync.isSyncing()) {
+  <div class="offline-bar offline-bar--syncing">
+    <div class="offline-bar__inner">
+      <span class="offline-bar__icon offline-bar__icon--syncing"><i class="bi bi-arrow-repeat"></i></span>
+      <span>Sincronizando {{ offlineSync.pendingOpsCount() }} cambio(s) pendiente(s)...</span>
     </div>
   </div>
 }

@@ -1,5 +1,10 @@
   <div class="fixed-image-container">
-    <img id="fixedImageIcon" class="fixed-image" src="#" alt="Logo Empresa" style="display: none;">
+    <img
+      id="fixedImageIcon"
+      class="fixed-image"
+      [src]="currentEmpresaLogoUrl || '#'"
+      alt="Logo Empresa"
+      [style.display]="currentEmpresaLogoUrl ? 'block' : 'none'">
   </div>
 
 <div class="menu-panel-overlay" *ngIf="showMenuPanel" (click)="toggleMenuPanel()"></div>
@@ -13,6 +18,36 @@
   </div>
 
   <div class="menu-panel__body">
+    <div
+      class="sync-status-card"
+      *ngIf="!trialMode && (pendingSyncSummary.total > 0 || offlineSync.isSyncing())">
+      <div class="sync-status-card__header">
+        <div class="sync-status-card__title">
+          <i class="bi" [ngClass]="offlineSync.isSyncing() ? 'bi-arrow-repeat sync-rotating' : 'bi-cloud-arrow-up'"></i>
+          Sincronizacion
+        </div>
+        <span class="sync-status-card__count">
+          {{ pendingSyncSummary.total }}
+        </span>
+      </div>
+
+      <div class="sync-status-card__message" *ngIf="offlineSync.isSyncing()">
+        Sincronizando cambios pendientes...
+      </div>
+      <div class="sync-status-card__message" *ngIf="!offlineSync.isSyncing()">
+        Estos cambios siguen guardados localmente hasta que se sincronicen.
+      </div>
+
+      <div class="sync-status-card__chips">
+        <span class="sync-chip" *ngIf="pendingSyncSummary.empresa > 0">Empresas: {{ pendingSyncSummary.empresa }}</span>
+        <span class="sync-chip" *ngIf="pendingSyncSummary.empresaLogo > 0">Logos: {{ pendingSyncSummary.empresaLogo }}</span>
+        <span class="sync-chip" *ngIf="pendingSyncSummary.cliente > 0">Clientes: {{ pendingSyncSummary.cliente }}</span>
+        <span class="sync-chip" *ngIf="pendingSyncSummary.userTarea > 0">Tareas: {{ pendingSyncSummary.userTarea }}</span>
+        <span class="sync-chip" *ngIf="pendingSyncSummary.presupuesto > 0">Presupuestos: {{ pendingSyncSummary.presupuesto }}</span>
+        <span class="sync-chip" *ngIf="pendingSyncSummary.calculoMaterial > 0">Calculos: {{ pendingSyncSummary.calculoMaterial }}</span>
+      </div>
+    </div>
+
     <div class="weather-widget mb-3 w-100 text-center">
       <h6 class="mb-2">Clima actual</h6>
       <div *ngIf="weatherLoading" class="text-muted">Cargando...</div>
@@ -330,8 +365,8 @@
         <div>
           <div class="tareas-agregadas__title">
             <img
-              *ngIf="selectedEmpresaId?.logoUrl"
-              [src]="selectedEmpresaId.logoUrl"
+              *ngIf="currentEmpresaLogoUrl"
+              [src]="currentEmpresaLogoUrl"
               alt="Logo empresa"
               class="tareas-agregadas__logo"
             >
@@ -667,7 +702,7 @@
               <div
                 class="card mb-3 w-100 shadow-sm cliente-card"
                 [class.cliente-card--selected]="clienteSeleccionado?.id === cliente.id"
-                (click)="seleccionarCliente(cliente); loadTareasAgregadas()"
+                (click)="seleccionarCliente(cliente)"
                 role="button"
                 tabindex="0"
               >
@@ -681,7 +716,7 @@
                       <input
                         type="checkbox"
                         [checked]="clienteSeleccionado?.id === cliente.id"
-                        (click)="$event.stopPropagation(); seleccionarCliente(cliente); loadTareasAgregadas()"
+                        (click)="$event.stopPropagation(); seleccionarCliente(cliente)"
                       >
                       <div class="checkmark"></div>
                     </label>
@@ -829,8 +864,8 @@
               <ng-select
                 [items]="empresas"
                 bindLabel="name"
-                bindValue="id"
                 [(ngModel)]="selectedEmpresaId"
+                [compareWith]="compareEmpresaById"
                 (change)="onEmpresaSeleccionada($event)"
                 [ngClass]="{'is-invalid': !selectedEmpresaId}"
                 placeholder="Selecciona una empresa"
@@ -838,7 +873,7 @@
                 style="height: 40px; font-weight: bold; font-size: 16px; border-radius: 15px; box-shadow: 0 2px 8px #0001; min-width: 220px;"
               >
                 <ng-template ng-option-tmp let-item="item" let-selected="selected">
-                  <img *ngIf="item.logoUrl" [src]="item.logoUrl" width="24" class="me-2" style="object-fit:cover; border-radius:50%;">
+                  <img *ngIf="getEmpresaDisplayLogo(item)" [src]="getEmpresaDisplayLogo(item)" width="24" class="me-2" style="object-fit:cover; border-radius:50%;">
                   {{ item.name }}
                   <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
                 </ng-template>
@@ -886,7 +921,7 @@
             </svg>
           </span>
           {{ empresa.name }}
-          <img *ngIf="empresa.logoUrl" [src]="empresa.logoUrl" alt="Logo" class="cliente-card__logo">
+          <img *ngIf="getEmpresaDisplayLogo(empresa)" [src]="getEmpresaDisplayLogo(empresa)" alt="Logo" class="cliente-card__logo">
         </h5>
         <label class="cliente-check">
           <input

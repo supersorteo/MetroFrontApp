@@ -1,8 +1,5 @@
-
-
 <div class="saved-budgets-card">
   <div class="saved-budgets-header">
-
     <div class="save-controls">
       <input
         class="form-control"
@@ -13,28 +10,31 @@
       <button
         class="btn btn-primary"
         (click)="guardarPresupuestoActual()"
-
         [disabled]="!puedeGuardarr"
-
         [title]="!puedeGuardarr ? getMensajeBotonDeshabilitado() : (presupuestoCargado ? 'Actualizar presupuesto' : 'Guardar presupuesto')"
-
-        >
-         {{ presupuestoCargado ? 'Actualizar' : 'Guardar' }}
+      >
+        {{ presupuestoCargado ? 'Actualizar' : 'Guardar' }}
       </button>
-       <div>
-      <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
-    </div>
+      <div>
+        <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
+      </div>
     </div>
 
     @if (nombreTemporal.trim() && nombreYaExiste(nombreTemporal)) {
-  <small class="text-danger">
-    Ya existe un presupuesto con este nombre. Elige otro.
-  </small>
-}
+      <small class="text-danger">
+        Ya existe un presupuesto con este nombre. Elige otro.
+      </small>
+    }
 
     @if (!tareasActuales.length) {
       <small class="text-muted">
         Agrega tareas para poder guardar este presupuesto.
+      </small>
+    }
+
+    @if (isOffline) {
+      <small class="text-muted">
+        Sin conexión: los cambios se guardarán localmente y se sincronizarán luego.
       </small>
     }
 
@@ -44,7 +44,6 @@
       </small>
     }
   </div>
-
 
   @if (presupuestosFiltrados.length || filtro) {
     <div class="filter-wrapper">
@@ -57,38 +56,38 @@
     </div>
   }
 
-
   @if (presupuestosFiltrados.length > 0) {
     <div class="saved-budgets-list">
       @for (presupuesto of presupuestosFiltrados; track presupuesto.id) {
         <div class="saved-budget-item">
           <div class="saved-budget-info">
-            <strong>{{ presupuesto.name }}</strong>
+            <strong>
+              {{ presupuesto.name }}
+              @if (esPendienteDeSync(presupuesto)) {
+                <span class="badge text-bg-warning ms-2">Pendiente de sync</span>
+              }
+            </strong>
             <small>Creado {{ presupuesto.createdAt | date: 'short' }}</small>
-           <div class="text-muted small">
-          <span>Empresa: {{ empresaActual?.name || 'Sin empresa' }}</span> |
-          <span>Cliente: {{ presupuesto.cliente.name || 'Sin cliente' }}</span> |
-          <span>Tareas: {{ presupuesto.tareas.length || 0 }}</span>
-        </div>
+            <div class="text-muted small">
+              <span>Empresa: {{ presupuesto.empresa?.name || empresaActual?.name || 'Sin empresa' }}</span> |
+              <span>Cliente: {{ presupuesto.cliente.name || 'Sin cliente' }}</span> |
+              <span>Tareas: {{ presupuesto.tareas.length || 0 }}</span>
+            </div>
           </div>
+
           <div class="saved-budget-actions">
             <button class="btn btn-outline-primary btn-sm" (click)="cargar(presupuesto)">
               CARGAR
             </button>
             <button (click)="editarPresupuesto(presupuesto)" class="btn btn-warning">
-             ✏️ Editar
-           </button>
+              Editar
+            </button>
             <button class="btn btn-outline-danger btn-sm" (click)="eliminar(presupuesto)">
               ELIMINAR
             </button>
-            <!--button class="btn btn-outline-secondary btn-sm" (click)="descargarPDF(presupuesto)">
-              DESCARGAR PDF
-            </button-->
-
             <button class="btn btn-outline-secondary btn-sm" (click)="verPresupuesto(presupuesto)">
-             VER / DESCARGAR
-           </button>
-
+              VER / DESCARGAR
+            </button>
           </div>
         </div>
       }
@@ -100,7 +99,6 @@
   }
 </div>
 
-<!-- MODAL DE EDICIÓN -->
 <div class="modal fade" id="editarPresupuestoModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
@@ -125,7 +123,6 @@
             <strong>Cliente:</strong> {{ presupuestoEditando.cliente.name || 'Sin cliente' }}
           </div>
 
-          <!-- LISTA DE TAREAS EDITABLES -->
           <div class="mb-3">
             <strong>Tareas asociadas ({{ presupuestoEditando.tareas.length || 0 }})</strong>
             @if (presupuestoEditando.tareas.length > 0) {
@@ -163,28 +160,29 @@
           </div>
 
           <div class="mt-4 border-top pt-4">
-  <h6 class="fw-bold mb-3">Agregar tarea del cliente</h6>
-  <div class="input-group">
-    <select
-    class="form-select"
-    [(ngModel)]="tareaAAgregarId"
-    (change)="onTareaSeleccionadaChange()">
-      <option [ngValue]="null">Seleccionar tarea...</option>
-      @for (tarea of tareasDisponiblesParaAgregar; track tarea.id) {
-        <option [ngValue]="tarea.id">
-          {{ tarea.tarea }} - ${{ tarea.costo | number:'1.2-2' }} (Total: ${{ tarea.totalCost | number:'1.2-2' }})
-        </option>
-      }
-    </select>
-    <button
-      class="btn btn-success ms-2"
-      (click)="agregarTareaAlPresupuesto()"
-      [disabled]="!tareaAAgregarId"
-    >
-      Agregar
-    </button>
-  </div>
-</div>
+            <h6 class="fw-bold mb-3">Agregar tarea del cliente</h6>
+            <div class="input-group">
+              <select
+                class="form-select"
+                [(ngModel)]="tareaAAgregarId"
+                (change)="onTareaSeleccionadaChange()"
+              >
+                <option [ngValue]="null">Seleccionar tarea...</option>
+                @for (tarea of tareasDisponiblesParaAgregar; track tarea.id) {
+                  <option [ngValue]="tarea.id">
+                    {{ tarea.tarea }} - ${{ tarea.costo | number:'1.2-2' }} (Total: ${{ tarea.totalCost | number:'1.2-2' }})
+                  </option>
+                }
+              </select>
+              <button
+                class="btn btn-success ms-2"
+                (click)="agregarTareaAlPresupuesto()"
+                [disabled]="!tareaAAgregarId"
+              >
+                Agregar
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="modal-footer">

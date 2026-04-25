@@ -105,6 +105,47 @@ constructor(private authService: AuthService,
   private payPalPaymentService: PayPalPaymentService,
   private adminService: AdminService){}
 
+  private provinciasCacheKey(pais: string): string {
+    return `loginProvincias_${pais.toLowerCase()}`;
+  }
+
+  private membershipCatalogCacheKey(): string {
+    return 'membershipCatalogCache';
+  }
+
+  private cacheProvincias(pais: string, provincias: Provincia[]): void {
+    if (!pais) {
+      return;
+    }
+    localStorage.setItem(this.provinciasCacheKey(pais), JSON.stringify(provincias));
+  }
+
+  private getCachedProvincias(pais: string | null | undefined): Provincia[] {
+    if (!pais) {
+      return [];
+    }
+
+    try {
+      const raw = localStorage.getItem(this.provinciasCacheKey(pais));
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private cacheMembershipCatalog(catalog: MembershipCountryOption[]): void {
+    localStorage.setItem(this.membershipCatalogCacheKey(), JSON.stringify(catalog));
+  }
+
+  private getCachedMembershipCatalog(): MembershipCountryOption[] {
+    try {
+      const raw = localStorage.getItem(this.membershipCatalogCacheKey());
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
   ngOnInit(): void {
     this.loadMembershipCatalog();
     this.activatedRoute.queryParamMap.subscribe(params => {
@@ -133,26 +174,48 @@ constructor(private authService: AuthService,
 
 
 login(): void {
-  if (this.code.trim().length === 0) {
+  const normalizedCode = this.accessCodeService.normalizeCode(this.code);
+
+  if (normalizedCode.length === 0) {
     Swal.fire('Error', 'Debe ingresar su codigo', 'error');
     return;
   }
+
+  this.code = normalizedCode;
+
   this.authService.login(this.code).subscribe(
     response => {
       if (response.email && response.email !== 'Codigo no encontrado' && response.email !== 'Codigo existe pero no asignado a un usuario') {
         this.isAuthenticated = true;
         this.email = response.email;
-        //localStorage.clear();
-        this.route.navigate(['dashboard']);
-        Swal.fire('Exito', 'Login exitoso', 'success');
         localStorage.setItem('userCode', this.code);
         localStorage.setItem('userEmail', this.email);
         localStorage.setItem('userData', JSON.stringify(response)); // Guardar objeto completo
+        this.route.navigate(['dashboard']);
+        Swal.fire('Exito', 'Login exitoso', 'success');
       } else {
         Swal.fire('Error', response.email || 'Error al iniciar sesion', 'error');
       }
     },
     error => {
+      const storedCode = localStorage.getItem('userCode');
+      const cachedUserRaw = localStorage.getItem('userData');
+
+      if (!navigator.onLine && storedCode === this.code && cachedUserRaw) {
+        try {
+          const cachedUser = JSON.parse(cachedUserRaw);
+          this.isAuthenticated = true;
+          this.email = cachedUser?.email || localStorage.getItem('userEmail') || '';
+          if (this.email) {
+            localStorage.setItem('userEmail', this.email);
+          }
+          this.route.navigate(['dashboard']);
+          Swal.fire('Modo offline', 'Ingresaste con datos guardados localmente.', 'info');
+          return;
+        } catch {
+        }
+      }
+
       const msg = error.error?.email || error.message || 'Error al iniciar sesion';
       Swal.fire('Error', msg, 'error');
     }
@@ -165,6 +228,11 @@ login(): void {
     this.validateForm();
     if (!this.isFormValid) {
       Swal.fire('Error', this.codeCountryErrorMessage || this.telefonoErrorMessage || 'Completa correctamente los datos del registro.', 'error');
+      return;
+    }
+
+    if (!navigator.onLine) {
+      Swal.fire('Sin conexion', 'El registro requiere internet para validar el codigo y asociar tus datos.', 'info');
       return;
     }
 
@@ -231,6 +299,11 @@ login(): void {
         this.provincias = response;
       },
       error => {
+        const cached = this.getCachedProvincias(this.pais);
+        if (cached.length > 0) {
+          this.provincias = cached;
+          return;
+        }
         Swal.fire('Error', 'Error al cargar las provincias', 'error');
       }
     );
@@ -245,8 +318,14 @@ login(): void {
       this.provinciaService.getProvinciasByPais(this.pais).subscribe(
         response => {
           this.provincias = response;
+          this.cacheProvincias(this.pais || '', response);
         },
         error => {
+          const cached = this.getCachedProvincias(this.pais);
+          if (cached.length > 0) {
+            this.provincias = cached;
+            return;
+          }
           Swal.fire('Error', 'Error al cargar las provincias', 'error');
         }
       );
@@ -290,7 +369,11 @@ login(): void {
         this.codeCountryErrorMessage = '';
         this.validateForm();
         if (showErrors) {
-          this.toastr.error(error?.message || 'No se pudo validar el codigo.');
+          this.toastr.error(
+            !navigator.onLine
+              ? 'Sin conexion. No se pudo validar el codigo.'
+              : error?.message || 'No se pudo validar el codigo.'
+          );
         }
       }
     });
@@ -573,11 +656,23 @@ openWebsite(): void {
           this.membershipCountries = Object.entries(catalog.countries)
             .map(([countryCode, country]) => mapMembershipCountryOption(countryCode, country, this.countries))
             .sort((left, right) => left.nombre.localeCompare(right.nombre));
+          this.cacheMembershipCatalog(this.membershipCountries);
           this.isLoadingCatalog = false;
         },
         error: () => {
+          const cachedCatalog = this.getCachedMembershipCatalog();
+          if (cachedCatalog.length > 0) {
+            this.membershipCountries = cachedCatalog;
+            this.isLoadingCatalog = false;
+            this.toastr.info('Mostrando el catalogo guardado localmente.');
+            return;
+          }
           this.isLoadingCatalog = false;
-          this.toastr.error('No se pudo cargar el catalogo de membresias.');
+          this.toastr.error(
+            navigator.onLine
+              ? 'No se pudo cargar el catalogo de membresias.'
+              : 'Sin conexion. El catalogo de membresias no esta disponible todavia en este dispositivo.'
+          );
         }
       });
     }
@@ -595,8 +690,15 @@ openWebsite(): void {
       this.provinciaService.getProvinciasByPais(this.selectedMembershipCountry?.nombre || this.purchaseCountryCode).subscribe({
         next: (provincias) => {
           this.purchaseProvincias = provincias;
+          this.cacheProvincias(this.selectedMembershipCountry?.nombre || this.purchaseCountryCode || '', provincias);
         },
         error: () => {
+          const cacheKey = this.selectedMembershipCountry?.nombre || this.purchaseCountryCode || null;
+          const cached = this.getCachedProvincias(cacheKey);
+          if (cached.length > 0) {
+            this.purchaseProvincias = cached;
+            return;
+          }
           this.purchaseProvincias = [];
           this.toastr.error('No se pudieron cargar las provincias para la compra.');
         }
@@ -612,6 +714,11 @@ openWebsite(): void {
 
       if (!validation.valid || !this.purchaseCountryCode || !this.purchasePlanMonths) {
         Swal.fire('Faltan datos', this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.', 'warning');
+        return;
+      }
+
+      if (!navigator.onLine) {
+        Swal.fire('Sin conexion', 'El checkout requiere internet para conectarse con la pasarela de pago.', 'info');
         return;
       }
 
@@ -644,6 +751,11 @@ openWebsite(): void {
 
       if (!validation.valid || !this.purchaseCountryCode || !this.purchasePlanMonths) {
         Swal.fire('Faltan datos', this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.', 'warning');
+        return;
+      }
+
+      if (!navigator.onLine) {
+        Swal.fire('Sin conexion', 'El checkout con PayPal requiere internet para conectarse con la pasarela de pago.', 'info');
         return;
       }
 
@@ -699,6 +811,7 @@ openWebsite(): void {
   selectAdminCountry(pais: AdminCountry): void {
     const current = this.adminService.getCurrentAdmin();
     if (current && current.pais === pais) {
+      this.adminService.setReturnUrl(this.route.url);
       this.route.navigate(['/admin-generate-code']);
       return;
     }
@@ -709,6 +822,40 @@ openWebsite(): void {
     this.loginStep = 'adminLogin';
   }
 
+  volverDesdeAdminLogin(): void {
+    this.adminPassword = '';
+    this.adminLoginError = '';
+    this.showAdminPassword = false;
+    this.loginStep = 'adminCountry';
+  }
+
+  volverDesdeAdminCountry(): void {
+    this.selectedAdminPais = null;
+    this.adminUsername = '';
+    this.adminPassword = '';
+    this.adminLoginError = '';
+    this.showAdminPassword = false;
+    this.loginStep = 'home';
+
+    const returnUrl = this.adminService.consumeReturnUrl();
+    if (returnUrl && returnUrl !== '/admin-generate-code') {
+      this.route.navigateByUrl(returnUrl);
+      return;
+    }
+
+    this.route.navigate(['/'], { replaceUrl: true });
+  }
+
+  salirModoAdmin(): void {
+    this.selectedAdminPais = null;
+    this.adminUsername = '';
+    this.adminPassword = '';
+    this.adminLoginError = '';
+    this.showAdminPassword = false;
+    this.loginStep = 'home';
+    this.route.navigate(['/'], { replaceUrl: true });
+  }
+
   adminLogin(): void {
     this.adminLoginError = '';
     this.adminService.loginForCountry(this.adminUsername, this.adminPassword, this.selectedAdminPais).subscribe(result => {
@@ -716,6 +863,7 @@ openWebsite(): void {
         this.adminLoginError = result.error;
         return;
       }
+      this.adminService.setReturnUrl(this.route.url);
       this.route.navigate(['/admin-generate-code']);
     });
   }

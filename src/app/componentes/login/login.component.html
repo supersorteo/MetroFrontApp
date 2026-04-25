@@ -374,7 +374,7 @@
 
   <!-- ── Admin: seleccionar país ─────────────────────── -->
   <div class="login-step login-step--form" *ngIf="loginStep === 'adminCountry'">
-    <button class="login-back" (click)="loginStep = 'home'">← Volver</button>
+    <button class="login-back" (click)="volverDesdeAdminCountry()">← Volver</button>
     <div class="login-step__title">Panel Administrador</div>
     <div class="login-step__sub">Seleccioná tu país para continuar</div>
     <div class="login-cards" style="max-width:480px;width:100%">
@@ -389,7 +389,7 @@
 
   <!-- ── Admin: formulario de login ─────────────────── -->
   <div class="login-step login-step--form" *ngIf="loginStep === 'adminLogin'">
-    <button class="login-back" (click)="loginStep = 'adminCountry'">← Volver</button>
+    <button class="login-back" (click)="volverDesdeAdminLogin()">← Volver</button>
     <div class="login-form-card" style="max-width:360px">
       <div class="login-form-card__icon" style="font-size:2.5rem">
         <ng-container *ngFor="let c of adminCountries">
@@ -423,7 +423,7 @@
       </div>
       <p class="lf-error" *ngIf="adminLoginError">⚠ {{ adminLoginError }}</p>
       <div class="lf-actions" style="margin-top:1.2rem">
-        <button class="btn login-btn-secondary" (click)="loginStep = 'adminCountry'">Cancelar</button>
+        <button class="btn login-btn-secondary" (click)="salirModoAdmin()">Cancelar</button>
         <button class="btn login-btn-primary-full" (click)="adminLogin()">Entrar</button>
       </div>
     </div>

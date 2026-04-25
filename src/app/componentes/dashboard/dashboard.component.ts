@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit, HostListener } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit, HostListener, effect, inject } from '@angular/core';
 import { interval, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -22,6 +22,11 @@ import { PresupuestosGuardadosComponent } from '../presupuestos-guardados/presup
 import { firstValueFrom } from 'rxjs';
 //import { SavedPresupuesto } from '../../servicios/budget-storage.service';
 import { SavedPresupuesto } from '../../servicios/budget.service';
+import { OfflineSyncService, PendingSyncSummary } from '../../servicios/offline-sync.service';
+import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
+import { EmpresaStore } from '../../stores/empresa.store';
+import { ClienteStore } from '../../stores/cliente.store';
+import { UserTareaStore } from '../../stores/user-tarea.store';
 
 
 declare var bootstrap: any;
@@ -131,6 +136,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   toggleMenuPanel(): void {
     this.showMenuPanel = !this.showMenuPanel;
+    if (this.showMenuPanel) {
+      this.refreshPendingSyncSummary();
+    }
   }
 
   installPwa() {
@@ -205,6 +213,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   showSocialFields: boolean = false;
   weatherLoading: boolean = false;
   weatherError: string = '';
+  pendingSyncSummary: PendingSyncSummary = {
+    total: 0,
+    empresa: 0,
+    cliente: 0,
+    userTarea: 0,
+    presupuesto: 0,
+    calculoMaterial: 0,
+    empresaLogo: 0
+  };
   currentWeather: { temperature: number; windspeed: number; weathercode: number; location: string } | null = null;
   dailyForecast: { date: Date; max: number; min: number; code: number }[] = [];
   colorSchemeMessageVisible = false;
@@ -247,11 +264,29 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   recentTasks: any[] = []; // Property to store the last 10 tasks
 
   logoUrl: string = '';
+  currentEmpresaLogoUrl: string = '';
+  empresaLogoUrls: Record<string, string> = {};
   trialMode: boolean = false;
 
   private demoTareasKey(clienteId: number | null | undefined): string {
   return `demoTareasCliente_${clienteId ?? 'sinCliente'}`;
 }
+
+  private authTareasKey(clienteId: number | null | undefined): string {
+    return `authTareasCliente_${clienteId ?? 'sinCliente'}`;
+  }
+
+  private dashboardStateKey(name: string): string {
+    return `dashboard:${this.userCode || 'anon'}:${name}`;
+  }
+
+  private provinciasCacheKey(pais: string | null | undefined): string {
+    return `provincias_${(pais || 'sin-pais').toLowerCase()}`;
+  }
+
+  private weatherCacheKey(location: string | null | undefined): string {
+    return `weather_${(location || 'sin-ubicacion').toLowerCase()}`;
+  }
 
 presupuestoSeleccionado: SavedPresupuesto | null = null;
 private presupuestoPendiente: SavedPresupuesto | null = null;
@@ -260,7 +295,395 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
   qrCode: any = null;
   qrLogoUrlValue: string = '';
 
+  private getStoredAuthTasks(clienteId: number | null | undefined): UserTarea[] {
+    const key = this.authTareasKey(clienteId);
+    const raw = localStorage.getItem(key) || localStorage.getItem('tareasAgregadas');
+    if (!raw) {
+      return [];
+    }
 
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+
+  private async getStoredAuthTasksLocal(clienteId: number | null | undefined): Promise<UserTarea[]> {
+    if (!clienteId) {
+      return [];
+    }
+
+    const indexedTasks = await this.localStore.listUserTareasByClienteId(clienteId);
+    if (indexedTasks.length > 0) {
+      return indexedTasks as UserTarea[];
+    }
+
+    return this.getStoredAuthTasks(clienteId);
+  }
+
+  private applyCurrentTasks(tareas: UserTarea[]): void {
+    this.tareasAgregadas = tareas;
+    this.actualizarTablaYStorage();
+  }
+
+  private clearVisibleTasks(): void {
+    this.tareasAgregadas = [];
+    this.mostrarTabla = false;
+    this.showTareasPanel = false;
+    this.presupuestoService.setTareasAgregadas([]);
+  }
+
+  private clearEmpresaDependentState(): void {
+    this.presupuestoSeleccionado = null;
+    this.presupuestoPendiente = null;
+    this.clienteSeleccionado = null;
+    this.currentEmpresaLogoUrl = '';
+    this.clientes = [];
+    this.updatePaginatedClientes();
+    this.clearVisibleTasks();
+    localStorage.removeItem('selectedTareas');
+    localStorage.removeItem('presupuestoCargado');
+    localStorage.removeItem('selectedPresupuestoName');
+    void this.localStore.removeState('budget:active-preview').catch(() => {});
+
+    if (this.trialMode) {
+      this.syncSelectedClienteStorage();
+      return;
+    }
+
+    this.syncSelectedClienteStorage();
+    this.clienteStore.select(null);
+  }
+
+  compareEmpresaById(a: Empresa | null | undefined, b: Empresa | null | undefined): boolean {
+    return Number(a?.id) === Number(b?.id);
+  }
+
+  private empresaLogoKey(empresa: any): string | null {
+    const key = empresa?.id ?? empresa?.localId;
+    return key != null ? String(key) : null;
+  }
+
+  getEmpresaDisplayLogo(empresa: any): string {
+    const key = this.empresaLogoKey(empresa);
+    return (key && this.empresaLogoUrls[key]) || String(empresa?.logoUrl || '');
+  }
+
+  private normalizeEmpresaSelection(empresa: Empresa | number | null | undefined): Empresa | null {
+    if (empresa == null) {
+      return null;
+    }
+
+    if (typeof empresa === 'object') {
+      return empresa;
+    }
+
+    return this.empresas.find(item => Number(item.id) === Number(empresa)) ?? null;
+  }
+
+  private syncSelectedClienteStorage(): void {
+    if (this.clienteSeleccionado?.id != null) {
+      localStorage.setItem('selectedClienteId', String(this.clienteSeleccionado.id));
+      localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
+      this.localStore.setState(this.dashboardStateKey('selectedCliente'), this.clienteSeleccionado);
+      return;
+    }
+
+    localStorage.removeItem('selectedClienteId');
+    localStorage.removeItem('selectedCliente');
+    this.localStore.removeState(this.dashboardStateKey('selectedCliente'));
+  }
+
+  private syncSelectedEmpresaStorage(empresa: Empresa | null): void {
+    if (empresa?.id != null) {
+      localStorage.setItem('selectedEmpresaId', String(empresa.id));
+      localStorage.setItem('selectedEmpresa', JSON.stringify(empresa));
+      this.localStore.setState(this.dashboardStateKey('selectedEmpresa'), empresa);
+      return;
+    }
+
+    localStorage.removeItem('selectedEmpresaId');
+    localStorage.removeItem('selectedEmpresa');
+    this.localStore.removeState(this.dashboardStateKey('selectedEmpresa'));
+  }
+
+  private finishClientSaveFlow(message: string): void {
+    this.clientName = '';
+    this.clientContact = '';
+    this.budgetDate = new Date().toISOString().split('T')[0];
+    this.additionalDetailsClient = '';
+    this.clientEmail = '';
+    this.clientClave = '';
+    this.clientDireccion = '';
+
+    const confirmationMessage = document.getElementById('confirmationMessage');
+    if (confirmationMessage) {
+      confirmationMessage.style.display = 'block';
+      setTimeout(() => confirmationMessage.style.display = 'none', 3000);
+    }
+
+    const modal = bootstrap.Modal.getInstance(document.getElementById('clientModal'));
+    modal?.hide();
+    this.isSavingClient = false;
+    this.toastr.success(message);
+  }
+
+  private applySavedCliente(cliente: Cliente): void {
+    const normalized = { ...cliente };
+    const index = this.clientes.findIndex(item => item.id === normalized.id);
+
+    if (index >= 0) {
+      this.clientes[index] = normalized;
+    } else {
+      this.clientes = [...this.clientes, normalized];
+    }
+
+    this.updatePaginatedClientes();
+    if (this.trialMode) {
+      this.clienteSeleccionado = normalized;
+      this.syncSelectedClienteStorage();
+      return;
+    }
+
+    this.clearVisibleTasks();
+    this.clienteStore.select(normalized);
+  }
+
+  private applySavedEmpresa(empresa: Empresa): void {
+    const normalized = { ...empresa };
+    const index = this.empresas.findIndex(item => item.id === normalized.id);
+
+    if (index >= 0) {
+      this.empresas[index] = normalized;
+    } else {
+      this.empresas = [...this.empresas, normalized];
+    }
+
+    this.updatePaginatedEmpresas();
+    if (this.trialMode) {
+      this.selectedEmpresaId = normalized;
+      this.syncSelectedEmpresaStorage(normalized);
+      this.cargarDatosEmpresaSeleccionada();
+      this.actualizarImagenEmpresa(normalized);
+      return;
+    }
+
+    this.clearEmpresaDependentState();
+    this.syncSelectedEmpresaStorage(normalized);
+    this.empresaStore.select(normalized);
+  }
+
+  private removeClienteFromState(id: number): void {
+    this.clientes = this.clientes.filter(cliente => cliente.id !== id);
+
+    if (this.clienteSeleccionado?.id === id) {
+      this.clienteSeleccionado = null;
+      this.syncSelectedClienteStorage();
+      this.applyCurrentTasks([]);
+      localStorage.removeItem('selectedTareas');
+      localStorage.removeItem('presupuestoCargado');
+      localStorage.removeItem('selectedPresupuestoName');
+      this.presupuestoSeleccionado = null;
+    }
+
+    if (this.paginatedClientes.length === 1 && this.currentPage > 1) {
+      this.currentPage--;
+    }
+
+    this.updatePaginatedClientes();
+  }
+
+  private removeEmpresaFromState(id: number): void {
+    this.empresas = this.empresas.filter(empresa => empresa.id !== id);
+
+    if (this.selectedEmpresaId?.id === id) {
+      this.selectedEmpresaId = null;
+      this.clienteSeleccionado = null;
+      this.syncSelectedClienteStorage();
+      this.clientes = [];
+      this.applyCurrentTasks([]);
+      localStorage.removeItem('selectedEmpresaId');
+      localStorage.removeItem('selectedEmpresa');
+      localStorage.removeItem('selectedTareas');
+      localStorage.removeItem('presupuestoCargado');
+      localStorage.removeItem('selectedPresupuestoName');
+      this.presupuestoSeleccionado = null;
+      this.cargarDatosEmpresaSeleccionada();
+      this.actualizarImagenEmpresa(null);
+      this.updatePaginatedClientes();
+    }
+
+    this.updatePaginatedEmpresas();
+  }
+
+  private cacheProvincias(pais: string, provincias: Provincia[]): void {
+    localStorage.setItem(this.provinciasCacheKey(pais), JSON.stringify(provincias));
+  }
+
+  private getCachedProvincias(pais: string | null | undefined): Provincia[] {
+    if (!pais) {
+      return [];
+    }
+
+    try {
+      const raw = localStorage.getItem(this.provinciasCacheKey(pais));
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private cacheWeather(location: string, payload: {
+    currentWeather: { temperature: number; windspeed: number; weathercode: number; location: string } | null;
+    dailyForecast: { date: Date; max: number; min: number; code: number }[];
+  }): void {
+    localStorage.setItem(this.weatherCacheKey(location), JSON.stringify(payload));
+  }
+
+  private getCachedWeather(location: string | null | undefined): {
+    currentWeather: { temperature: number; windspeed: number; weathercode: number; location: string } | null;
+    dailyForecast: { date: Date; max: number; min: number; code: number }[];
+  } | null {
+    if (!location) {
+      return null;
+    }
+
+    try {
+      const raw = localStorage.getItem(this.weatherCacheKey(location));
+      if (!raw) {
+        return null;
+      }
+
+      const parsed = JSON.parse(raw);
+      return {
+        currentWeather: parsed.currentWeather ?? null,
+        dailyForecast: Array.isArray(parsed.dailyForecast)
+          ? parsed.dailyForecast.map((item: any) => ({
+              date: new Date(item.date),
+              max: item.max,
+              min: item.min,
+              code: item.code
+            }))
+          : []
+      };
+    } catch {
+      return null;
+    }
+  }
+
+private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
+    if (!empresa) {
+      return '';
+    }
+
+    const directLogo = String(empresa.logoUrl || '');
+    if (directLogo.startsWith('data:image/')) {
+      return directLogo;
+    }
+
+    const localLogo = await this.localStore.getEmpresaLogoUrl({
+      empresaId: Number(empresa.id),
+      userCode: empresa.userCode || this.userCode,
+      currentLogoUrl: directLogo
+    });
+
+    return localLogo || directLogo;
+  }
+
+  private _empresaLogoListToken: symbol | null = null;
+
+  private async refreshEmpresaLogoUrls(empresas: Empresa[]): Promise<void> {
+    if (!empresas.length) {
+      this.empresaLogoUrls = {};
+      return;
+    }
+
+    const token = Symbol();
+    this._empresaLogoListToken = token;
+
+    const entries = await Promise.all(
+      empresas.map(async empresa => {
+        const key = this.empresaLogoKey(empresa);
+        const resolved = await this.resolveEmpresaLogoUrl(empresa);
+        return [key, resolved || String(empresa?.logoUrl || '')] as const;
+      })
+    );
+
+    if (this._empresaLogoListToken !== token) return;
+
+    const next: Record<string, string> = {};
+    for (const [key, logo] of entries) {
+      if (key) {
+        next[key] = logo;
+      }
+    }
+
+    this.empresaLogoUrls = next;
+  }
+
+  // Reemplazado por EmpresaStore + ClienteStore + UserTareaStore (liveQuery reactivo)
+
+  private applyImageUrl(url: string): void {
+    this.logoUrl = url;
+    this.currentEmpresaLogoUrl = url;
+
+    if (this.selectedEmpresaId) {
+      this.selectedEmpresaId = {
+        ...this.selectedEmpresaId,
+        logoUrl: url
+      };
+      localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
+      localStorage.setItem('selectedEmpresaId', String(this.selectedEmpresaId.id));
+      const logoKey = this.empresaLogoKey(this.selectedEmpresaId);
+      if (logoKey) {
+        this.empresaLogoUrls = {
+          ...this.empresaLogoUrls,
+          [logoKey]: url
+        };
+      }
+
+      if (this.trialMode) {
+        const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
+        const demoEmpresas = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
+        const idx = demoEmpresas.findIndex((empresa: any) => empresa.id === this.selectedEmpresaId?.id);
+        if (idx !== -1) {
+          demoEmpresas[idx] = {
+            ...demoEmpresas[idx],
+            logoUrl: url
+          };
+          localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresas));
+        }
+      }
+    }
+
+    const modalPreview = this.modalImagePreview?.nativeElement as HTMLImageElement | undefined;
+    if (modalPreview) {
+      modalPreview.src = url;
+      modalPreview.style.display = 'block';
+    }
+
+    const mainPreview = document.getElementById('fixedImageIcon') as HTMLImageElement;
+    const mainPreview2 = document.getElementById('fixedImageIconmodal') as HTMLImageElement;
+    if (mainPreview) {
+      mainPreview.src = url;
+      mainPreview.style.display = 'block';
+    }
+    if (mainPreview2) {
+      mainPreview2.src = url;
+      mainPreview2.style.display = 'block';
+    }
+
+    if (this.uploadMessage) {
+      this.uploadMessage.nativeElement.style.display = 'block';
+    }
+  }
+
+
+
+  readonly empresaStore = inject(EmpresaStore);
+  readonly clienteStore = inject(ClienteStore);
+  readonly userTareaStore = inject(UserTareaStore);
 
   constructor(
     private authService: AuthService,
@@ -272,16 +695,68 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
     private empresaService: EmpresaService,
     private clienteService: ClienteService,
     private toastr: ToastrService,
-    private http: HttpClient ){}
+    private http: HttpClient,
+    readonly offlineSync: OfflineSyncService,
+    private localStore: OfflineLocalStoreService
+  ) {
+    // Sync empresas IDB → lista local + paginación
+    effect(() => {
+      this.empresas = this.empresaStore.empresas();
+      this.updatePaginatedEmpresas();
+      void this.refreshEmpresaLogoUrls(this.empresas);
+    });
+
+    // Sync empresa seleccionada → formulario + imagen
+    effect(() => {
+      const empresa = this.empresaStore.selected();
+      this.selectedEmpresaId = empresa;
+      this.cargarDatosEmpresaSeleccionada();
+      void this.actualizarImagenEmpresa(empresa);
+    });
+
+    // Sync clientes IDB → lista local + paginación
+    effect(() => {
+      this.clientes = this.clienteStore.clientes();
+      this.updatePaginatedClientes();
+    });
+
+    // Sync cliente seleccionado → estado local + presupuesto pendiente
+    effect(() => {
+      this.clienteSeleccionado = this.clienteStore.selected();
+      if (!this.clienteSeleccionado || !this.presupuestoPendiente) return;
+      const mismoCliente =
+        this.presupuestoPendiente.cliente?.id &&
+        this.presupuestoPendiente.cliente.id === this.clienteSeleccionado.id;
+      if (mismoCliente) {
+        this.onCargarPresupuestoGuardado(this.presupuestoPendiente);
+        this.presupuestoPendiente = null;
+      }
+    });
+
+    // Sync user-tareas IDB → tareasAgregadas (solo modo autenticado)
+    effect(() => {
+      if (this.trialMode) return;
+      this.tareasAgregadas = [...this.userTareaStore.tareas()];
+      this.mostrarTabla = this.tareasAgregadas.length > 0;
+      this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+      if (this.clienteSeleccionado?.id) {
+        this.userTareaService.cacheTareasByClienteId(this.clienteSeleccionado.id, this.tareasAgregadas);
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.initSession();
-    this.loadRecentTasks(); // Load recent tasks from localStorage
-    if (this.trialMode) return;
+    this.loadRecentTasks();
+    this.refreshPendingSyncSummary();
     this.restorePendingBudget();
-    this.loadTareasAgregadas();
-    this.initEmpresas();
     this.initUiState();
+    if (this.trialMode) return;
+    // Los stores reaccionan a IDB via liveQuery desde el primer momento.
+    // HTTP corre en background y actualiza IDB; los effects sincronizan al componente.
+    if (this.userCode) {
+      this.empresaStore.init(this.userCode);
+    }
   }
 
   // ── Sesión: leer userCode, detectar demo, fetchUserData o redirigir ──────
@@ -292,17 +767,8 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
       return;
     }
     this.loadUserCode();
-    if (localStorage.getItem('reloadClientes')) {
-      this.getClientesByUserCode();
-      localStorage.removeItem('reloadClientes');
-    }
-  }
-
-  // ── Empresas: traer empresas → selección → clientes → presupuesto ────────
-  private initEmpresas(): void {
-    if (this.userCode) {
-      this.getEmpresasByUserCode();
-    }
+    // reloadClientes ya no es necesario: ClienteStore reacciona a IDB via liveQuery
+    localStorage.removeItem('reloadClientes');
   }
 
   // ── Presupuesto pendiente: leer antes de initEmpresas para que el ────────
@@ -321,8 +787,15 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
         this.calculateRemainingTime(this.userData.fechaVencimiento);
       }
     });
+    interval(4000).pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.refreshPendingSyncSummary();
+    });
     this.colorScheme = this.loadColorScheme();
     this.budgetDate = new Date().toISOString().split('T')[0];
+  }
+
+  async refreshPendingSyncSummary(): Promise<void> {
+    this.pendingSyncSummary = await this.offlineSync.getPendingSummary();
   }
 
 
@@ -408,14 +881,18 @@ if (this.selectedEmpresaId) {
 }
 
 
-   seleccionarCliente(cliente: Cliente): void {
-  localStorage.removeItem('selectedPresupuestoName');
-  this.presupuestoSeleccionado = null;
-
-  this.clienteSeleccionado = cliente;
-  localStorage.setItem('selectedClienteId', String(cliente.id));
-  localStorage.setItem('selectedCliente', JSON.stringify(cliente));
+  seleccionarCliente(cliente: Cliente): void {
+    localStorage.removeItem('selectedPresupuestoName');
+    this.presupuestoSeleccionado = null;
+    if (this.trialMode) {
+      this.clienteSeleccionado = cliente;
+      this.syncSelectedClienteStorage();
+      void this.loadTareasAgregadas();
+      return;
     }
+    this.clearVisibleTasks();
+    this.clienteStore.select(cliente);
+  }
 
   cargarDatosEmpresaSeleccionada() {
     if (this.selectedEmpresaId) {
@@ -482,115 +959,16 @@ if (this.selectedEmpresaId) {
 
 
   getEmpresasByUserCode(): void {
-
-  if (this.trialMode) {
-    const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
-    const demoEmpresas = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
-    this.empresas = demoEmpresas;
-    this.updatePaginatedEmpresas();
-    return;
-  }
-
-  if (!this.userCode) {
-    this.toastr.error('Código de usuario no encontrado', 'Error');
-    console.error('[EMPRESA] Código de usuario no encontrado');
-    return;
-  }
-  this.empresaService.getEmpresaByUserCode(this.userCode).pipe(takeUntil(this.destroy$)).subscribe({
-    next: (empresas) => {
-      this.empresas = Array.isArray(empresas) ? empresas : [empresas];
+    if (this.trialMode) {
+      const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
+      this.empresas = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
       this.updatePaginatedEmpresas();
-      // Lógica de selección de empresa
-      const selectedId = localStorage.getItem('selectedEmpresaId');
-      let empresaSeleccionada = null;
-      if (selectedId) {
-        empresaSeleccionada = this.empresas.find(e => String(e.id) === selectedId);
-      }
-      if (empresaSeleccionada) {
-        this.selectedEmpresaId = empresaSeleccionada;
-        this.actualizarImagenEmpresa(empresaSeleccionada);
-      } else if (this.empresas.length > 0) {
-        this.selectedEmpresaId = this.empresas[0];
-        this.actualizarImagenEmpresa(this.empresas[0]);
-        localStorage.setItem('selectedEmpresaId', String(this.empresas[0].id));
-      } else {
-        this.selectedEmpresaId = null;
-        this.actualizarImagenEmpresa(null);
-        localStorage.removeItem('selectedEmpresaId');
-      }
-      // Cargar clientes de la empresa seleccionada
-      if (this.selectedEmpresaId?.id) {
-        this.clienteService.getClientesByEmpresaId(this.selectedEmpresaId.id).pipe(takeUntil(this.destroy$)).subscribe({
-          next: (clientes) => {
-            this.clientes = clientes || [];
-            this.updatePaginatedClientes();
-
-            // Selección automática de cliente (normal)
-            const storedClienteId = localStorage.getItem('selectedClienteId');
-            const clienteGuardado = storedClienteId
-              ? this.clientes.find(c => String(c.id) === storedClienteId)
-              : null;
-
-            const clienteFinal = clienteGuardado || this.clientes[this.clientes.length - 1];
-
-            if (clienteFinal) {
-              this.seleccionarCliente(clienteFinal); // guarda selectedClienteId + selectedCliente
-            } else {
-              this.clienteSeleccionado = null;
-              localStorage.removeItem('selectedClienteId');
-              localStorage.removeItem('selectedCliente');
-            }
-
-            // 👇 va acá
-           // 👇 va acá
-if (this.presupuestoPendiente) {
-  const mismoCliente =
-    this.presupuestoPendiente?.cliente?.id &&
-    this.clienteSeleccionado?.id &&
-    this.presupuestoPendiente.cliente.id === this.clienteSeleccionado.id;
-
-  if (mismoCliente) {
-    this.onCargarPresupuestoGuardado(this.presupuestoPendiente);
-  }
-
-  this.presupuestoPendiente = null;
-  return;
-}
-
-
-            // Cargar tareas del cliente seleccionado, si existe
-            if (this.clienteSeleccionado?.id) {
-              this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).pipe(takeUntil(this.destroy$)).subscribe({
-                next: (tareas) => {
-                  this.tareasAgregadas = tareas || [];
-                  this.mostrarTabla = this.tareasAgregadas.length > 0;
-                  localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-                },
-                error: (error) => {
-                  console.error('Error al cargar tareas:', error);
-                  this.toastr.error(error.message || 'Error al cargar las tareas');
-                  this.tareasAgregadas = [];
-                  this.mostrarTabla = false;
-                }
-              });
-            }
-
-          },
-          error: (error) => {
-            console.error('Error al cargar clientes por empresa:', error);
-            // this.toastr.error(error.message || 'Error al cargar los clientes');
-            this.clientes = [];
-            this.updatePaginatedClientes();
-          }
-        });
-      }
-    },
-    error: (error) => {
-      //this.toastr.error(error.message || 'Error al cargar las empresas');
-      console.error('[EMPRESA] Error al cargar empresas:', error);
+      return;
     }
-  });
-}
+    // Los stores reaccionan automáticamente via liveQuery.
+    // Este método ahora solo dispara un refresh HTTP en background.
+    this.empresaStore.refreshFromRemote();
+  }
 
 
   openListaEmpresasModal(): void {
@@ -657,9 +1035,13 @@ if (this.presupuestoPendiente) {
       if (result.isConfirmed) {
         this.empresaService.deleteEmpresa(id).subscribe({
           next: () => {
-            this.toastr.success('Empresa eliminada correctamente', 'Éxito');
-            this.empresas = this.empresas.filter(empresa => empresa.id !== id);
-            this.updatePaginatedEmpresas();
+            this.removeEmpresaFromState(id);
+            this.toastr.success(
+              navigator.onLine
+                ? 'Empresa eliminada correctamente'
+                : 'Empresa eliminada localmente. Se sincronizara cuando vuelva la conexion.',
+              'Exito'
+            );
           },
           error: (error) => {
             this.toastr.error(error.message || 'Error al eliminar la empresa', 'Error');
@@ -670,8 +1052,6 @@ if (this.presupuestoPendiente) {
     });
   }
 
-  // ...el método editarEmpresa ahora redirige al componente de edición
-
 
 
 
@@ -679,14 +1059,13 @@ if (this.presupuestoPendiente) {
 
     this.clienteService.deleteCliente(id).subscribe({
       next: () => {
-        this.toastr.success('Cliente eliminado correctamente', 'Éxito');
-        // Actualizar la lista de clientes
-        this.clientes = this.clientes.filter(cliente => cliente.id !== id);
-        // Ajustar la página actual si es necesario
-        if (this.paginatedClientes.length === 1 && this.currentPage > 1) {
-          this.currentPage--;
-        }
-        this.updatePaginatedClientes();
+        this.removeClienteFromState(id);
+        this.toastr.success(
+          navigator.onLine
+            ? 'Cliente eliminado correctamente'
+            : 'Cliente eliminado localmente. Se sincronizara cuando vuelva la conexion.',
+          'Exito'
+        );
       },
       error: (error) => {
         console.error('Error al eliminar cliente:', error);
@@ -700,11 +1079,7 @@ if (this.trialMode) {
   const key = `demoCliente_${id}`;
   localStorage.removeItem(key);
 
-  this.clientes = this.clientes.filter(cliente => cliente.id !== id);
-  if (this.paginatedClientes.length === 1 && this.currentPage > 1) {
-    this.currentPage--;
-  }
-  this.updatePaginatedClientes();
+  this.removeClienteFromState(id);
   this.toastr.success('Cliente eliminado en modo demo', 'Éxito');
   return;
 }
@@ -721,20 +1096,7 @@ if (this.trialMode) {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.clienteService.deleteCliente(id).subscribe({
-          next: () => {
-            this.toastr.success('Cliente eliminado correctamente', 'Éxito');
-            this.clientes = this.clientes.filter(cliente => cliente.id !== id);
-            if (this.paginatedClientes.length === 1 && this.currentPage > 1) {
-              this.currentPage--;
-            }
-            this.updatePaginatedClientes();
-          },
-          error: (error) => {
-            console.error('Error al eliminar cliente:', error);
-            this.toastr.error(error.message || 'Error al eliminar el cliente', 'Error');
-          }
-        });
+        this.deleteCliente(id);
       }
     });
   }
@@ -776,57 +1138,6 @@ if (this.trialMode) {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
-
-
-/*
-ngAfterViewInit() {
-    const menuBtn = document.getElementById('menuToggleBtn');
-    const offcanvasElement = document.getElementById('offcanvasMenu');
-    if (menuBtn && offcanvasElement) {
-      offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
-        menuBtn.style.display = 'none';
-      });
-      offcanvasElement.addEventListener('hidden.bs.offcanvas', () => {
-        menuBtn.style.display = 'flex';
-      });
-    }
-
-    // Limpiar modal-backdrop y restaurar foco para modales
-    const modals = ['exampleModal', 'imageModal', 'clientModal', 'miModal'];
-    modals.forEach(modalId => {
-      const modalElement = document.getElementById(modalId);
-      if (modalElement) {
-        modalElement.addEventListener('show.bs.modal', () => {
-          const backdrops = document.querySelectorAll('.modal-backdrop');
-          backdrops.forEach(backdrop => backdrop.remove());
-        });
-        modalElement.addEventListener('hidden.bs.modal', () => {
-          const triggerButton = document.querySelector(`[data-bs-target="#${modalId}"]`) as HTMLElement;
-          if (triggerButton) triggerButton.focus();
-          const backdrops = document.querySelectorAll('.modal-backdrop');
-          backdrops.forEach(backdrop => backdrop.remove());
-        });
-      }
-    });
-
-    // Lógica para reabrir el modal de empresa al cerrar el de imagen, evitando bucles
-    const imageModal = document.getElementById('imageModal');
-    if (imageModal) {
-      imageModal.addEventListener('hidden.bs.modal', () => {
-        // Solo reabrir si el modal de empresa no está abierto y el flag está activo
-        const empresaModal = document.getElementById('exampleModal');
-        if (this.reabrirEmpresaModal && empresaModal && !empresaModal.classList.contains('show')) {
-          setTimeout(() => {
-            const modal = new bootstrap.Modal(empresaModal);
-            modal.show();
-            this.reabrirEmpresaModal = false;
-          }, 300);
-        } else {
-          this.reabrirEmpresaModal = false;
-        }
-      });
-    }
-  }*/
 
 
 
@@ -967,6 +1278,7 @@ ngAfterViewInit() {
   descargarQRSvg() {
     if (this.qrCode) this.qrCode.download({ name: 'qr-generado', extension: 'svg' });
   }
+
 ngAfterViewInit() {
   const menuBtn = document.getElementById('menuToggleBtn');
   const offcanvasElement = document.getElementById('offcanvasMenu');
@@ -995,7 +1307,7 @@ ngAfterViewInit() {
           document.body.classList.remove('modal-open');
         }
       });
-      
+
       modalElement.addEventListener('hidden.bs.modal', () => {
         // Al ocultar, si no hay más modales visibles, limpiar todo
         setTimeout(() => {
@@ -1068,17 +1380,7 @@ ngAfterViewInit() {
   this.initQR();
 }
 
-obtenerTareas0(): void {
-  if (this.userData?.pais) {
-    this.tareaService.getTareasByPais(this.userData.pais).subscribe({
-      next: (tareas) => {
-        this.tareas = tareas;
-        this.tareasFiltradas = tareas;
-      },
-      error: () => this.toastr.error('Error al obtener las tareas', 'Error')
-    });
-  }
-}
+
 
 // src/app/componentes/dashboard/dashboard.component.ts shareReplay
 obtenerTareas(): void {
@@ -1094,57 +1396,15 @@ obtenerTareas(): void {
 }
 
 
-// src/app/componentes/dashboard/dashboard.component.ts localstoarage
-obtenerTareas1(): void {
-  if (!this.userData?.pais) return;
-
-  const key = `tareas_${this.userData.pais}`;
-  const cached = localStorage.getItem(key);
-
-  if (cached) {
-    this.tareas = JSON.parse(cached);
-    this.tareasFiltradas = this.tareas;
-    return;
-  }
-
-  this.tareaService.getTareasByPais(this.userData.pais).subscribe({
-    next: (tareas) => {
-      this.tareas = tareas;
-      this.tareasFiltradas = tareas;
-      localStorage.setItem(key, JSON.stringify(tareas));
-    },
-    error: () => this.toastr.error('Error al obtener las tareas', 'Error')
-  });
-}
 
 
 
 
-loadTareasAgregadas0(): void {
-  // Cargar desde localStorage como respaldo inicial
-  const storedTareas = localStorage.getItem('tareasAgregadas');
-  if (storedTareas) {
-    this.tareasAgregadas = JSON.parse(storedTareas);
-    this.mostrarTabla = this.tareasAgregadas.length > 0;
-  }
-
-  // Sincronizar con el backend
-  if (this.userCode) {
-    this.userTareaService.getTareasByUserCode(this.userCode).subscribe({
-      next: (tareas) => {
-        this.tareasAgregadas = tareas;
-        this.mostrarTabla = tareas.length > 0;
-        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas)); // Actualizar localStorage
-      },
-      error: () => {
-        this.toastr.error('Error al cargar las tareas agregadas del backend', 'Error');
-      }
-    });
-  }
-}
 
 
-loadTareasAgregadas(): void {
+
+
+async loadTareasAgregadas(): Promise<void> {
     // Cargar desde localStorage como respaldo inicial
 
   /*if (this.trialMode) {
@@ -1162,20 +1422,24 @@ if (this.trialMode) {
   return;
 }
 
-
-    const storedTareas = localStorage.getItem('tareasAgregadas');
-    if (storedTareas) {
-      this.tareasAgregadas = JSON.parse(storedTareas);
+    const storedTasks = await this.getStoredAuthTasksLocal(this.clienteSeleccionado?.id ?? null);
+    if (storedTasks.length > 0) {
+      this.tareasAgregadas = storedTasks;
       this.mostrarTabla = this.tareasAgregadas.length > 0;
     }
 
+    if (!navigator.onLine && storedTasks.length > 0) {
+      return;
+    }
+
     // Sincronizar con el backend
-    if (this.clienteSeleccionado?.id) {
-      this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).pipe(takeUntil(this.destroy$)).subscribe({
+    const clienteId = this.clienteSeleccionado?.id;
+    if (clienteId != null) {
+      this.userTareaService.getTareasByClienteId(clienteId).pipe(takeUntil(this.destroy$)).subscribe({
         next: (tareas) => {
           this.tareasAgregadas = tareas;
-          this.mostrarTabla = tareas.length > 0;
-          localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+          this.actualizarTablaYStorage();
+          this.userTareaService.cacheTareasByClienteId(clienteId, this.tareasAgregadas);
         },
         error: () => {
           this.toastr.error('Error al cargar las tareas agregadas del backend', 'Error');
@@ -1186,23 +1450,6 @@ if (this.trialMode) {
 
 
 
-    seleccionar0(tarea: Tarea): void {
-  if (!this.clienteSeleccionado) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Falta selección',
-      text: 'Debe seleccionar un cliente.',
-      confirmButtonText: 'Aceptar',
-      customClass: {
-        popup: 'swal2-border-radius',
-        confirmButton: 'btn btn-primary'
-      }
-    });
-    return;
-  }
-  this.tareaSeleccionada = { ...tarea, descripcion: '', totalCost: this.calcularTotalCosto(tarea) };
-  this.abrirModal();
-  }
 
   seleccionar(tarea: Tarea): void {
   // Verificar si hay empresa seleccionada
@@ -1272,37 +1519,6 @@ if (this.trialMode) {
 
 
 
-/*
-actualizarTarea(): void {
-  if (this.tareaSeleccionada?.id) {
-    const updatedTarea: UserTarea = {
-      ...this.tareaSeleccionada,
-      userCode: this.userCode,
-      pais: this.userData.pais,
-      rubro: this.tareaSeleccionada.rubro || '',
-      categoria: this.tareaSeleccionada.categoria || '',
-      totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
-    };
-    this.userTareaService.updateUserTarea(this.tareaSeleccionada.id, updatedTarea).subscribe({
-      next: () => {
-        this.toastr.success('Tarea actualizada', 'Éxito');
-        this.loadTareasAgregadas(); // Recargar desde backend y actualizar localStorage y servicio
-        this.resetTareaSeleccionada();
-      },
-      error: () => {
-        const index = this.tareasAgregadas.findIndex(t => t.id === this.tareaSeleccionada.id);
-        if (index !== -1) {
-          this.tareasAgregadas[index] = updatedTarea; // Actualizar localmente
-          localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-          this.presupuestoService.setTareasAgregadas(this.tareasAgregadas); // Actualizar en el servicio
-          this.toastr.error('Error al actualizar la tarea en el backend, actualizada localmente', 'Error');
-        }
-        this.resetTareaSeleccionada();
-      }
-    });
-  }
-}*/
-
 actualizarTarea(): void {
     if (this.tareaSeleccionada?.id) {
       const updatedTarea: UserTarea = {
@@ -1314,17 +1530,20 @@ actualizarTarea(): void {
         totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
       };
       this.userTareaService.updateUserTarea(this.tareaSeleccionada.id, updatedTarea).subscribe({
-        next: () => {
+        next: (tareaActualizada) => {
           this.toastr.success('Tarea actualizada', 'Éxito');
-          this.loadTareasAgregadas();
+          const index = this.tareasAgregadas.findIndex(t => t.id === this.tareaSeleccionada.id);
+          if (index !== -1) {
+            this.tareasAgregadas[index] = tareaActualizada;
+          }
+          this.actualizarTablaYStorage();
           this.resetTareaSeleccionada();
         },
         error: () => {
           const index = this.tareasAgregadas.findIndex(t => t.id === this.tareaSeleccionada.id);
           if (index !== -1) {
             this.tareasAgregadas[index] = updatedTarea;
-            localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-            this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+            this.actualizarTablaYStorage();
             this.toastr.error('Error al actualizar la tarea en el backend, actualizada localmente', 'Error');
           }
           this.resetTareaSeleccionada();
@@ -1335,68 +1554,6 @@ actualizarTarea(): void {
 
 
 
-/*
-agregarTarea0(): void {
-  const nuevaTarea: UserTarea = {
-    ...this.tareaSeleccionada,
-    userCode: this.userCode,
-    pais: this.userData.pais,
-    rubro: this.tareaSeleccionada.rubro || '',
-    categoria: this.tareaSeleccionada.categoria || '',
-    totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
-  };
-  this.userTareaService.addUserTarea(nuevaTarea).subscribe({
-    next: (tarea) => {
-      this.tareasAgregadas.push(tarea);
-      this.mostrarTabla = true;
-      localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-      this.presupuestoService.setTareasAgregadas(this.tareasAgregadas); // Guardar en localStorage
-      this.toastr.success('Tarea agregada', 'Éxito', {
-        toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
-      });
-      this.resetTareaSeleccionada();
-    },
-    error: () => {
-      this.tareasAgregadas.push(nuevaTarea); // Guardar en localStorage como respaldo
-      this.mostrarTabla = true;
-      localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-      this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
-      this.toastr.error('Error al agregar la tarea al backend, guardada localmente', 'Error');
-      this.resetTareaSeleccionada();
-    }
-  });
-}*/
-
-agregarTarea1(): void {
-    const nuevaTarea: UserTarea = {
-      ...this.tareaSeleccionada,
-  clienteId: this.clienteSeleccionado?.id ?? 0, // Usa clienteId seguro
-      pais: this.userData.pais,
-      rubro: this.tareaSeleccionada.rubro || '',
-      categoria: this.tareaSeleccionada.categoria || '',
-      totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
-    };
-    this.userTareaService.addUserTarea(nuevaTarea).subscribe({
-      next: (tarea) => {
-        this.tareasAgregadas.push(tarea);
-        this.mostrarTabla = true;
-        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-        this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
-        this.toastr.success('Tarea agregada', 'Éxito', {
-          toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
-        });
-        this.resetTareaSeleccionada();
-      },
-      error: () => {
-        this.tareasAgregadas.push(nuevaTarea);
-        this.mostrarTabla = true;
-        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-        this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
-        this.toastr.error('Error al agregar la tarea al backend, guardada localmente', 'Error');
-        this.resetTareaSeleccionada();
-      }
-    });
-  }
 
 
 agregarTarea(): void {
@@ -1457,6 +1614,7 @@ if (this.trialMode) {
       this.tareasAgregadas.push(nuevaTarea);
       this.mostrarTabla = true;
       localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+      localStorage.setItem(this.authTareasKey(clienteId), JSON.stringify(this.tareasAgregadas));
       this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
       this.saveToRecent(nuevaTarea); // Save to recent tasks
       if (mensaje) {
@@ -1475,6 +1633,7 @@ if (this.trialMode) {
         this.tareasAgregadas.push(tarea);
         this.mostrarTabla = true;
         localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+        localStorage.setItem(this.authTareasKey(clienteId), JSON.stringify(this.tareasAgregadas));
         this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
         this.saveToRecent(tarea); // Save to recent tasks
         this.toastr.success('Tarea agregada', 'Exito', {
@@ -1489,7 +1648,7 @@ if (this.trialMode) {
     });
   }
 
-  verPresupuesto(): void {
+  async verPresupuesto(): Promise<void> {
   // Permitir vista previa incluso sin empresa o cliente seleccionados.
     localStorage.removeItem('selectedPresupuestoName');
   if (this.clienteSeleccionado) {
@@ -1505,111 +1664,37 @@ if (this.trialMode) {
   }
 
   localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas ?? []));
+  await this.localStore.setState('budget:active-preview', {
+    presupuesto: this.presupuestoSeleccionado,
+    empresa: this.selectedEmpresaId ?? null,
+    cliente: this.clienteSeleccionado ?? null,
+    tareas: this.tareasAgregadas ?? [],
+    name: this.presupuestoSeleccionado?.name || '',
+    budgetDate: this.budgetDate || new Date().toISOString()
+  });
   this.route.navigate(['/presupuesto']);
 
 
 
 }
 
-verPresupuesto0(): void {
-  if (!this.tareasAgregadas || this.tareasAgregadas.length === 0) {
-    Swal.fire({
-      icon: 'info',
-      title: 'Presupuesto sin tareas',
-      text: 'Agrega al menos una tarea para generar el presupuesto.',
-      confirmButtonText: 'Aceptar'
-    });
-    return;
-  }
-
-  if (this.clienteSeleccionado) {
-    localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
-  } else {
-    localStorage.removeItem('selectedCliente');
-  }
-
-  if (this.selectedEmpresaId) {
-    localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
-  } else {
-    localStorage.removeItem('selectedEmpresa');
-  }
-
-  localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas ?? []));
-  this.route.navigate(['/presupuesto']);
-}
 
 
-onCargarPresupuestoGuardado1(presupuesto: SavedPresupuesto): void {
-  this.tareasAgregadas = (presupuesto.tareas || []).map(t => ({ ...t }));
-  this.mostrarTabla = this.tareasAgregadas.length > 0;
-  localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-  this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
 
-  if (presupuesto.cliente) {
-    const cliente = presupuesto.cliente.id
-      ? this.clientes.find(c => c.id === presupuesto.cliente?.id) || presupuesto.cliente
-      : presupuesto.cliente;
-    this.clienteSeleccionado = cliente;
-    localStorage.setItem('selectedCliente', JSON.stringify(cliente));
-  } else {
-    this.clienteSeleccionado = null;
-    localStorage.removeItem('selectedCliente');
-  }
 
-  if (presupuesto.empresa) {
-    const empresa = presupuesto.empresa.id
-      ? this.empresas.find(e => e.id === presupuesto.empresa?.id) || presupuesto.empresa
-      : presupuesto.empresa;
-    this.selectedEmpresaId = empresa;
-    this.empresaName = empresa?.name || '';
-    this.empresaPhone = empresa?.phone || '';
-    this.empresaEmail = empresa?.email || '';
-    this.additionalDetailsEmpresa = empresa?.description || '';
-    this.empresaWebsite = empresa?.website || '';
-    this.empresaTikTok = empresa?.tiktok || '';
-    this.empresaInstagram = empresa?.instagram || '';
-    this.empresaFacebook = empresa?.facebook || '';
-    this.empresaCuilCuit = empresa?.cuilCuit || '';
-    if (empresa?.id) {
-      localStorage.setItem('selectedEmpresaId', String(empresa.id));
-    }
-    this.actualizarImagenEmpresa(empresa);
-  } else {
-    this.selectedEmpresaId = null;
-    localStorage.removeItem('selectedEmpresaId');
-    this.actualizarImagenEmpresa(null);
-  }
 
-  this.toastr.success('Presupuesto cargado correctamente', presupuesto.name);
-}
-
-onCargarPresupuestoGuardado0(presupuesto: SavedPresupuesto): void {
-
-  // Cargar tareas
-  this.tareasAgregadas = (presupuesto.tareas || []).map(t => ({ ...t }));
-  this.mostrarTabla = this.tareasAgregadas.length > 0;
-  localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-  this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
-
-  // Cargar cliente
-  if (presupuesto.cliente) {
-    const cliente = this.clientes.find(c => c.id === presupuesto.cliente.id) || presupuesto.cliente;
-    this.clienteSeleccionado = cliente;
-    localStorage.setItem('selectedCliente', JSON.stringify(cliente));
-  } else {
-    this.clienteSeleccionado = null;
-    localStorage.removeItem('selectedCliente');
-  }
-
-  // ELIMINA TODO ESTE BLOQUE (empresa ya no existe en el presupuesto)
-  // if (presupuesto.empresa) { ... }
-
-  this.toastr.success('Presupuesto cargado correctamente', presupuesto.name);
-}
-
-onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
+async onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): Promise<void> {
    this.presupuestoSeleccionado = presupuesto;
    localStorage.setItem('presupuestoCargado', JSON.stringify(presupuesto));
+   localStorage.setItem('selectedPresupuestoName', presupuesto.name);
+   await this.localStore.setState('budget:active-preview', {
+     presupuesto,
+     empresa: presupuesto.empresa || this.selectedEmpresaId || null,
+     cliente: presupuesto.cliente || null,
+     tareas: presupuesto.tareas || [],
+     name: presupuesto.name,
+     budgetDate: presupuesto.createdAt || new Date().toISOString()
+   });
 
 
   // 1. CARGAR TAREAS DEL PRESUPUESTO
@@ -1638,10 +1723,10 @@ onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
     }
 
     // Guardar en localStorage
-    localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
+    this.syncSelectedClienteStorage();
   } else {
     this.clienteSeleccionado = null;
-    localStorage.removeItem('selectedCliente');
+    this.syncSelectedClienteStorage();
     console.warn('El presupuesto no tiene cliente asociado');
   }
 
@@ -1668,13 +1753,6 @@ onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): void {
 
 
 
-toggleSavedBudgetsPanel0(): void {
-  const nextState = !this.showSavedBudgetsPanel;
-  this.showSavedBudgetsPanel = nextState;
-  if (nextState) {
-    this.showTareasPanel = false;
-  }
-}
 
 toggleSavedBudgetsPanel(): void {
   if (this.trialMode) {
@@ -1695,11 +1773,16 @@ toggleSavedBudgetsPanel(): void {
 }
 
 
-toggleTareasPanel0(): void {
-  this.showTareasPanel = !this.showTareasPanel;
-}
 
 toggleTareasPanel(): void {
+  // Sync from store signal — Angular effects may not have flushed yet after empresa/client switch
+  const storeTareas = this.userTareaStore.tareas();
+  if (storeTareas.length > 0 && this.tareasAgregadas.length === 0) {
+    this.tareasAgregadas = [...storeTareas];
+    this.mostrarTabla = true;
+    this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+  }
+
   if (!this.tareasAgregadas || this.tareasAgregadas.length === 0) {
     Swal.fire({
       title: 'Sin tareas',
@@ -1720,14 +1803,7 @@ onPresupuestoEliminado(p: SavedPresupuesto) {
   }
 }
 
-limpiarPresupuestoCargado0() {
- // this.tareasAgregadas = [];
-  //this.mostrarTabla = false;
-  //this.budgetDate = '';
-  this.clienteSeleccionado= null;
-  this.presupuestoSeleccionado = null;
-  localStorage.removeItem('selectedTareas');
-}
+
 
 limpiarPresupuestoCargado() {
   if (this.trialMode) {
@@ -1744,26 +1820,34 @@ limpiarPresupuestoCargado() {
   this.presupuestoSeleccionado = null;
   this.budgetDate = '';
   localStorage.removeItem('presupuestoCargado');
+  localStorage.removeItem('selectedPresupuestoName');
+  this.localStore.removeState('budget:active-preview');
 
 
   // Volver a cargar tareas normales del cliente seleccionado
   if (this.clienteSeleccionado?.id) {
+    const tareasLocales = this.getStoredAuthTasks(this.clienteSeleccionado.id);
+    if (tareasLocales.length > 0) {
+      this.applyCurrentTasks(tareasLocales);
+      if (!navigator.onLine) {
+        localStorage.removeItem('selectedTareas');
+        return;
+      }
+    }
+
     this.userTareaService.getTareasByClienteId(this.clienteSeleccionado.id).pipe(takeUntil(this.destroy$)).subscribe({
       next: (tareas) => {
-        this.tareasAgregadas = tareas || [];
-        this.mostrarTabla = this.tareasAgregadas.length > 0;
-        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+        this.applyCurrentTasks(tareas || []);
       },
       error: () => {
-        this.tareasAgregadas = [];
-        this.mostrarTabla = false;
+        if (tareasLocales.length === 0) {
+          this.applyCurrentTasks([]);
+        }
       }
     });
   } else {
     // Si no hay cliente seleccionado, limpiar todo
-    this.tareasAgregadas = [];
-    this.mostrarTabla = false;
-    localStorage.removeItem('tareasAgregadas');
+    this.applyCurrentTasks([]);
   }
 
   localStorage.removeItem('selectedTareas');
@@ -1771,18 +1855,12 @@ limpiarPresupuestoCargado() {
 
 
 
-onPresupuestoActualizado0(p: SavedPresupuesto) {
-  // si es el que está cargado, refrescá todo
-  if (this.presupuestoSeleccionado?.id === p.id) {
-    this.onCargarPresupuestoGuardado(p); // recarga tareas, cliente, nombre
-    localStorage.setItem('presupuestoCargado', JSON.stringify(p));
-  }
-}
 
 onPresupuestoActualizado(p: SavedPresupuesto) {
   // actualizar estado y localStorage
   this.presupuestoSeleccionado = p;
   localStorage.setItem('presupuestoCargado', JSON.stringify(p));
+  localStorage.setItem('selectedPresupuestoName', p.name);
 
   // refrescar tareas y UI usando tu método existente
   this.onCargarPresupuestoGuardado(p);
@@ -1846,26 +1924,7 @@ private loadColorScheme(): ColorScheme {
     );
   }
 
-openClientModal0(): void {
-  if (this.trialMode) {
-    const demoClientes = Object.keys(localStorage)
-      .filter(key => key.startsWith('demoCliente_'))
-      .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
-      .filter(c => c && c.empresaId === this.selectedEmpresaId?.id);
 
-    if (demoClientes.length >= 1) {
-      this.toastr.info('En modo demo solo podés crear 1 cliente', 'Modo demo');
-      return;
-    }
-  }
-
-  const modalElement = document.getElementById('clientModal');
-  if (!modalElement) {
-    return;
-  }
-  const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-  modalInstance.show();
-}
 
 openClientModal(): void {
   if (this.trialMode) {
@@ -1899,92 +1958,6 @@ openClientModal(): void {
 
 
 
-
-        eliminarTarea0(index: number): void {
-    if (index >= 0 && index < this.tareasAgregadas.length) {
-      this.tareasAgregadas.splice(index, 1);
-      this.mostrarTabla = this.tareasAgregadas.length > 0;
-    }
-  }
-
-  eliminarTarea1(id: number): void {
-  this.userTareaService.deleteUserTarea(id).subscribe({
-    next: () => {
-      this.tareasAgregadas = this.tareasAgregadas.filter(tarea => tarea.id !== id);
-      this.mostrarTabla = this.tareasAgregadas.length > 0;
-      this.toastr.success('Tarea eliminada', 'Éxito', {
-        toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
-      });
-    },
-    error: () => this.toastr.error('Error al eliminar la tarea', 'Error')
-  });
-}
-
-eliminarTarea00(id: number): void {
-  this.userTareaService.deleteUserTarea(id).subscribe({
-    next: () => {
-      this.tareasAgregadas = this.tareasAgregadas.filter(tarea => tarea.id !== id);
-      this.mostrarTabla = this.tareasAgregadas.length > 0;
-      localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas)); // Actualizar localStorage
-      this.toastr.success('Tarea eliminada', 'Éxito', {
-        toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
-      });
-    },
-    error: () => {
-      this.tareasAgregadas = this.tareasAgregadas.filter(tarea => tarea.id !== id); // Eliminar localmente
-      this.mostrarTabla = this.tareasAgregadas.length > 0;
-      localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-      this.toastr.error('Error al eliminar la tarea del backend, eliminada localmente', 'Error');
-    }
-  });
-}
-
-eliminarTarea11(id: number): void {
-  this.userTareaService.deleteUserTarea(id).subscribe({
-    next: () => {
-      // Éxito: tarea eliminada del backend
-      this.tareasAgregadas = this.tareasAgregadas.filter(t => t.id !== id);
-      this.actualizarTablaYStorage();
-      this.toastr.success('Tarea eliminada correctamente', 'Éxito', {
-        toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
-      });
-    },
-    error: (err) => {
-      const errorMessage = err.error?.error || err.message || 'Error desconocido';
-
-      // Caso específico: tarea asociada a presupuestos
-      if (errorMessage.includes('asociada') || errorMessage.includes('referenced') || errorMessage.includes('presupuesto')) {
-        this.toastr.warning(
-          'No se puede eliminar esta tarea porque está incluida en uno o más presupuestos guardados.\n' +
-          'Si quieres borrarla permanentemente, elimina primero los presupuestos que la contienen.',
-          'Tarea en uso',
-          { timeOut: 8000, closeButton: true }
-        );
-      } else {
-        this.toastr.error('Error al eliminar la tarea del servidor', 'Error');
-      }
-
-      // En ambos casos, eliminar localmente para mantener consistencia visual
-      //this.tareasAgregadas = this.tareasAgregadas.filter(t => t.id !== id);
-      this.actualizarTablaYStorage();
-    }
-  });
-}
-
-solicitarConfirmacionEliminarTarea0(tarea: UserTarea): void {
-  if (!tarea?.id) {
-    return;
-  }
-  this.tareaAEliminar = tarea.id;
-  this.tareaDescripcionAEliminar = tarea.tarea || tarea.descripcion || null;
-  const modalElement = document.getElementById('confirmDeleteTareaModal');
-  if (!modalElement) {
-    this.eliminarTarea(tarea.id);
-    return;
-  }
-  const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-  modalInstance.show();
-}
 
 solicitarConfirmacionEliminarTarea(tarea: UserTarea): void {
   if (!tarea?.id) {
@@ -2112,6 +2085,19 @@ eliminarTarea(id: number): void {
 private actualizarTablaYStorage() {
   this.mostrarTabla = this.tareasAgregadas.length > 0;
   localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+  localStorage.setItem(this.authTareasKey(this.clienteSeleccionado?.id ?? null), JSON.stringify(this.tareasAgregadas));
+  this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+  // persistCurrentTasksLocal() removido: los servicios ya escriben en IDB
+  // al mutar; llamarlo aquí causaría loop liveQuery → effect → IDB → liveQuery
+
+  if (!this.trialMode) {
+    if (this.clienteSeleccionado?.id) {
+      this.userTareaService.cacheTareasByClienteId(this.clienteSeleccionado.id, this.tareasAgregadas);
+    }
+    if (this.userCode) {
+      this.userTareaService.cacheTareasByUserCode(this.userCode, this.tareasAgregadas);
+    }
+  }
 
   if (this.tareasAgregadas.length === 0) {
     this.showTareasPanel = false;
@@ -2123,16 +2109,6 @@ private actualizarTablaYStorage() {
 
 
 
-      calcularTotalCosto0(tarea: Tarea): number {
-        return (tarea.area || 0) * (tarea.costo || 0) * (1 - (tarea.descuento || 0) / 100);
-      }
-
-      calcularCostoTotal0(): number {
-        return this.tareasAgregadas
-        .reduce((total, tarea) =>
-          total + (tarea.totalCost || 0),
-         0);
-      }
 
 
       calcularTotalCosto(tarea: Tarea | UserTarea): number {
@@ -2231,82 +2207,11 @@ calcularCostoTotal(): number {
 
 
 
-    uploadImage0(): void {
-    const fileInput = this.imageInput?.nativeElement as HTMLInputElement;
-    if (!fileInput) {
-      console.error('Error: Elemento de entrada de imagen no encontrado.');
-      this.toastr.error('Error: No se encontró el campo de imagen.');
-      return;
-    }
-    const file = fileInput.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        const imageBase64 = e.target.result;
-        localStorage.setItem('uploadedImage', imageBase64);
-        const modalPreview = this.modalImagePreview?.nativeElement as HTMLImageElement;
-        if (modalPreview) {
-          modalPreview.src = imageBase64;
-          modalPreview.style.display = 'block';
-        }
-        const mainPreview = document.getElementById('fixedImageIcon') as HTMLImageElement;
-        const mainPreview2 = document.getElementById('fixedImageIconmodal') as HTMLImageElement;
-        if (mainPreview) {
-          mainPreview.src = imageBase64;
-          mainPreview.style.display = 'block';
-        }
-        if (mainPreview2) {
-          mainPreview2.src = imageBase64;
-          mainPreview2.style.display = 'block';
-        }
-        this.uploadMessage.nativeElement.style.display = 'block';
-        this.toastr.success('Imagen subida con éxito.');
-      };
-      reader.readAsDataURL(file);
-    } else {
-      console.error('Error: No se seleccionó ninguna imagen.');
-      this.toastr.error('Por favor, selecciona una imagen.');
-    }
-  }
 
 
 
-uploadImage1(): void {
-  const fileInput = this.imageInput?.nativeElement as HTMLInputElement;
-  if (!fileInput) {
-    this.toastr.error('Error: No se encontró el campo de imagen.');
-    return;
-  }
-  const file = fileInput.files?.[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const imageBase64 = e.target.result;
-      localStorage.setItem('uploadedImage', imageBase64);
-      const modalPreview = this.modalImagePreview?.nativeElement as HTMLImageElement;
-      if (modalPreview) {
-        modalPreview.src = imageBase64;
-        modalPreview.style.display = 'block';
-      }
-      const mainPreview = document.getElementById('fixedImageIcon') as HTMLImageElement;
-      const mainPreview2 = document.getElementById('fixedImageIconmodal') as HTMLImageElement;
-      if (mainPreview) {
-        mainPreview.src = imageBase64;
-        mainPreview.style.display = 'block';
-      }
-      if (mainPreview2) {
-        mainPreview2.src = imageBase64;
-        mainPreview2.style.display = 'block';
-      }
-      this.uploadMessage.nativeElement.style.display = 'block';
-      this.toastr.success('Imagen subida con éxito.');
-    };
-    reader.readAsDataURL(file);
-  } else {
-    this.toastr.error('Por favor, selecciona una imagen.');
-    console.error('Error: No se seleccionó ninguna imagen.');
-  }
-}
+
+
 
  uploadImage(): void {
 
@@ -2347,28 +2252,15 @@ uploadImage1(): void {
     }
 
     const file = fileInput.files[0];
-    this.empresaService.uploadImage(file, this.userCode).subscribe({
+    this.empresaService.uploadImage(file, this.userCode, this.selectedEmpresaId?.id).subscribe({
       next: (url) => {
-        this.logoUrl = url; // Almacena la URL retornada por el backend
-        const modalPreview = this.modalImagePreview?.nativeElement as HTMLImageElement;
-        if (modalPreview) {
-          modalPreview.src = url;
-          modalPreview.style.display = 'block';
-        }
-        const mainPreview = document.getElementById('fixedImageIcon') as HTMLImageElement;
-        const mainPreview2 = document.getElementById('fixedImageIconmodal') as HTMLImageElement;
-        if (mainPreview) {
-          mainPreview.src = url;
-          mainPreview.style.display = 'block';
-        }
-        if (mainPreview2) {
-          mainPreview2.src = url;
-          mainPreview2.style.display = 'block';
-        }
-        if (this.uploadMessage) {
-          this.uploadMessage.nativeElement.style.display = 'block';
-        }
-        this.toastr.success('Imagen subida con éxito.');
+        localStorage.setItem('uploadedImage', url);
+        this.applyImageUrl(url);
+        this.toastr.success(
+          navigator.onLine
+            ? 'Imagen subida con exito.'
+            : 'Imagen guardada localmente. Se subira cuando vuelva la conexion.'
+        );
       },
       error: (err) => {
         this.toastr.error(`Error al subir la imagen: ${err.message}`);
@@ -2386,31 +2278,6 @@ onImageChange(event: Event): void {
 
 
 
-
-
-
-
-saveFormData0() {
-  const formData = {
-    name: this.empresaName,
-    phone: this.empresaPhone,
-    email: this.empresaEmail,
-    description: this.additionalDetailsEmpresa,
-    website: this.empresaWebsite,
-    tiktok: this.empresaTikTok,
-    instagram: this.empresaInstagram,
-    facebook: this.empresaFacebook,
-    cuilCuit: this.empresaCuilCuit,
-    logoUrl: localStorage.getItem('uploadedImage') || '',
-    userCode: this.userCode
-  };
-  this.empresaService.saveEmpresa(formData).subscribe({
-    next: (empresa) => {
-      this.toastr.success('Datos de la empresa guardados', 'Éxito');
-    },
-    error: () => this.toastr.error('Error al guardar los datos de la empresa', 'Error')
-  });
-}
 
   saveFormData(): void {
 
@@ -2495,12 +2362,17 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       return;
     }
 
+    const syncedUploadedImage = localStorage.getItem('uploadedImage') || '';
+    const resolvedLogoUrl = navigator.onLine && this.logoUrl.startsWith('data:image/')
+      ? syncedUploadedImage || this.logoUrl
+      : this.logoUrl;
+
     const formData: Empresa = {
       name: this.empresaName,
       phone: this.empresaPhone,
       email: this.empresaEmail,
       description: this.additionalDetailsEmpresa,
-      logoUrl: this.logoUrl,
+      logoUrl: resolvedLogoUrl,
       userCode: this.userCode,
       website: this.empresaWebsite,
       tiktok: this.empresaTikTok,
@@ -2521,9 +2393,17 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
     if (this.empresaEditId !== null) {
       // Modo edición: actualizar empresa existente
       this.empresaService.updateEmpresa(this.empresaEditId, formData).subscribe({
-        next: () => {
-          this.toastr.success('Empresa actualizada correctamente', 'Éxito');
-          this.getEmpresasByUserCode();
+        next: (empresaActualizada) => {
+          this.toastr.success(
+            Number(empresaActualizada?.id) < 0
+              ? 'Empresa actualizada localmente. Se sincronizara cuando vuelva la conexion.'
+              : 'Empresa actualizada correctamente',
+            'Exito'
+          );
+          this.applySavedEmpresa({ ...formData, ...empresaActualizada, id: this.empresaEditId ?? empresaActualizada.id });
+          if (navigator.onLine) {
+            this.getEmpresasByUserCode();
+          }
           this.limpiarEmpresaForm();
         },
         error: (err) => {
@@ -2534,9 +2414,17 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
     } else {
       // Modo creación: crear nueva empresa
       this.empresaService.saveEmpresa(formData).subscribe({
-        next: () => {
-          this.toastr.success('Datos de la empresa guardados', 'Éxito');
-          this.getEmpresasByUserCode();
+        next: (empresaCreada) => {
+          this.toastr.success(
+            Number(empresaCreada?.id) < 0
+              ? 'Empresa guardada localmente. Se sincronizara cuando vuelva la conexion.'
+              : 'Datos de la empresa guardados',
+            'Exito'
+          );
+          this.applySavedEmpresa(empresaCreada);
+          if (navigator.onLine) {
+            this.getEmpresasByUserCode();
+          }
           this.limpiarEmpresaForm();
         },
         error: (err) => {
@@ -2579,57 +2467,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
 
 
 
-saveClientData0(form: NgForm): void {
-    if (!this.validateForm(form)) {
-      return;
-    }
 
-    if (!this.selectedEmpresaId?.id) {
-      this.toastr.error('Debe seleccionar una empresa', 'Error');
-      return;
-    }
-
-    const clientData: Cliente = {
-      name: this.clientName,
-      contact: this.clientContact,
-      budgetDate: this.budgetDate,
-      additionalDetails: this.additionalDetailsClient,
-      userCode: this.userCode,
-      email: this.clientEmail,
-      clave: this.clientClave,
-      direccion: this.clientDireccion,
-      empresaId: this.selectedEmpresaId.id // Captura empresaId de la empresa seleccionada
-    };
-
-    this.isSavingClient = true;
-    this.clienteService.saveCliente(clientData).subscribe({
-      next: (cliente) => {
-        localStorage.setItem(`clientData_${cliente.id || Date.now()}`, JSON.stringify(cliente));
-        this.toastr.success('Cliente guardado con éxito');
-        this.clientName = '';
-        this.clientContact = '';
-        this.budgetDate = new Date().toISOString().split('T')[0];
-        this.additionalDetailsClient = '';
-        this.clientEmail = '';
-        this.clientClave = '';
-        this.clientDireccion = '';
-        const confirmationMessage = document.getElementById('confirmationMessage');
-        if (confirmationMessage) {
-          confirmationMessage.style.display = 'block';
-          setTimeout(() => confirmationMessage.style.display = 'none', 3000);
-        }
-        const modal = bootstrap.Modal.getInstance(document.getElementById('clientModal'));
-        modal?.hide();
-        this.isSavingClient = false;
-      },
-      error: (error) => {
-        localStorage.setItem(`clientData_temp_${Date.now()}`, JSON.stringify(clientData));
-        console.error('Error al guardar cliente:', error.message, clientData);
-        this.toastr.error(error.message || 'Error al guardar el cliente');
-        this.isSavingClient = false;
-      }
-    });
-  }
 
 
   saveClientData(form: NgForm): void {
@@ -2683,28 +2521,8 @@ saveClientData0(form: NgForm): void {
   const localCliente = { ...clientData, id: localId };
   localStorage.setItem(`demoCliente_${localId}`, JSON.stringify(localCliente));
 
-  this.clientes = [...this.clientes, localCliente];
-  this.updatePaginatedClientes();
-  this.toastr.success('Cliente guardado en modo demo');
-
-  // limpiar formulario igual que en el flujo normal
-  this.clientName = '';
-  this.clientContact = '';
-  this.budgetDate = new Date().toISOString().split('T')[0];
-  this.additionalDetailsClient = '';
-  this.clientEmail = '';
-  this.clientClave = '';
-  this.clientDireccion = '';
-
-  const confirmationMessage = document.getElementById('confirmationMessage');
-  if (confirmationMessage) {
-    confirmationMessage.style.display = 'block';
-    setTimeout(() => confirmationMessage.style.display = 'none', 3000);
-  }
-
-  const modal = bootstrap.Modal.getInstance(document.getElementById('clientModal'));
-  modal?.hide();
-  this.isSavingClient = false;
+  this.applySavedCliente(localCliente);
+  this.finishClientSaveFlow('Cliente guardado en modo demo');
   return;
 }
 
@@ -2713,22 +2531,12 @@ saveClientData0(form: NgForm): void {
     this.clienteService.saveCliente(clientData).subscribe({
       next: (cliente) => {
         localStorage.setItem(`clientData_${cliente.id || Date.now()}`, JSON.stringify(cliente));
-        this.toastr.success('Cliente guardado con éxito');
-        this.clientName = '';
-        this.clientContact = '';
-        this.budgetDate = new Date().toISOString().split('T')[0];
-        this.additionalDetailsClient = '';
-        this.clientEmail = '';
-        this.clientClave = '';
-        this.clientDireccion = '';
-        const confirmationMessage = document.getElementById('confirmationMessage');
-        if (confirmationMessage) {
-          confirmationMessage.style.display = 'block';
-          setTimeout(() => confirmationMessage.style.display = 'none', 3000);
-        }
-        const modal = bootstrap.Modal.getInstance(document.getElementById('clientModal'));
-        modal?.hide();
-        this.isSavingClient = false;
+        this.applySavedCliente(cliente);
+        this.finishClientSaveFlow(
+          Number(cliente?.id) < 0
+            ? 'Cliente guardado localmente. Se sincronizara cuando vuelva la conexion.'
+            : 'Cliente guardado con exito'
+        );
       },
       error: (error) => {
         localStorage.setItem(`clientData_temp_${Date.now()}`, JSON.stringify(clientData));
@@ -2794,12 +2602,7 @@ saveClientData0(form: NgForm): void {
     }
   }
 
-  abrirModalImagen0(): void {
-    const fileInput = this.imageInput?.nativeElement as HTMLInputElement;
-    if (fileInput) {
-      fileInput.click(); // Abre el selector de archivos
-    }
-  }
+
 
 
 
@@ -2869,16 +2672,16 @@ saveClientData0(form: NgForm): void {
   cambiarTamanoFuenteLista(accion: 'increase' | 'decrease'): void {
     const tabla = document.getElementById('tabla');
     if (!tabla) return;
-    
+
     const currentSize = window.getComputedStyle(tabla).fontSize;
     let newSize = parseFloat(currentSize);
-    
+
     if (accion === 'increase') {
       newSize += 1;
     } else {
       newSize -= 1;
     }
-    
+
     tabla.style.setProperty('font-size', `${newSize}px`, 'important');
     const cells = tabla.querySelectorAll('td, th, span, div');
     cells.forEach(cell => {
@@ -2935,23 +2738,55 @@ openListaClientesModal(): void {
 
 
 fetchUserData(): void {
-  this.authService.getUserCode(this.userCode).pipe(takeUntil(this.destroy$)).subscribe(
-    response => {
+  const cachedRaw = localStorage.getItem('userData');
+  const hasCachedData = !!cachedRaw;
+
+  if (hasCachedData) {
+    try {
+      this.userData = JSON.parse(cachedRaw!);
+      if (this.userData?.fechaVencimiento) {
+        this.calculateRemainingTime(this.userData.fechaVencimiento);
+      }
+      this.loadProvincias();
+      this.obtenerTareas();
+      this.loadWeather();
+    } catch { /* ignore parse error */ }
+  }
+
+  this.authService.getUserCode(this.userCode).pipe(takeUntil(this.destroy$)).subscribe({
+    next: response => {
       this.userData = response;
       localStorage.setItem('userData', JSON.stringify(this.userData));
+      void this.localStore.setState(this.dashboardStateKey('userData'), this.userData).catch(() => {});
       if (this.userData.fechaVencimiento) {
-      this.calculateRemainingTime(this.userData.fechaVencimiento);
-    }
-    this.loadProvincias();
-    this.obtenerTareas();
-    this.loadWeather();
-  },
-    error => {
+        this.calculateRemainingTime(this.userData.fechaVencimiento);
+      }
+      if (!hasCachedData) {
+        this.loadProvincias();
+        this.obtenerTareas();
+        this.loadWeather();
+      }
+    },
+    error: async error => {
+      if (hasCachedData) return;
       console.error('Error al obtener datos del usuario:', error);
+      const indexedUserData = await this.localStore.getState<any>(this.dashboardStateKey('userData'));
+      if (indexedUserData) {
+        this.userData = indexedUserData;
+        localStorage.setItem('userData', JSON.stringify(this.userData));
+        if (this.userData?.fechaVencimiento) {
+          this.calculateRemainingTime(this.userData.fechaVencimiento);
+        }
+        this.loadProvincias();
+        this.obtenerTareas();
+        this.loadWeather();
+        this.toastr.info('Usando datos locales del usuario mientras no haya conexion.');
+        return;
+      }
       this.toastr.error('Error al obtener los datos del usuario', 'Error');
-      this.route.navigate(['']); // Redirigir al login
+      this.route.navigate(['']);
     }
-  );
+  });
 }
 
 
@@ -2961,8 +2796,14 @@ fetchUserData(): void {
       this.provinciaService.getProvinciasByPais(this.userData.pais).pipe(takeUntil(this.destroy$)).subscribe(
         provincias => {
           this.provincias = provincias;
+          this.cacheProvincias(this.userData?.pais || '', provincias);
         },
         error => {
+          const cached = this.getCachedProvincias(this.userData?.pais);
+          if (cached.length > 0) {
+            this.provincias = cached;
+            return;
+          }
           this.toastr.error('Error al cargar las provincias', 'Error');
         }
       );
@@ -2972,290 +2813,54 @@ fetchUserData(): void {
   }
 
 
-   onEmpresaSeleccionada1(empresa: any) {
-    // Versión optimizada: obtiene clientes y tareas asociadas a cada cliente
-    this.selectedEmpresaId = empresa;
-    if (empresa && empresa.id) {
-      localStorage.setItem('selectedEmpresaId', String(empresa.id));
-      this.clienteService.getClientesByEmpresaId(empresa.id).subscribe({
-        next: (clientes) => {
-          this.clientes = clientes || [];
-          this.updatePaginatedClientes();
-          // Obtener tareas asociadas a cada cliente
-          if (this.clientes.length > 0) {
-            this.clientes.forEach(cliente => {
-              if (cliente.id) {
-                this.userTareaService.getTareasByClienteId(cliente.id).subscribe({
-                  next: (_tareas) => {
-                  },
-                  error: (error) => {
-                    console.error(`Error al cargar tareas para cliente ${cliente.name} (ID: ${cliente.id}):`, error);
-                  }
-                });
-              }
-            });
-          }
-        },
-        error: (error) => {
-          console.error('Error al cargar clientes por empresa:', error);
-          this.toastr.error(error.message || 'Error al cargar los clientes');
-          this.clientes = [];
-          this.updatePaginatedClientes();
-        }
-      });
-    } else {
-      this.selectedEmpresaId = null;
-      localStorage.removeItem('selectedEmpresaId');
-      this.clientes = [];
-      this.updatePaginatedClientes();
-    }
-    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
-    if (empresa && empresa.logoUrl && imageElement) {
-      imageElement.src = empresa.logoUrl;
-      imageElement.style.display = 'block';
-    } else if (imageElement) {
-      imageElement.src = '#';
-      imageElement.style.display = 'none';
-    }
-  }
 
-  onEmpresaSeleccionada(empresa: any) {
-  localStorage.removeItem('selectedPresupuestoName');
-  this.presupuestoSeleccionado = null;
 
-  this.selectedEmpresaId = empresa;
-
-  // Limpiar cliente seleccionado al cambiar de empresa
-  this.clienteSeleccionado = null;
-  this.tareasAgregadas = [];
-  this.mostrarTabla = false;
-
-  if (empresa && empresa.id) {
-    localStorage.setItem('selectedEmpresaId', String(empresa.id));
-    localStorage.setItem('selectedEmpresa', JSON.stringify(empresa));
-
-    // Cargar datos de la empresa en el modal
-    this.cargarDatosEmpresaSeleccionada();
-
-    // Actualizar imagen
-    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
-    if (empresa.logoUrl && imageElement) {
-      imageElement.src = empresa.logoUrl;
-      imageElement.style.display = 'block';
-    } else if (imageElement) {
-      imageElement.src = '#';
-      imageElement.style.display = 'none';
-    }
-
-    if (this.trialMode) {
-      const demoClientes = Object.keys(localStorage)
-        .filter(key => key.startsWith('demoCliente_'))
-        .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
-        .filter(c => c && c.empresaId === empresa.id);
-
-      const testClients: Cliente[] = [
-        {
-          id: 10001,
-          name: 'Constructora del Sol S.A.',
-          contact: '11-4455-6677',
-          email: 'contacto@constructoradelsol.com',
-          direccion: 'Av. Libertador 1500, CABA',
-          budgetDate: new Date().toISOString().split('T')[0],
-          empresaId: empresa.id,
-          additionalDetails: 'Cliente corporativo - Refacción oficinas',
-          userCode: 'demo',
-          clave: '30-12345678-9'
-        },
-        {
-          id: 10002,
-          name: 'Ing. Ricardo Martínez',
-          contact: '221-555-0987',
-          email: 'rmartinez@email.com',
-          direccion: 'Calle 50 nro 123, La Plata',
-          budgetDate: new Date().toISOString().split('T')[0],
-          empresaId: empresa.id,
-          additionalDetails: 'Particular - Proyecto vivienda unifamiliar',
-          userCode: 'demo',
-          clave: '20-98765432-1'
-        }
-      ];
-
-      this.clientes = [...testClients, ...demoClientes];
-      this.updatePaginatedClientes();
-
-      const storedClienteId = localStorage.getItem('selectedClienteId');
-      const clienteGuardado = storedClienteId
-        ? this.clientes.find(c => String(c.id) === storedClienteId)
-        : null;
-
-      const clienteFinal = clienteGuardado || this.clientes[0];
-      if (clienteFinal) {
-        this.seleccionarCliente(clienteFinal);
-        this.loadTareasAgregadas();
-      }
-
+  onEmpresaSeleccionada(empresa: any): void {
+    const normalizedEmpresa = this.normalizeEmpresaSelection(empresa);
+    if (!normalizedEmpresa) {
       return;
     }
 
+    const currentEmpresaId = Number(this.empresaStore.selected()?.id ?? null);
+    if (Number.isFinite(currentEmpresaId) && currentEmpresaId === Number(normalizedEmpresa.id)) {
+      this.selectedEmpresaId = normalizedEmpresa;
+      this.syncSelectedEmpresaStorage(normalizedEmpresa);
+      this.cargarDatosEmpresaSeleccionada();
+      void this.actualizarImagenEmpresa(normalizedEmpresa);
+      return;
+    }
 
+    this.clearEmpresaDependentState();
 
-    // Cargar clientes
-    this.clienteService.getClientesByEmpresaId(empresa.id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (clientes) => {
-        this.clientes = clientes || [];
+    if (this.trialMode) {
+      // Demo: cargar clientes hardcodeados + localStorage
+      this.selectedEmpresaId = normalizedEmpresa;
+      this.syncSelectedEmpresaStorage(normalizedEmpresa);
+      this.cargarDatosEmpresaSeleccionada();
+      void this.actualizarImagenEmpresa(normalizedEmpresa);
+      if (normalizedEmpresa?.id) {
+        const demoClientes = Object.keys(localStorage)
+          .filter(key => key.startsWith('demoCliente_'))
+          .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
+          .filter(c => c && c.empresaId === normalizedEmpresa.id);
+        const testClients: Cliente[] = [
+          { id: 10001, name: 'Constructora del Sol S.A.', contact: '11-4455-6677', email: 'contacto@constructoradelsol.com', direccion: 'Av. Libertador 1500, CABA', budgetDate: new Date().toISOString().split('T')[0], empresaId: normalizedEmpresa.id, additionalDetails: 'Cliente corporativo - Refacción oficinas', userCode: 'demo', clave: '30-12345678-9' },
+          { id: 10002, name: 'Ing. Ricardo Martínez', contact: '221-555-0987', email: 'rmartinez@email.com', direccion: 'Calle 50 nro 123, La Plata', budgetDate: new Date().toISOString().split('T')[0], empresaId: normalizedEmpresa.id, additionalDetails: 'Particular - Proyecto vivienda unifamiliar', userCode: 'demo', clave: '20-98765432-1' }
+        ];
+        this.clientes = [...testClients, ...demoClientes];
         this.updatePaginatedClientes();
-
-        /*const ultimoCliente = this.clientes[this.clientes.length - 1];
-        if (ultimoCliente) {
-          this.seleccionarCliente(ultimoCliente);
-          this.loadTareasAgregadas();
-        }*/
-
-   const storedClienteId = localStorage.getItem('selectedClienteId');
-const clienteGuardado = storedClienteId
-  ? this.clientes.find(c => String(c.id) === storedClienteId)
-  : null;
-
-// si no hay stored, usa el último (o el primero si prefieres)
-const clienteFinal = clienteGuardado || this.clientes[this.clientes.length - 1];
-
-if (clienteFinal) {
-  this.seleccionarCliente(clienteFinal); // guarda selectedClienteId + selectedCliente
-  this.loadTareasAgregadas(); // trae tareas del backend y actualiza localStorage
-}
-
-
-
-
-        // Forzar detección de cambios si usas ChangeDetectionStrategy.OnPush
-        // this.cdr.detectChanges();
-
-        // Obtener tareas asociadas a cada cliente
-        if (this.clientes.length > 0) {
-          this.clientes.forEach(cliente => {
-            if (cliente.id) {
-              this.userTareaService.getTareasByClienteId(cliente.id).subscribe({
-                next: (_tareas) => {
-                },
-                error: (error) => {
-                  console.error(`Error al cargar tareas para cliente ${cliente.name} (ID: ${cliente.id}):`, error);
-                }
-              });
-            }
-          });
-        }
-      },
-      error: (error) => {
-        console.error('Error al cargar clientes por empresa:', error);
-
-        // Limpiar clientes y cliente seleccionado
-        this.clientes = [];
-        this.clienteSeleccionado = null;
-        this.updatePaginatedClientes();
-
-        // Mensaje más amigable cuando no hay clientes
-       /* if (error.status === 404) {
-          this.toastr.info('Esta empresa no tiene clientes registrados aún', 'Sin clientes');
-        } else {
-          this.toastr.error(error.message || 'Error al cargar los clientes');
-        }*/
-
-        // Forzar detección de cambios
-        // this.cdr.detectChanges();
+        const savedId = localStorage.getItem('selectedClienteId');
+        const clienteFinal = (savedId ? this.clientes.find(c => String(c.id) === savedId) : null) ?? this.clientes[0];
+        if (clienteFinal) this.seleccionarCliente(clienteFinal);
       }
-    });
-  } else {
-    // Limpiar todo si no hay empresa seleccionada
-    this.selectedEmpresaId = null;
-    this.clienteSeleccionado = null;
-    localStorage.removeItem('selectedEmpresaId');
-    this.clientes = [];
-    this.updatePaginatedClientes();
-
-    // Limpiar campos del modal
-    this.empresaName = '';
-    this.empresaPhone = '';
-    this.empresaEmail = '';
-    this.additionalDetailsEmpresa = '';
-    this.empresaWebsite = '';
-    this.empresaCuilCuit = '';
-
-    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
-    if (imageElement) {
-      imageElement.src = '#';
-      imageElement.style.display = 'none';
+      return;
     }
+
+    // Modo autenticado: el store maneja todo el cascade reactivamente
+    this.empresaStore.select(normalizedEmpresa);
   }
-}
 
-onEmpresaSeleccionada0(empresa: Empresa) {
-  this.selectedEmpresa = empresa; // Objeto completo
-  this.selectedEmpresaId = empresa?.id || null; // ID separado
 
-  // Limpiar cliente seleccionado al cambiar de empresa
-  this.clienteSeleccionado = null;
-
-  if (empresa && empresa.id) {
-    localStorage.setItem('selectedEmpresaId', String(empresa.id));
-
-    // Cargar datos en el modal
-    this.empresaName = empresa.name || '';
-    this.empresaPhone = empresa.phone || '';
-    this.empresaEmail = empresa.email || '';
-    this.additionalDetailsEmpresa = empresa.description || '';
-    this.empresaWebsite = empresa.website || '';
-    this.empresaCuilCuit = empresa.cuilCuit || '';
-    this.empresaTikTok = empresa.tiktok || '';
-    this.empresaInstagram = empresa.instagram || '';
-    this.empresaFacebook = empresa.facebook || '';
-    this.showSocialFields = this.hasSocialData();
-
-    // Actualizar imagen
-    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
-    if (empresa.logoUrl && imageElement) {
-      imageElement.src = empresa.logoUrl;
-      imageElement.style.display = 'block';
-    } else if (imageElement) {
-      imageElement.src = '#';
-      imageElement.style.display = 'none';
-    }
-
-    // Cargar clientes por empresa
-    this.clienteService.getClientesByEmpresaId(empresa.id).subscribe({
-      next: (clientes) => {
-        this.clientes = clientes || [];
-        this.updatePaginatedClientes();
-      },
-      error: (error) => {
-        console.error('Error al cargar clientes por empresa:', error);
-        this.clientes = [];
-        this.clienteSeleccionado = null;
-        this.updatePaginatedClientes();
-      }
-    });
-  } else {
-    // Limpieza cuando no hay empresa
-    this.selectedEmpresa = null;
-    this.selectedEmpresaId = null;
-    this.clienteSeleccionado = null;
-    localStorage.removeItem('selectedEmpresaId');
-    this.clientes = [];
-    this.updatePaginatedClientes();
-
-    this.empresaName = '';
-    this.empresaPhone = '';
-    this.empresaEmail = '';
-    this.additionalDetailsEmpresa = '';
-    this.empresaWebsite = '';
-    this.empresaCuilCuit = '';
-
-    const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
-    if (imageElement) {
-      imageElement.src = '#';
-      imageElement.style.display = 'none';
-    }
-  }
-}
 
 
 
@@ -3284,12 +2889,33 @@ onEmpresaSeleccionada0(empresa: Empresa) {
         //console.log('Tiempo restante:', this.remainingTime);
       }
 
-  actualizarImagenEmpresa(empresa: any) {
+  private _logoResolveToken: symbol | null = null;
+
+  async actualizarImagenEmpresa(empresa: any): Promise<void> {
+    const token = Symbol();
+    this._logoResolveToken = token;
+    const resolvedLogoUrl = await this.resolveEmpresaLogoUrl(empresa);
+    // Si mientras esperábamos cambió la empresa, descartar el resultado
+    if (this._logoResolveToken !== token) return;
+    this.currentEmpresaLogoUrl = resolvedLogoUrl || '';
+    const logoKey = this.empresaLogoKey(empresa);
+    if (logoKey) {
+      this.empresaLogoUrls = {
+        ...this.empresaLogoUrls,
+        [logoKey]: resolvedLogoUrl || String(empresa?.logoUrl || '')
+      };
+    }
     const imageElement = document.getElementById('fixedImageIcon') as HTMLImageElement;
-    if (empresa && empresa.logoUrl && imageElement) {
-      imageElement.src = empresa.logoUrl;
+    if (resolvedLogoUrl && imageElement) {
+      imageElement.onerror = () => {
+        imageElement.onerror = null;
+        imageElement.src = '#';
+        imageElement.style.display = 'none';
+      };
+      imageElement.src = resolvedLogoUrl;
       imageElement.style.display = 'block';
     } else if (imageElement) {
+      imageElement.onerror = null;
       imageElement.src = '#';
       imageElement.style.display = 'none';
     }
@@ -3307,6 +2933,13 @@ onEmpresaSeleccionada0(empresa: Empresa) {
     const location = this.getLocationName();
     if (!location) {
       this.weatherError = 'Sin ubicación configurada';
+      return;
+    }
+    const cachedWeather = this.getCachedWeather(location);
+    if (!navigator.onLine && cachedWeather) {
+      this.currentWeather = cachedWeather.currentWeather;
+      this.dailyForecast = cachedWeather.dailyForecast;
+      this.weatherError = '';
       return;
     }
     this.weatherLoading = true;
@@ -3341,9 +2974,19 @@ onEmpresaSeleccionada0(empresa: Empresa) {
       } else {
         this.dailyForecast = [];
       }
+      this.cacheWeather(location, {
+        currentWeather: this.currentWeather,
+        dailyForecast: this.dailyForecast
+      });
     } catch (error) {
       console.error('Error al cargar clima', error);
-      this.weatherError = 'No se pudo cargar el clima. Intenta más tarde.';
+      if (cachedWeather) {
+        this.currentWeather = cachedWeather.currentWeather;
+        this.dailyForecast = cachedWeather.dailyForecast;
+        this.weatherError = 'Mostrando el ultimo clima guardado localmente.';
+      } else {
+        this.weatherError = 'No se pudo cargar el clima. Intenta más tarde.';
+      }
     } finally {
       this.weatherLoading = false;
     }
@@ -3414,21 +3057,21 @@ onEmpresaSeleccionada0(empresa: Empresa) {
 
   cargarTareaReciente(tarea: any): void {
     this.tareaSeleccionada = { ...tarea };
-    
+
     // Close the recent tasks modal
     const modalEl = document.getElementById('recentTasksModal');
     if (modalEl) {
       const modalInstance = bootstrap.Modal.getInstance(modalEl);
       if (modalInstance) modalInstance.hide();
     }
-    
+
     // Ensure the add task modal is open
     const miModalEl = document.getElementById('miModal');
     if (miModalEl) {
       const miModalInstance = bootstrap.Modal.getInstance(miModalEl) || new bootstrap.Modal(miModalEl);
       miModalInstance.show();
     }
-    
+
     this.toastr.info('Tarea cargada para editar', 'Historial');
   }
 

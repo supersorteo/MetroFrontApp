@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
@@ -675,8 +675,7 @@ export class CalculadoraMaterialesComponent implements OnInit {
   constructor(
     private calculadoraMaterialesService: CalculadoraMaterialesService,
     private toast: AppToastService,
-    private router: Router,
-    private location: Location
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -851,7 +850,7 @@ export class CalculadoraMaterialesComponent implements OnInit {
   cerrarHistorial(): void { this.historialOpen.set(false); }
   goBack(): void {
     this.cerrarSidebar();
-    this.location.back();
+    this.router.navigate(['/dashboard']);
   }
   irAlDashboard(): void {
     this.cerrarSidebar();

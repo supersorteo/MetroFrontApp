@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -76,8 +76,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private adminService: AdminService,
     private router: Router,
-    private toastr: ToastrService,
-    private location: Location
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
@@ -100,7 +99,12 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.location.back();
+    const returnUrl = this.adminService.consumeReturnUrl();
+    if (returnUrl && returnUrl !== '/admin-generate-code') {
+      this.router.navigateByUrl(returnUrl);
+      return;
+    }
+    this.router.navigate(['/']);
   }
 
   private showConfirm(icon: string, title: string, message: string, position: 'top' | 'bottom', action: () => void): void {

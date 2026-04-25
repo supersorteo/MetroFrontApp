@@ -7,6 +7,7 @@ import { Empresa, EmpresaService } from '../../servicios/empresa.service';
 import { ToastrService } from 'ngx-toastr';
 import { AccessCode, AuthService } from '../../servicios/auth.service';
 import { Router, RouterModule } from '@angular/router';
+import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
 declare var html2pdf: any;
 
 interface ColorScheme {
@@ -63,7 +64,8 @@ export class DatosDeTareasComponent implements OnInit {
     private clienteService: ClienteService,
     private empresaService: EmpresaService,
     private toastr: ToastrService,
-    private route: Router
+    private route: Router,
+    private localStore: OfflineLocalStoreService
   ) {}
 
   private getBackgroundColorRgba(hex: string, alpha: number): string {
@@ -77,8 +79,18 @@ export class DatosDeTareasComponent implements OnInit {
     return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.colorScheme = this.loadColorScheme();
+
+    const activePreview = await this.localStore.getState<any>('budget:active-preview');
+    if (activePreview) {
+      this.empresaSeleccionada = activePreview.empresa || activePreview.presupuesto?.empresa || null;
+      this.clienteSeleccionado = activePreview.cliente || activePreview.presupuesto?.cliente || null;
+      this.tareasAgregadas = activePreview.tareas || activePreview.presupuesto?.tareas || [];
+      this.presupuestoNombre = activePreview.name || activePreview.presupuesto?.name || '';
+      this.loadPreviewOptions();
+      return;
+    }
 
     // Recuperar empresa para datos descriptivos (nombre, logo, etc)
     const storedEmpresa = localStorage.getItem('selectedEmpresa');
