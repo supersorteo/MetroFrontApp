@@ -34,7 +34,12 @@ export class BudgetService {
     return this.presupuestosSubject.value;
   }
 
+  limpiarPresupuestos(): void {
+    this.setBudgets([]);
+  }
+
   cargarPresupuestosPorCliente(clienteId: number): Observable<SavedPresupuesto[]> {
+    this.setBudgets([]);
     if (!navigator.onLine) {
       return from(this.getLocalBudgets(clienteId)).pipe(
         map(presupuestos => {
@@ -49,7 +54,14 @@ export class BudgetService {
       tap(presupuestos => {
         this.setBudgets(presupuestos);
         this.persistBudgets(clienteId, presupuestos);
-        presupuestos.forEach(presupuesto => this.localStore.upsertPresupuesto(presupuesto));
+        const empresa = this.getSelectedEmpresa();
+        presupuestos.forEach(presupuesto => {
+          // Enrich con empresa si el server no la retorna, para que IDB tenga referencia correcta
+          const enriched = empresa && !presupuesto.empresa
+            ? { ...presupuesto, empresa }
+            : presupuesto;
+          void this.localStore.upsertPresupuesto(enriched);
+        });
       }),
       catchError(err =>
         from(this.getLocalBudgets(clienteId)).pipe(
@@ -73,10 +85,12 @@ export class BudgetService {
 
     return this.http.post<SavedPresupuesto>(this.apiUrl, payload).pipe(
       tap(nuevo => {
-        const actualizados = [nuevo, ...this.presupuestosSubject.value.filter(p => p.id !== nuevo.id)];
+        const empresa = this.getSelectedEmpresa();
+        const enriched = empresa && !nuevo.empresa ? { ...nuevo, empresa } : nuevo;
+        const actualizados = [enriched, ...this.presupuestosSubject.value.filter(p => p.id !== enriched.id)];
         this.setBudgets(actualizados);
-        this.persistBudgets(clienteId, actualizados);
-        this.localStore.upsertPresupuesto(nuevo);
+        this.persistBudgets(clienteId, actualizados, this.resolveEmpresaId(enriched));
+        this.localStore.upsertPresupuesto(enriched);
       }),
       catchError(err =>
         this.isOfflineLikeError(err)
@@ -96,13 +110,15 @@ export class BudgetService {
 
     return this.http.put<SavedPresupuesto>(`${this.apiUrl}/${id}`, payload).pipe(
       tap(actualizado => {
+        const empresa = this.getSelectedEmpresa();
+        const enriched = empresa && !actualizado.empresa ? { ...actualizado, empresa } : actualizado;
         const actuales = [...this.presupuestosSubject.value];
         const indice = actuales.findIndex(p => p.id === id);
         if (indice !== -1) {
-          actuales[indice] = actualizado;
+          actuales[indice] = enriched;
           this.setBudgets(actuales);
-          this.persistBudgets(clienteId, actuales);
-          this.localStore.upsertPresupuesto(actualizado);
+          this.persistBudgets(clienteId, actuales, this.resolveEmpresaId(enriched));
+          this.localStore.upsertPresupuesto(enriched);
         }
       }),
       catchError(err =>
@@ -171,15 +187,22 @@ export class BudgetService {
     const localBudget = this.buildLocalBudget(payload);
     const actualizados = [localBudget, ...this.presupuestosSubject.value.filter(p => p.id !== localBudget.id)];
 
+    const syncPayload = {
+      name: localBudget.name,
+      cliente: { id: localBudget.cliente?.id },
+      ...(localBudget.empresa?.id ? { empresa: { id: localBudget.empresa.id } } : {}),
+      tareas: localBudget.tareas.map(t => ({ id: t.id }))
+    };
+
     return from(
       Promise.all([
         this.localStore.upsertPresupuesto(localBudget, 'pending'),
-        this.offlineSync.addToQueue('presupuesto', 'create', localBudget, this.apiUrl, 'POST')
+        this.offlineSync.addToQueue('presupuesto', 'create', { ...syncPayload, id: localBudget.id }, this.apiUrl, 'POST')
       ])
     ).pipe(
       tap(() => {
         this.setBudgets(actualizados);
-        this.persistBudgets(clienteId, actualizados);
+        this.persistBudgets(clienteId, actualizados, this.resolveEmpresaId(localBudget));
       }),
       map(() => localBudget)
     );
@@ -195,11 +218,20 @@ export class BudgetService {
     const actualizado = this.mergeBudget(actuales[indice], payload);
     actuales[indice] = actualizado;
 
+    const buildSyncPayload = (p: SavedPresupuesto) => ({
+      id: p.id,
+      name: p.name,
+      cliente: { id: p.cliente?.id },
+      ...(p.empresa?.id ? { empresa: { id: p.empresa.id } } : {}),
+      tareas: p.tareas.map(t => ({ id: t.id }))
+    });
+
     const pendingOperation = id < 0
       ? this.localStore.upsertPresupuesto(actualizado, 'pending').then(async () => {
-          const replaced = await this.offlineSync.replacePendingCreatePayload('presupuesto', id, actualizado);
+          const syncPayload = buildSyncPayload(actualizado);
+          const replaced = await this.offlineSync.replacePendingCreatePayload('presupuesto', id, syncPayload);
           if (!replaced) {
-            await this.offlineSync.addToQueue('presupuesto', 'create', actualizado, this.apiUrl, 'POST');
+            await this.offlineSync.addToQueue('presupuesto', 'create', syncPayload, this.apiUrl, 'POST');
           }
         })
       : Promise.all([
@@ -220,7 +252,7 @@ export class BudgetService {
     return from(pendingOperation).pipe(
       tap(() => {
         this.setBudgets(actuales);
-        this.persistBudgets(clienteId, actuales);
+        this.persistBudgets(clienteId, actuales, this.resolveEmpresaId(actualizado));
       }),
       map(() => actualizado)
     );
@@ -319,19 +351,35 @@ export class BudgetService {
     this.presupuestosSubject.next([...budgets]);
   }
 
-  private persistBudgets(clienteId: number, budgets: SavedPresupuesto[]): void {
+  private persistBudgets(clienteId: number, budgets: SavedPresupuesto[], empresaId = this.getSelectedEmpresaId()): void {
     if (clienteId) {
-      localStorage.setItem(this.cacheKey(clienteId), JSON.stringify(budgets));
+      localStorage.setItem(this.cacheKey(clienteId, empresaId), JSON.stringify(budgets));
     }
   }
 
   private async getLocalBudgets(clienteId: number): Promise<SavedPresupuesto[] | null> {
-    const indexedBudgets = await this.localStore.listPresupuestosByClienteId(clienteId);
+    const empresaId = this.getSelectedEmpresaId();
+    const indexedBudgets = await this.localStore.listPresupuestosByClienteId(clienteId, empresaId);
     if (indexedBudgets.length > 0) {
       return indexedBudgets as SavedPresupuesto[];
     }
 
-    return this.readJson<SavedPresupuesto[]>(this.cacheKey(clienteId));
+    const byEmpresa = this.readJson<SavedPresupuesto[]>(this.cacheKey(clienteId, empresaId));
+    if (byEmpresa) return byEmpresa;
+
+    const legacy = this.readJson<SavedPresupuesto[]>(this.legacyCacheKey(clienteId));
+    if (!legacy) return null;
+
+    // Filter legacy data by empresa to prevent cross-empresa leak
+    if (Number.isFinite(empresaId) && Number(empresaId) > 0) {
+      const filtered = legacy.filter(p => {
+        const pEmpresaId = Number(p.empresa?.id ?? p.cliente?.empresaId);
+        return !pEmpresaId || pEmpresaId === empresaId;
+      });
+      return filtered.length > 0 ? filtered : null;
+    }
+
+    return legacy;
   }
 
   private readJson<T>(key: string): T | null {
@@ -343,8 +391,27 @@ export class BudgetService {
     }
   }
 
-  private cacheKey(clienteId: number): string {
+  private cacheKey(clienteId: number, empresaId?: number | null): string {
+    const empresaSegment = Number.isFinite(empresaId) ? String(empresaId) : 'sin-empresa';
+    return `authPresupuestosEmpresa_${empresaSegment}_Cliente_${clienteId}`;
+  }
+
+  private legacyCacheKey(clienteId: number): string {
     return `authPresupuestosCliente_${clienteId}`;
+  }
+
+  private getSelectedEmpresaId(): number | undefined {
+    const empresaId = Number(this.getSelectedEmpresa()?.id);
+    return Number.isFinite(empresaId) ? empresaId : undefined;
+  }
+
+  private resolveEmpresaId(presupuesto: SavedPresupuesto | null | undefined): number | undefined {
+    const empresaId = Number(
+      presupuesto?.empresa?.id ??
+      presupuesto?.cliente?.empresaId ??
+      this.getSelectedEmpresaId()
+    );
+    return Number.isFinite(empresaId) ? empresaId : undefined;
   }
 
   private generateTempId(): number {

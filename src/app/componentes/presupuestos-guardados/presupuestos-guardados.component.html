@@ -8,12 +8,13 @@
         placeholder="Nombre del presupuesto"
       />
       <button
+        type="button"
         class="btn btn-primary"
         (click)="guardarPresupuestoActual()"
-        [disabled]="!puedeGuardarr"
-        [title]="!puedeGuardarr ? getMensajeBotonDeshabilitado() : (presupuestoCargado ? 'Actualizar presupuesto' : 'Guardar presupuesto')"
+        [disabled]="!puedeEjecutarAccionPrincipal || isSavingBudget"
+        [title]="!puedeEjecutarAccionPrincipal ? getMensajeBotonDeshabilitado() : (presupuestoCargado ? 'Actualizar presupuesto cargado' : 'Guardar presupuesto')"
       >
-        {{ presupuestoCargado ? 'Actualizar' : 'Guardar' }}
+        {{ isSavingBudget ? 'Procesando...' : (presupuestoCargado ? 'Actualizar' : 'Guardar') }}
       </button>
       <div>
         <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
@@ -29,6 +30,18 @@
     @if (!tareasActuales.length) {
       <small class="text-muted">
         Agrega tareas para poder guardar este presupuesto.
+      </small>
+    }
+
+    @if (presupuestoCargado) {
+      <small class="text-muted d-block">
+        Presupuesto cargado: <strong>{{ presupuestoCargado.name }}</strong>
+      </small>
+    }
+
+    @if (presupuestoCargado && !puedeActualizarPresupuestoCargado) {
+      <small class="text-warning d-block">
+        Para actualizar desde este panel, primero carga el presupuesto desde la lista.
       </small>
     }
 
@@ -63,6 +76,9 @@
           <div class="saved-budget-info">
             <strong>
               {{ presupuesto.name }}
+              @if (esPresupuestoCargado(presupuesto)) {
+                <span class="badge text-bg-primary ms-2">Cargado</span>
+              }
               @if (esPendienteDeSync(presupuesto)) {
                 <span class="badge text-bg-warning ms-2">Pendiente de sync</span>
               }
@@ -76,16 +92,21 @@
           </div>
 
           <div class="saved-budget-actions">
-            <button class="btn btn-outline-primary btn-sm" (click)="cargar(presupuesto)">
+            <button type="button" class="btn btn-outline-primary btn-sm" (click)="cargar(presupuesto)">
               CARGAR
             </button>
-            <button (click)="editarPresupuesto(presupuesto)" class="btn btn-warning">
+            <button
+              type="button"
+              (click)="editarPresupuesto(presupuesto)"
+              class="btn btn-warning"
+              [title]="esPresupuestoCargado(presupuesto) ? 'Editar presupuesto cargado' : 'Primero debes cargar este presupuesto'"
+            >
               Editar
             </button>
-            <button class="btn btn-outline-danger btn-sm" (click)="eliminar(presupuesto)">
+            <button type="button" class="btn btn-outline-danger btn-sm" (click)="eliminar(presupuesto)">
               ELIMINAR
             </button>
-            <button class="btn btn-outline-secondary btn-sm" (click)="verPresupuesto(presupuesto)">
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="verPresupuesto(presupuesto)">
               VER / DESCARGAR
             </button>
           </div>
@@ -145,7 +166,7 @@
                         <td>{{ tarea.area }}</td>
                         <td>${{ tarea.totalCost | number:'1.2-2' }}</td>
                         <td>
-                          <button class="btn btn-sm btn-danger" (click)="quitarTareaEdicion(i)">
+                          <button type="button" class="btn btn-sm btn-danger" (click)="quitarTareaEdicion(i)">
                             Quitar
                           </button>
                         </td>
@@ -175,11 +196,12 @@
                 }
               </select>
               <button
+                type="button"
                 class="btn btn-success ms-2"
                 (click)="agregarTareaAlPresupuesto()"
-                [disabled]="!tareaAAgregarId"
+                [disabled]="!tareaAAgregarId || isAddingBudgetTask"
               >
-                Agregar
+                {{ isAddingBudgetTask ? 'Agregando...' : 'Agregar' }}
               </button>
             </div>
           </div>
@@ -191,9 +213,9 @@
             type="button"
             class="btn btn-warning"
             (click)="confirmarEdicion()"
-            [disabled]="!presupuestoEditando.name.trim()"
+            [disabled]="!presupuestoEditando.name.trim() || isConfirmingBudgetEdit"
           >
-            Guardar cambios
+            {{ isConfirmingBudgetEdit ? 'Guardando...' : 'Guardar cambios' }}
           </button>
         </div>
       } @else {

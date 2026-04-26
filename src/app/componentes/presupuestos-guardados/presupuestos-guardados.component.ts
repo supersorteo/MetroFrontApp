@@ -1,8 +1,8 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
+import { ActiveToast, ToastrService } from 'ngx-toastr';
 import Swal from 'sweetalert2';
 import { Cliente } from '../../servicios/cliente.service';
 import { Empresa } from '../../servicios/empresa.service';
@@ -37,6 +37,15 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   presupuestos: SavedPresupuesto[] = [];
   presupuestoEditando: SavedPresupuesto | null = null;
   tareaAAgregarId: number | null = null;
+  presupuestoHabilitadoParaActualizarId: number | null = null;
+  private activeBudgetToast: ActiveToast<any> | null = null;
+  isSavingBudget = false;
+  isConfirmingBudgetEdit = false;
+  isAddingBudgetTask = false;
+  private lastBudgetToastKey: string | null = null;
+  private lastBudgetToastAt = 0;
+  private lastBudgetActionKey: string | null = null;
+  private lastBudgetActionAt = 0;
 
   constructor(
     private toastr: ToastrService,
@@ -55,13 +64,23 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     }
   }
 
-  ngOnChanges(): void {
-    if (this.clienteActual?.id) {
-      this.cargarPresupuestos();
+  ngOnChanges(changes: SimpleChanges): void {
+    const relevantChange = changes['clienteActual'] || changes['empresaActual'];
+    if (relevantChange) {
+      if (this.clienteActual?.id) {
+        this.cargarPresupuestos();
+      } else {
+        this.budgetService.limpiarPresupuestos();
+      }
     }
 
     if (this.presupuestoCargado) {
       this.nombreTemporal = this.presupuestoCargado.name || '';
+      if (this.presupuestoCargado.cliente?.id !== this.clienteActual?.id) {
+        this.presupuestoHabilitadoParaActualizarId = null;
+      }
+    } else {
+      this.presupuestoHabilitadoParaActualizarId = null;
     }
   }
 
@@ -80,6 +99,10 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   }
 
   guardarPresupuestoActual(): void {
+    if (this.isSavingBudget) {
+      return;
+    }
+
     if (localStorage.getItem('trialMode') === 'true') {
       Swal.fire({
         icon: 'info',
@@ -118,32 +141,56 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     };
 
     if (this.presupuestoCargado?.id) {
+      if (!this.puedeActualizarPresupuestoCargado) {
+        this.showBudgetInfo(
+          'Debes cargar este presupuesto desde la lista para habilitar la actualización.',
+          'Actualización deshabilitada'
+        );
+        return;
+      }
+
+      this.isSavingBudget = true;
       this.budgetService.updatePresupuesto(this.presupuestoCargado.id, payload).subscribe({
         next: (actualizado) => {
+          console.debug('[budgets] update from main action', actualizado.id, actualizado.name);
+          this.isSavingBudget = false;
           this.presupuestoCargado = actualizado;
+          this.presupuestoHabilitadoParaActualizarId = actualizado.id;
           this.presupuestoActualizado.emit(actualizado);
           this.notifyBudgetSaved('actualizado', actualizado);
         },
         error: (err) => {
+          this.isSavingBudget = false;
           this.toastr.error(err.error?.error || 'Error al actualizar el presupuesto');
         }
       });
       return;
     }
 
+    this.isSavingBudget = true;
     this.budgetService.guardarPresupuesto(payload).subscribe({
       next: (nuevo) => {
+        this.isSavingBudget = false;
         this.nombreTemporal = '';
         this.notifyBudgetSaved('guardado', nuevo);
       },
       error: (err) => {
+        this.isSavingBudget = false;
         this.toastr.error(err.error?.error || 'Error al guardar el presupuesto');
       }
     });
   }
 
   cargar(presupuesto: SavedPresupuesto): void {
+    if (this.shouldSkipBudgetAction('load', presupuesto.id)) {
+      console.debug('[budgets] load skipped', presupuesto.id, presupuesto.name);
+      return;
+    }
+
+    console.debug('[budgets] load', presupuesto.id, presupuesto.name);
+    this.presupuestoHabilitadoParaActualizarId = presupuesto.id;
     this.cargarPresupuesto.emit(presupuesto);
+    this.showBudgetSuccess(`Presupuesto "${presupuesto.name}" cargado correctamente`, 'Listo');
   }
 
   async eliminar(presupuesto: SavedPresupuesto): Promise<void> {
@@ -188,6 +235,22 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     return this.tareasActuales.length > 0 && nombreValido && nombreUnico;
   }
 
+  get tienePresupuestoCargado(): boolean {
+    return !!this.presupuestoCargado?.id;
+  }
+
+  get puedeActualizarPresupuestoCargado(): boolean {
+    return this.tienePresupuestoCargado
+      && this.presupuestoHabilitadoParaActualizarId === this.presupuestoCargado?.id
+      && this.puedeGuardarr;
+  }
+
+  get puedeEjecutarAccionPrincipal(): boolean {
+    return this.tienePresupuestoCargado
+      ? this.puedeActualizarPresupuestoCargado
+      : this.puedeGuardarr;
+  }
+
   get isOffline(): boolean {
     return !navigator.onLine;
   }
@@ -206,6 +269,9 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   }
 
   getMensajeBotonDeshabilitado(): string {
+    if (this.tienePresupuestoCargado && this.presupuestoHabilitadoParaActualizarId !== this.presupuestoCargado?.id) {
+      return 'Carga el presupuesto desde la lista para habilitar la actualización';
+    }
     if (this.tareasActuales.length === 0) {
       return 'Agrega tareas para guardar';
     }
@@ -276,6 +342,14 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   }
 
   editarPresupuesto(presupuesto: SavedPresupuesto): void {
+    if (!this.esPresupuestoCargado(presupuesto)) {
+      this.showBudgetInfo(
+        'Debe cargar este presupuesto para poder editarlo.',
+        'Cargar presupuesto'
+      );
+      return;
+    }
+
     this.presupuestoEditando = {
       ...presupuesto,
       cliente: { ...presupuesto.cliente },
@@ -293,6 +367,10 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   }
 
   confirmarEdicion(): void {
+    if (this.isConfirmingBudgetEdit) {
+      return;
+    }
+
     if (!this.presupuestoEditando || !this.presupuestoEditando.name?.trim()) {
       this.toastr.error('El nombre es obligatorio');
       return;
@@ -304,14 +382,18 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       tareas: this.presupuestoEditando.tareas.map(t => ({ id: t.id }))
     };
 
+    this.isConfirmingBudgetEdit = true;
     this.budgetService.updatePresupuesto(this.presupuestoEditando.id, payload).subscribe({
       next: (actualizado) => {
+        console.debug('[budgets] update from edit modal', actualizado.id, actualizado.name);
+        this.isConfirmingBudgetEdit = false;
         this.presupuestoEditando = actualizado;
         this.presupuestoActualizado.emit(actualizado);
         this.notifyBudgetSaved('actualizado', actualizado);
         bootstrap.Modal.getInstance(document.getElementById('editarPresupuestoModal')!)?.hide();
       },
       error: (err) => {
+        this.isConfirmingBudgetEdit = false;
         console.error('%cERROR AL ACTUALIZAR', 'color: #F44336', err);
         this.toastr.error(err.error?.error || 'Error al actualizar');
       }
@@ -332,17 +414,17 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       return;
     }
 
-    this.budgetService.agregarTareaAPresupuesto(this.presupuestoEditando.id, this.tareaAAgregarId).subscribe({
-      next: (presupuestoActualizado) => {
-        this.presupuestoEditando = presupuestoActualizado;
-        this.tareaAAgregarId = null;
-        this.presupuestoActualizado.emit(presupuestoActualizado);
-        this.notifyBudgetSaved('actualizado', presupuestoActualizado);
-      },
-      error: (err) => {
-        this.toastr.error(err.error?.error || 'Error al agregar tarea');
-      }
-    });
+    const tarea = this.tareasDisponiblesParaAgregar.find(item => item.id === this.tareaAAgregarId);
+    if (!tarea) {
+      this.toastr.error('La tarea seleccionada ya no está disponible.');
+      return;
+    }
+
+    this.presupuestoEditando = {
+      ...this.presupuestoEditando,
+      tareas: [...this.presupuestoEditando.tareas, { ...tarea }]
+    };
+    this.tareaAAgregarId = null;
   }
 
   onTareaSeleccionadaChange(): void {
@@ -355,28 +437,85 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     return Number(presupuesto?.id) < 0;
   }
 
+  esPresupuestoCargado(presupuesto: SavedPresupuesto | null | undefined): boolean {
+    return Number(presupuesto?.id) > 0 && Number(this.presupuestoCargado?.id) === Number(presupuesto?.id);
+  }
+
   private notifyBudgetSaved(action: 'guardado' | 'actualizado', presupuesto: SavedPresupuesto): void {
+    if (this.shouldSkipBudgetAction(action, presupuesto.id)) {
+      console.debug('[budgets] notify skipped', action, presupuesto.id, presupuesto.name);
+      return;
+    }
+
+    console.debug('[budgets] notify', action, presupuesto.id, presupuesto.name);
     if (this.esPendienteDeSync(presupuesto)) {
-      this.toastr.info(
+      this.showBudgetInfo(
         `Presupuesto ${action} localmente. Se sincronizará cuando vuelva la conexión.`,
         'Guardado offline'
       );
       return;
     }
 
-    this.toastr.success(`Presupuesto ${action} correctamente`);
+    this.showBudgetSuccess(`Presupuesto ${action} correctamente`);
   }
 
   private notifyBudgetDeleted(presupuesto: SavedPresupuesto): void {
     if (this.esPendienteDeSync(presupuesto) || this.isOffline) {
-      this.toastr.info(
+      this.showBudgetInfo(
         'Presupuesto eliminado localmente. El cambio se sincronizará cuando vuelva la conexión.',
         'Eliminado offline'
       );
       return;
     }
 
-    this.toastr.info('Presupuesto eliminado');
+    this.showBudgetInfo('Presupuesto eliminado');
+  }
+
+  private showBudgetSuccess(message: string, title?: string): void {
+    if (this.shouldSkipBudgetToast('success', message, title)) {
+      return;
+    }
+    this.clearBudgetToast();
+    this.activeBudgetToast = this.toastr.success(message, title, { timeOut: 3000 });
+  }
+
+  private showBudgetInfo(message: string, title?: string): void {
+    if (this.shouldSkipBudgetToast('info', message, title)) {
+      return;
+    }
+    this.clearBudgetToast();
+    this.activeBudgetToast = this.toastr.info(message, title, { timeOut: 3000 });
+  }
+
+  private clearBudgetToast(): void {
+    if (this.activeBudgetToast?.toastId != null) {
+      this.toastr.clear(this.activeBudgetToast.toastId);
+    }
+    this.activeBudgetToast = null;
+  }
+
+  private shouldSkipBudgetToast(type: 'success' | 'info', message: string, title?: string): boolean {
+    const now = Date.now();
+    const key = `${type}|${title || ''}|${message}`;
+    if (this.lastBudgetToastKey === key && now - this.lastBudgetToastAt < 1200) {
+      return true;
+    }
+
+    this.lastBudgetToastKey = key;
+    this.lastBudgetToastAt = now;
+    return false;
+  }
+
+  private shouldSkipBudgetAction(action: 'load' | 'guardado' | 'actualizado', presupuestoId: number | null | undefined): boolean {
+    const now = Date.now();
+    const key = `${action}|${Number(presupuestoId) || 0}`;
+    if (this.lastBudgetActionKey === key && now - this.lastBudgetActionAt < 2000) {
+      return true;
+    }
+
+    this.lastBudgetActionKey = key;
+    this.lastBudgetActionAt = now;
+    return false;
   }
 
   private buildPrintableDocument(presupuesto: SavedPresupuesto): HTMLElement {

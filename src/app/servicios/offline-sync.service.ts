@@ -141,6 +141,12 @@ export class OfflineSyncService {
           );
           break;
         }
+        // DELETE 404 = ya fue eliminado en el servidor, operacion cumplida
+        if (op.method === 'DELETE' && error?.status === 404) {
+          await metroDB.pendingOps.delete(op.id!);
+          synced++;
+          continue;
+        }
         await metroDB.pendingOps.update(op.id!, {
           retries: op.retries + 1,
           errorMessage: error?.message || 'Error desconocido'

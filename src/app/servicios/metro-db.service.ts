@@ -82,6 +82,8 @@ export interface LocalPresupuesto {
   serverId?: number;
   clienteLocalId?: string;
   clienteServerId?: number;
+  empresaLocalId?: string;
+  empresaServerId?: number;
   userCode?: string;
   data: any;
   syncStatus: SyncStatus;
@@ -160,6 +162,19 @@ class MetroDB extends Dexie {
       clientes: 'localId, serverId, empresaServerId, empresaLocalId, userCode, syncStatus, updatedAt',
       userTareas: 'localId, serverId, clienteServerId, clienteLocalId, userCode, syncStatus, updatedAt',
       presupuestos: 'localId, serverId, clienteServerId, clienteLocalId, userCode, syncStatus, updatedAt',
+      imageBlobs: 'localId, ownerEntity, ownerLocalId, ownerServerId, userCode, syncStatus, updatedAt',
+      appState: 'key, updatedAt'
+    });
+    this.version(5).stores({
+      pendingOps: '++id, idempotencyKey, sequence, entity',
+      cachedEmpresas: 'userCode',
+      cachedClientes: 'empresaId',
+      cachedCalculos: 'userCode',
+      cachedUserTareas: 'cacheKey',
+      empresas: 'localId, serverId, userCode, syncStatus, updatedAt',
+      clientes: 'localId, serverId, empresaServerId, empresaLocalId, userCode, syncStatus, updatedAt',
+      userTareas: 'localId, serverId, clienteServerId, clienteLocalId, userCode, syncStatus, updatedAt',
+      presupuestos: 'localId, serverId, clienteServerId, clienteLocalId, empresaServerId, empresaLocalId, userCode, syncStatus, updatedAt',
       imageBlobs: 'localId, ownerEntity, ownerLocalId, ownerServerId, userCode, syncStatus, updatedAt',
       appState: 'key, updatedAt'
     });

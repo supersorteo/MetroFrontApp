@@ -9,6 +9,7 @@ import { provideToastr } from 'ngx-toastr';
 import { provideServiceWorker } from '@angular/service-worker';
 import { httpResilienceInterceptor } from './core/http/http-resilience.interceptor';
 import { environment } from '../environments/environment';
+
 export const appConfig: ApplicationConfig = {
     providers: [
         provideRouter(routes),

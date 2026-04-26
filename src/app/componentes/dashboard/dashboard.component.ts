@@ -728,7 +728,9 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
         this.presupuestoPendiente.cliente?.id &&
         this.presupuestoPendiente.cliente.id === this.clienteSeleccionado.id;
       if (mismoCliente) {
-        this.onCargarPresupuestoGuardado(this.presupuestoPendiente);
+        void this.aplicarPresupuestoGuardado(this.presupuestoPendiente, {
+          scrollToTable: false
+        });
         this.presupuestoPendiente = null;
       }
     });
@@ -1683,7 +1685,17 @@ if (this.trialMode) {
 
 
 
-async onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): Promise<void> {
+async cargarPresupuestoDesdeLista(presupuesto: SavedPresupuesto): Promise<void> {
+  console.debug('[dashboard] cargarPresupuestoDesdeLista', presupuesto.id, presupuesto.name);
+  await this.aplicarPresupuestoGuardado(presupuesto, { scrollToTable: true });
+}
+
+private async aplicarPresupuestoGuardado(
+  presupuesto: SavedPresupuesto,
+  options: { scrollToTable?: boolean } = {}
+): Promise<void> {
+   const { scrollToTable = true } = options;
+   this.presupuestoPendiente = null;
    this.presupuestoSeleccionado = presupuesto;
    localStorage.setItem('presupuestoCargado', JSON.stringify(presupuesto));
    localStorage.setItem('selectedPresupuestoName', presupuesto.name);
@@ -1735,20 +1747,16 @@ async onCargarPresupuestoGuardado(presupuesto: SavedPresupuesto): Promise<void> 
   // 3. NO TOCAR LA EMPRESA
   // La empresa actual ya está seleccionada por el usuario.
   // No la cambiamos al cargar un presupuesto (sería confuso para el usuario).
-  // 4. FEEDBACK AL USUARIO
-  this.toastr.success(
-    `Presupuesto "${presupuesto.name}" cargado correctamente`,
-    '¡Listo!',
-    { timeOut: 3000 }
-  );
 
   // 5. SCROLL SUAVE A LA TABLA (opcional, mejora UX)
+  if (scrollToTable) {
   setTimeout(() => {
     const tabla = document.querySelector('.table-responsive');
     if (tabla) {
       tabla.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, 100);
+  }
 }
 
 
@@ -1857,17 +1865,15 @@ limpiarPresupuestoCargado() {
 
 
 onPresupuestoActualizado(p: SavedPresupuesto) {
+  console.debug('[dashboard] onPresupuestoActualizado', p.id, p.name);
   // actualizar estado y localStorage
   this.presupuestoSeleccionado = p;
   localStorage.setItem('presupuestoCargado', JSON.stringify(p));
   localStorage.setItem('selectedPresupuestoName', p.name);
 
   // refrescar tareas y UI usando tu método existente
-  this.onCargarPresupuestoGuardado(p);
+  void this.aplicarPresupuestoGuardado(p, { scrollToTable: false });
 }
-
-
-
 
 closeSavedBudgetsPanel(): void {
   this.showSavedBudgetsPanel = false;

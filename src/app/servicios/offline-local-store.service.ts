@@ -99,6 +99,7 @@ export class OfflineLocalStoreService {
 
     if (Number.isFinite(localOrServerId) && localOrServerId < 0 && Number.isFinite(resolvedServerId)) {
       await this.relinkClientesForEmpresaSync(localOrServerId, Number(resolvedServerId));
+      await this.relinkPresupuestosForEmpresaSync(localOrServerId, Number(resolvedServerId));
       this.updateStoredSelectedEmpresa(localOrServerId, Number(resolvedServerId), remoteData);
     }
 
@@ -342,6 +343,7 @@ export class OfflineLocalStoreService {
     });
 
     if (Number.isFinite(localOrServerId) && localOrServerId < 0 && Number.isFinite(serverId)) {
+      await this.relinkPresupuestosForClienteSync(localOrServerId, Number(serverId));
       this.updateStoredSelectedCliente(localOrServerId, Number(serverId), {
         ...record.data,
         ...remoteData,
@@ -453,11 +455,14 @@ export class OfflineLocalStoreService {
       : await metroDB.presupuestos.filter(record => Number(record.data?.id) === Number(data?.id)).first();
 
     const clienteId = data?.cliente?.id ?? data?.clienteId ?? data?.clienteServerId;
+    const empresaId = data?.empresa?.id ?? data?.empresaId ?? data?.empresaServerId ?? data?.cliente?.empresaId;
     const record: LocalPresupuesto = {
       localId: existing?.localId ?? this.resolveLocalId('presupuesto', data?.localId, serverId),
       serverId,
       clienteLocalId: data?.clienteLocalId ?? existing?.clienteLocalId ?? this.localRef('cliente', clienteId),
       clienteServerId: this.toServerId(clienteId) ?? existing?.clienteServerId,
+      empresaLocalId: data?.empresaLocalId ?? existing?.empresaLocalId ?? this.localRef('empresa', empresaId),
+      empresaServerId: this.toServerId(empresaId) ?? existing?.empresaServerId,
       userCode: data?.userCode ?? data?.cliente?.userCode ?? existing?.userCode,
       data,
       syncStatus,
@@ -468,17 +473,47 @@ export class OfflineLocalStoreService {
     return record;
   }
 
-  async listPresupuestosByClienteId(clienteId: number): Promise<any[]> {
+  async listPresupuestosByClienteId(clienteId: number, empresaId?: number): Promise<any[]> {
+    const empresaLocalRef = this.localRef('empresa', empresaId);
     const records = await metroDB.presupuestos
-      .filter(record =>
-        !record.deletedAt &&
-        (
+      .filter(record => {
+        if (record.deletedAt) return false;
+
+        const clienteMatch =
           Number(record.clienteServerId) === clienteId ||
           Number(record.data?.cliente?.id) === clienteId ||
           Number(record.data?.clienteId) === clienteId ||
-          record.clienteLocalId === this.localRef('cliente', clienteId)
-        )
-      )
+          record.clienteLocalId === this.localRef('cliente', clienteId);
+        if (!clienteMatch) return false;
+
+        if (!Number.isFinite(empresaId)) return true;
+
+        const hasAnyEmpresaInfo =
+          Number(record.empresaServerId) > 0 ||
+          Number(record.data?.empresa?.id) > 0 ||
+          Number(record.data?.empresaId) > 0 ||
+          Number(record.data?.cliente?.empresaId) > 0 ||
+          !!record.empresaLocalId;
+
+        if (!hasAnyEmpresaInfo) {
+          // Lazy migration: tag this record with current empresa so future queries filter it correctly
+          if (Number(empresaId) > 0) {
+            void metroDB.presupuestos.update(record.localId, {
+              empresaServerId: empresaId,
+              updatedAt: Date.now()
+            });
+          }
+          return true;
+        }
+
+        return (
+          Number(record.empresaServerId) === empresaId ||
+          Number(record.data?.empresa?.id) === empresaId ||
+          Number(record.data?.empresaId) === empresaId ||
+          Number(record.data?.cliente?.empresaId) === empresaId ||
+          (!!empresaLocalRef && record.empresaLocalId === empresaLocalRef)
+        );
+      })
       .toArray();
 
     return this.sortByUpdated(records).map(record => this.withResolvedId(record));
@@ -661,6 +696,76 @@ export class OfflineLocalStoreService {
         data: {
           ...record.data,
           empresaId: serverEmpresaId
+        },
+        updatedAt: Date.now()
+      });
+    }
+  }
+
+  private async relinkPresupuestosForEmpresaSync(tempEmpresaId: number, serverEmpresaId: number): Promise<void> {
+    if (!Number.isFinite(tempEmpresaId) || tempEmpresaId >= 0 || !Number.isFinite(serverEmpresaId) || serverEmpresaId <= 0) {
+      return;
+    }
+
+    const tempEmpresaLocalRef = this.localRef('empresa', tempEmpresaId);
+    const records = await metroDB.presupuestos
+      .filter(record =>
+        !record.deletedAt &&
+        (
+          Number(record.empresaServerId) === tempEmpresaId ||
+          Number(record.data?.empresa?.id) === tempEmpresaId ||
+          Number(record.data?.empresaId) === tempEmpresaId ||
+          Number(record.data?.cliente?.empresaId) === tempEmpresaId ||
+          record.empresaLocalId === tempEmpresaLocalRef
+        )
+      )
+      .toArray();
+
+    for (const record of records) {
+      await metroDB.presupuestos.put({
+        ...record,
+        empresaLocalId: undefined,
+        empresaServerId: serverEmpresaId,
+        data: {
+          ...record.data,
+          empresa: record.data?.empresa ? { ...record.data.empresa, id: serverEmpresaId } : record.data?.empresa,
+          empresaId: serverEmpresaId,
+          cliente: record.data?.cliente
+            ? { ...record.data.cliente, empresaId: serverEmpresaId }
+            : record.data?.cliente
+        },
+        updatedAt: Date.now()
+      });
+    }
+  }
+
+  private async relinkPresupuestosForClienteSync(tempClienteId: number, serverClienteId: number): Promise<void> {
+    if (!Number.isFinite(tempClienteId) || tempClienteId >= 0 || !Number.isFinite(serverClienteId) || serverClienteId <= 0) {
+      return;
+    }
+
+    const tempClienteLocalRef = this.localRef('cliente', tempClienteId);
+    const records = await metroDB.presupuestos
+      .filter(record =>
+        !record.deletedAt &&
+        (
+          Number(record.clienteServerId) === tempClienteId ||
+          Number(record.data?.cliente?.id) === tempClienteId ||
+          Number(record.data?.clienteId) === tempClienteId ||
+          record.clienteLocalId === tempClienteLocalRef
+        )
+      )
+      .toArray();
+
+    for (const record of records) {
+      await metroDB.presupuestos.put({
+        ...record,
+        clienteLocalId: undefined,
+        clienteServerId: serverClienteId,
+        data: {
+          ...record.data,
+          cliente: record.data?.cliente ? { ...record.data.cliente, id: serverClienteId } : record.data?.cliente,
+          clienteId: serverClienteId
         },
         updatedAt: Date.now()
       });

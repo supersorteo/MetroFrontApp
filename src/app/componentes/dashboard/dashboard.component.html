@@ -882,26 +882,7 @@
             </div>
           </div>
           <div class="row">
-            <!--div-- class="col-12" *ngFor="let empresa of paginatedEmpresas | filterEmpresa:filtroEmpresa">
-              <div class="card mb-3 w-100 shadow-sm"
-                style="width: 100%; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.25), 0 1.5px 8px rgba(50,50,105,0.25); border: 2.5px solid #4b5154;"
-              >
-                <div class="card-body position-relative">
-                  <h5 class="card-title" style="font-size: 1.2rem; font-weight: bold;">
-                    {{ empresa.name }}
-                    <img *ngIf="empresa.logoUrl" [src]="empresa.logoUrl" alt="Logo" style="width:32px;height:32px;object-fit:cover;float:right;border-radius:50%;margin-left:10px;">
-                  </h5>
-                  <p class="card-text mb-1"><strong>Tel:</strong> {{ empresa.phone }}</p>
-                  <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
-                  <p class="card-text mb-1"><strong>Descripción:</strong> {{ empresa.description }}</p>
-                  <div class="d-flex justify-content-end gap-1 mt-2">
-                    <button class="btn btn-danger btn-xs px-3 py-1" style="font-size: 0.85rem; min-width: 80px;" (click)="empresa.id && solicitarConfirmacionEliminarEmpresa(empresa.id)">Eliminar</button>
-                    <span style="width: 10px;"></span>
-                    <button class="btn btn-success btn-xs px-3 py-1" style="font-size: 0.85rem; min-width: 80px;" *ngIf="empresa.id !== undefined" (click)="editarEmpresa(empresa.id)">Editar</button>
-                  </div>
-                </div>
-              </div>
-            </!--div-->
+
 
 <div class="col-12" *ngFor="let empresa of paginatedEmpresas | filterEmpresa:filtroEmpresa">
   <div
@@ -1114,7 +1095,7 @@
     [presupuestoCargado]="presupuestoSeleccionado"
     (presupuestoActualizado)="onPresupuestoActualizado($event)"
     (presupuestoEliminado)="onPresupuestoEliminado($event)"
-    (cargarPresupuesto)="onCargarPresupuestoGuardado($event)">
+    (cargarPresupuesto)="cargarPresupuestoDesdeLista($event)">
   </app-presupuestos-guardados>
 </div>
 
