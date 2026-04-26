@@ -701,6 +701,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   ) {
     // Sync empresas IDB → lista local + paginación
     effect(() => {
+      if (this.trialMode) return;
       this.empresas = this.empresaStore.empresas();
       this.updatePaginatedEmpresas();
       void this.refreshEmpresaLogoUrls(this.empresas);
@@ -708,6 +709,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 
     // Sync empresa seleccionada → formulario + imagen
     effect(() => {
+      if (this.trialMode) return;
       const empresa = this.empresaStore.selected();
       this.selectedEmpresaId = empresa;
       this.cargarDatosEmpresaSeleccionada();
@@ -716,12 +718,14 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 
     // Sync clientes IDB → lista local + paginación
     effect(() => {
+      if (this.trialMode) return;
       this.clientes = this.clienteStore.clientes();
       this.updatePaginatedClientes();
     });
 
     // Sync cliente seleccionado → estado local + presupuesto pendiente
     effect(() => {
+      if (this.trialMode) return;
       this.clienteSeleccionado = this.clienteStore.selected();
       if (!this.clienteSeleccionado || !this.presupuestoPendiente) return;
       const mismoCliente =

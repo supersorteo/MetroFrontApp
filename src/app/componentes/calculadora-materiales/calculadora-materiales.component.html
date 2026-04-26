@@ -134,12 +134,17 @@
       <div>
         <h1 class="calc-header__title">Calculadora de Materiales</h1>
         @if (isTrialMode) {
-          <p class="calc-header__sub">{{ getDemoDailyUsageLabel() }}</p>
+          <p class="calc-header__badge">
+            <i class="bi bi-info-circle"></i>
+            <span class="calc-header__badge-full">{{ getDemoDailyUsageLabel() }} · 3 tareas aleatorias · historial local</span>
+            <span class="calc-header__badge-short">{{ demoDailyCalculationsUsed() }}/3 hoy · 3 tareas</span>
+          </p>
+        } @else {
+          <p class="calc-header__sub">
+            <span class="calc-header__vip-usage">{{ getVipDailyUsageLabel() }}</span>
+          </p>
+          <p class="calc-header__sub calc-header__sub--hint">Ingresá el área o volumen para obtener las cantidades exactas</p>
         }
-        @if (isTrialMode) {
-          <p class="calc-header__sub">Modo de prueba: se muestran 3 tareas aleatorias y el historial local guarda solo los últimos 3 cálculos.</p>
-        }
-        <p class="calc-header__sub">Ingresá el área o volumen para obtener las cantidades exactas</p>
       </div>
     </div>
   </div>

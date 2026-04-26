@@ -561,6 +561,8 @@ const DEMO_HISTORY_LIMIT = 3;
 const DEMO_DAILY_CALC_LIMIT = 3;
 const USER_HISTORY_LIMIT = 10;
 const USER_LATEST_TASKS_LIMIT = 5;
+const USER_DAILY_USAGE_STORAGE_KEY = 'userCalculadoraDailyUsage';
+const USER_DAILY_CALC_LIMIT = 10;
 
 function cargarHistorialDemoDesdeStorage(): CalculoMaterialGuardado[] {
   try {
@@ -597,6 +599,23 @@ function cargarUsoDiarioDemoDesdeStorage(): Record<string, number> {
 function guardarUsoDiarioDemoEnStorage(usage: Record<string, number>): void {
   try {
     localStorage.setItem(DEMO_DAILY_USAGE_STORAGE_KEY, JSON.stringify(usage));
+  } catch {}
+}
+
+function cargarUsoDiarioUserDesdeStorage(): Record<string, number> {
+  try {
+    const raw = localStorage.getItem(USER_DAILY_USAGE_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, number> : {};
+  } catch {
+    return {};
+  }
+}
+
+function guardarUsoDiarioUserEnStorage(usage: Record<string, number>): void {
+  try {
+    localStorage.setItem(USER_DAILY_USAGE_STORAGE_KEY, JSON.stringify(usage));
   } catch {}
 }
 
@@ -660,6 +679,7 @@ export class CalculadoraMaterialesComponent implements OnInit {
   saveStatus = signal<Record<number, SaveStatus | undefined>>({});
   savedCalculosByTask = signal<Record<number, CalculoMaterialGuardado | undefined>>({});
   demoDailyCalculationsUsed = signal(this.isTrialMode ? this.getDemoDailyUsageCount() : 0);
+  userDailyCalculationsUsed = signal(!this.isTrialMode ? this.getVipDailyUsageCount() : 0);
 
   filteredTasks = computed(() => {
     const term = this.normalizar(this.searchTerm());
@@ -679,7 +699,15 @@ export class CalculadoraMaterialesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (this.isTrialMode) {
+    // Always clear stale data from any previous session first
+    this.historialCalculos.set([]);
+    this.ultimasTareas.set([]);
+    this.savedCalculosByTask.set({});
+
+    // Re-read trialMode from localStorage at init time to guard against stale readonly field
+    const currentlyTrialMode = this.isTrialMode || localStorage.getItem('trialMode') === 'true';
+
+    if (currentlyTrialMode) {
       const historialDemo = cargarHistorialDemoDesdeStorage().slice(0, DEMO_HISTORY_LIMIT);
       this.historialCalculos.set(historialDemo);
       this.ultimasTareas.set(construirResumenesDesdeHistorial(historialDemo, DEMO_HISTORY_LIMIT));
@@ -732,6 +760,14 @@ export class CalculadoraMaterialesComponent implements OnInit {
       return;
     }
 
+    if (!this.isTrialMode && this.isVipCalculationLimitReached()) {
+      this.toast.warning(
+        `Ya alcanzaste el límite de ${USER_DAILY_CALC_LIMIT} cálculos para hoy. Volvé mañana.`,
+        'Límite diario alcanzado'
+      );
+      return;
+    }
+
     const resultados: ResultadoMaterial[] = tarea.materiales.map(m => {
       const cantidad = m.valor * val;
       const res: ResultadoMaterial = {
@@ -759,6 +795,10 @@ export class CalculadoraMaterialesComponent implements OnInit {
     this.saveStatus.update(status => ({ ...status, [tarea.id]: 'dirty' }));
     if (this.isTrialMode) {
       this.registerDemoCalculationUsage();
+    }
+
+    if (!this.isTrialMode) {
+      this.registerVipCalculationUsage();
     }
 
     const guardar = await this.toast.confirm('¿Querés guardar este cálculo en el historial?');
@@ -822,7 +862,8 @@ export class CalculadoraMaterialesComponent implements OnInit {
 
     const usados = this.demoDailyCalculationsUsed();
     const restantes = Math.max(DEMO_DAILY_CALC_LIMIT - usados, 0);
-    return `Modo de prueba: ${usados}/${DEMO_DAILY_CALC_LIMIT} cálculos usados hoy. Te quedan ${restantes}.`;
+    //return `Modo de prueba: ${usados}/${DEMO_DAILY_CALC_LIMIT} cálculos usados hoy. Te quedan ${restantes}.`;
+    return `Modo de prueba: ${usados}/${DEMO_DAILY_CALC_LIMIT} cálculos usados hoy.`;
   }
 
   isTrialCalculationLimitReached(): boolean {
@@ -986,8 +1027,12 @@ export class CalculadoraMaterialesComponent implements OnInit {
   private cargarHistorialBackend(): void {
     this.calculadoraMaterialesService.obtenerHistorial(this.userCode, USER_HISTORY_LIMIT).subscribe({
       next: historial => {
-        this.historialCalculos.set(historial);
-        this.syncSavedCalculosByTask(historial);
+        const today = getCurrentDayKey();
+        const todayHistorial = historial
+          .filter(c => (c.createdAt || '').startsWith(today))
+          .slice(0, USER_HISTORY_LIMIT);
+        this.historialCalculos.set(todayHistorial);
+        this.syncSavedCalculosByTask(todayHistorial);
       },
       error: () => {
         this.historialCalculos.set([]);
@@ -998,7 +1043,11 @@ export class CalculadoraMaterialesComponent implements OnInit {
 
   private cargarUltimasTareasBackend(): void {
     this.calculadoraMaterialesService.obtenerUltimasTareas(this.userCode, USER_LATEST_TASKS_LIMIT).subscribe({
-      next: tareas => this.ultimasTareas.set(this.mapearResumenes(tareas)),
+      next: tareas => {
+        const today = getCurrentDayKey();
+        const todayTareas = tareas.filter(t => (t.lastCalculatedAt || '').startsWith(today));
+        this.ultimasTareas.set(this.mapearResumenes(todayTareas));
+      },
       error: () => this.ultimasTareas.set([])
     });
   }
@@ -1174,5 +1223,29 @@ export class CalculadoraMaterialesComponent implements OnInit {
     const dias = Math.ceil(horas / 8);
     if (dias <= 0) return undefined;
     return `(${dias} ${dias === 1 ? 'día' : 'días'})`;
+  }
+
+  getVipDailyUsageLabel(): string {
+    if (this.isTrialMode) return '';
+    const usados = this.userDailyCalculationsUsed();
+    const restantes = Math.max(USER_DAILY_CALC_LIMIT - usados, 0);
+    return `${usados}/${USER_DAILY_CALC_LIMIT} cálculos hoy · ${restantes} restantes`;
+  }
+
+  isVipCalculationLimitReached(): boolean {
+    return !this.isTrialMode && this.userDailyCalculationsUsed() >= USER_DAILY_CALC_LIMIT;
+  }
+
+  private getVipDailyUsageCount(): number {
+    const usage = cargarUsoDiarioUserDesdeStorage();
+    return usage[getCurrentDayKey()] ?? 0;
+  }
+
+  private registerVipCalculationUsage(): void {
+    const usage = cargarUsoDiarioUserDesdeStorage();
+    const key = getCurrentDayKey();
+    usage[key] = (usage[key] ?? 0) + 1;
+    guardarUsoDiarioUserEnStorage(usage);
+    this.userDailyCalculationsUsed.set(usage[key]);
   }
 }

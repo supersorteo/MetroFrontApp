@@ -388,17 +388,7 @@ login(): void {
     window.open('https://metroapp.site/calculadora_materiales.html', '_blank');
     }
 
-  activarModoPrueba0(): void {
-    const trialUserData = {
-      pais: 'Argentina',
-      provincia: 'Buenos Aires',
-      fechaVencimiento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-    };
-    localStorage.setItem('trialMode', 'true');
-    localStorage.setItem('userCode', 'trial');
-    localStorage.setItem('userData', JSON.stringify(trialUserData));
-    this.route.navigate(['dashboard']);
-  }
+
 
   activarModoPrueba(): void {
   const trialUserData = {
@@ -419,18 +409,7 @@ login(): void {
     }
   ];
 
-  const demoTareas1 = Array.from({ length: 10 }).map((_, i) => ({
-    id: i + 1,
-    tarea: `Tarea demo ${i + 1}`,
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  }));
+
 
   const demoTareas = [
   {
@@ -568,11 +547,12 @@ const demoCliente = {
     empresaId: 1234
   };
 
+  // Limpiar claves de sesión VIP que podrían interferir
   Object.keys(localStorage)
-    .filter(key => key.startsWith('demoCliente_'))
+    .filter(key => key.startsWith('demoCliente_') || key.startsWith('selectedClienteId_empresa_'))
     .forEach(key => localStorage.removeItem(key));
 
-
+  const selectedDemoEmpresa = demoEmpresa[0];
 
   localStorage.setItem('trialMode', 'true');
   localStorage.setItem('userCode', 'demo');
@@ -581,6 +561,9 @@ const demoCliente = {
   localStorage.setItem('demoTareas', JSON.stringify(demoTareas));
   localStorage.setItem(`demoCliente_${demoCliente.id}`, JSON.stringify(demoCliente));
   localStorage.removeItem('selectedEmpresaId');
+  localStorage.removeItem('selectedEmpresa');
+  localStorage.setItem('selectedEmpresaId', String(selectedDemoEmpresa.id));
+  localStorage.setItem('selectedEmpresa', JSON.stringify(selectedDemoEmpresa));
   localStorage.removeItem('selectedClienteId');
   localStorage.removeItem('selectedCliente');
   localStorage.setItem('selectedClienteId', String(demoCliente.id));
