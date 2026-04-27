@@ -5,6 +5,7 @@ import { metroDB, PendingOp, EntityType, OperationType } from './metro-db.servic
 import { AppToastService } from './app-toast.service';
 import { APP_API_URL } from '../core/api/api.config';
 import { OfflineLocalStoreService } from './offline-local-store.service';
+import { OfflineStatusService } from './offline-status.service';
 
 export interface PendingSyncSummary {
   total: number;
@@ -29,17 +30,44 @@ export class OfflineSyncService {
   constructor(
     private http: HttpClient,
     private toast: AppToastService,
-    private localStore: OfflineLocalStoreService
+    private localStore: OfflineLocalStoreService,
+    private offlineStatus: OfflineStatusService
   ) {
     this.refreshPendingCount();
-    window.addEventListener('online', () => this.syncPendingOps());
-    window.addEventListener('focus', () => this.syncPendingOps());
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        this.syncPendingOps();
-      }
+    // Delay after 'online' event: network isn't stable the instant the event fires
+    window.addEventListener('online', () => {
+      setTimeout(() => void this.syncPendingOpsIfOnline(), 2500);
     });
-    setTimeout(() => this.syncPendingOps(), 1200);
+    window.addEventListener('focus', () => void this.syncPendingOpsIfOnline());
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') void this.syncPendingOpsIfOnline();
+    });
+    setTimeout(() => void this.syncPendingOpsIfOnline(), 1200);
+  }
+
+  private async syncPendingOpsIfOnline(): Promise<void> {
+    if (!this.hasPendingOps()) {
+      return;
+    }
+    const reallyOnline = await this.offlineStatus.probe();
+    if (reallyOnline) {
+      await this.resetNetworkErrorRetries();
+      void this.syncPendingOps();
+    }
+  }
+
+  private async resetNetworkErrorRetries(): Promise<void> {
+    const ops = await metroDB.pendingOps
+      .filter(op => op.retries > 0 && this.isNetworkErrorMessage(op.errorMessage))
+      .toArray();
+    for (const op of ops) {
+      if (op.id) await metroDB.pendingOps.update(op.id, { retries: 0, errorMessage: undefined });
+    }
+  }
+
+  private isNetworkErrorMessage(msg?: string): boolean {
+    if (!msg) return false;
+    return msg.includes('0 Client Error') || msg.includes('unknown url') || msg.includes('Http failure response');
   }
 
   async addToQueue(
@@ -94,6 +122,7 @@ export class OfflineSyncService {
     const ops = await metroDB.pendingOps.orderBy('sequence').toArray();
     if (ops.length === 0) return;
 
+
     this.syncInProgress = true;
     this.isSyncing.set(true);
 
@@ -145,6 +174,11 @@ export class OfflineSyncService {
         if (op.method === 'DELETE' && error?.status === 404) {
           await metroDB.pendingOps.delete(op.id!);
           synced++;
+          continue;
+        }
+        // Status 0 = error de red (offline, cold start). No consumir retries: se reintentará al volver online
+        if ([0, 502, 503, 504].includes(Number(error?.status)) || !navigator.onLine) {
+          failed++;
           continue;
         }
         await metroDB.pendingOps.update(op.id!, {
@@ -605,3 +639,4 @@ export class OfflineSyncService {
     this.hasPendingOps.set(count > 0);
   }
 }
+

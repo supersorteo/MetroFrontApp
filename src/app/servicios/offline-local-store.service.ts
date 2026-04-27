@@ -382,16 +382,21 @@ export class OfflineLocalStoreService {
   }
 
   async listUserTareasByClienteId(clienteId: number): Promise<any[]> {
-    const records = await metroDB.userTareas
-      .filter(record =>
-        !record.deletedAt &&
-        (
-          Number(record.clienteServerId) === clienteId ||
-          Number(record.data?.clienteId) === clienteId ||
-          record.clienteLocalId === this.localRef('cliente', clienteId)
-        )
-      )
-      .toArray();
+    const clienteLocalRef = this.localRef('cliente', clienteId);
+
+    const [byServerId, byLocalId] = await Promise.all([
+      metroDB.userTareas.where('clienteServerId').equals(clienteId).toArray(),
+      clienteLocalRef
+        ? metroDB.userTareas.where('clienteLocalId').equals(clienteLocalRef).toArray()
+        : Promise.resolve([] as any[])
+    ]);
+
+    const seen = new Set<string>();
+    const records = [...byServerId, ...byLocalId].filter(r => {
+      if (seen.has(r.localId) || r.deletedAt) return false;
+      seen.add(r.localId);
+      return true;
+    });
 
     return this.sortByUpdated(records).map(record => this.withResolvedId(record));
   }
@@ -475,48 +480,56 @@ export class OfflineLocalStoreService {
 
   async listPresupuestosByClienteId(clienteId: number, empresaId?: number): Promise<any[]> {
     const empresaLocalRef = this.localRef('empresa', empresaId);
-    const records = await metroDB.presupuestos
-      .filter(record => {
-        if (record.deletedAt) return false;
+    const clienteLocalRef = this.localRef('cliente', clienteId);
 
-        const clienteMatch =
-          Number(record.clienteServerId) === clienteId ||
-          Number(record.data?.cliente?.id) === clienteId ||
-          Number(record.data?.clienteId) === clienteId ||
-          record.clienteLocalId === this.localRef('cliente', clienteId);
-        if (!clienteMatch) return false;
+    // Use indexed queries instead of full table scan
+    const [byServerId, byLocalId] = await Promise.all([
+      metroDB.presupuestos.where('clienteServerId').equals(clienteId).toArray(),
+      clienteLocalRef
+        ? metroDB.presupuestos.where('clienteLocalId').equals(clienteLocalRef).toArray()
+        : Promise.resolve([] as any[])
+    ]);
 
-        if (!Number.isFinite(empresaId)) return true;
+    // Merge and deduplicate by localId
+    const seen = new Set<string>();
+    const all = [...byServerId, ...byLocalId].filter(r => {
+      if (seen.has(r.localId)) return false;
+      seen.add(r.localId);
+      return true;
+    });
 
-        const hasAnyEmpresaInfo =
-          Number(record.empresaServerId) > 0 ||
-          Number(record.data?.empresa?.id) > 0 ||
-          Number(record.data?.empresaId) > 0 ||
-          Number(record.data?.cliente?.empresaId) > 0 ||
-          !!record.empresaLocalId;
+    // Apply remaining filters on the reduced set
+    const filtered = all.filter(record => {
+      if (record.deletedAt) return false;
+      if (!Number.isFinite(empresaId)) return true;
 
-        if (!hasAnyEmpresaInfo) {
-          // Lazy migration: tag this record with current empresa so future queries filter it correctly
-          if (Number(empresaId) > 0) {
-            void metroDB.presupuestos.update(record.localId, {
-              empresaServerId: empresaId,
-              updatedAt: Date.now()
-            });
-          }
-          return true;
+      const hasAnyEmpresaInfo =
+        Number(record.empresaServerId) > 0 ||
+        Number(record.data?.empresa?.id) > 0 ||
+        Number(record.data?.empresaId) > 0 ||
+        Number(record.data?.cliente?.empresaId) > 0 ||
+        !!record.empresaLocalId;
+
+      if (!hasAnyEmpresaInfo) {
+        if (Number(empresaId) > 0) {
+          void metroDB.presupuestos.update(record.localId, {
+            empresaServerId: empresaId,
+            updatedAt: Date.now()
+          });
         }
+        return true;
+      }
 
-        return (
-          Number(record.empresaServerId) === empresaId ||
-          Number(record.data?.empresa?.id) === empresaId ||
-          Number(record.data?.empresaId) === empresaId ||
-          Number(record.data?.cliente?.empresaId) === empresaId ||
-          (!!empresaLocalRef && record.empresaLocalId === empresaLocalRef)
-        );
-      })
-      .toArray();
+      return (
+        Number(record.empresaServerId) === empresaId ||
+        Number(record.data?.empresa?.id) === empresaId ||
+        Number(record.data?.empresaId) === empresaId ||
+        Number(record.data?.cliente?.empresaId) === empresaId ||
+        (!!empresaLocalRef && record.empresaLocalId === empresaLocalRef)
+      );
+    });
 
-    return this.sortByUpdated(records).map(record => this.withResolvedId(record));
+    return this.sortByUpdated(filtered).map(record => this.withResolvedId(record));
   }
 
   async markPresupuestoDeleted(id: number, syncStatus: SyncStatus = 'pending'): Promise<void> {

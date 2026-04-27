@@ -45,13 +45,48 @@ export class CalculadoraMaterialesService {
 
   guardarCalculo(payload: CalculoMaterialGuardado): Observable<CalculoMaterialGuardado> {
     if (!navigator.onLine) {
-      return from(
-        this.offlineSync.addToQueue('calculo-material', 'create', payload, this.apiUrl, 'POST')
-      ).pipe(map(() => ({ ...payload, id: -Date.now() })));
+      return this.guardarCalculoOffline(payload);
     }
     return this.http.post<CalculoMaterialGuardado>(this.apiUrl, payload).pipe(
-      catchError(this.handleError)
+      tap(saved => void this.actualizarCacheLocal(payload.userCode, { ...payload, id: -Date.now() }, saved)),
+      catchError(err =>
+        this.isOfflineLikeError(err)
+          ? this.guardarCalculoOffline(payload)
+          : this.handleError(err)
+      )
     );
+  }
+
+  private guardarCalculoOffline(payload: CalculoMaterialGuardado): Observable<CalculoMaterialGuardado> {
+    const localCalculo: CalculoMaterialGuardado = {
+      ...payload,
+      id: -Date.now(),
+      createdAt: new Date().toISOString()
+    };
+    return from(
+      Promise.all([
+        this.offlineSync.addToQueue('calculo-material', 'create', payload, this.apiUrl, 'POST'),
+        this.prependAlCacheLocal(payload.userCode, localCalculo)
+      ])
+    ).pipe(map(() => localCalculo));
+  }
+
+  private async prependAlCacheLocal(userCode: string, calculo: CalculoMaterialGuardado): Promise<void> {
+    const cached = await this.offlineSync.getCachedCalculos(userCode);
+    const historial = [calculo, ...(cached?.historial ?? [])];
+    await this.offlineSync.cacheCalculos(userCode, historial, cached?.ultimasTareas ?? []);
+  }
+
+  private async actualizarCacheLocal(userCode: string, local: CalculoMaterialGuardado, saved: CalculoMaterialGuardado): Promise<void> {
+    const cached = await this.offlineSync.getCachedCalculos(userCode);
+    if (!cached) return;
+    const historial = cached.historial.map(c => c.id === local.id ? saved : c);
+    if (!historial.some(c => c.id === saved.id)) historial.unshift(saved);
+    await this.offlineSync.cacheCalculos(userCode, historial, cached.ultimasTareas);
+  }
+
+  private isOfflineLikeError(err: any): boolean {
+    return [0, 502, 503, 504].includes(Number(err?.status)) || !navigator.onLine;
   }
 
   eliminarCalculo(calculoId: number, userCode: string): Observable<void> {

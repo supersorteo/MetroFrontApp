@@ -906,6 +906,42 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  &__history-item {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid $gray-100;
+
+    .calc-modal__item {
+      border-bottom: none;
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  &__pin-btn {
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: $gray-400;
+    font-size: 1rem;
+    margin-right: .5rem;
+    transition: color .15s, background .15s;
+
+    &:hover { color: $primary; background: rgba($primary, .08); }
+
+    &--active {
+      color: $primary;
+      i { font-size: .95rem; }
+    }
+  }
 }
 
 // ── Responsive ────────────────────────────────────────────────────────────────
