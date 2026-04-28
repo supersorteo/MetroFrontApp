@@ -1,0 +1,115 @@
+[debug] [2026-04-28T14:05:05.830Z] ----------------------------------------------------------------------
+[debug] [2026-04-28T14:05:05.833Z] Command:       C:\nvm4w\nodejs\node.exe C:\Users\Leo\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2026-04-28T14:05:05.837Z] CLI Version:   14.6.0
+[debug] [2026-04-28T14:05:05.838Z] Platform:      win32
+[debug] [2026-04-28T14:05:05.838Z] Node Version:  v20.19.0
+[debug] [2026-04-28T14:05:05.838Z] Time:          Tue Apr 28 2026 10:05:05 GMT-0400 (hora de verano de Cuba)
+[debug] [2026-04-28T14:05:05.838Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-04-28T14:05:06.206Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-04-28T14:05:06.208Z] > authorizing via signed-in user (soporte.supersorteo@gmail.com)
+[debug] [2026-04-28T14:05:06.208Z] [iam] checking project metroapp-1c409 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-04-28T14:05:06.210Z] Checked if tokens are valid: false, expires at: 1777385016102
+[debug] [2026-04-28T14:05:06.210Z] Checked if tokens are valid: false, expires at: 1777385016102
+[debug] [2026-04-28T14:05:06.211Z] > refreshing access token with scopes: []
+[debug] [2026-04-28T14:05:06.213Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-04-28T14:05:06.213Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-04-28T14:05:06.957Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-04-28T14:05:06.958Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-04-28T14:05:06.973Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/metroapp-1c409:testIamPermissions [none]
+[debug] [2026-04-28T14:05:06.973Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/metroapp-1c409:testIamPermissions x-goog-quota-user=projects/metroapp-1c409
+[debug] [2026-04-28T14:05:06.973Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/metroapp-1c409:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-04-28T14:05:07.795Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/metroapp-1c409:testIamPermissions 200
+[debug] [2026-04-28T14:05:07.795Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/metroapp-1c409:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-04-28T14:05:07.796Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:07.796Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:07.797Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/metroapp-1c409 [none]
+[debug] [2026-04-28T14:05:08.523Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/metroapp-1c409 200
+[debug] [2026-04-28T14:05:08.524Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/metroapp-1c409 {"projectId":"metroapp-1c409","projectNumber":"306755843839","displayName":"metroApp","name":"projects/metroapp-1c409","resources":{"hostingSite":"metroapp-1c409"},"state":"ACTIVE","etag":"1_f6ed1c0a-1dd5-4d43-ab81-509e7234ed2f"}
+[info] 
+[info] === Deploying to 'metroapp-1c409'...
+[info] 
+[info] i  deploying hosting 
+[debug] [2026-04-28T14:05:08.530Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:08.530Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:08.531Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/metroapp-1c409/versions [none]
+[debug] [2026-04-28T14:05:08.531Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/metroapp-1c409/versions {"status":"CREATED","labels":{"deployment-tool":"cli-firebase"}}
+[debug] [2026-04-28T14:05:09.975Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/metroapp-1c409/versions 200
+[debug] [2026-04-28T14:05:09.975Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/metroapp-1c409/versions {"name":"projects/306755843839/sites/metroapp-1c409/versions/5ef5a48e8ae90623","status":"CREATED","config":{},"labels":{"deployment-tool":"cli-firebase"}}
+[info] i  hosting[metroapp-1c409]: beginning deploy... 
+[info] i  hosting[metroapp-1c409]: found 43 files in dist/pruebaw/browser 
+[debug] [2026-04-28T14:05:10.012Z] [hosting] uploading with 200 concurrency
+[debug] [2026-04-28T14:05:10.315Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:10.315Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:10.325Z] [hosting] hash cache [ZGlzdFxwcnVlYmF3XGJyb3dzZXI] stored for 43 files
+[debug] [2026-04-28T14:05:10.325Z] [hosting][hash queue][FINAL] {"max":283,"min":1,"avg":76.83720930232558,"active":0,"complete":43,"success":43,"errored":0,"retried":0,"total":43,"elapsed":298}
+[debug] [2026-04-28T14:05:10.327Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/306755843839/sites/metroapp-1c409/versions/5ef5a48e8ae90623:populateFiles [none]
+[debug] [2026-04-28T14:05:10.329Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/306755843839/sites/metroapp-1c409/versions/5ef5a48e8ae90623:populateFiles {"files":{"/worker-basic.min.js":"499f972b983338a9dfcbf7feea1cbb238802c2eb220bb4bb22b58dc0e6d9e266\r","/safety-worker.js":"499f972b983338a9dfcbf7feea1cbb238802c2eb220bb4bb22b58dc0e6d9e266\r","/ngsw-worker.js":"5f5448a8d963d8273d09356b945031952b318ccd57a73b238bbaea374d4a869f\r","/manifest.webmanifest":"d2a3de6c9e6279abab819e8d84f041d391ac434d3a6a591f405a483b0f836a7b","/favicon.ico":"f288df250f8d4ed16bd8d8534c37a14e52c4d3c8e58541f91b64cd11ad5e8a00","/assets/icons/icon-96x96.png":"fd406b6316965dc870ae0661bde6f2f7248614345a1963759dc5d3a3efe346b1","/assets/icons/icon-72x72.png":"804c4c143d779e5ae040ca3c68bf4d62224431b42d107ae203948087981a6d96\r","/assets/icons/icon-512x512.png":"375331dcc6d09dfb35524d9719a72847f38497afca391b1f0bd2ed4ab08f81a0","/assets/icons/icon-384x384.png":"d1305fa0a414596c0e6af4a18e82a8f449ea6acafbcb6ef407150970b3ded474\r","/assets/icons/icon-192x192.png":"7705157a214522320eaaa530cca9b4118f58d3048ada3d2fb593beddf38cbb1a","/assets/icons/icon-152x152.png":"95e1d6ba560002af2f07a9da277dca1730f61a153fdf21492d09258fbf3a6a6f\r","/assets/icons/icon-144x144.png":"991e3e6c64bd6b2e3a6f462d837f1a3948ae3b74204b647a49e3e124873a4e5b\r","/assets/icons/icon-128x128.png":"ff7cdca8923c3f2fbd289ebbe804e035cd16ddeae83c7d1f95dc330db0d1e1dd\r","/assets/demo-logo/demo-logo.jpg":"8710e1b20939412c0508c8519da22db007d1f3284ced6690b23e7c642c90571a","/polyfills-FFHMD2TL.js":"736494ba509ebe13a13ff57f0d4921ecfd9eb2ac4e8efe5d5fc1704b4b1d9b35","/ngsw.json":"0047f2247f29035b55b8990bc7c3705e1b00aab1278f658a0ae6a3099e695159","/index.html":"0a85f0f002e42532688cf926580ae158108dbd96ff6d6fa8893a9964e83d004d","/chunk-Y6SV2VJ5.js":"0510574d5bbdab38641eb4f27b37a97a64c5c0c95569e233208d106aa5ad9a02","/chunk-Y3YOR7MG.js":"d94fe6012c3823578d3d35c812991cba4f9d60a1f47fb579c1c9f75e620c1463","/chunk-WUPGVP5J.js":"a2167b2503c1a2377554f0f9b122e9d3f310f888b264e57e819722ee1efcc3f6","/chunk-UTNC63W2.js":"975d57415a424e5aaf914ce1945073e23f554b738c3ce4ddb90f5ae61207e740","/chunk-SXH66UGZ.js":"51e96d77bcf49eebce9cc69456eeeafc1e6deb2006c9f7888bd40dc444131fc9","/chunk-QBUNDWUQ.js":"4bee70a7b3a66ac41dc5fa7c643432f10a76b13fef71b5ed40ed05fe66a1764f","/chunk-Y2FWLHHR.js":"fc5320c6e97e2a03350e928ff7e95dfe9c4eb71d85b74c0e08eea42a49400583","/chunk-NGPNGSFY.js":"5d104f3f75a8fbfd09a46e77f9a9cf30087c8bfae4ec56bced202db8b564f69d","/chunk-PMSEYKKA.js":"27d588531e0b5f922c35f2bce1a487023e12e0619543ecc74ca2196d7515b774","/chunk-KALOT3UT.js":"797db053956d73b50813fed8a1ed8891e3f98a9819bc8e96483af650fb3733ab","/chunk-IRU7TJM6.js":"1007202d46d66c4262e385fc6cc6a633be190196ea121ef7343f5a01d19a25f0","/chunk-G4CBMFMF.js":"b103afa4f8f665e1a404e95cf7f7079dda8531e60c8bcc9e1a8f6a06187b1618","/chunk-CNWO7Q4S.js":"bd666e001ec10d65b49cff81d66b1243ceaaa0bf4ac8d5822e163a5cb90dcf3f","/chunk-72TPPYUW.js":"fc81bffb0c8d22bc1c94b239d4d00a114e25f5c9b2d273b150d86e0dfeec7ed9","/chunk-3VFOGKPR.js":"3659881e8871f182475d716ea00f7ef15d63ba03d3d0981b680c7798bc880910","/chunk-7R77VIMZ.js":"7dad80f37c301d6ba420c4ed940a89332ddf0fbf5020c601cd227e3b6a9824b0","/chunk-EMIQY5VI.js":"332f2b09e0c02329eec56060a771539950da3b8a54305c4feaf31195bbbb47a7","/chunk-2J2H4WZJ.js":"ceda477a236da8d908fe7ca0ba7a09b98703cb9849d5483ed4a57e1b2abf7964","/main-3W6WP5DJ.js":"00cfd4b2a64c26727b07ba43b5e814f6d021e48e29a947e9cb27bef879d1937b","/chunk-ZYE72IOD.js":"36e15c217d781826d42d7db17f280ccca5352e2533d2ecab2a7ce2e86461b986","/chunk-7NFQIKXA.js":"4cd36c9657518bba50be2b1a939cfc6c0c288bdd03a4258947b4387965a9e7f4","/chunk-JNJTE7TI.js":"4272c8d3ac57ee7021e9e4c056403d10df16f34aa7bfd909b14a6779dd9fc28c","/styles-PIRZLG3U.css":"f93002567b44fb3bfb936cc49db726e421271fabebd95fbe6f301768700b325b","/chunk-ESN6CV4P.js":"9351f3439b137c01ef30e5fe637087950a6d4bffe613748559fdae7d25921ff8","/chunk-W5SN7JYQ.js":"c9e8d9b59fc4d3b76a7de62f7f1fcfee6121dedfa5a1b8abe3c3be2e1964ad38","/scripts-3YTTYLS3.js":"a38f765a5612565f626a8f9e742e5a872b2e04eb32b7f662e5db820d314ac50c"}}
+[debug] [2026-04-28T14:05:11.080Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/306755843839/sites/metroapp-1c409/versions/5ef5a48e8ae90623:populateFiles 200
+[debug] [2026-04-28T14:05:11.080Z] <<< [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/306755843839/sites/metroapp-1c409/versions/5ef5a48e8ae90623:populateFiles {"uploadRequiredHashes":["0a85f0f002e42532688cf926580ae158108dbd96ff6d6fa8893a9964e83d004d","00cfd4b2a64c26727b07ba43b5e814f6d021e48e29a947e9cb27bef879d1937b","9351f3439b137c01ef30e5fe637087950a6d4bffe613748559fdae7d25921ff8","0047f2247f29035b55b8990bc7c3705e1b00aab1278f658a0ae6a3099e695159"],"uploadUrl":"https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files"}
+[debug] [2026-04-28T14:05:11.081Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:11.081Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:11.081Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:11.081Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:11.081Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:11.082Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:11.082Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:11.082Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:11.082Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/0a85f0f002e42532688cf926580ae158108dbd96ff6d6fa8893a9964e83d004d [none]
+[debug] [2026-04-28T14:05:11.082Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/0a85f0f002e42532688cf926580ae158108dbd96ff6d6fa8893a9964e83d004d [stream]
+[debug] [2026-04-28T14:05:11.087Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/00cfd4b2a64c26727b07ba43b5e814f6d021e48e29a947e9cb27bef879d1937b [none]
+[debug] [2026-04-28T14:05:11.088Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/00cfd4b2a64c26727b07ba43b5e814f6d021e48e29a947e9cb27bef879d1937b [stream]
+[debug] [2026-04-28T14:05:11.089Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/9351f3439b137c01ef30e5fe637087950a6d4bffe613748559fdae7d25921ff8 [none]
+[debug] [2026-04-28T14:05:11.090Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/9351f3439b137c01ef30e5fe637087950a6d4bffe613748559fdae7d25921ff8 [stream]
+[debug] [2026-04-28T14:05:11.091Z] >>> [apiv2][query] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/0047f2247f29035b55b8990bc7c3705e1b00aab1278f658a0ae6a3099e695159 [none]
+[debug] [2026-04-28T14:05:11.092Z] >>> [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/0047f2247f29035b55b8990bc7c3705e1b00aab1278f658a0ae6a3099e695159 [stream]
+[debug] [2026-04-28T14:05:11.094Z] [hosting][populate queue][FINAL] {"max":767,"min":767,"avg":767,"active":0,"complete":1,"success":1,"errored":0,"retried":0,"total":1,"elapsed":779}
+[debug] [2026-04-28T14:05:11.095Z] [hosting] uploads queued: 4
+[info] i  hosting: uploading new files [0/4] (0%) 
+[debug] [2026-04-28T14:05:12.299Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/00cfd4b2a64c26727b07ba43b5e814f6d021e48e29a947e9cb27bef879d1937b 200
+[debug] [2026-04-28T14:05:12.299Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/00cfd4b2a64c26727b07ba43b5e814f6d021e48e29a947e9cb27bef879d1937b [stream]
+[debug] [2026-04-28T14:05:12.334Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/0a85f0f002e42532688cf926580ae158108dbd96ff6d6fa8893a9964e83d004d 200
+[debug] [2026-04-28T14:05:12.335Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/0a85f0f002e42532688cf926580ae158108dbd96ff6d6fa8893a9964e83d004d [stream]
+[debug] [2026-04-28T14:05:12.372Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/0047f2247f29035b55b8990bc7c3705e1b00aab1278f658a0ae6a3099e695159 200
+[debug] [2026-04-28T14:05:12.372Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/0047f2247f29035b55b8990bc7c3705e1b00aab1278f658a0ae6a3099e695159 [stream]
+[debug] [2026-04-28T14:05:12.514Z] <<< [apiv2][status] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/9351f3439b137c01ef30e5fe637087950a6d4bffe613748559fdae7d25921ff8 200
+[debug] [2026-04-28T14:05:12.514Z] <<< [apiv2][body] POST https://upload-firebasehosting.googleapis.com/upload/sites/metroapp-1c409/versions/5ef5a48e8ae90623/files/9351f3439b137c01ef30e5fe637087950a6d4bffe613748559fdae7d25921ff8 [stream]
+[debug] [2026-04-28T14:05:12.514Z] [hosting][upload queue][FINAL] {"max":1433,"min":1219,"avg":1299.25,"active":0,"complete":4,"success":4,"errored":0,"retried":0,"total":4,"elapsed":1434}
+[info] i  hosting: upload complete 
+[info] +  hosting[metroapp-1c409]: file upload complete 
+[debug] [2026-04-28T14:05:12.515Z] [hosting] deploy completed after 2537ms
+[debug] [2026-04-28T14:05:12.515Z] [
+  {
+    "config": {
+      "site": "metroapp-1c409",
+      "public": "dist/pruebaw/browser",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    "version": "projects/306755843839/sites/metroapp-1c409/versions/5ef5a48e8ae90623"
+  }
+]
+[info] i  hosting[metroapp-1c409]: finalizing version... 
+[debug] [2026-04-28T14:05:12.520Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:12.520Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:12.523Z] >>> [apiv2][query] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/metroapp-1c409/versions/5ef5a48e8ae90623 updateMask=status%2Cconfig
+[debug] [2026-04-28T14:05:12.523Z] >>> [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/metroapp-1c409/versions/5ef5a48e8ae90623 {"status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]}}
+[debug] [2026-04-28T14:05:13.180Z] <<< [apiv2][status] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/metroapp-1c409/versions/5ef5a48e8ae90623 200
+[debug] [2026-04-28T14:05:13.180Z] <<< [apiv2][body] PATCH https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/metroapp-1c409/versions/5ef5a48e8ae90623 {"name":"projects/306755843839/sites/metroapp-1c409/versions/5ef5a48e8ae90623","status":"FINALIZED","config":{"rewrites":[{"glob":"**","path":"/index.html"}]},"labels":{"deployment-tool":"cli-firebase"},"createTime":"2026-04-28T14:05:12.371970Z","createUser":{"email":"soporte.supersorteo@gmail.com"},"finalizeTime":"2026-04-28T14:05:16.092419Z","finalizeUser":{"email":"soporte.supersorteo@gmail.com"}}
+[debug] [2026-04-28T14:05:13.180Z] [hosting] finalized version for metroapp-1c409:[object Object]
+[info] +  hosting[metroapp-1c409]: version finalized 
+[info] i  hosting[metroapp-1c409]: releasing new version... 
+[debug] [2026-04-28T14:05:13.181Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:13.181Z] Checked if tokens are valid: true, expires at: 1777388705958
+[debug] [2026-04-28T14:05:13.181Z] >>> [apiv2][query] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/metroapp-1c409/channels/live/releases versionName=projects%2F306755843839%2Fsites%2Fmetroapp-1c409%2Fversions%2F5ef5a48e8ae90623
+[debug] [2026-04-28T14:05:13.181Z] >>> [apiv2][body] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/metroapp-1c409/channels/live/releases {}
+[debug] [2026-04-28T14:05:13.987Z] <<< [apiv2][status] POST https://firebasehosting.googleapis.com/v1beta1/projects/-/sites/metroapp-1c409/channels/live/releases 200
