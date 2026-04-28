@@ -261,6 +261,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   itemsPerPage: number = 5;
   totalPages: number = 1;
 
+  tareasCurrentPage: number = 1;
+  tareasTotalPages: number = 1;
+  readonly TAREAS_PANEL_PAGE_SIZE = 5;
+  tareasAgregadasPaginadas: UserTarea[] = [];
+
   recentTasks: any[] = []; // Property to store the last 10 tasks
 
   logoUrl: string = '';
@@ -329,6 +334,8 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
 
   private clearVisibleTasks(): void {
     this.tareasAgregadas = [];
+    this.tareasAgregadasPaginadas = [];
+    this.tareasCurrentPage = 1;
     this.mostrarTabla = false;
     this.showTareasPanel = false;
     this.presupuestoService.setTareasAgregadas([]);
@@ -745,6 +752,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       this.tareasAgregadas = [...this.userTareaStore.tareas()];
       this.mostrarTabla = this.tareasAgregadas.length > 0;
       this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+      this.updatePaginatedTareasPanel();
       if (this.clienteSeleccionado?.id) {
         this.userTareaService.cacheTareasByClienteId(this.clienteSeleccionado.id, this.tareasAgregadas);
       }
@@ -1141,6 +1149,27 @@ if (this.trialMode) {
 
   getPages(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  updatePaginatedTareasPanel(): void {
+    this.tareasTotalPages = Math.ceil(this.tareasAgregadas.length / this.TAREAS_PANEL_PAGE_SIZE) || 1;
+    if (this.tareasCurrentPage > this.tareasTotalPages) this.tareasCurrentPage = this.tareasTotalPages;
+    const start = (this.tareasCurrentPage - 1) * this.TAREAS_PANEL_PAGE_SIZE;
+    this.tareasAgregadasPaginadas = this.tareasAgregadas.slice(start, start + this.TAREAS_PANEL_PAGE_SIZE);
+  }
+
+  tareasNextPage(): void {
+    if (this.tareasCurrentPage < this.tareasTotalPages) {
+      this.tareasCurrentPage++;
+      this.updatePaginatedTareasPanel();
+    }
+  }
+
+  tareasPrevPage(): void {
+    if (this.tareasCurrentPage > 1) {
+      this.tareasCurrentPage--;
+      this.updatePaginatedTareasPanel();
+    }
   }
 
 
@@ -1599,6 +1628,7 @@ if (this.trialMode) {
   localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
 
   this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+  this.updatePaginatedTareasPanel();
   this.toastr.success('Tarea agregada en modo demo', '', {
     toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
   });
@@ -1740,6 +1770,8 @@ private async aplicarPresupuestoGuardado(
   // Guardar en localStorage y servicio global
   localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
   this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+  this.tareasCurrentPage = 1;
+  this.updatePaginatedTareasPanel();
 
   // 2. CARGAR CLIENTE DEL PRESUPUESTO
   if (presupuesto.cliente && presupuesto.cliente.id) {
@@ -1820,6 +1852,10 @@ toggleTareasPanel(): void {
     return;
   }
 
+  if (!this.showTareasPanel) {
+    this.tareasCurrentPage = 1;
+    this.updatePaginatedTareasPanel();
+  }
   this.showTareasPanel = !this.showTareasPanel;
 }
 
@@ -2121,6 +2157,7 @@ eliminarTarea(id: number): void {
 
 private actualizarTablaYStorage() {
   this.mostrarTabla = this.tareasAgregadas.length > 0;
+  this.updatePaginatedTareasPanel();
   localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
   localStorage.setItem(this.authTareasKey(this.clienteSeleccionado?.id ?? null), JSON.stringify(this.tareasAgregadas));
   this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);

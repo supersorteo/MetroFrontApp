@@ -403,7 +403,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let tarea of tareasAgregadas; let i = index">
+            <tr *ngFor="let tarea of tareasAgregadasPaginadas; let i = index">
               <td class="text-center">
                 <button *ngIf="tarea.id" (click)="solicitarConfirmacionEliminarTarea(tarea)" class="btn btn-outline-danger btn-sm rounded-circle" aria-label="Eliminar tarea">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 43.15 46.9" width="18" height="18" aria-hidden="true" focusable="false">
@@ -426,6 +426,20 @@
         </table>
       </div>
     </div>
+
+      <div *ngIf="tareasTotalPages > 1" class="tareas-panel__pagination">
+        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === 1" (click)="tareasPrevPage()" aria-label="Página anterior">
+          &#8249;
+        </button>
+        <span class="tareas-panel__pag-info">
+          <span class="tareas-panel__pag-current">{{ tareasCurrentPage }}</span>
+          <span class="tareas-panel__pag-sep">/</span>
+          <span class="tareas-panel__pag-total">{{ tareasTotalPages }}</span>
+        </span>
+        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === tareasTotalPages" (click)="tareasNextPage()" aria-label="Página siguiente">
+          &#8250;
+        </button>
+      </div>
 
       <div class="tareas-total mt-3">
         Total: {{ calcularCostoTotal() | currency:'USD':'symbol':'1.2-2' }}
