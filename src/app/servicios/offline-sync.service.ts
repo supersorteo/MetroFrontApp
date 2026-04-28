@@ -26,6 +26,7 @@ export class OfflineSyncService {
   private readonly uploadUrl = `${APP_API_URL}/upload/image`;
   private syncInProgress = false;
   private sequenceSeed = Date.now();
+  private sessionExpired = false;
 
   constructor(
     private http: HttpClient,
@@ -45,9 +46,22 @@ export class OfflineSyncService {
     setTimeout(() => void this.syncPendingOpsIfOnline(), 1200);
   }
 
+  private isUserAuthenticated(): boolean {
+    return !!localStorage.getItem('userCode') && localStorage.getItem('trialMode') !== 'true';
+  }
+
+  clearSessionExpired(): void {
+    this.sessionExpired = false;
+  }
+
   private async syncPendingOpsIfOnline(): Promise<void> {
-    if (!this.hasPendingOps()) {
-      return;
+    if (!this.hasPendingOps()) return;
+    if (this.sessionExpired) {
+      if (this.isUserAuthenticated()) {
+        this.sessionExpired = false;
+      } else {
+        return;
+      }
     }
     const reallyOnline = await this.offlineStatus.probe();
     if (reallyOnline) {
@@ -67,6 +81,7 @@ export class OfflineSyncService {
 
   private isNetworkErrorMessage(msg?: string): boolean {
     if (!msg) return false;
+    if (msg.includes('401')) return false;
     return msg.includes('0 Client Error') || msg.includes('unknown url') || msg.includes('Http failure response');
   }
 
@@ -164,10 +179,13 @@ export class OfflineSyncService {
         synced++;
       } catch (error: any) {
         if (error?.status === 401) {
-          this.toast.warning(
-            'Tu sesión expiró. Iniciá sesión nuevamente para sincronizar los cambios pendientes.',
-            'Sesión expirada'
-          );
+          if (!this.sessionExpired) {
+            this.sessionExpired = true;
+            this.toast.warning(
+              'Tu sesión expiró. Iniciá sesión nuevamente para sincronizar los cambios pendientes.',
+              'Sesión expirada'
+            );
+          }
           break;
         }
         // DELETE 404 = ya fue eliminado en el servidor, operacion cumplida

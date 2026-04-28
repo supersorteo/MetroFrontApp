@@ -256,19 +256,16 @@ login(): void {
           telefono: this.telefono,
           pais: this.pais || '',
           provincia: this.provincia
-        }).subscribe(
-          response => {
-            if (response.message === 'Datos asignados con exito') {
-              Swal.fire('Exito', response.message, 'success');
-              this.clearForm();
-            } else {
-              Swal.fire('Error', response.message, 'error');
-            }
+        }).subscribe({
+          next: response => {
+            Swal.fire('¡Éxito!', response.message, 'success');
+            this.clearForm();
           },
-          error => {
-            Swal.fire('Error', error.message, 'error');
+          error: err => {
+            const msg = err?.error?.message || err?.message || 'Error al registrar. Intentá de nuevo.';
+            Swal.fire('Error', msg, 'error');
           }
-        );
+        });
       },
       error: (error) => {
         Swal.fire('Error', error.message || 'No se pudo validar el codigo.', 'error');

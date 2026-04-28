@@ -944,6 +944,74 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
   }
 }
 
+// ── Modal pagination ──────────────────────────────────────────────────────────
+.calc-modal__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .75rem 1.25rem;
+  background: linear-gradient(135deg, #2c3e50 0%, #3d5a74 100%);
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.calc-modal__pag-btn {
+  width: 2.4rem;
+  height: 2.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba($primary, .92), rgba($primary-dk, .9));
+  color: $white;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba($primary-dk, .35);
+  transition: transform .15s ease, filter .15s ease, box-shadow .15s ease, opacity .15s;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+    box-shadow: 0 6px 16px rgba($primary-dk, .45);
+  }
+
+  &:active:not(:disabled) { transform: scale(.95); }
+
+  &--disabled,
+  &:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.calc-modal__pag-info {
+  display: flex;
+  align-items: baseline;
+  gap: .3rem;
+  font-weight: 700;
+}
+
+.calc-modal__pag-current {
+  font-size: 1.15rem;
+  color: $white;
+  min-width: 1.4rem;
+  text-align: center;
+}
+
+.calc-modal__pag-sep {
+  font-size: .85rem;
+  color: rgba($white, .45);
+}
+
+.calc-modal__pag-total {
+  font-size: .9rem;
+  color: rgba($white, .65);
+  min-width: 1.1rem;
+  text-align: center;
+}
+
 // ── Responsive ────────────────────────────────────────────────────────────────
 @media (max-width: 600px) {
   .calc-back-fab {

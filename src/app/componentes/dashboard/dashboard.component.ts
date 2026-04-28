@@ -793,9 +793,19 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
         this.calculateRemainingTime(this.userData.fechaVencimiento);
       }
     });
-    interval(4000).pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.refreshPendingSyncSummary();
-    });
+    if (!this.trialMode) {
+      // Activo: cada 4s con ops pendientes. Idle: cada 5 ticks (20s)
+      let idleTicks = 0;
+      interval(4000).pipe(takeUntil(this.destroy$)).subscribe(() => {
+        if (this.offlineSync.hasPendingOps() || this.offlineSync.isSyncing()) {
+          idleTicks = 0;
+          this.refreshPendingSyncSummary();
+        } else if (++idleTicks >= 5) {
+          idleTicks = 0;
+          this.refreshPendingSyncSummary();
+        }
+      });
+    }
     this.colorScheme = this.loadColorScheme();
     this.budgetDate = new Date().toISOString().split('T')[0];
   }
@@ -861,28 +871,17 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   const demoTareas = localStorage.getItem('demoTareas');
   const tareas = demoTareas ? JSON.parse(demoTareas) : [];
   this.tareas = tareas;
-  //this.tareasFiltradas = tareas;
   this.tareasFiltradas = this.tareas.map(t => ({ ...t, costo: 1234, totalCost: 1234 }));
-
 
   this.tareasAgregadas = [];
   this.mostrarTabla = false;
-
   this.remainingTime = 'Modo demo';
-  this.selectedEmpresaId = this.empresas[0] || null;
 
   if (this.selectedEmpresaId?.id) {
-  localStorage.setItem('selectedEmpresaId', String(this.selectedEmpresaId.id));
-}
-
-// Forzar carga de datos en el modal + logo
-this.cargarDatosEmpresaSeleccionada();
-this.actualizarImagenEmpresa(this.selectedEmpresaId);
-
-if (this.selectedEmpresaId) {
-  this.onEmpresaSeleccionada(this.selectedEmpresaId);
-  localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
-}
+    localStorage.setItem('selectedEmpresaId', String(this.selectedEmpresaId.id));
+    localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
+    this.onEmpresaSeleccionada(this.selectedEmpresaId);
+  }
 
 }
 
@@ -996,10 +995,10 @@ if (this.selectedEmpresaId) {
   }
 
   updatePaginatedEmpresas(): void {
-    const startIndex = (this.currentEmpresaPage - 1) * this.itemsPerPageEmpresas;
-    const endIndex = startIndex + this.itemsPerPageEmpresas;
-    this.paginatedEmpresas = this.empresas.slice(startIndex, endIndex);
     this.totalEmpresaPages = Math.ceil(this.empresas.length / this.itemsPerPageEmpresas) || 1;
+    if (this.currentEmpresaPage > this.totalEmpresaPages) this.currentEmpresaPage = 1;
+    const startIndex = (this.currentEmpresaPage - 1) * this.itemsPerPageEmpresas;
+    this.paginatedEmpresas = this.empresas.slice(startIndex, startIndex + this.itemsPerPageEmpresas);
   }
 
   getEmpresaPages(): number[] {
@@ -1113,10 +1112,10 @@ if (this.trialMode) {
   }
 
   updatePaginatedClientes(): void {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedClientes = this.clientes.slice(startIndex, endIndex);
     this.totalPages = Math.ceil(this.clientes.length / this.itemsPerPage) || 1;
+    if (this.currentPage > this.totalPages) this.currentPage = 1;
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    this.paginatedClientes = this.clientes.slice(startIndex, startIndex + this.itemsPerPage);
   }
 
   setPage(page: number): void {
@@ -1396,7 +1395,13 @@ obtenerTareas(): void {
         this.tareas = tareas;
         this.tareasFiltradas = tareas;
       },
-      error: () => this.toastr.error('Error al obtener las tareas', 'Error')
+      error: () => {
+        if (this.tareas.length === 0) {
+          this.toastr.error('No se pudieron cargar las tareas. Revisá tu conexión e intentá de nuevo.', 'Error de carga');
+        } else {
+          this.toastr.warning('No se pudo actualizar el catálogo de tareas. Estás viendo datos guardados anteriormente.', 'Sin conexión');
+        }
+      }
     });
   }
 }
@@ -1604,7 +1609,17 @@ if (this.trialMode) {
 
 
 
-    const clienteId = this.clienteSeleccionado?.id ?? null;
+    if (!this.selectedEmpresaId) {
+      this.toastr.warning('Primero seleccioná una empresa', 'Sin empresa');
+      return;
+    }
+
+    if (!this.clienteSeleccionado) {
+      this.toastr.warning('Primero seleccioná un cliente', 'Sin cliente');
+      return;
+    }
+
+    const clienteId = this.clienteSeleccionado.id;
 
     const nuevaTarea: UserTarea = {
       ...this.tareaSeleccionada,
@@ -1935,6 +1950,18 @@ private loadColorScheme(): ColorScheme {
   }
 
 
+
+abrirModalClientes(): void {
+  if (!this.selectedEmpresaId) {
+    this.toastr.warning('Primero creá o seleccioná una empresa', 'Sin empresa');
+    return;
+  }
+  const el = document.getElementById('listaClientesModal');
+  if (el) {
+    const instance = bootstrap.Modal.getOrCreateInstance(el);
+    instance.show();
+  }
+}
 
 openClientModal(): void {
   if (this.trialMode) {

@@ -103,7 +103,7 @@
           <p class="calc-modal__empty">Todavía no hay cálculos guardados.</p>
         } @else {
           <ul class="calc-modal__list">
-            @for (calculo of historialCalculos(); track trackHistorial($index, calculo)) {
+            @for (calculo of historialPaginado(); track trackHistorial($index, calculo)) {
               <li class="calc-modal__history-item">
                 <button class="calc-modal__item" (click)="restaurarHistorial(calculo)">
                   <span class="calc-modal__item-num">#{{ calculo.tareaId }}</span>
@@ -130,6 +130,31 @@
               </li>
             }
           </ul>
+          @if (historialTotalPages() > 1) {
+            <div class="calc-modal__pagination">
+              <button
+                class="calc-modal__pag-btn"
+                [class.calc-modal__pag-btn--disabled]="historialPage() === 1"
+                [disabled]="historialPage() === 1"
+                (click)="historialPrevPage()"
+                aria-label="Página anterior">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <div class="calc-modal__pag-info">
+                <span class="calc-modal__pag-current">{{ historialPage() }}</span>
+                <span class="calc-modal__pag-sep">/</span>
+                <span class="calc-modal__pag-total">{{ historialTotalPages() }}</span>
+              </div>
+              <button
+                class="calc-modal__pag-btn"
+                [class.calc-modal__pag-btn--disabled]="historialPage() === historialTotalPages()"
+                [disabled]="historialPage() === historialTotalPages()"
+                (click)="historialNextPage()"
+                aria-label="Página siguiente">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          }
         }
       </div>
     </div>
