@@ -3259,17 +3259,36 @@ fetchUserData(): void {
   }
 
   // ── Tareas Personalizadas ────────────────────────────────────────────────
+  private readonly TP_DEMO_KEY = 'demo_tareas_personalizadas';
+  private readonly TP_LIMIT_DEMO = 5;
+  private readonly TP_LIMIT_VIP = 500;
+
+  private tpLoadDemo(): TareaPersonalizada[] {
+    try { return JSON.parse(localStorage.getItem(this.TP_DEMO_KEY) || '[]'); } catch { return []; }
+  }
+
+  private tpSaveDemo(list: TareaPersonalizada[]): void {
+    try { localStorage.setItem(this.TP_DEMO_KEY, JSON.stringify(list)); } catch {}
+  }
 
   toggleTareasPersonalizadasPanel(): void {
     this.showTareasPersonalizadasPanel = !this.showTareasPersonalizadasPanel;
     if (this.showTareasPersonalizadasPanel) {
       this.tpMostrarImportar = false;
       this.tpCancelarEdicion();
-      this.tpService.syncPending(this.userCode).subscribe();
+      if (this.trialMode) {
+        this.tareasPersonalizadas = this.tpLoadDemo();
+      } else {
+        this.tpService.syncPending(this.userCode).subscribe();
+      }
     }
   }
 
   cargarTareasPersonalizadas(): void {
+    if (this.trialMode) {
+      this.tareasPersonalizadas = this.tpLoadDemo();
+      return;
+    }
     if (!this.userCode) return;
     this.tpService.getByUserCode(this.userCode).subscribe({
       next: list => this.tareasPersonalizadas = list,
@@ -3287,12 +3306,39 @@ fetchUserData(): void {
       this.appToast.warning('El costo debe ser mayor a 0', 'Campo requerido');
       return;
     }
+
+    const isNew = this.tpEditingId == null;
+    const limit = this.trialMode ? this.TP_LIMIT_DEMO : this.TP_LIMIT_VIP;
+    if (isNew && this.tareasPersonalizadas.length >= limit) {
+      this.appToast.warning(
+        `Alcanzaste el límite de ${limit} tareas personalizadas`,
+        'Límite alcanzado'
+      );
+      return;
+    }
+
     const payload: TareaPersonalizada = {
       userCode: this.userCode,
       tarea: this.tpForm.tarea.trim(),
       descripcion: this.tpForm.descripcion.trim(),
       costo: this.tpForm.costo
     };
+
+    if (this.trialMode) {
+      const list = this.tpLoadDemo();
+      if (this.tpEditingId != null) {
+        const idx = list.findIndex(t => t.id === this.tpEditingId);
+        if (idx !== -1) list[idx] = { ...payload, id: this.tpEditingId };
+        this.appToast.success(`"${payload.tarea}" actualizada`, 'Tarea actualizada');
+      } else {
+        list.push({ ...payload, id: -Date.now() });
+        this.appToast.success(`"${payload.tarea}" guardada en tus tareas`, 'Tarea creada');
+      }
+      this.tpSaveDemo(list);
+      this.tareasPersonalizadas = [...list];
+      this.tpCancelarEdicion();
+      return;
+    }
 
     if (this.tpEditingId != null) {
       this.tpService.update(this.tpEditingId, payload).subscribe({
@@ -3333,6 +3379,13 @@ fetchUserData(): void {
     if (tp.id == null) return;
     this.appToast.confirm(`Se eliminará "${tp.tarea}" de tus tareas personalizadas.`, '¿Eliminar tarea?').then(confirmed => {
       if (!confirmed) return;
+      if (this.trialMode) {
+        const list = this.tpLoadDemo().filter(t => t.id !== tp.id);
+        this.tpSaveDemo(list);
+        this.tareasPersonalizadas = [...list];
+        this.appToast.success(`"${tp.tarea}" eliminada`, 'Tarea eliminada');
+        return;
+      }
       this.tpService.delete(tp.id!, this.userCode).subscribe({
         next: () => {
           this.tareasPersonalizadas = this.tareasPersonalizadas.filter(t => t.id !== tp.id);
@@ -3361,18 +3414,35 @@ fetchUserData(): void {
   }
 
   tpImportarDelCatalogo(tarea: Tarea): void {
+    const limit = this.trialMode ? this.TP_LIMIT_DEMO : this.TP_LIMIT_VIP;
+    if (this.tareasPersonalizadas.length >= limit) {
+      this.appToast.warning(
+        `Alcanzaste el límite de ${limit} tareas personalizadas`,
+        'Límite alcanzado'
+      );
+      return;
+    }
     const payload: TareaPersonalizada = {
       userCode: this.userCode,
       tarea: tarea.tarea,
       descripcion: tarea.descripcion || '',
       costo: tarea.costo
     };
+    if (this.trialMode) {
+      const list = this.tpLoadDemo();
+      const created: TareaPersonalizada = { ...payload, id: -Date.now() };
+      list.push(created);
+      this.tpSaveDemo(list);
+      this.tareasPersonalizadas = [...list];
+      this.appToast.success(`"${created.tarea}" importada a Mis Tareas`, 'Importada');
+      return;
+    }
     this.tpService.create(payload).subscribe({
       next: created => {
         this.tareasPersonalizadas = [...this.tareasPersonalizadas, created];
-        this.toastr.success(`"${created.tarea}" importada a Mis Tareas`, '');
+        this.appToast.success(`"${created.tarea}" importada a Mis Tareas`, 'Importada');
       },
-      error: err => this.toastr.error(err.message, 'Error')
+      error: err => this.appToast.error(err.message, 'Error al importar')
     });
   }
 

@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../servicios/auth.service';
 import { Admin, AdminService } from '../../servicios/admin.service';
+import { Tarea, TareaService } from '../../servicios/tarea.service';
 
 interface AccessCode {
   code: string;
@@ -52,6 +53,15 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   showGeneratedModal = false;
   showEditAdminPanel = false;
 
+  // Tareas por país
+  tareas: Tarea[] = [];
+  filteredTareas: Tarea[] = [];
+  tareaFilter = '';
+  showTareaForm = false;
+  tareaEditingId: number | null = null;
+  tareaSubmitted = false;
+  tareaForm: Omit<Tarea, 'id' | 'pais' | 'totalCost'> = { tarea: '', descripcion: '', costo: 0, rubro: '', categoria: '', area: 1, descuento: 0 };
+
   // Confirm toast
   confirmToast: { icon: string; title: string; message: string; position: 'top' | 'bottom'; action: () => void } | null = null;
 
@@ -75,6 +85,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private adminService: AdminService,
+    private tareaService: TareaService,
     private router: Router,
     private toastr: ToastrService
   ) {}
@@ -84,6 +95,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     if (!admin) { this.router.navigate(['/']); return; }
     this.admin = admin;
     this.loadCodes();
+    this.loadTareas();
     this.timer = setInterval(() => this.updateRemainingTimes(), 1000);
   }
 
@@ -318,5 +330,98 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       this.toastr.success('Perfil actualizado', 'Éxito');
       this.showEditAdminPanel = false;
     });
+  }
+
+  // ── Gestión de Tareas por País ─────────────────────────────
+
+  loadTareas(): void {
+    this.tareaService.getTareasByPais(this.admin.pais).subscribe({
+      next: list => { this.tareas = list; this.filtrarTareas(); },
+      error: () => this.toastr.error('Error al cargar tareas', 'Error')
+    });
+  }
+
+  filtrarTareas(): void {
+    const q = this.tareaFilter.toLowerCase();
+    this.filteredTareas = q
+      ? this.tareas.filter(t =>
+          t.tarea.toLowerCase().includes(q) ||
+          (t.rubro || '').toLowerCase().includes(q) ||
+          (t.categoria || '').toLowerCase().includes(q)
+        )
+      : [...this.tareas];
+  }
+
+  abrirNuevaTarea(): void {
+    this.tareaEditingId = null;
+    this.tareaSubmitted = false;
+    this.tareaForm = { tarea: '', descripcion: '', costo: 0, rubro: '', categoria: '', area: 1, descuento: 0 };
+    this.showTareaForm = true;
+  }
+
+  tareaEditar(t: Tarea): void {
+    this.tareaEditingId = t.id ?? null;
+    this.tareaSubmitted = false;
+    this.tareaForm = { tarea: t.tarea, descripcion: t.descripcion, costo: t.costo, rubro: t.rubro, categoria: t.categoria, area: t.area, descuento: t.descuento };
+    this.showTareaForm = true;
+    setTimeout(() => document.getElementById('tarea-form-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+
+  tareaGuardar(): void {
+    this.tareaSubmitted = true;
+    if (!this.tareaForm.tarea.trim()) {
+      this.toastr.warning('El nombre es obligatorio', 'Campo requerido'); return;
+    }
+    if (!this.tareaForm.costo || this.tareaForm.costo <= 0) {
+      this.toastr.warning('El costo debe ser mayor a 0', 'Campo requerido'); return;
+    }
+    const payload: Tarea = { ...this.tareaForm, tarea: this.tareaForm.tarea.trim(), pais: this.admin.pais };
+
+    if (this.tareaEditingId != null) {
+      this.tareaService.actualizarTarea(this.tareaEditingId, payload).subscribe({
+        next: updated => {
+          const idx = this.tareas.findIndex(t => t.id === this.tareaEditingId);
+          if (idx !== -1) this.tareas[idx] = updated;
+          this.filtrarTareas();
+          this.toastr.success(`"${updated.tarea}" actualizada`, 'Éxito');
+          this.tareaReset();
+        },
+        error: () => this.toastr.error('Error al actualizar la tarea', 'Error')
+      });
+    } else {
+      this.tareaService.agregarTarea(payload).subscribe({
+        next: created => {
+          this.tareas = [...this.tareas, created];
+          this.filtrarTareas();
+          this.toastr.success(`"${created.tarea}" creada`, 'Éxito');
+          this.tareaReset();
+        },
+        error: () => this.toastr.error('Error al crear la tarea', 'Error')
+      });
+    }
+  }
+
+  tareaEliminar(t: Tarea): void {
+    if (t.id == null) return;
+    this.showConfirm(
+      '🗑️', 'Eliminar tarea', `¿Eliminar "${t.tarea}"? Esta acción no se puede deshacer.`, 'bottom',
+      () => {
+        this.tareaService.eliminarTarea(t.id!).subscribe({
+          next: () => {
+            this.tareas = this.tareas.filter(x => x.id !== t.id);
+            this.filtrarTareas();
+            this.toastr.success(`"${t.tarea}" eliminada`, 'Éxito');
+          },
+          error: () => this.toastr.error('Error al eliminar la tarea', 'Error')
+        });
+      }
+    );
+  }
+
+  tareaReset(): void {
+    this.tareaEditingId = null;
+    this.tareaSubmitted = false;
+    this.showTareaForm = false;
+    this.tareaForm = { tarea: '', descripcion: '', costo: 0, rubro: '', categoria: '', area: 1, descuento: 0 };
   }
 }

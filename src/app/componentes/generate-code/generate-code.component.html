@@ -202,6 +202,73 @@
       </div>
     </div>
 
+    <!-- ── Gestión de Tareas ───────────────────────── -->
+    <div class="admin-table-section at-tareas" id="tarea-form-section">
+
+      <div class="admin-table-header">
+        <h2 class="admin-section-title">
+          Tareas de {{ admin.pais | titlecase }}
+          <span class="admin-section-title__count">{{ filteredTareas.length }}</span>
+        </h2>
+        <div class="at-tareas__header-actions">
+          <div class="admin-search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="admin-search__icon">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414zm-5.242 1.6a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"/>
+            </svg>
+            <input type="text" class="admin-search__input" placeholder="Buscar tarea, rubro, categoría..."
+                   [(ngModel)]="tareaFilter" (input)="filtrarTareas()">
+          </div>
+          <button class="gen-btn gen-btn--task" (click)="abrirNuevaTarea()">
+            <span class="gen-btn__icon">➕</span>
+            <span class="gen-btn__text">Nueva tarea</span>
+          </button>
+        </div>
+      </div>
+
+
+      <!-- Tabla de tareas -->
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Tarea</th>
+              <th>Rubro</th>
+              <th>Categoría</th>
+              <th>Costo</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of filteredTareas">
+              <td class="td--tarea-name">{{ t.tarea }}</td>
+              <td><span class="rubro-badge" *ngIf="t.rubro">{{ t.rubro }}</span><span *ngIf="!t.rubro" class="td--empty-val">—</span></td>
+              <td>{{ t.categoria || '—' }}</td>
+              <td><span class="cost-val">${{ t.costo | number:'1.2-2' }}</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="ra-btn ra-btn--edit" title="Editar" (click)="tareaEditar(t)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+                    </svg>
+                  </button>
+                  <button class="ra-btn ra-btn--delete" title="Eliminar" (click)="tareaEliminar(t)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                      <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredTareas.length === 0">
+              <td colspan="5" class="td--empty">No hay tareas para {{ admin.pais | titlecase }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
   </div><!-- /admin-body -->
 
   <!-- ── Generated codes modal ─────────────────── -->
@@ -245,6 +312,113 @@
       </div>
     </div>
     <button class="confirm-toast__close" (click)="confirmNo()">&#x00D7;</button>
+  </div>
+
+  <!-- ── Modal Tarea ─────────────────────────────── -->
+  <div class="admin-overlay at-modal-overlay" *ngIf="showTareaForm" (click)="tareaReset()">
+    <div class="at-modal" (click)="$event.stopPropagation()">
+
+      <!-- Header -->
+      <div class="at-modal__header">
+        <div class="at-modal__header-icon">
+          <svg *ngIf="tareaEditingId == null" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+          </svg>
+          <svg *ngIf="tareaEditingId != null" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+          </svg>
+        </div>
+        <div class="at-modal__header-text">
+          <h3 class="at-modal__title">{{ tareaEditingId != null ? 'Editar tarea' : 'Nueva tarea' }}</h3>
+          <small class="at-modal__subtitle">{{ admin.pais | titlecase }} · {{ tareaEditingId != null ? 'Modificando tarea existente' : 'Agregar al catálogo del país' }}</small>
+        </div>
+        <button class="at-modal__close" (click)="tareaReset()" aria-label="Cerrar">&#x00D7;</button>
+      </div>
+
+      <!-- Body -->
+      <div class="at-modal__body">
+        <div class="at-form__grid">
+
+          <div class="at-field at-field--full">
+            <label class="at-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="at-label__icon">
+                <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+              </svg>
+              Nombre de la tarea <span class="at-req">*</span>
+            </label>
+            <input class="at-input" [ngClass]="{'at-input--invalid': tareaSubmitted && !tareaForm.tarea.trim()}"
+                   type="text" placeholder="Ej: Instalación eléctrica residencial" [(ngModel)]="tareaForm.tarea" autofocus>
+            <span *ngIf="tareaSubmitted && !tareaForm.tarea.trim()" class="at-error">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/></svg>
+              El nombre es obligatorio
+            </span>
+          </div>
+
+          <div class="at-field">
+            <label class="at-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="at-label__icon">
+                <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d="M6.5 3.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m-3 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m6 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m2 4.5h-10v1h10zm0 3h-10v1h10z"/>
+              </svg>
+              Costo unitario ($) <span class="at-req">*</span>
+            </label>
+            <input class="at-input" [ngClass]="{'at-input--invalid': tareaSubmitted && (!tareaForm.costo || tareaForm.costo <= 0)}"
+                   type="number" placeholder="0.00" min="0.01" step="0.01" [(ngModel)]="tareaForm.costo">
+            <span *ngIf="tareaSubmitted && (!tareaForm.costo || tareaForm.costo <= 0)" class="at-error">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/></svg>
+              Debe ser mayor a 0
+            </span>
+          </div>
+
+          <div class="at-field">
+            <label class="at-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="at-label__icon">
+                <path d="M11 5.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5M2.56 3.5A1.5 1.5 0 0 0 1 5v.5h1.5v-1A.5.5 0 0 1 3 4h1.5V3H3a.44.44 0 0 0-.44.5M1 6v2h1V6zm0 3v.5A1.5 1.5 0 0 0 2.5 11H3v-1H2.5a.5.5 0 0 1-.5-.5V9zm3 2h1.5v1H4.5A.5.5 0 0 1 4 11.5V11zm2.5 1h1v-1H6.5v1zm2 0h1V11H8.5v1z"/>
+              </svg>
+              Rubro
+            </label>
+            <input class="at-input" type="text" placeholder="Ej: Electricidad" [(ngModel)]="tareaForm.rubro">
+          </div>
+
+          <div class="at-field">
+            <label class="at-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="at-label__icon">
+                <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5z"/>
+              </svg>
+              Categoría
+            </label>
+            <input class="at-input" type="text" placeholder="Ej: Instalaciones" [(ngModel)]="tareaForm.categoria">
+          </div>
+
+          <div class="at-field at-field--full">
+            <label class="at-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="at-label__icon">
+                <path d="M2 12.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5m0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5m0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5"/>
+              </svg>
+              Descripción <span class="at-opt">(opcional)</span>
+            </label>
+            <textarea class="at-input at-textarea" rows="3" placeholder="Detalle de la tarea..." [(ngModel)]="tareaForm.descripcion"></textarea>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="at-modal__footer">
+        <button class="at-modal__btn at-modal__btn--cancel" (click)="tareaReset()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+          </svg>
+          Cancelar
+        </button>
+        <button class="at-modal__btn at-modal__btn--save" (click)="tareaGuardar()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+          </svg>
+          {{ tareaEditingId != null ? 'Actualizar tarea' : 'Guardar tarea' }}
+        </button>
+      </div>
+
+    </div>
   </div>
 
   <!-- ── Edit admin modal ───────────────────────── -->
