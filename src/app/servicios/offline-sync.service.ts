@@ -66,7 +66,7 @@ export class OfflineSyncService {
     const reallyOnline = await this.offlineStatus.probe();
     if (reallyOnline) {
       await this.resetNetworkErrorRetries();
-      void this.syncPendingOps();
+      await this.syncPendingOps();
     }
   }
 
@@ -137,16 +137,22 @@ export class OfflineSyncService {
     const ops = await metroDB.pendingOps.orderBy('sequence').toArray();
     if (ops.length === 0) return;
 
-
     this.syncInProgress = true;
     this.isSyncing.set(true);
 
     let synced = 0;
     let failed = 0;
 
+    try {
     for (const queuedOp of ops) {
       const op = queuedOp.id ? await metroDB.pendingOps.get(queuedOp.id) : queuedOp;
       if (!op?.id) {
+        continue;
+      }
+
+      // Skip malformed records that lost their payload (corrupted IndexedDB entry)
+      if (op.method !== 'DELETE' && op.payload == null) {
+        if (op.id) await metroDB.pendingOps.delete(op.id);
         continue;
       }
 
@@ -206,10 +212,11 @@ export class OfflineSyncService {
         failed++;
       }
     }
-
-    this.syncInProgress = false;
-    this.isSyncing.set(false);
-    await this.refreshPendingCount();
+    } finally {
+      this.syncInProgress = false;
+      this.isSyncing.set(false);
+      await this.refreshPendingCount();
+    }
 
     if (synced > 0) {
       const s = synced > 1;
