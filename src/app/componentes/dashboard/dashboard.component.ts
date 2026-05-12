@@ -27,6 +27,8 @@ import { OfflineLocalStoreService } from '../../servicios/offline-local-store.se
 import { EmpresaStore } from '../../stores/empresa.store';
 import { ClienteStore } from '../../stores/cliente.store';
 import { UserTareaStore } from '../../stores/user-tarea.store';
+import { TareaPersonalizadaService, TareaPersonalizada } from '../../servicios/tarea-personalizada.service';
+import { AppToastService } from '../../servicios/app-toast.service';
 
 
 declare var bootstrap: any;
@@ -207,6 +209,13 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   mostrarTabla: boolean = false;
   showSavedBudgetsPanel: boolean = false;
   showTareasPanel: boolean = false;
+  showTareasPersonalizadasPanel: boolean = false;
+  tareasPersonalizadas: TareaPersonalizada[] = [];
+  tpEditingId: number | null = null;
+  tpForm = { tarea: '', descripcion: '', costo: 0 };
+  tpSubmitted = false;
+  tpMostrarImportar: boolean = false;
+  tpFiltroCatalogo: string = '';
   tareasAgregadas: UserTarea[] = [];
   tareasDelCliente: UserTarea[] = [];
   showMenuPanel: boolean = false;
@@ -302,7 +311,7 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
 
   private getStoredAuthTasks(clienteId: number | null | undefined): UserTarea[] {
     const key = this.authTareasKey(clienteId);
-    const raw = localStorage.getItem(key) || localStorage.getItem('tareasAgregadas');
+    const raw = localStorage.getItem(key);
     if (!raw) {
       return [];
     }
@@ -448,6 +457,7 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
 
     this.updatePaginatedClientes();
     if (this.trialMode) {
+      this.clearVisibleTasks();
       this.clienteSeleccionado = normalized;
       this.syncSelectedClienteStorage();
       return;
@@ -704,7 +714,9 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private toastr: ToastrService,
     private http: HttpClient,
     readonly offlineSync: OfflineSyncService,
-    private localStore: OfflineLocalStoreService
+    private localStore: OfflineLocalStoreService,
+    private tpService: TareaPersonalizadaService,
+    private appToast: AppToastService
   ) {
     // Sync empresas IDB → lista local + paginación
     effect(() => {
@@ -1662,7 +1674,9 @@ if (this.trialMode) {
     };
 
     const guardarLocal = (mensaje?: string) => {
-      this.tareasAgregadas.push(nuevaTarea);
+      if (!this.tareasAgregadas.some(t => t.id === nuevaTarea.id)) {
+        this.tareasAgregadas.push(nuevaTarea);
+      }
       this.mostrarTabla = true;
       localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
       localStorage.setItem(this.authTareasKey(clienteId), JSON.stringify(this.tareasAgregadas));
@@ -1681,12 +1695,9 @@ if (this.trialMode) {
 
     this.userTareaService.addUserTarea(nuevaTarea).subscribe({
       next: (tarea) => {
-        this.tareasAgregadas.push(tarea);
+        // liveQuery effect updates tareasAgregadas; just update secondary state
         this.mostrarTabla = true;
-        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-        localStorage.setItem(this.authTareasKey(clienteId), JSON.stringify(this.tareasAgregadas));
-        this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
-        this.saveToRecent(tarea); // Save to recent tasks
+        this.saveToRecent(tarea);
         this.toastr.success('Tarea agregada', 'Exito', {
           toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
         });
@@ -1834,12 +1845,15 @@ toggleSavedBudgetsPanel(): void {
 
 
 toggleTareasPanel(): void {
-  // Sync from store signal — Angular effects may not have flushed yet after empresa/client switch
-  const storeTareas = this.userTareaStore.tareas();
-  if (storeTareas.length > 0 && this.tareasAgregadas.length === 0) {
-    this.tareasAgregadas = [...storeTareas];
-    this.mostrarTabla = true;
-    this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+  if (!this.trialMode) {
+    const storeTareas = this.userTareaStore.tareas();
+    const currentId = this.clienteSeleccionado?.id;
+    if (storeTareas.length > 0 && this.tareasAgregadas.length === 0 &&
+        currentId && storeTareas.every(t => t.clienteId === currentId)) {
+      this.tareasAgregadas = [...storeTareas];
+      this.mostrarTabla = true;
+      this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+    }
   }
 
   if (!this.tareasAgregadas || this.tareasAgregadas.length === 0) {
@@ -2769,6 +2783,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
     this.userCode = localStorage.getItem('userCode') || '';
     if (this.userCode) {
       this.fetchUserData();
+      this.cargarTareasPersonalizadas();
     } else {
       this.toastr.error('Código de usuario no encontrado en el localStorage', 'Error');
       this.route.navigate(['']); // Redirigir al login
@@ -3241,6 +3256,130 @@ fetchUserData(): void {
         error: (err) => this.toastr.error(`Error al guardar colores: ${err.message}`, 'Error')
       });
     }
+  }
+
+  // ── Tareas Personalizadas ────────────────────────────────────────────────
+
+  toggleTareasPersonalizadasPanel(): void {
+    this.showTareasPersonalizadasPanel = !this.showTareasPersonalizadasPanel;
+    if (this.showTareasPersonalizadasPanel) {
+      this.tpMostrarImportar = false;
+      this.tpCancelarEdicion();
+      this.tpService.syncPending(this.userCode).subscribe();
+    }
+  }
+
+  cargarTareasPersonalizadas(): void {
+    if (!this.userCode) return;
+    this.tpService.getByUserCode(this.userCode).subscribe({
+      next: list => this.tareasPersonalizadas = list,
+      error: () => {}
+    });
+  }
+
+  tpGuardar(): void {
+    this.tpSubmitted = true;
+    if (!this.tpForm.tarea.trim()) {
+      this.appToast.warning('El nombre de la tarea es obligatorio', 'Campo requerido');
+      return;
+    }
+    if (!this.tpForm.costo || this.tpForm.costo <= 0) {
+      this.appToast.warning('El costo debe ser mayor a 0', 'Campo requerido');
+      return;
+    }
+    const payload: TareaPersonalizada = {
+      userCode: this.userCode,
+      tarea: this.tpForm.tarea.trim(),
+      descripcion: this.tpForm.descripcion.trim(),
+      costo: this.tpForm.costo
+    };
+
+    if (this.tpEditingId != null) {
+      this.tpService.update(this.tpEditingId, payload).subscribe({
+        next: updated => {
+          const idx = this.tareasPersonalizadas.findIndex(t => t.id === this.tpEditingId);
+          if (idx !== -1) this.tareasPersonalizadas[idx] = updated;
+          this.appToast.success(`"${updated.tarea}" actualizada correctamente`, 'Tarea actualizada');
+          this.tpCancelarEdicion();
+        },
+        error: err => this.appToast.error(err.message, 'Error al actualizar')
+      });
+    } else {
+      this.tpService.create(payload).subscribe({
+        next: created => {
+          this.tareasPersonalizadas = [...this.tareasPersonalizadas, created];
+          this.appToast.success(`"${created.tarea}" guardada en tus tareas`, 'Tarea creada');
+          this.tpCancelarEdicion();
+        },
+        error: err => this.appToast.error(err.message, 'Error al guardar')
+      });
+    }
+  }
+
+  tpEditar(tp: TareaPersonalizada): void {
+    this.tpEditingId = tp.id ?? null;
+    this.tpSubmitted = false;
+    this.tpForm = { tarea: tp.tarea, descripcion: tp.descripcion, costo: tp.costo };
+    this.tpMostrarImportar = false;
+  }
+
+  tpCancelarEdicion(): void {
+    this.tpEditingId = null;
+    this.tpSubmitted = false;
+    this.tpForm = { tarea: '', descripcion: '', costo: 0 };
+  }
+
+  tpEliminar(tp: TareaPersonalizada): void {
+    if (tp.id == null) return;
+    this.appToast.confirm(`Se eliminará "${tp.tarea}" de tus tareas personalizadas.`, '¿Eliminar tarea?').then(confirmed => {
+      if (!confirmed) return;
+      this.tpService.delete(tp.id!, this.userCode).subscribe({
+        next: () => {
+          this.tareasPersonalizadas = this.tareasPersonalizadas.filter(t => t.id !== tp.id);
+          this.appToast.success(`"${tp.tarea}" eliminada`, 'Tarea eliminada');
+        },
+        error: err => this.appToast.error(err.message, 'Error al eliminar')
+      });
+    });
+  }
+
+  tpAgregarAlPresupuesto(tp: TareaPersonalizada): void {
+    this.tareaSeleccionada = {
+      id: undefined,
+      tarea: tp.tarea,
+      descripcion: tp.descripcion,
+      costo: tp.costo,
+      area: 1,
+      descuento: 0,
+      totalCost: tp.costo,
+      rubro: '',
+      categoria: '',
+      pais: this.userData?.pais || ''
+    };
+    this.showTareasPersonalizadasPanel = false;
+    this.abrirModal();
+  }
+
+  tpImportarDelCatalogo(tarea: Tarea): void {
+    const payload: TareaPersonalizada = {
+      userCode: this.userCode,
+      tarea: tarea.tarea,
+      descripcion: tarea.descripcion || '',
+      costo: tarea.costo
+    };
+    this.tpService.create(payload).subscribe({
+      next: created => {
+        this.tareasPersonalizadas = [...this.tareasPersonalizadas, created];
+        this.toastr.success(`"${created.tarea}" importada a Mis Tareas`, '');
+      },
+      error: err => this.toastr.error(err.message, 'Error')
+    });
+  }
+
+  get tpCatalogoFiltrado(): Tarea[] {
+    if (!this.tpFiltroCatalogo.trim()) return this.tareasFiltradas.slice(0, 50);
+    const q = this.tpFiltroCatalogo.toLowerCase();
+    return this.tareas.filter(t => t.tarea.toLowerCase().includes(q)).slice(0, 50);
   }
 }
 

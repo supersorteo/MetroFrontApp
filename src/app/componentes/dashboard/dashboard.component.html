@@ -91,6 +91,149 @@
   </div>
 </aside>
 
+<!-- ── Tareas Personalizadas Modal ───────────────────────────────────────── -->
+<div class="tp-backdrop" *ngIf="showTareasPersonalizadasPanel" (click)="toggleTareasPersonalizadasPanel()"></div>
+
+<div class="tp-modal" [class.tp-modal--open]="showTareasPersonalizadasPanel" role="dialog" aria-modal="true" *ngIf="showTareasPersonalizadasPanel">
+  <div class="tp-modal__dialog">
+    <div class="tp-modal__content">
+
+      <!-- Header -->
+      <div class="tp-modal__header">
+        <div class="tp-modal__header-icon">
+          <i class="bi bi-bookmarks-fill"></i>
+        </div>
+        <div class="tp-modal__header-text">
+          <h5 class="tp-modal__title">Mis Tareas Personalizadas</h5>
+          <small class="tp-modal__subtitle">{{ tareasPersonalizadas.length }} tarea{{ tareasPersonalizadas.length !== 1 ? 's' : '' }} guardada{{ tareasPersonalizadas.length !== 1 ? 's' : '' }}</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" (click)="toggleTareasPersonalizadasPanel()" aria-label="Cerrar"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="tp-modal__body">
+        <div class="row g-3">
+
+          <!-- Columna izquierda: Formulario + Importar -->
+          <div class="col-12 col-md-5">
+
+            <div class="tp-form-card">
+              <div class="tp-form-card__header">
+                <i class="bi bi-{{ tpEditingId != null ? 'pencil-square' : 'plus-circle-fill' }} me-2"></i>
+                {{ tpEditingId != null ? 'Editar tarea' : 'Nueva tarea' }}
+              </div>
+              <div class="tp-form-card__body">
+                <div class="mb-3">
+                  <label class="tp-label">Nombre <span class="text-danger">*</span></label>
+                  <input class="form-control tp-input"
+                         [ngClass]="{'is-invalid': tpSubmitted && !tpForm.tarea.trim()}"
+                         placeholder="Ej: Instalación eléctrica"
+                         [(ngModel)]="tpForm.tarea" />
+                  <div *ngIf="tpSubmitted && !tpForm.tarea.trim()" class="tp-field-error">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>El nombre es obligatorio
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="tp-label">Descripción <span class="tp-optional">(opcional)</span></label>
+                  <textarea class="form-control tp-input" placeholder="Detalle opcional..." [(ngModel)]="tpForm.descripcion" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                  <label class="tp-label">Costo unitario ($) <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text tp-input-addon"><i class="bi bi-currency-dollar"></i></span>
+                    <input type="number" class="form-control tp-input"
+                           [ngClass]="{'is-invalid': tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)}"
+                           placeholder="0.00" [(ngModel)]="tpForm.costo" min="0.01" step="0.01" />
+                  </div>
+                  <div *ngIf="tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)" class="tp-field-error">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>El costo debe ser mayor a 0
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-success flex-grow-1 tp-btn-action" (click)="tpGuardar()">
+                    <i class="bi bi-{{ tpEditingId != null ? 'check2-all' : 'plus-lg' }} me-1"></i>
+                    {{ tpEditingId != null ? 'Actualizar' : 'Guardar tarea' }}
+                  </button>
+                  <button *ngIf="tpEditingId != null" class="btn btn-outline-secondary tp-btn-action" (click)="tpCancelarEdicion()" title="Cancelar edición">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="tp-import-card mt-3">
+              <button class="tp-import-card__toggle" (click)="tpMostrarImportar = !tpMostrarImportar" type="button">
+                <span class="tp-import-card__icon"><i class="bi bi-{{ tpMostrarImportar ? 'chevron-up' : 'arrow-down-circle' }}"></i></span>
+                <span>{{ tpMostrarImportar ? 'Ocultar catálogo' : 'Importar del catálogo' }}</span>
+                <span class="ms-auto badge bg-secondary rounded-pill">{{ tpCatalogoFiltrado.length }}</span>
+              </button>
+              <div *ngIf="tpMostrarImportar" class="tp-import-card__body">
+                <div class="input-group mb-2">
+                  <span class="input-group-text tp-input-addon"><i class="bi bi-search"></i></span>
+                  <input class="form-control tp-input" placeholder="Buscar tarea..." [(ngModel)]="tpFiltroCatalogo" />
+                </div>
+                <div class="tp-catalog-list">
+                  <div *ngFor="let t of tpCatalogoFiltrado" class="tp-catalog-item">
+                    <div class="tp-catalog-item__info">
+                      <span class="tp-catalog-item__name">{{ t.tarea }}</span>
+                      <span class="tp-catalog-item__cost">{{ t.costo | currency:'USD':'symbol':'1.2-2' }}</span>
+                    </div>
+                    <button class="tp-catalog-item__btn" title="Importar a Mis Tareas" (click)="tpImportarDelCatalogo(t)">
+                      <i class="bi bi-bookmark-plus-fill"></i>
+                    </button>
+                  </div>
+                  <div *ngIf="tpCatalogoFiltrado.length === 0" class="tp-empty">
+                    <i class="bi bi-inbox me-1"></i>Sin resultados
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Columna derecha: Lista -->
+          <div class="col-12 col-md-7">
+            <div class="tp-list-header">
+              <span class="tp-list-header__title"><i class="bi bi-list-check me-2"></i>Tareas guardadas</span>
+              <span class="badge tp-list-header__badge">{{ tareasPersonalizadas.length }}</span>
+            </div>
+
+            <div *ngIf="tareasPersonalizadas.length === 0" class="tp-empty-state">
+              <i class="bi bi-bookmark-heart tp-empty-state__icon"></i>
+              <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea en el formulario.</p>
+            </div>
+
+            <div class="tp-cards-list">
+              <div *ngFor="let tp of tareasPersonalizadas" class="tp-card" [class.tp-card--editing]="tpEditingId === tp.id">
+                <div class="tp-card__accent"></div>
+                <div class="tp-card__content">
+                  <div class="tp-card__top">
+                    <span class="tp-card__name">{{ tp.tarea }}</span>
+                    <span class="tp-card__cost">{{ tp.costo | currency:'USD':'symbol':'1.2-2' }}</span>
+                  </div>
+                  <p *ngIf="tp.descripcion" class="tp-card__desc">{{ tp.descripcion }}</p>
+                  <div class="tp-card__actions">
+                    <button class="tp-card__action tp-card__action--add" title="Agregar al presupuesto" (click)="tpAgregarAlPresupuesto(tp)">
+                      <i class="bi bi-plus-circle-fill"></i><span>Agregar</span>
+                    </button>
+                    <button class="tp-card__action tp-card__action--edit" title="Editar" (click)="tpEditar(tp)">
+                      <i class="bi bi-pencil-fill"></i><span>Editar</span>
+                    </button>
+                    <button class="tp-card__action tp-card__action--delete" title="Eliminar" (click)="tpEliminar(tp)">
+                      <i class="bi bi-trash3-fill"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade qr-modal" id="qrModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -285,7 +428,11 @@
 <div class="card table-card mt-2 mb-3">
   <div class="card-body">
     <div class="containerbuscar">
-      <div class="d-flex align-items-center justify-content-end mb-2" style="margin-top: 8px;">
+
+      <div class="d-flex align-items-center justify-content-between mb-2" style="margin-top: 8px;">
+        <button type="button" class="btn btn-light btn-sm" (click)="toggleTareasPersonalizadasPanel()" aria-label="Mis tareas personalizadas" style="width: auto; min-height: 34px; padding: 5px 10px 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #d4edda; color: #1d68ff; box-shadow: 0 2px 6px rgba(25, 135, 84, 0.12); border-radius: 10px;">
+          <i class="bi bi-bookmarks"></i>Mis Tareas
+        </button>
         <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="Cómo usar el buscador" style="width: auto; min-height: 34px; padding: 5px 10px 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #cfe0ff; color: #1d68ff; box-shadow: 0 2px 6px rgba(29, 104, 255, 0.12); border-radius: 10px;">
           <i class="fas fa-info"></i>cómo buscar
         </button>
