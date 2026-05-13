@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProvinciaService, Provincia } from '../../servicios/provincia.service';
+import { UiDialogService } from '../../core/services/ui-dialog.service';
+import { AppToastService } from '../../servicios/app-toast.service';
 import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
@@ -23,7 +25,7 @@ export class OfrecimientoLaboralComponent implements OnInit {
 
   editarProfesional(prof: any) {
     // Aquí puedes implementar la lógica de edición (abrir modal, cargar datos, etc.)
-    alert('Funcionalidad de edición en desarrollo');
+    this.uiDialog.info({ title: 'En desarrollo', text: 'Funcionalidad de edición en desarrollo.' });
   }
   profesionales: any[] = [];
   filtroPais: string = '';
@@ -72,7 +74,7 @@ export class OfrecimientoLaboralComponent implements OnInit {
   form: FormGroup;
   vehiculo: string = '';
 
-  constructor(private fb: FormBuilder, private provinciaService: ProvinciaService) {
+  constructor(private fb: FormBuilder, private provinciaService: ProvinciaService, private uiDialog: UiDialogService, private appToast: AppToastService) {
     this.form = this.fb.group({
       nombre: ['', Validators.required],
       apellidos: ['', Validators.required],
@@ -147,7 +149,7 @@ export class OfrecimientoLaboralComponent implements OnInit {
       formData.provincia = provObj ? provObj.nombre : formData.provincia;
       this.profesionales.push(formData);
       localStorage.setItem('ofrecimientoLaboralList', JSON.stringify(this.profesionales));
-      alert('Formulario enviado correctamente!');
+      this.appToast.success('Formulario enviado correctamente.');
       this.form.reset();
       this.vehiculo = '';
     } else {

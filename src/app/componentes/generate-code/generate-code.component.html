@@ -300,20 +300,6 @@
     </div>
   </div>
 
-  <!-- ── Confirm toast ────────────────────────────── -->
-  <div class="confirm-toast" [class.confirm-toast--top]="confirmToast!.position === 'top'" *ngIf="confirmToast">
-    <div class="confirm-toast__icon">{{ confirmToast.icon }}</div>
-    <div class="confirm-toast__content">
-      <p class="confirm-toast__title">{{ confirmToast.title }}</p>
-      <p class="confirm-toast__message">{{ confirmToast.message }}</p>
-      <div class="confirm-toast__actions">
-        <button class="ct-btn ct-btn--cancel" (click)="confirmNo()">Cancelar</button>
-        <button class="ct-btn ct-btn--confirm" (click)="confirmYes()">Confirmar</button>
-      </div>
-    </div>
-    <button class="confirm-toast__close" (click)="confirmNo()">&#x00D7;</button>
-  </div>
-
   <!-- ── Modal Tarea ─────────────────────────────── -->
   <div class="admin-overlay at-modal-overlay" *ngIf="showTareaForm" (click)="tareaReset()">
     <div class="at-modal" (click)="$event.stopPropagation()">

@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
+import { AppToastService } from '../../servicios/app-toast.service';
+import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { AuthService } from '../../servicios/auth.service';
 import { Admin, AdminService } from '../../servicios/admin.service';
 import { Tarea, TareaService } from '../../servicios/tarea.service';
@@ -32,8 +33,6 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   admin!: Admin;
 
   code: string = '';
-  successMessage = '';
-  errorMessage = '';
 
   codes: AccessCode[] = [];
   filteredCodes: AccessCode[] = [];
@@ -62,9 +61,6 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   tareaSubmitted = false;
   tareaForm: Omit<Tarea, 'id' | 'pais' | 'totalCost'> = { tarea: '', descripcion: '', costo: 0, rubro: '', categoria: '', area: 1, descuento: 0 };
 
-  // Confirm toast
-  confirmToast: { icon: string; title: string; message: string; position: 'top' | 'bottom'; action: () => void } | null = null;
-
   // Edit admin form
   editAdminNombre = '';
   editAdminUsername = '';
@@ -87,7 +83,8 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     private adminService: AdminService,
     private tareaService: TareaService,
     private router: Router,
-    private toastr: ToastrService
+    private appToast: AppToastService,
+    private uiDialog: UiDialogService
   ) {}
 
   ngOnInit(): void {
@@ -104,10 +101,9 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.showConfirm(
-      '🚪', 'Cerrar sesión', '¿Seguro que querés salir del panel?', 'top',
-      () => { this.adminService.logout(); this.router.navigate(['/']); }
-    );
+    this.uiDialog.confirmLogout().then(confirmed => {
+      if (confirmed) { this.adminService.logout(); this.router.navigate(['/']); }
+    });
   }
 
   goBack(): void {
@@ -117,19 +113,6 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       return;
     }
     this.router.navigate(['/']);
-  }
-
-  private showConfirm(icon: string, title: string, message: string, position: 'top' | 'bottom', action: () => void): void {
-    this.confirmToast = { icon, title, message, position, action };
-  }
-
-  confirmYes(): void {
-    if (this.confirmToast) { this.confirmToast.action(); }
-    this.confirmToast = null;
-  }
-
-  confirmNo(): void {
-    this.confirmToast = null;
   }
 
   // ── Code loading ───────────────────────────────────────────
@@ -151,7 +134,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
         this.applyFilter();
         this.computeStats();
       },
-      error: () => this.toastr.error('Error al cargar los códigos', 'Error')
+      error: () => this.appToast.error('Error al cargar los códigos')
     });
   }
 
@@ -195,24 +178,24 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   // ── Generate ───────────────────────────────────────────────
 
   validateAndGenerateCode(): void {
-    if (!this.code.trim()) { this.toastr.error('Debe ingresar un código', 'Error'); return; }
+    if (!this.code.trim()) { this.appToast.error('Debe ingresar un código'); return; }
     this.authService.agregarCode({ code: this.code, email: null, pais: this.admin.pais }).subscribe({
       next: response => {
         if (response.message === 'Código agregado con éxito') {
-          this.toastr.success(response.message, 'Éxito');
+          this.appToast.success(response.message);
           this.code = '';
           this.loadCodes();
         } else {
-          this.toastr.error(response.message, 'Error');
+          this.appToast.error(response.message);
         }
       },
-      error: err => this.toastr.error(err.message, 'Error')
+      error: err => this.appToast.error(err.message)
     });
   }
 
   generateCodes(months: 3 | 6): void {
     const count = months === 3 ? this.codeCount3 : this.codeCount6;
-    if (count <= 0) { this.toastr.error('Cantidad inválida', 'Error'); return; }
+    if (count <= 0) { this.appToast.error('Cantidad inválida'); return; }
     const length = months === 3 ? 5 : 6;
     const newCodes: AccessCode[] = Array.from({ length: count }, () => ({
       code: this.randomCode(length),
@@ -227,10 +210,10 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
 
     this.authService.agregarCodes(newCodes).subscribe({
       next: res => {
-        this.toastr.success(res.message, 'Éxito');
+        this.appToast.success(res.message);
         this.loadCodes();
       },
-      error: err => this.toastr.error(err.message, 'Error')
+      error: err => this.appToast.error(err.message)
     });
   }
 
@@ -242,21 +225,19 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   // ── Delete ─────────────────────────────────────────────────
 
   confirmDeleteCode(code: string): void {
-    this.showConfirm(
-      '🗑️', 'Eliminar código', `¿Eliminar el código ${code}? Esta acción no se puede deshacer.`, 'bottom',
-      () => {
-        this.authService.deleteCode(code).subscribe({
-          next: () => { this.toastr.success('Código eliminado', 'Éxito'); this.loadCodes(); },
-          error: () => this.toastr.error('Error al eliminar', 'Error')
-        });
-      }
-    );
+    this.uiDialog.confirmDelete(code, `¿Eliminar el código ${code}? Esta acción no se puede deshacer.`).then(confirmed => {
+      if (!confirmed) return;
+      this.authService.deleteCode(code).subscribe({
+        next: () => { this.appToast.success('Código eliminado'); this.loadCodes(); },
+        error: () => this.appToast.error('Error al eliminar')
+      });
+    });
   }
 
   copyToClipboard(code: string): void {
     navigator.clipboard.writeText(code).then(
-      () => this.toastr.success('Copiado', 'Éxito'),
-      () => this.toastr.error('Error al copiar', 'Error')
+      () => this.appToast.success('Copiado al portapapeles', 'Portapapeles'),
+      () => this.appToast.error('Error al copiar')
     );
   }
 
@@ -327,7 +308,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
         return;
       }
       this.admin = this.adminService.getCurrentAdmin()!;
-      this.toastr.success('Perfil actualizado', 'Éxito');
+      this.appToast.success('Perfil actualizado');
       this.showEditAdminPanel = false;
     });
   }
@@ -337,7 +318,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   loadTareas(): void {
     this.tareaService.getTareasByPais(this.admin.pais).subscribe({
       next: list => { this.tareas = list; this.filtrarTareas(); },
-      error: () => this.toastr.error('Error al cargar tareas', 'Error')
+      error: () => this.appToast.error('Error al cargar tareas')
     });
   }
 
@@ -370,10 +351,10 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   tareaGuardar(): void {
     this.tareaSubmitted = true;
     if (!this.tareaForm.tarea.trim()) {
-      this.toastr.warning('El nombre es obligatorio', 'Campo requerido'); return;
+      this.appToast.warning('El nombre es obligatorio', 'Campo requerido'); return;
     }
     if (!this.tareaForm.costo || this.tareaForm.costo <= 0) {
-      this.toastr.warning('El costo debe ser mayor a 0', 'Campo requerido'); return;
+      this.appToast.warning('El costo debe ser mayor a 0', 'Campo requerido'); return;
     }
     const payload: Tarea = { ...this.tareaForm, tarea: this.tareaForm.tarea.trim(), pais: this.admin.pais };
 
@@ -383,39 +364,37 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
           const idx = this.tareas.findIndex(t => t.id === this.tareaEditingId);
           if (idx !== -1) this.tareas[idx] = updated;
           this.filtrarTareas();
-          this.toastr.success(`"${updated.tarea}" actualizada`, 'Éxito');
+          this.appToast.success(`"${updated.tarea}" actualizada`);
           this.tareaReset();
         },
-        error: () => this.toastr.error('Error al actualizar la tarea', 'Error')
+        error: () => this.appToast.error('Error al actualizar la tarea')
       });
     } else {
       this.tareaService.agregarTarea(payload).subscribe({
         next: created => {
           this.tareas = [...this.tareas, created];
           this.filtrarTareas();
-          this.toastr.success(`"${created.tarea}" creada`, 'Éxito');
+          this.appToast.success(`"${created.tarea}" creada`);
           this.tareaReset();
         },
-        error: () => this.toastr.error('Error al crear la tarea', 'Error')
+        error: () => this.appToast.error('Error al crear la tarea')
       });
     }
   }
 
   tareaEliminar(t: Tarea): void {
     if (t.id == null) return;
-    this.showConfirm(
-      '🗑️', 'Eliminar tarea', `¿Eliminar "${t.tarea}"? Esta acción no se puede deshacer.`, 'bottom',
-      () => {
-        this.tareaService.eliminarTarea(t.id!).subscribe({
-          next: () => {
-            this.tareas = this.tareas.filter(x => x.id !== t.id);
-            this.filtrarTareas();
-            this.toastr.success(`"${t.tarea}" eliminada`, 'Éxito');
-          },
-          error: () => this.toastr.error('Error al eliminar la tarea', 'Error')
-        });
-      }
-    );
+    this.uiDialog.confirmDelete(t.tarea).then(confirmed => {
+      if (!confirmed) return;
+      this.tareaService.eliminarTarea(t.id!).subscribe({
+        next: () => {
+          this.tareas = this.tareas.filter(x => x.id !== t.id);
+          this.filtrarTareas();
+          this.appToast.success(`"${t.tarea}" eliminada`);
+        },
+        error: () => this.appToast.error('Error al eliminar la tarea')
+      });
+    });
   }
 
   tareaReset(): void {

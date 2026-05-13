@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmpresaService } from '../../servicios/empresa.service';
-import Swal from 'sweetalert2';
+import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
 
 @Component({
@@ -24,7 +24,8 @@ export class EditarEmpresaComponent implements OnInit {
     private route: ActivatedRoute,
     private empresaService: EmpresaService,
     public router: Router,
-    private localStore: OfflineLocalStoreService
+    private localStore: OfflineLocalStoreService,
+    private uiDialog: UiDialogService
   ) {}
 
   private getStoredEmpresa(id: string): any | null {
@@ -180,31 +181,31 @@ export class EditarEmpresaComponent implements OnInit {
     }
 
     if (!this.empresa.name || !this.empresa.name.trim()) {
-      Swal.fire('Campo obligatorio', 'El nombre de la empresa no puede estar vacio.', 'warning');
+      this.uiDialog.warning({ title: 'Campo obligatorio', text: 'El nombre de la empresa no puede estar vacío.' });
       return;
     }
     if (!this.empresa.phone || !this.empresa.phone.trim()) {
-      Swal.fire('Campo obligatorio', 'El telefono de la empresa no puede estar vacio.', 'warning');
+      this.uiDialog.warning({ title: 'Campo obligatorio', text: 'El teléfono de la empresa no puede estar vacío.' });
       return;
     }
     if (!this.empresa.email || !this.empresa.email.trim()) {
-      Swal.fire('Campo obligatorio', 'El email de la empresa no puede estar vacio.', 'warning');
+      this.uiDialog.warning({ title: 'Campo obligatorio', text: 'El email de la empresa no puede estar vacío.' });
       return;
     }
     if (!this.empresa.logoUrl || !this.empresa.logoUrl.trim()) {
-      Swal.fire('Campo obligatorio', 'Debes subir una imagen para la empresa.', 'warning');
+      this.uiDialog.warning({ title: 'Campo obligatorio', text: 'Debes subir una imagen para la empresa.' });
       return;
     }
 
-    Swal.fire({
-      title: 'Confirmar edicion',
-      text: 'Deseas guardar los cambios de la empresa?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Si, guardar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (!result.isConfirmed) {
+    this.uiDialog.confirm({
+      title: 'Confirmar edición',
+      text: '¿Deseas guardar los cambios de la empresa?',
+      confirmText: 'Sí, guardar',
+      cancelText: 'Cancelar',
+      tone: 'primary',
+      icon: 'question'
+    }).then(confirmed => {
+      if (!confirmed) {
         return;
       }
 
@@ -221,7 +222,7 @@ export class EditarEmpresaComponent implements OnInit {
           this.persistEmpresaLocally(demoEmpresas[idx]);
         }
         this.loading = false;
-        Swal.fire('Guardado', 'La empresa demo se actualizo correctamente.', 'success').then(() => {
+        this.uiDialog.success({ title: 'Guardado', text: 'La empresa demo se actualizó correctamente.' }).then(() => {
           this.router.navigate(['/dashboard']);
         });
         return;
@@ -232,13 +233,13 @@ export class EditarEmpresaComponent implements OnInit {
           this.loading = false;
           const empresaActualizada = { ...this.empresa, ...data };
           this.persistEmpresaLocally(empresaActualizada);
-          Swal.fire('Guardado', 'La empresa se actualizo correctamente.', 'success').then(() => {
+          this.uiDialog.success({ title: 'Guardado', text: 'La empresa se actualizó correctamente.' }).then(() => {
             this.router.navigate(['/dashboard'], { state: { empresaActualizada } });
           });
         },
         error: () => {
           this.loading = false;
-          Swal.fire('Error', 'No se pudo actualizar la empresa.', 'error');
+          this.uiDialog.error({ title: 'Error', text: 'No se pudo actualizar la empresa.' });
         }
       });
     });

@@ -6,14 +6,13 @@ import { takeUntil } from 'rxjs/operators';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
 import { Router, RouterModule } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
 import { Tarea, TareaService } from '../../servicios/tarea.service';
 import { Provincia, ProvinciaService } from '../../servicios/provincia.service';
 import { UserTarea, UserTareaService } from '../../servicios/user-tarea.service';
 import { PresupuestoService } from '../../servicios/presupuesto.service';
 import { Empresa, EmpresaService } from '../../servicios/empresa.service';
 import { Cliente, ClienteService } from '../../servicios/cliente.service';
-import Swal from 'sweetalert2';
+import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { FilterClientePipe } from '../../pipes/filter-cliente.pipe';
 import { FilterEmpresaPipe } from '../../pipes/filter-empresa.pipe';
@@ -445,7 +444,7 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
     const modal = bootstrap.Modal.getInstance(document.getElementById('clientModal'));
     modal?.hide();
     this.isSavingClient = false;
-    this.toastr.success(message);
+    this.appToast.success(message);
   }
 
   private applySavedCliente(cliente: Cliente): void {
@@ -714,12 +713,12 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private presupuestoService: PresupuestoService,
     private empresaService: EmpresaService,
     private clienteService: ClienteService,
-    private toastr: ToastrService,
     private http: HttpClient,
     readonly offlineSync: OfflineSyncService,
     private localStore: OfflineLocalStoreService,
     private tpService: TareaPersonalizadaService,
-    private appToast: AppToastService
+    private appToast: AppToastService,
+    private uiDialog: UiDialogService
   ) {
     // Sync empresas IDB → lista local + paginación
     effect(() => {
@@ -982,7 +981,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     this.presupuestoColorTablaCuerpo = '#ffffff';
     this.presupuestoInfoBoxColorHex = '#f8f9fa';
     this.presupuestoInfoBoxOpacity = 1;
-    this.toastr.info('Colores reiniciados a valores por defecto');
+    this.appToast.info('Colores reiniciados a valores por defecto');
   }
 
 
@@ -1010,7 +1009,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     // Abre el modal de lista de empresas
     const listaEmpresasModalEl = document.getElementById('listaEmpresasModal');
     if (!listaEmpresasModalEl) {
-      this.toastr.error('Error al abrir la lista de empresas');
+      this.appToast.error('Error al abrir la lista de empresas');
       return;
     }
     const listaEmpresasModalInstance = bootstrap.Modal.getInstance(listaEmpresasModalEl) || new bootstrap.Modal(listaEmpresasModalEl);
@@ -1050,33 +1049,22 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   }
 
   solicitarConfirmacionEliminarEmpresa(id: number): void {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: '¿Deseas eliminar esta empresa? Esta acción no se puede deshacer.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.empresaService.deleteEmpresa(id).subscribe({
-          next: () => {
-            this.removeEmpresaFromState(id);
-            this.toastr.success(
-              navigator.onLine
-                ? 'Empresa eliminada correctamente'
-                : 'Empresa eliminada localmente. Se sincronizara cuando vuelva la conexion.',
-              'Exito'
-            );
-          },
-          error: (error) => {
-            this.toastr.error(error.message || 'Error al eliminar la empresa', 'Error');
-            console.error('[EMPRESA] Error al eliminar empresa:', error);
-          }
-        });
-      }
+    this.uiDialog.confirmDelete('empresa', '¿Deseas eliminar esta empresa? Esta acción no se puede deshacer.').then(confirmed => {
+      if (!confirmed) return;
+      this.empresaService.deleteEmpresa(id).subscribe({
+        next: () => {
+          this.removeEmpresaFromState(id);
+          this.appToast.success(
+            navigator.onLine
+              ? 'Empresa eliminada correctamente'
+              : 'Empresa eliminada localmente. Se sincronizara cuando vuelva la conexion.'
+          );
+        },
+        error: (error) => {
+          this.appToast.error(error.message || 'Error al eliminar la empresa');
+          console.error('[EMPRESA] Error al eliminar empresa:', error);
+        }
+      });
     });
   }
 
@@ -1088,7 +1076,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     this.clienteService.deleteCliente(id).subscribe({
       next: () => {
         this.removeClienteFromState(id);
-        this.toastr.success(
+        this.appToast.success(
           navigator.onLine
             ? 'Cliente eliminado correctamente'
             : 'Cliente eliminado localmente. Se sincronizara cuando vuelva la conexion.',
@@ -1097,7 +1085,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       },
       error: (error) => {
         console.error('Error al eliminar cliente:', error);
-        this.toastr.error(error.message || 'Error al eliminar el cliente', 'Error');
+        this.appToast.error(error.message || 'Error al eliminar el cliente', 'Error');
       }
     });
   }
@@ -1108,24 +1096,13 @@ if (this.trialMode) {
   localStorage.removeItem(key);
 
   this.removeClienteFromState(id);
-  this.toastr.success('Cliente eliminado en modo demo', 'Éxito');
+  this.appToast.success('Cliente eliminado en modo demo', 'Éxito');
   return;
 }
 
 
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: '¿Deseas eliminar este cliente? Esta acción no se puede deshacer.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.deleteCliente(id);
-      }
+    this.uiDialog.confirmDelete('cliente', '¿Deseas eliminar este cliente? Esta acción no se puede deshacer.').then(confirmed => {
+      if (confirmed) this.deleteCliente(id);
     });
   }
 
@@ -1441,9 +1418,9 @@ obtenerTareas(): void {
       },
       error: () => {
         if (this.tareas.length === 0) {
-          this.toastr.error('No se pudieron cargar las tareas. Revisá tu conexión e intentá de nuevo.', 'Error de carga');
+          this.appToast.error('No se pudieron cargar las tareas. Revisá tu conexión e intentá de nuevo.', 'Error de carga');
         } else {
-          this.toastr.warning('No se pudo actualizar el catálogo de tareas. Estás viendo datos guardados anteriormente.', 'Sin conexión');
+          this.appToast.warning('No se pudo actualizar el catálogo de tareas. Estás viendo datos guardados anteriormente.', 'Sin conexión');
         }
       }
     });
@@ -1497,7 +1474,7 @@ if (this.trialMode) {
           this.userTareaService.cacheTareasByClienteId(clienteId, this.tareasAgregadas);
         },
         error: () => {
-          this.toastr.error('Error al cargar las tareas agregadas del backend', 'Error');
+          this.appToast.error('Error al cargar las tareas agregadas del backend', 'Error');
         }
       });
     }
@@ -1507,48 +1484,18 @@ if (this.trialMode) {
 
 
   seleccionar(tarea: Tarea): void {
-  // Verificar si hay empresa seleccionada
   if (!this.selectedEmpresaId) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Falta selección de empresa',
-      text: 'Debe seleccionar una empresa primero.',
-      confirmButtonText: 'Aceptar',
-      customClass: {
-        popup: 'swal2-border-radius',
-        confirmButton: 'btn btn-primary'
-      }
-    });
+    this.uiDialog.warning({ title: 'Falta selección de empresa', text: 'Debe seleccionar una empresa primero.' });
     return;
   }
 
-  // Verificar si la empresa tiene clientes
   if (!this.clientes || this.clientes.length === 0) {
-    Swal.fire({
-      icon: 'info',
-      title: 'Sin clientes',
-      text: 'La empresa seleccionada no tiene clientes registrados. Por favor, agregue clientes primero.',
-      confirmButtonText: 'Aceptar',
-      customClass: {
-        popup: 'swal2-border-radius',
-        confirmButton: 'btn btn-primary'
-      }
-    });
+    this.uiDialog.info({ title: 'Sin clientes', text: 'La empresa seleccionada no tiene clientes registrados. Por favor, agregue clientes primero.' });
     return;
   }
 
-  // Verificar si hay cliente seleccionado
   if (!this.clienteSeleccionado) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Falta selección',
-      text: 'Debe seleccionar un cliente.',
-      confirmButtonText: 'Aceptar',
-      customClass: {
-        popup: 'swal2-border-radius',
-        confirmButton: 'btn btn-primary'
-      }
-    });
+    this.uiDialog.warning({ title: 'Falta selección', text: 'Debe seleccionar un cliente.' });
     return;
   }
 
@@ -1586,7 +1533,7 @@ actualizarTarea(): void {
       };
       this.userTareaService.updateUserTarea(this.tareaSeleccionada.id, updatedTarea).subscribe({
         next: (tareaActualizada) => {
-          this.toastr.success('Tarea actualizada', 'Éxito');
+          this.appToast.success('Tarea actualizada', 'Éxito');
           const index = this.tareasAgregadas.findIndex(t => t.id === this.tareaSeleccionada.id);
           if (index !== -1) {
             this.tareasAgregadas[index] = tareaActualizada;
@@ -1599,7 +1546,7 @@ actualizarTarea(): void {
           if (index !== -1) {
             this.tareasAgregadas[index] = updatedTarea;
             this.actualizarTablaYStorage();
-            this.toastr.error('Error al actualizar la tarea en el backend, actualizada localmente', 'Error');
+            this.appToast.error('Error al actualizar la tarea en el backend, actualizada localmente', 'Error');
           }
           this.resetTareaSeleccionada();
         }
@@ -1614,7 +1561,7 @@ actualizarTarea(): void {
 agregarTarea(): void {
 
 /*if (this.trialMode && this.tareasAgregadas.length >= 7) {
-  this.toastr.info('En modo demo solo podés agregar 7 tareas', 'Modo demo');
+  this.appToast.info('En modo demo solo podés agregar 7 tareas', 'Modo demo');
   return;
 }*/
 
@@ -1622,7 +1569,7 @@ if (this.trialMode) {
   const clienteId = this.clienteSeleccionado?.id ?? null;
 
   if (this.tareasAgregadas.length >= 7) {
-    this.toastr.info('En modo demo solo podés agregar 7 tareas', 'Modo demo');
+    this.appToast.info('En modo demo solo podés agregar 7 tareas', 'Modo demo');
     return;
   }
 
@@ -1644,9 +1591,7 @@ if (this.trialMode) {
 
   this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
   this.updatePaginatedTareasPanel();
-  this.toastr.success('Tarea agregada en modo demo', '', {
-    toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
-  });
+  this.appToast.success('Tarea agregada en modo demo');
   this.saveToRecent(nuevaTarea); // Save even in demo
   this.resetTareaSeleccionada();
   return;
@@ -1655,12 +1600,12 @@ if (this.trialMode) {
 
 
     if (!this.selectedEmpresaId) {
-      this.toastr.warning('Primero seleccioná una empresa', 'Sin empresa');
+      this.appToast.warning('Primero seleccioná una empresa', 'Sin empresa');
       return;
     }
 
     if (!this.clienteSeleccionado) {
-      this.toastr.warning('Primero seleccioná un cliente', 'Sin cliente');
+      this.appToast.warning('Primero seleccioná un cliente', 'Sin cliente');
       return;
     }
 
@@ -1686,7 +1631,7 @@ if (this.trialMode) {
       this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
       this.saveToRecent(nuevaTarea); // Save to recent tasks
       if (mensaje) {
-        this.toastr.info(mensaje, 'Informacion');
+        this.appToast.info(mensaje, 'Informacion');
       }
       this.resetTareaSeleccionada();
     };
@@ -1701,9 +1646,7 @@ if (this.trialMode) {
         // liveQuery effect updates tareasAgregadas; just update secondary state
         this.mostrarTabla = true;
         this.saveToRecent(tarea);
-        this.toastr.success('Tarea agregada', 'Exito', {
-          toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
-        });
+        this.appToast.success('Tarea agregada');
         this.resetTareaSeleccionada();
       },
       error: (error) => {
@@ -1829,12 +1772,7 @@ private async aplicarPresupuestoGuardado(
 
 toggleSavedBudgetsPanel(): void {
   if (this.trialMode) {
-    Swal.fire({
-      icon: 'info',
-      title: 'Modo demo',
-      text: 'Esta función no está habilitada en el modo de prueba.',
-      confirmButtonText: 'Entendido'
-    });
+    this.uiDialog.info({ title: 'Modo demo', text: 'Esta función no está habilitada en el modo de prueba.' });
     return;
   }
 
@@ -1860,12 +1798,7 @@ toggleTareasPanel(): void {
   }
 
   if (!this.tareasAgregadas || this.tareasAgregadas.length === 0) {
-    Swal.fire({
-      title: 'Sin tareas',
-      text: 'Aún no agregaste tareas. Agrega al menos una para poder ver el panel.',
-      icon: 'info',
-      confirmButtonText: 'Entendido'
-    });
+    this.uiDialog.info({ title: 'Sin tareas', text: 'Aún no agregaste tareas. Agrega al menos una para poder ver el panel.' });
     return;
   }
 
@@ -1887,12 +1820,7 @@ onPresupuestoEliminado(p: SavedPresupuesto) {
 
 limpiarPresupuestoCargado() {
   if (this.trialMode) {
-  Swal.fire({
-    icon: 'info',
-    title: 'Modo demo',
-    text: 'Esta función no está habilitada en el modo de prueba.',
-    confirmButtonText: 'Entendido'
-  });
+  this.uiDialog.info({ title: 'Modo demo', text: 'Esta función no está habilitada en el modo de prueba.' });
   return;
 }
 
@@ -2006,7 +1934,7 @@ private loadColorScheme(): ColorScheme {
 
 abrirModalClientes(): void {
   if (!this.selectedEmpresaId) {
-    this.toastr.warning('Primero creá o seleccioná una empresa', 'Sin empresa');
+    this.appToast.warning('Primero creá o seleccioná una empresa', 'Sin empresa');
     return;
   }
   const el = document.getElementById('listaClientesModal');
@@ -2024,7 +1952,7 @@ openClientModal(): void {
       .filter(c => c && c.empresaId === this.selectedEmpresaId?.id);
 
     if (demoClientes.length >= 2) {
-      this.toastr.info('En modo demo solo podés crear 1 cliente', 'Modo demo');
+      this.appToast.info('En modo demo solo podés crear 1 cliente', 'Modo demo');
       return;
     }
   }
@@ -2056,18 +1984,8 @@ solicitarConfirmacionEliminarTarea(tarea: UserTarea): void {
 
   const descripcion = tarea.tarea || tarea.descripcion || 'esta tarea';
 
-  Swal.fire({
-    title: 'Eliminar tarea',
-    text: `Estas seguro de eliminar ${descripcion}? Esta accion no se puede deshacer.`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Eliminar',
-    cancelButtonText: 'Cancelar',
-    reverseButtons: true
-  }).then(result => {
-    if (result.isConfirmed) {
-      this.eliminarTarea(tarea.id);
-    }
+  this.uiDialog.confirmDelete(descripcion).then(confirmed => {
+    if (confirmed) this.eliminarTarea(tarea.id);
   });
 }
 
@@ -2107,9 +2025,7 @@ eliminarTarea(id: number): void {
   this.showTareasPanel = false;
 }
 
-  this.toastr.success('Tarea eliminada en modo demo', '', {
-    toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
-  });
+  this.appToast.success('Tarea eliminada en modo demo');
   return;
 }
 
@@ -2118,9 +2034,7 @@ eliminarTarea(id: number): void {
       // Éxito: tarea eliminada del backend
       this.tareasAgregadas = this.tareasAgregadas.filter(t => t.id !== id);
       this.actualizarTablaYStorage();
-      this.toastr.success('Tarea eliminada correctamente', 'Éxito', {
-        toastClass: 'ngx-toastr toast-success toast-tarea-agregada'
-      });
+      this.appToast.success('Tarea eliminada correctamente');
     },
     error: (err) => {
       console.error('Error completo al eliminar tarea:', err); // Para debug
@@ -2152,7 +2066,7 @@ eliminarTarea(id: number): void {
         mensajeBackend.toLowerCase().includes('referenced') ||
         mensajeBackend.toLowerCase().includes('usada')
       ) {
-        this.toastr.warning(
+        this.appToast.warning(
           'No se puede eliminar esta tarea porque está incluida en uno o más presupuestos guardados.\n' +
           'Si deseas borrarla permanentemente, elimina primero los presupuestos que la contienen.',
           'Tarea en uso',
@@ -2160,7 +2074,7 @@ eliminarTarea(id: number): void {
         );
       } else {
         // Cualquier otro error
-        this.toastr.error(mensajeBackend, 'Error');
+        this.appToast.error(mensajeBackend, 'Error');
       }
 
       // Opcional: mantener consistencia visual aunque no se elimine del backend
@@ -2233,20 +2147,12 @@ calcularCostoTotal(): number {
 
 
   logout(): void {
-    Swal.fire({
-      title: 'Cerrar sesion',
-      text: 'Estas seguro que deseas cerrar sesion?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Cerrar sesion',
-      cancelButtonText: 'Cancelar',
-      reverseButtons: true
-    }).then(result => {
-      if (result.isConfirmed) {
+    this.uiDialog.confirmLogout().then(confirmed => {
+      if (confirmed) {
         cleanupBootstrapModals();
         this.authService.logout();
         this.route.navigate(['']);
-        this.toastr.success('Sesion cerrada correctamente', 'Exito');
+        this.appToast.success('Sesión cerrada correctamente');
       }
     });
   }
@@ -2310,7 +2216,7 @@ calcularCostoTotal(): number {
   const fileInput = this.imageInput?.nativeElement as HTMLInputElement;
   const file = fileInput?.files?.[0];
   if (!file) {
-    this.toastr.error('Selecciona una imagen primero.');
+    this.appToast.error('Selecciona una imagen primero.');
     return;
   }
 
@@ -2329,7 +2235,7 @@ calcularCostoTotal(): number {
       mainPreview.src = dataUrl;
       mainPreview.style.display = 'block';
     }
-    this.toastr.success('Imagen guardada en modo demo');
+    this.appToast.success('Imagen guardada en modo demo');
   };
   reader.readAsDataURL(file);
   return;
@@ -2338,7 +2244,7 @@ calcularCostoTotal(): number {
 
     const fileInput = this.imageInput?.nativeElement as HTMLInputElement;
     if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-      this.toastr.error('Por favor, selecciona una imagen.');
+      this.appToast.error('Por favor, selecciona una imagen.');
       return;
     }
 
@@ -2347,14 +2253,14 @@ calcularCostoTotal(): number {
       next: (url) => {
         localStorage.setItem('uploadedImage', url);
         this.applyImageUrl(url);
-        this.toastr.success(
+        this.appToast.success(
           navigator.onLine
             ? 'Imagen subida con exito.'
             : 'Imagen guardada localmente. Se subira cuando vuelva la conexion.'
         );
       },
       error: (err) => {
-        this.toastr.error(`Error al subir la imagen: ${err.message}`);
+        this.appToast.error(`Error al subir la imagen: ${err.message}`);
       }
     });
   }
@@ -2380,13 +2286,13 @@ onImageChange(event: Event): void {
   demoEmpresas.length === 1 && demoEmpresas[0].id === 1234;
 
 if (demoEmpresas.length >= 1 && !soloDefault) {
-  this.toastr.info('En modo demo solo podés tener 1 empresa', 'Modo demo');
+  this.appToast.info('En modo demo solo podés tener 1 empresa', 'Modo demo');
   return;
 }*/
 
   // Si ya existe una empresa demo, bloquear nuevas
   if (demoEmpresas.length >= 2) {
-    this.toastr.info('En modo demo solo podés crear 1 empresa', 'Modo demo');
+    this.appToast.info('En modo demo solo podés crear 1 empresa', 'Modo demo');
     return;
   }
 
@@ -2431,24 +2337,24 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
   localStorage.setItem('selectedEmpresa', JSON.stringify(nuevaEmpresa));
 
   this.actualizarImagenEmpresa(nuevaEmpresa);
-  this.toastr.success('Empresa creada en modo demo');
+  this.appToast.success('Empresa creada en modo demo');
   this.limpiarEmpresaForm();
   return;
 }
 
 
     if (!this.empresaName.trim()) {
-      this.toastr.error('El nombre de la empresa es obligatorio.');
+      this.appToast.error('El nombre de la empresa es obligatorio.');
       console.error('[EMPRESA] El nombre de la empresa es obligatorio.');
       return;
     }
     if (!this.userCode.trim()) {
-      this.toastr.error('El código de usuario es obligatorio.');
+      this.appToast.error('El código de usuario es obligatorio.');
       console.error('[EMPRESA] El código de usuario es obligatorio.');
       return;
     }
     if (!this.logoUrl) {
-      this.toastr.error('Por favor, sube una imagen para la empresa.');
+      this.appToast.error('Por favor, sube una imagen para la empresa.');
       console.error('[EMPRESA] Falta logoUrl.');
       return;
     }
@@ -2485,7 +2391,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       // Modo edición: actualizar empresa existente
       this.empresaService.updateEmpresa(this.empresaEditId, formData).subscribe({
         next: (empresaActualizada) => {
-          this.toastr.success(
+          this.appToast.success(
             Number(empresaActualizada?.id) < 0
               ? 'Empresa actualizada localmente. Se sincronizara cuando vuelva la conexion.'
               : 'Empresa actualizada correctamente',
@@ -2498,7 +2404,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
           this.limpiarEmpresaForm();
         },
         error: (err) => {
-          this.toastr.error(`Error al actualizar la empresa: ${err.message}`);
+          this.appToast.error(`Error al actualizar la empresa: ${err.message}`);
           console.error('[EMPRESA] Error al actualizar empresa:', err);
         }
       });
@@ -2506,7 +2412,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       // Modo creación: crear nueva empresa
       this.empresaService.saveEmpresa(formData).subscribe({
         next: (empresaCreada) => {
-          this.toastr.success(
+          this.appToast.success(
             Number(empresaCreada?.id) < 0
               ? 'Empresa guardada localmente. Se sincronizara cuando vuelva la conexion.'
               : 'Datos de la empresa guardados',
@@ -2519,7 +2425,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
           this.limpiarEmpresaForm();
         },
         error: (err) => {
-          this.toastr.error(`Error al guardar la empresa: ${err.message}`);
+          this.appToast.error(`Error al guardar la empresa: ${err.message}`);
           console.error('[EMPRESA] Error al crear empresa:', err);
         }
       });
@@ -2568,7 +2474,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
     }
 
     if (!this.selectedEmpresaId?.id) {
-      this.toastr.error('Debe seleccionar una empresa', 'Error');
+      this.appToast.error('Debe seleccionar una empresa', 'Error');
       return;
     }
 
@@ -2592,7 +2498,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
     .filter(c => c && c.empresaId === this.selectedEmpresaId?.id);
 
   if (demoClientes.length >= 2) {
-    this.toastr.info('En modo demo solo podés crear 1 cliente', 'Modo demo');
+    this.appToast.info('En modo demo solo podés crear 1 cliente', 'Modo demo');
     return;
   }
   const clientData: Cliente = {
@@ -2632,7 +2538,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       error: (error) => {
         localStorage.setItem(`clientData_temp_${Date.now()}`, JSON.stringify(clientData));
         console.error('Error al guardar cliente:', error.message, clientData);
-        this.toastr.error(error.message || 'Error al guardar el cliente');
+        this.appToast.error(error.message || 'Error al guardar el cliente');
         this.isSavingClient = false;
       }
     });
@@ -2647,28 +2553,28 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       const claveCtrl = form.controls['clientClave'];
       const direccionCtrl = form.controls['clientDireccion'];
       if (!nameCtrl?.valid) {
-        this.toastr.error(nameCtrl?.errors?.['minlength'] ? 'El nombre debe tener al menos 2 caracteres' : 'El nombre es obligatorio');
+        this.appToast.error(nameCtrl?.errors?.['minlength'] ? 'El nombre debe tener al menos 2 caracteres' : 'El nombre es obligatorio');
       }
       if (!contactCtrl?.valid) {
-        this.toastr.error(contactCtrl?.errors?.['pattern'] ? 'El contacto debe ser un número de teléfono válido (7-15 dígitos, puede incluir +)' : 'El contacto es obligatorio');
+        this.appToast.error(contactCtrl?.errors?.['pattern'] ? 'El contacto debe ser un número de teléfono válido (7-15 dígitos, puede incluir +)' : 'El contacto es obligatorio');
       }
       if (!dateCtrl?.valid || !this.budgetDate || this.budgetDate === '0000-00-00') {
-        this.toastr.error('La fecha del presupuesto es obligatoria y debe ser válida');
+        this.appToast.error('La fecha del presupuesto es obligatoria y debe ser válida');
       }
       if (!emailCtrl?.valid) {
-        this.toastr.error(emailCtrl?.errors?.['email'] ? 'El email debe tener un formato válido' : 'El email es obligatorio');
+        this.appToast.error(emailCtrl?.errors?.['email'] ? 'El email debe tener un formato válido' : 'El email es obligatorio');
       }
       if (!claveCtrl?.valid) {
-        this.toastr.error(claveCtrl?.errors?.['pattern'] ? 'El CUIT debe tener el formato XX-XXXXXXXX-X' : 'El CUIT es obligatorio');
+        this.appToast.error(claveCtrl?.errors?.['pattern'] ? 'El CUIT debe tener el formato XX-XXXXXXXX-X' : 'El CUIT es obligatorio');
       }
       if (!direccionCtrl?.valid) {
-        this.toastr.error(direccionCtrl?.errors?.['minlength'] ? 'La dirección debe tener al menos 5 caracteres' : 'La dirección es obligatoria');
+        this.appToast.error(direccionCtrl?.errors?.['minlength'] ? 'La dirección debe tener al menos 5 caracteres' : 'La dirección es obligatoria');
       }
       console.error('Formulario inválido:', form.controls);
       return false;
     }
     if (!this.userCode || this.userCode.trim().length === 0) {
-      this.toastr.error('El código de usuario es obligatorio');
+      this.appToast.error('El código de usuario es obligatorio');
       console.error('userCode inválido:', this.userCode);
       return false;
     }
@@ -2698,7 +2604,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
 
 
       mostrarAlerta(mensaje: string): void {
-        this.toastr.success(mensaje);
+        this.appToast.success(mensaje);
       }
 
 
@@ -2707,7 +2613,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
     disminuirPrecios(): void {
     const porcentaje = parseFloat(this.porcentajeBajar);
     if (isNaN(porcentaje) || porcentaje <= 0) {
-      this.toastr.error('Por favor, ingrese un porcentaje válido para bajar', 'Error');
+      this.appToast.error('Por favor, ingrese un porcentaje válido para bajar', 'Error');
       return;
     }
     this.tareasAgregadas = this.tareasAgregadas.map(tarea => ({
@@ -2715,7 +2621,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       costo: tarea.costo * (1 - porcentaje / 100),
       totalCost: this.calcularTotalCosto({ ...tarea, costo: tarea.costo * (1 - porcentaje / 100) })
     }));
-    this.toastr.success(`Lista reducida en ${porcentaje}%`, 'Éxito');
+    this.appToast.success(`Lista reducida en ${porcentaje}%`, 'Éxito');
     this.porcentajeBajar = null;
     localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
   }
@@ -2723,7 +2629,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
   ajustarPrecios(): void {
     const porcentaje = parseFloat(this.porcentajeSubir);
     if (isNaN(porcentaje) || porcentaje <= 0) {
-      this.toastr.error('Por favor, ingrese un porcentaje válido para subir', 'Error');
+      this.appToast.error('Por favor, ingrese un porcentaje válido para subir', 'Error');
       return;
     }
     this.tareasAgregadas = this.tareasAgregadas.map(tarea => ({
@@ -2731,19 +2637,19 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       costo: tarea.costo * (1 + porcentaje / 100),
       totalCost: this.calcularTotalCosto({ ...tarea, costo: tarea.costo * (1 + porcentaje / 100) })
     }));
-    this.toastr.success(`Lista incrementada en ${porcentaje}%`, 'Éxito');
+    this.appToast.success(`Lista incrementada en ${porcentaje}%`, 'Éxito');
     this.porcentajeSubir = null;
     localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
   }
 
   reestablecerPreciosOriginalesLista(): void {
     if (!this.clienteSeleccionado?.id && !this.trialMode) {
-      this.toastr.warning('No hay un cliente seleccionado para restablecer los precios.', 'Atención');
+      this.appToast.warning('No hay un cliente seleccionado para restablecer los precios.', 'Atención');
       return;
     }
 
     if (this.trialMode) {
-       this.toastr.info('Función limitada en modo de prueba', 'Aviso');
+       this.appToast.info('Función limitada en modo de prueba', 'Aviso');
        return;
     }
 
@@ -2752,10 +2658,10 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
         this.tareasAgregadas = tareasOriginales;
         this.mostrarTabla = this.tareasAgregadas.length > 0;
         localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-        this.toastr.success('Precios restablecidos a los valores originales', 'Éxito');
+        this.appToast.success('Precios restablecidos a los valores originales', 'Éxito');
       },
       error: () => {
-        this.toastr.error('Error al restablecer los precios originales', 'Error');
+        this.appToast.error('Error al restablecer los precios originales', 'Error');
       }
     });
   }
@@ -2788,7 +2694,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       this.fetchUserData();
       this.cargarTareasPersonalizadas();
     } else {
-      this.toastr.error('Código de usuario no encontrado en el localStorage', 'Error');
+      this.appToast.error('Código de usuario no encontrado en el localStorage', 'Error');
       this.route.navigate(['']); // Redirigir al login
     }
   }
@@ -2797,7 +2703,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
 
 getClientesByUserCode(): void {
     if (!this.userCode) {
-      this.toastr.error('Código de usuario no encontrado', 'Error');
+      this.appToast.error('Código de usuario no encontrado', 'Error');
       return;
     }
     this.clienteService.getClienteByUserCode(this.userCode).subscribe({
@@ -2807,7 +2713,7 @@ getClientesByUserCode(): void {
       },
       error: (error) => {
         console.error('Error en getClientesByUserCode:', error);
-        this.toastr.error(error.message || 'Error al cargar los clientes');
+        this.appToast.error(error.message || 'Error al cargar los clientes');
       }
     });
 }
@@ -2821,7 +2727,7 @@ openListaClientesModal(): void {
     const modalElement = document.getElementById('listaClientesModal');
     if (!modalElement) {
       console.error('Modal listaClientesModal no encontrado en el DOM');
-      this.toastr.error('Error al abrir la lista de clientes');
+      this.appToast.error('Error al abrir la lista de clientes');
       return;
     }
     const listaModal = new bootstrap.Modal(modalElement);
@@ -2872,10 +2778,10 @@ fetchUserData(): void {
         this.loadProvincias();
         this.obtenerTareas();
         this.loadWeather();
-        this.toastr.info('Usando datos locales del usuario mientras no haya conexion.');
+        this.appToast.info('Usando datos locales del usuario mientras no haya conexion.');
         return;
       }
-      this.toastr.error('Error al obtener los datos del usuario', 'Error');
+      this.appToast.error('Error al obtener los datos del usuario', 'Error');
       this.route.navigate(['']);
     }
   });
@@ -2896,7 +2802,7 @@ fetchUserData(): void {
             this.provincias = cached;
             return;
           }
-          this.toastr.error('Error al cargar las provincias', 'Error');
+          this.appToast.error('Error al cargar las provincias', 'Error');
         }
       );
     } else {
@@ -3164,13 +3070,13 @@ fetchUserData(): void {
       miModalInstance.show();
     }
 
-    this.toastr.info('Tarea cargada para editar', 'Historial');
+    this.appToast.info('Tarea cargada para editar', 'Historial');
   }
 
   borrarHistorialReciente(): void {
     this.recentTasks = [];
     localStorage.removeItem('recentQuotedTasks');
-    this.toastr.success('Historial de tareas limpiado');
+    this.appToast.success('Historial de tareas limpiado');
   }
 
   abrirHistorialDesdeModal(): void {
@@ -3249,14 +3155,14 @@ fetchUserData(): void {
           localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresas));
         }
       }
-      this.toastr.success('Colores aplicados (modo demo)', 'Paleta');
+      this.appToast.success('Colores aplicados (modo demo)', 'Paleta');
       return;
     }
 
     if (this.selectedEmpresaId.id) {
       this.empresaService.updateEmpresa(this.selectedEmpresaId.id, this.selectedEmpresaId).subscribe({
-        next: () => this.toastr.success('Colores guardados correctamente', 'Paleta'),
-        error: (err) => this.toastr.error(`Error al guardar colores: ${err.message}`, 'Error')
+        next: () => this.appToast.success('Colores guardados correctamente', 'Paleta'),
+        error: (err) => this.appToast.error(`Error al guardar colores: ${err.message}`, 'Error')
       });
     }
   }
@@ -3377,18 +3283,7 @@ fetchUserData(): void {
       : `Se actualizará "${nombreTarea}" en Mis Tareas.`;
     const confirmButtonText = isNew ? 'Sí, crear tarea' : 'Sí, guardar cambios';
 
-    return Swal.fire({
-      title,
-      text,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText,
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#1d68ff',
-      cancelButtonColor: '#7b8ba8',
-      reverseButtons: true,
-      focusCancel: true
-    }).then(result => result.isConfirmed);
+    return this.uiDialog.confirm({ title, text, confirmText: confirmButtonText, cancelText: 'Cancelar', tone: 'primary', icon: 'question' });
   }
 
   private tpMostrarMensajeGuardado(nombreTarea: string, isNew: boolean): Promise<void> {
@@ -3397,13 +3292,7 @@ fetchUserData(): void {
       ? `"${nombreTarea}" ya está disponible en tu lista de tareas personalizadas.`
       : `Los cambios de "${nombreTarea}" se guardaron correctamente.`;
 
-    return Swal.fire({
-      title,
-      text,
-      icon: 'success',
-      confirmButtonText: 'Aceptar',
-      confirmButtonColor: '#1d68ff'
-    }).then(() => undefined);
+    return this.uiDialog.success({ title, text });
   }
 
   tpEditar(tp: TareaPersonalizada): void {
@@ -3530,6 +3419,7 @@ fetchUserData(): void {
     );
   }
 }
+
 
 
 

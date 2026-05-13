@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { PresupuestoService, Tarea } from '../../servicios/presupuesto.service';
 import { Cliente, ClienteService } from '../../servicios/cliente.service';
 import { Empresa, EmpresaService } from '../../servicios/empresa.service';
-import { ToastrService } from 'ngx-toastr';
+import { AppToastService } from '../../servicios/app-toast.service';
 import { AccessCode, AuthService } from '../../servicios/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
@@ -63,7 +63,7 @@ export class DatosDeTareasComponent implements OnInit {
     private authService: AuthService,
     private clienteService: ClienteService,
     private empresaService: EmpresaService,
-    private toastr: ToastrService,
+    private appToast: AppToastService,
     private route: Router,
     private localStore: OfflineLocalStoreService
   ) {}
@@ -177,7 +177,7 @@ export class DatosDeTareasComponent implements OnInit {
   descargarPDF(): void {
     const exportElement = document.getElementById('export-presupuesto');
     if (!exportElement) {
-      this.toastr.error('No se encontró el contenido del presupuesto para exportar.', 'Error');
+      this.appToast.error('No se encontró el contenido del presupuesto para exportar.', 'Error');
       return;
     }
 
@@ -227,12 +227,12 @@ export class DatosDeTareasComponent implements OnInit {
           .from(exportElement)
           .save()
           .then(() => {
-            this.toastr.success('Presupuesto descargado correctamente', 'PDF generado');
+            this.appToast.success('Presupuesto descargado correctamente', 'PDF generado');
             document.head.removeChild(inlineStyle);
           })
           .catch((error: any) => {
             console.error('Error al generar el PDF', error);
-            this.toastr.error('No se pudo generar el PDF. Inténtalo nuevamente.', 'Error');
+            this.appToast.error('No se pudo generar el PDF. Inténtalo nuevamente.', 'Error');
             document.head.removeChild(inlineStyle);
           });
       } else {
@@ -242,7 +242,7 @@ export class DatosDeTareasComponent implements OnInit {
       }
     } catch (error) {
       console.error('Error al generar el PDF', error);
-      this.toastr.error('No se pudo generar el PDF.', 'Error');
+      this.appToast.error('No se pudo generar el PDF.', 'Error');
       if (document.getElementById('pdf-export-style')) {
         document.head.removeChild(inlineStyle);
       }
@@ -297,7 +297,7 @@ export class DatosDeTareasComponent implements OnInit {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    this.toastr.success('Presupuesto descargado como HTML', 'Descargado');
+    this.appToast.success('Presupuesto descargado como HTML', 'Descargado');
   }
 
   // ============ COLOR SCHEME ============

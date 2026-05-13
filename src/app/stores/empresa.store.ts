@@ -50,7 +50,15 @@ export class EmpresaStore {
       const pendingSelectedId = this._pendingSelectedId();
 
       const current = this._selected();
-      if (current?.id && list.some(e => e.id === current.id)) return;
+      if (current?.id) {
+        const fresh = list.find(e => e.id === current.id) ?? null;
+        if (fresh) {
+          if (JSON.stringify(fresh) !== JSON.stringify(current)) {
+            this._selected.set(fresh);
+          }
+          return;
+        }
+      }
 
       if (list.length === 0) {
         this._selected.set(null);

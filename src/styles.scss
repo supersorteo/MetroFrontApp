@@ -39,6 +39,118 @@ body.modal-open app-dashboard .floating-toolbar-container {
   z-index: 20000 !important;
 }
 
+.swal2-container.swal2-backdrop-show {
+  backdrop-filter: blur(3px);
+}
+
+.app-dialog-popup {
+  width: min(540px, calc(100vw - 1.5rem)) !important;
+  border-radius: 22px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(39, 83, 152, 0.14) !important;
+  background:
+    radial-gradient(circle at top right, rgba(116, 172, 255, 0.18), transparent 34%),
+    linear-gradient(180deg, #f9fbff 0%, #edf4fe 100%) !important;
+  box-shadow: 0 26px 60px rgba(9, 26, 55, 0.26) !important;
+}
+
+.app-dialog-title {
+  margin: 0 !important;
+  padding: 1.35rem 1.5rem 0.35rem !important;
+  font-size: 1.2rem !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  color: #15325f !important;
+}
+
+.app-dialog-html {
+  margin: 0 !important;
+  padding: 0 1.5rem 1.15rem !important;
+  font-size: 0.96rem !important;
+  line-height: 1.55 !important;
+  color: #5f7696 !important;
+}
+
+.app-dialog-actions {
+  margin: 0 !important;
+  padding: 0 1.5rem 1.35rem !important;
+  gap: 0.75rem !important;
+}
+
+.app-dialog-confirm,
+.app-dialog-cancel {
+  min-width: 132px;
+  border: none;
+  border-radius: 14px;
+  padding: 0.82rem 1.05rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  transition: transform 0.16s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.app-dialog-confirm:hover,
+.app-dialog-cancel:hover {
+  transform: translateY(-1px);
+}
+
+.app-dialog-cancel {
+  background: rgba(255, 255, 255, 0.7);
+  color: #557093;
+  border: 1px solid rgba(28, 72, 141, 0.14);
+  box-shadow: 0 8px 20px rgba(12, 31, 66, 0.08);
+}
+
+.app-dialog-confirm {
+  color: #fff;
+  box-shadow: 0 16px 28px rgba(29, 104, 255, 0.22);
+}
+
+.app-dialog--primary .app-dialog-confirm,
+.app-dialog--info .app-dialog-confirm {
+  background: linear-gradient(135deg, #2b78f6 0%, #185bd2 100%);
+}
+
+.app-dialog--success .app-dialog-confirm {
+  background: linear-gradient(135deg, #239b69 0%, #1d7e65 100%);
+}
+
+.app-dialog--warning .app-dialog-confirm {
+  background: linear-gradient(135deg, #c88a18 0%, #a5680f 100%);
+}
+
+.app-dialog--danger .app-dialog-confirm {
+  background: linear-gradient(135deg, #d14d64 0%, #b33c52 100%);
+}
+
+@media (max-width: 576px) {
+  .app-dialog-popup {
+    width: calc(100vw - 1rem) !important;
+    border-radius: 20px !important;
+  }
+
+  .app-dialog-title {
+    padding: 1.1rem 1rem 0.3rem !important;
+    font-size: 1.05rem !important;
+  }
+
+  .app-dialog-html {
+    padding: 0 1rem 1rem !important;
+    font-size: 0.9rem !important;
+  }
+
+  .app-dialog-actions {
+    padding: 0 1rem 1rem !important;
+    gap: 0.55rem !important;
+  }
+
+  .app-dialog-confirm,
+  .app-dialog-cancel {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
 #toast-container,
 .toast-container {
   position: fixed !important;

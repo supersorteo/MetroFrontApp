@@ -5,7 +5,6 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
 import { AccessCodeService } from '../../servicios/access-code.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
 import { ProvinciaService } from '../../servicios/provincia.service';
 import { MembershipPaymentService } from '../../servicios/membership-payment.service';
 import { PayPalPaymentService } from '../../servicios/paypal-payment.service';
@@ -14,7 +13,8 @@ import { accessCodeCountryMismatchMessage } from '../../core/country/access-code
 import { phonePlaceholder, sanitizePhoneInput, validatePhoneByCountry } from '../../core/country/phone.util';
 import { buildMembershipCheckoutPayload, buildPayPalCheckoutPayload, mapMembershipCountryOption, MembershipCheckoutForm, MembershipCountryOption, validateMembershipCheckoutForm } from '../../core/membership/membership-checkout.util';
 import { extractApiErrorMessage } from '../../core/http/api-error.util';
-import Swal from 'sweetalert2';
+import { UiDialogService } from '../../core/services/ui-dialog.service';
+import { AppToastService } from '../../servicios/app-toast.service';
 import { AdminService, AdminCountry } from '../../servicios/admin.service';
 declare var bootstrap: any;
 
@@ -99,11 +99,12 @@ constructor(private authService: AuthService,
   private route:Router,
   private activatedRoute: ActivatedRoute,
   private renderer: Renderer2,
-  private toastr: ToastrService,
   private provinciaService: ProvinciaService,
   private membershipPaymentService: MembershipPaymentService,
   private payPalPaymentService: PayPalPaymentService,
-  private adminService: AdminService){}
+  private adminService: AdminService,
+  private uiDialog: UiDialogService,
+  private appToast: AppToastService){}
 
   private provinciasCacheKey(pais: string): string {
     return `loginProvincias_${pais.toLowerCase()}`;
@@ -156,7 +157,7 @@ constructor(private authService: AuthService,
         this.code = code;
       }
       if (paid === '1') {
-        this.toastr.success('Tu codigo ya esta activado. Ingresa con el codigo recibido.', 'Pago confirmado');
+        this.appToast.success('Tu código ya está activado. Ingresa con el código recibido.', 'Pago confirmado');
       }
       if (adminShortcut === '1') {
         if (this.adminService.isLoggedIn()) {
@@ -171,13 +172,11 @@ constructor(private authService: AuthService,
 
 
 
-
-
 login(): void {
   const normalizedCode = this.accessCodeService.normalizeCode(this.code);
 
   if (normalizedCode.length === 0) {
-    Swal.fire('Error', 'Debe ingresar su codigo', 'error');
+    this.uiDialog.error({ title: 'Error', text: 'Debe ingresar su código' });
     return;
   }
 
@@ -190,11 +189,11 @@ login(): void {
         this.email = response.email;
         localStorage.setItem('userCode', this.code);
         localStorage.setItem('userEmail', this.email);
-        localStorage.setItem('userData', JSON.stringify(response)); // Guardar objeto completo
+        localStorage.setItem('userData', JSON.stringify(response));
         this.route.navigate(['dashboard']);
-        Swal.fire('Exito', 'Login exitoso', 'success');
+        this.uiDialog.success({ title: 'Éxito', text: 'Login exitoso' });
       } else {
-        Swal.fire('Error', response.email || 'Error al iniciar sesion', 'error');
+        this.uiDialog.error({ title: 'Error', text: response.email || 'Error al iniciar sesión' });
       }
     },
     error => {
@@ -210,14 +209,14 @@ login(): void {
             localStorage.setItem('userEmail', this.email);
           }
           this.route.navigate(['dashboard']);
-          Swal.fire('Modo offline', 'Ingresaste con datos guardados localmente.', 'info');
+          this.uiDialog.info({ title: 'Modo offline', text: 'Ingresaste con datos guardados localmente.' });
           return;
         } catch {
         }
       }
 
-      const msg = error.error?.email || error.message || 'Error al iniciar sesion';
-      Swal.fire('Error', msg, 'error');
+      const msg = error.error?.email || error.message || 'Error al iniciar sesión';
+      this.uiDialog.error({ title: 'Error', text: msg });
     }
   );
 }
@@ -227,12 +226,12 @@ login(): void {
   register(): void {
     this.validateForm();
     if (!this.isFormValid) {
-      Swal.fire('Error', this.codeCountryErrorMessage || this.telefonoErrorMessage || 'Completa correctamente los datos del registro.', 'error');
+      this.uiDialog.error({ title: 'Error', text: this.codeCountryErrorMessage || this.telefonoErrorMessage || 'Completa correctamente los datos del registro.' });
       return;
     }
 
     if (!navigator.onLine) {
-      Swal.fire('Sin conexion', 'El registro requiere internet para validar el codigo y asociar tus datos.', 'info');
+      this.uiDialog.info({ title: 'Sin conexión', text: 'El registro requiere internet para validar el código y asociar tus datos.' });
       return;
     }
 
@@ -246,7 +245,7 @@ login(): void {
 
         if (this.codeCountryErrorMessage) {
           this.validateForm();
-          Swal.fire('Error', this.codeCountryErrorMessage, 'error');
+          this.uiDialog.error({ title: 'Error', text: this.codeCountryErrorMessage });
           return;
         }
 
@@ -258,17 +257,17 @@ login(): void {
           provincia: this.provincia
         }).subscribe({
           next: response => {
-            Swal.fire('¡Éxito!', response.message, 'success');
+            this.uiDialog.success({ title: '¡Éxito!', text: response.message });
             this.clearForm();
           },
           error: err => {
             const msg = err?.error?.message || err?.message || 'Error al registrar. Intentá de nuevo.';
-            Swal.fire('Error', msg, 'error');
+            this.uiDialog.error({ title: 'Error', text: msg });
           }
         });
       },
       error: (error) => {
-        Swal.fire('Error', error.message || 'No se pudo validar el codigo.', 'error');
+        this.uiDialog.error({ title: 'Error', text: error.message || 'No se pudo validar el código.' });
       }
     });
   }
@@ -288,8 +287,6 @@ login(): void {
 
 
 
-
-
    getProvincias(): void {
     this.provinciaService.getAllProvincias().subscribe(
       response => {
@@ -301,7 +298,7 @@ login(): void {
           this.provincias = cached;
           return;
         }
-        Swal.fire('Error', 'Error al cargar las provincias', 'error');
+        this.uiDialog.error({ title: 'Error', text: 'Error al cargar las provincias' });
       }
     );
   }
@@ -323,7 +320,7 @@ login(): void {
             this.provincias = cached;
             return;
           }
-          Swal.fire('Error', 'Error al cargar las provincias', 'error');
+          this.uiDialog.error({ title: 'Error', text: 'Error al cargar las provincias' });
         }
       );
     } else {
@@ -366,10 +363,10 @@ login(): void {
         this.codeCountryErrorMessage = '';
         this.validateForm();
         if (showErrors) {
-          this.toastr.error(
+          this.appToast.error(
             !navigator.onLine
-              ? 'Sin conexion. No se pudo validar el codigo.'
-              : error?.message || 'No se pudo validar el codigo.'
+              ? 'Sin conexión. No se pudo validar el código.'
+              : error?.message || 'No se pudo validar el código.'
           );
         }
       }
@@ -644,14 +641,14 @@ openWebsite(): void {
           if (cachedCatalog.length > 0) {
             this.membershipCountries = cachedCatalog;
             this.isLoadingCatalog = false;
-            this.toastr.info('Mostrando el catalogo guardado localmente.');
+            this.appToast.info('Mostrando el catálogo guardado localmente.');
             return;
           }
           this.isLoadingCatalog = false;
-          this.toastr.error(
+          this.appToast.error(
             navigator.onLine
-              ? 'No se pudo cargar el catalogo de membresias.'
-              : 'Sin conexion. El catalogo de membresias no esta disponible todavia en este dispositivo.'
+              ? 'No se pudo cargar el catálogo de membresías.'
+              : 'Sin conexión. El catálogo de membresías no está disponible todavía en este dispositivo.'
           );
         }
       });
@@ -680,7 +677,7 @@ openWebsite(): void {
             return;
           }
           this.purchaseProvincias = [];
-          this.toastr.error('No se pudieron cargar las provincias para la compra.');
+          this.appToast.error('No se pudieron cargar las provincias para la compra.');
         }
       });
     }
@@ -693,12 +690,12 @@ openWebsite(): void {
       this.purchasePhoneErrorMessage = validation.phoneMessage;
 
       if (!validation.valid || !this.purchaseCountryCode || !this.purchasePlanMonths) {
-        Swal.fire('Faltan datos', this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.', 'warning');
+        this.uiDialog.warning({ title: 'Faltan datos', text: this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.' });
         return;
       }
 
       if (!navigator.onLine) {
-        Swal.fire('Sin conexion', 'El checkout requiere internet para conectarse con la pasarela de pago.', 'info');
+        this.uiDialog.info({ title: 'Sin conexión', text: 'El checkout requiere internet para conectarse con la pasarela de pago.' });
         return;
       }
 
@@ -709,7 +706,7 @@ openWebsite(): void {
         next: (order) => {
           this.isStartingCheckout = false;
           if (!order.redirectUrl) {
-            this.toastr.error('La pasarela no devolvio una URL de pago.');
+            this.appToast.error('La pasarela no devolvió una URL de pago.');
             return;
           }
           localStorage.setItem('pendingPaymentId', order.externalId);
@@ -717,7 +714,7 @@ openWebsite(): void {
         },
         error: (error) => {
           this.isStartingCheckout = false;
-          Swal.fire('Error', this.getCheckoutErrorMessage(error, 'No se pudo iniciar el checkout.'), 'error');
+          this.uiDialog.error({ title: 'Error', text: this.getCheckoutErrorMessage(error, 'No se pudo iniciar el checkout.') });
         }
       });
     }
@@ -730,12 +727,12 @@ openWebsite(): void {
       this.purchasePhoneErrorMessage = validation.phoneMessage;
 
       if (!validation.valid || !this.purchaseCountryCode || !this.purchasePlanMonths) {
-        Swal.fire('Faltan datos', this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.', 'warning');
+        this.uiDialog.warning({ title: 'Faltan datos', text: this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.' });
         return;
       }
 
       if (!navigator.onLine) {
-        Swal.fire('Sin conexion', 'El checkout con PayPal requiere internet para conectarse con la pasarela de pago.', 'info');
+        this.uiDialog.info({ title: 'Sin conexión', text: 'El checkout con PayPal requiere internet para conectarse con la pasarela de pago.' });
         return;
       }
 
@@ -746,7 +743,7 @@ openWebsite(): void {
         next: (order) => {
           this.isStartingPayPal = false;
           if (!order.approvalUrl) {
-            this.toastr.error('PayPal no devolvio una URL de pago.');
+            this.appToast.error('PayPal no devolvió una URL de pago.');
             return;
           }
           localStorage.setItem('pendingPaymentId', order.externalId);
@@ -754,7 +751,7 @@ openWebsite(): void {
         },
         error: (error) => {
           this.isStartingPayPal = false;
-          Swal.fire('Error', this.getCheckoutErrorMessage(error, 'No se pudo iniciar el checkout con PayPal.'), 'error');
+          this.uiDialog.error({ title: 'Error', text: this.getCheckoutErrorMessage(error, 'No se pudo iniciar el checkout con PayPal.') });
         }
       });
     }
