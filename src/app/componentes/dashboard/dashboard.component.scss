@@ -213,9 +213,49 @@
   }
 }
 
+.task-brand-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.task-tabs-toolbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.task-tabs-toolbar__action {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.task-help-btn {
+  min-height: 40px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(29, 104, 255, 0.16);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 246, 255, 0.96) 100%);
+  color: #1d68ff;
+  box-shadow: 0 10px 22px rgba(29, 104, 255, 0.1);
+  font-size: 0.83rem;
+  font-weight: 700;
+}
+
+.task-help-btn i {
+  font-size: 0.92rem;
+}
+
 .task-tabs {
   border-bottom: 1px solid rgba(29, 104, 255, 0.14);
   gap: 8px;
+  flex-wrap: wrap;
 
   .nav-link {
     display: inline-flex;
@@ -931,7 +971,7 @@
 
   &__actions {
     display: flex;
-    gap: 5px;
+    gap: 8px;
     align-items: center;
     flex-wrap: nowrap;
     margin-top: 2px;
@@ -992,6 +1032,28 @@
 }
 
 @media (max-width: 767px) {
+  .task-tabs-toolbar {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .task-tabs-toolbar__action {
+    justify-content: stretch;
+  }
+
+  .task-help-btn {
+    width: 100%;
+  }
+
+  .task-tabs {
+    justify-content: center;
+  }
+
+  .fixed-image-container {
+    width: 62px;
+    height: 62px;
+  }
+
   .tp-hero {
     flex-direction: column;
     align-items: stretch;
@@ -1170,6 +1232,30 @@
   font-size: 0.83rem;
   text-align: center;
   padding: 8px 0;
+}
+
+.tp-export-modal-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 38px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1.5px solid #adb5bd;
+  color: #495057;
+  background: #f8f9fa;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+
+  &:hover {
+    background: #e9f1ff;
+    border-color: #2563eb;
+    color: #2563eb;
+    transform: translateY(-1px);
+  }
+
+  svg { pointer-events: none; }
 }
 
 .offcanvas-custom-backdrop {
@@ -1406,15 +1492,14 @@
 }
 /* Contenedor para la imagen fija en la esquina superior derecha */
 .fixed-image-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1035;
-  width: 70px;
-  height: 70px;
-  background: #fff;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: relative;
+  width: 68px;
+  height: 68px;
+  padding: 4px;
+  background: linear-gradient(180deg, rgba(249, 251, 255, 0.98) 0%, rgba(237, 244, 254, 0.98) 100%);
+  border: 1px solid rgba(29, 104, 255, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 10px 20px rgba(10, 35, 79, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1511,32 +1596,13 @@
   flex: 1;
 }
 
-.dashboard-header .fixed-image-container {
-  position: static;
-  width: 70px;
-  height: 70px;
-  background: #fff;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  overflow: hidden;
-}
-
 .fixed-image {
-  width: 60px;
-  height: 60px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 50%;
-  box-shadow: none;
+  border-radius: 16px;
   background: #f4f6fc;
   display: block;
-  margin: 0 auto;
-  max-width: 100px;
-  max-height: 100px;
-  object-fit: contain;
 }
 
 

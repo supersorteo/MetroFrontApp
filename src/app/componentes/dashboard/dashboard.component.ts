@@ -3393,6 +3393,64 @@ fetchUserData(): void {
     });
   }
 
+  exportarTareaAPersonalizadas(): void {
+    const nombre = this.tareaSeleccionada.tarea?.trim();
+    if (!nombre) {
+      this.appToast.warning('Ingresá un nombre de tarea antes de exportar.');
+      return;
+    }
+
+    const limit = this.trialMode ? this.TP_LIMIT_DEMO : this.TP_LIMIT_VIP;
+    if (this.tareasPersonalizadas.length >= limit) {
+      this.uiDialog.warning({ title: 'Límite alcanzado', text: `Alcanzaste el límite de ${limit} tareas personalizadas.` });
+      return;
+    }
+
+    const yaExiste = this.tareasPersonalizadas.some(
+      tp => tp.tarea.trim().toLowerCase() === nombre.toLowerCase()
+    );
+    if (yaExiste) {
+      this.uiDialog.info({ title: 'Ya existe', text: `"${nombre}" ya está en tus tareas personalizadas.` });
+      return;
+    }
+
+    this.uiDialog.confirm({
+      title: '¿Guardar en Mis Tareas?',
+      text: `"${nombre}" se agregará a tu lista de tareas personalizadas.`,
+      confirmText: 'Guardar',
+      cancelText: 'Cancelar',
+      tone: 'primary',
+      icon: 'question'
+    }).then(confirmed => {
+      if (!confirmed) return;
+
+      const payload: TareaPersonalizada = {
+        userCode: this.userCode,
+        tarea: nombre,
+        descripcion: this.tareaSeleccionada.descripcion || '',
+        costo: this.tareaSeleccionada.costo
+      };
+
+      if (this.trialMode) {
+        const list = this.tpLoadDemo();
+        const created: TareaPersonalizada = { ...payload, id: -Date.now() };
+        list.unshift(created);
+        this.tpSaveDemo(list);
+        this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
+        this.appToast.success(`"${nombre}" guardada en Mis Tareas`, 'Exportada');
+        return;
+      }
+
+      this.tpService.create(payload).subscribe({
+        next: created => {
+          this.tareasPersonalizadas = this.ordenarTareasPersonalizadas([created, ...this.tareasPersonalizadas]);
+          this.appToast.success(`"${nombre}" guardada en Mis Tareas`, 'Exportada');
+        },
+        error: err => this.appToast.error(err.message || 'Error al exportar la tarea')
+      });
+    });
+  }
+
   private ordenarTareasPersonalizadas(list: TareaPersonalizada[]): TareaPersonalizada[] {
     return [...list].sort((a, b) => {
       const aKey = Math.abs(Number(a.id ?? 0));

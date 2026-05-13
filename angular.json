@@ -101,7 +101,7 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "proxyConfig": "proxy.conf.json",
-            "port": 8888
+            "port": 4200
           },
           "configurations": {
             "production": {
@@ -114,7 +114,8 @@
               "buildTarget": "pruebaw:build:pwa-development"
             },
             "remote-test": {
-              "buildTarget": "pruebaw:build:remote-test"
+              "buildTarget": "pruebaw:build:remote-test",
+              "port": 8888
             }
           },
           "defaultConfiguration": "development"

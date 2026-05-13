@@ -228,15 +228,17 @@
 }
 
 /* ============ CONTROLES FLOTANTES DE VISTA PREVIA ============ */
-.preview-controls {
+.preview-toolbar {
   position: fixed;
   left: 14px;
-  bottom: 62px;
+  bottom: 14px;
   z-index: 9998;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-  max-width: 240px;
+  max-width: min(100vw - 120px, 760px);
 }
 
 .preview-toggle {
@@ -287,12 +289,34 @@
 .download-trigger.button-82-front.text {
   background-image: linear-gradient(to right top, #3768b1, #3b75c4, #3e82d7, #3f90eb, #409eff);
   position: fixed;
-  left: 14px;
+  left: auto;
+  right: 14px;
   bottom: 14px;
   z-index: 9998;
   padding: 9px 12px;
   font-size: 13px;
   line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+  .preview-toolbar {
+    left: 12px;
+    right: 12px;
+    bottom: 64px;
+    max-width: none;
+  }
+
+  .preview-toggle {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+
+  .download-trigger.button-82-front.text {
+    right: 12px;
+    left: 12px;
+    width: auto;
+    justify-content: center;
+  }
 }
 
 /* Botón Volver — fijo arriba izquierda */

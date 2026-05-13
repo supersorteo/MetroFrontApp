@@ -5,7 +5,7 @@
 <div class="presupuesto-page" id="export-presupuesto" [style.color]="colorScheme.textColor">
 
   <!-- ============ CONTROLES FLOTANTES - no-print ============ -->
-  <div class="preview-controls no-print" *ngIf="!tareasAgregadas || tareasAgregadas.length > 0">
+  <div class="preview-toolbar no-print" *ngIf="!tareasAgregadas || tareasAgregadas.length > 0">
     <label class="preview-toggle">
       <input
         type="checkbox"
@@ -29,7 +29,7 @@
   <!-- ============ BOTÓN DESCARGAR FLOTANTE - no-print ============ -->
   <button
     type="button"
-    class="no-print download-trigger button-82-front text"
+    class="download-trigger button-82-front text"
     (click)="showDownloadModal = true"
   >
     <i class="fas fa-download" style="margin-right: 6px;"></i>Descargar

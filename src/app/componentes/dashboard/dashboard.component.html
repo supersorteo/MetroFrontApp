@@ -1,11 +1,11 @@
-﻿  <div class="fixed-image-container">
+﻿  <!--div-- class="fixed-image-container">
     <img
       id="fixedImageIcon"
       class="fixed-image"
       [src]="currentEmpresaLogoUrl || '#'"
       alt="Logo Empresa"
       [style.display]="currentEmpresaLogoUrl ? 'block' : 'none'">
-  </div>
+  </div-->
 
 <div class="menu-panel-overlay" *ngIf="showMenuPanel" (click)="toggleMenuPanel()"></div>
 
@@ -540,37 +540,46 @@
   <div class="card-body">
     <div class="containerbuscar">
 
-      <div class="d-flex align-items-center justify-content-end mb-2" style="margin-top: 8px;">
-        <!-- <button type="button" class="btn btn-light btn-sm" (click)="toggleTareasPersonalizadasPanel()" aria-label="Mis tareas personalizadas" style="width: auto; min-height: 34px; padding: 5px 10px 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #d4edda; color: #1d68ff; box-shadow: 0 2px 6px rgba(25, 135, 84, 0.12); border-radius: 10px;">
-          <i class="bi bi-bookmarks"></i>Mis Tareas
-        </button> -->
-        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="Cómo usar el buscador" style="width: auto; min-height: 34px; padding: 5px 10px 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #cfe0ff; color: #1d68ff; box-shadow: 0 2px 6px rgba(29, 104, 255, 0.12); border-radius: 10px;">
-          <i class="fas fa-info"></i>Cómo buscar
-        </button>
+      <div class="task-brand-row mb-2" *ngIf="currentEmpresaLogoUrl">
+        <div class="fixed-image-container">
+          <img
+            id="fixedImageIcon"
+            class="fixed-image"
+            [src]="currentEmpresaLogoUrl || '#'"
+            alt="Logo Empresa">
+        </div>
       </div>
-      <ul class="nav nav-tabs task-tabs mb-3" role="tablist">
-        <li class="nav-item" role="presentation">
-          <a
-            class="nav-link"
-            href="#"
-            [class.active]="activeTaskTab === 'catalogo'"
-            [attr.aria-current]="activeTaskTab === 'catalogo' ? 'page' : null"
-            (click)="$event.preventDefault(); activeTaskTab = 'catalogo'">
-            <i class="bi bi-list-ul me-1"></i> Lista de tareas
-          </a>
-        </li>
-        <li class="nav-item" role="presentation">
-          <a
-            class="nav-link"
-            href="#"
-            [class.active]="activeTaskTab === 'personalizadas'"
-            [attr.aria-current]="activeTaskTab === 'personalizadas' ? 'page' : null"
-            (click)="$event.preventDefault(); activeTaskTab = 'personalizadas'">
-            <i class="bi bi-bookmarks me-1"></i> Tareas personalizadas
-            <span class="badge rounded-pill ms-2 task-tabs__badge">{{ tareasPersonalizadas.length }}</span>
-          </a>
-        </li>
-      </ul>
+      <div class="task-tabs-toolbar mb-3">
+        <ul class="nav nav-tabs task-tabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
+              href="#"
+              [class.active]="activeTaskTab === 'catalogo'"
+              [attr.aria-current]="activeTaskTab === 'catalogo' ? 'page' : null"
+              (click)="$event.preventDefault(); activeTaskTab = 'catalogo'">
+              <i class="bi bi-list-ul me-1"></i> Lista de tareas
+            </a>
+          </li>
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
+              href="#"
+              [class.active]="activeTaskTab === 'personalizadas'"
+              [attr.aria-current]="activeTaskTab === 'personalizadas' ? 'page' : null"
+              (click)="$event.preventDefault(); activeTaskTab = 'personalizadas'">
+              <i class="bi bi-bookmarks me-1"></i> Tareas personalizadas
+              <span class="badge rounded-pill ms-2 task-tabs__badge">{{ tareasPersonalizadas.length }}</span>
+            </a>
+          </li>
+        </ul>
+        <div class="task-tabs-toolbar__action">
+          <button type="button" class="task-help-btn" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="Cómo usar el buscador">
+            <i class="fas fa-info-circle" aria-hidden="true"></i>
+            <span>Cómo buscar</span>
+          </button>
+        </div>
+      </div>
       <div class="tab-content task-tabs__content">
         <div class="tab-pane fade" [class.show]="activeTaskTab === 'catalogo'" [class.active]="activeTaskTab === 'catalogo'">
           <div class="inputGroup">
@@ -658,7 +667,7 @@
                   <div class="tp-card__top">
                     <div class="tp-card__heading">
                       <span class="tp-card__name">{{ tp.tarea }}</span>
-                      <span class="tp-card__tag"><i class="bi bi-bookmark-check-fill me-1"></i>Personalizada</span>
+                      <!--span-- class="tp-card__tag"><i class="bi bi-bookmark-check-fill me-1"></i>Personalizada</span-->
                     </div>
                     <span class="tp-card__cost">{{ tp.costo | currency:'USD':'symbol':'1.2-2' }}</span>
                   </div>
@@ -862,14 +871,7 @@
                   style="margin-bottom: 20px; font-size: 14px; white-space: pre-wrap; overflow-wrap: break-word; background-image: linear-gradient(to top, #c7d0e9, #d7dbee, #e5e7f4, #f3f3f9, #ffffff); color: #092865; padding: 10px; resize: none; font-weight: bold;"></textarea>
 
               </div>
-              <!--div class="mb-3">
-                <label for="rubro" class="col-form-label">Rubro:</label>
-                <input type="text" [(ngModel)]="tareaSeleccionada.rubro" name="rubro" class="form-control" id="rubro" readonly>
-              </div-->
-              <!--div-- class="mb-3">
-                <label for="categoria" class="col-form-label">Categoría:</label>
-                <input type="text" [(ngModel)]="tareaSeleccionada.categoria" name="categoria" class="form-control" id="categoria" readonly>
-              </!div-->
+
               <div class="row mb-3">
                 <div class="col-6 coolinput">
                   <label for="area" class="text">Area (m2/m3):</label>
@@ -893,6 +895,14 @@
                 <!--button-- type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</!button-->
                 <button type="button" class="btn btn-outline-primary" (click)="abrirHistorialDesdeModal()">
                   <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>ÚLTIMAS TAREAS
+                </button>
+                <button type="button" class="btn btn-outline-secondary tp-export-modal-btn"
+                        (click)="exportarTareaAPersonalizadas()"
+                        title="Guardar en Mis Tareas personalizadas">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+                    <path d="M8 4a.5.5 0 0 1 .5.5V6H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V7H6a.5.5 0 0 1 0-1h1.5V4.5A.5.5 0 0 1 8 4"/>
+                  </svg>
                 </button>
                 <button type="button" (click)="agregarTarea()" class="btn btn-primary flex-grow-1" data-bs-dismiss="modal">Agregar</button>
                 <!--button-- type="button" *ngIf="tareaSeleccionada.id" (click)="actualizarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Actualizar</!--button-->
