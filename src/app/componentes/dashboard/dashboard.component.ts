@@ -209,13 +209,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   mostrarTabla: boolean = false;
   showSavedBudgetsPanel: boolean = false;
   showTareasPanel: boolean = false;
+  activeTaskTab: 'catalogo' | 'personalizadas' = 'catalogo';
   showTareasPersonalizadasPanel: boolean = false;
+  showTpEditorModal: boolean = false;
   tareasPersonalizadas: TareaPersonalizada[] = [];
   tpEditingId: number | null = null;
   tpForm = { tarea: '', descripcion: '', costo: 0 };
   tpSubmitted = false;
   tpMostrarImportar: boolean = false;
   tpFiltroCatalogo: string = '';
+  tpBusquedaPersonalizada: string = '';
   tareasAgregadas: UserTarea[] = [];
   tareasDelCliente: UserTarea[] = [];
   showMenuPanel: boolean = false;
@@ -3286,17 +3289,17 @@ fetchUserData(): void {
 
   cargarTareasPersonalizadas(): void {
     if (this.trialMode) {
-      this.tareasPersonalizadas = this.tpLoadDemo();
+      this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(this.tpLoadDemo());
       return;
     }
     if (!this.userCode) return;
     this.tpService.getByUserCode(this.userCode).subscribe({
-      next: list => this.tareasPersonalizadas = list,
+      next: list => this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list),
       error: () => {}
     });
   }
 
-  tpGuardar(): void {
+  async tpGuardar(): Promise<void> {
     this.tpSubmitted = true;
     if (!this.tpForm.tarea.trim()) {
       this.appToast.warning('El nombre de la tarea es obligatorio', 'Campo requerido');
@@ -3324,19 +3327,23 @@ fetchUserData(): void {
       costo: this.tpForm.costo
     };
 
+    const confirmed = await this.tpConfirmarGuardado(payload.tarea, isNew);
+    if (!confirmed) {
+      return;
+    }
+
     if (this.trialMode) {
       const list = this.tpLoadDemo();
       if (this.tpEditingId != null) {
         const idx = list.findIndex(t => t.id === this.tpEditingId);
         if (idx !== -1) list[idx] = { ...payload, id: this.tpEditingId };
-        this.appToast.success(`"${payload.tarea}" actualizada`, 'Tarea actualizada');
       } else {
-        list.push({ ...payload, id: -Date.now() });
-        this.appToast.success(`"${payload.tarea}" guardada en tus tareas`, 'Tarea creada');
+        list.unshift({ ...payload, id: -Date.now() });
       }
       this.tpSaveDemo(list);
-      this.tareasPersonalizadas = [...list];
-      this.tpCancelarEdicion();
+      this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
+      this.cerrarTpEditor();
+      void this.tpMostrarMensajeGuardado(payload.tarea, isNew);
       return;
     }
 
@@ -3345,21 +3352,58 @@ fetchUserData(): void {
         next: updated => {
           const idx = this.tareasPersonalizadas.findIndex(t => t.id === this.tpEditingId);
           if (idx !== -1) this.tareasPersonalizadas[idx] = updated;
-          this.appToast.success(`"${updated.tarea}" actualizada correctamente`, 'Tarea actualizada');
-          this.tpCancelarEdicion();
+          this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(this.tareasPersonalizadas);
+          this.cerrarTpEditor();
+          void this.tpMostrarMensajeGuardado(updated.tarea, false);
         },
         error: err => this.appToast.error(err.message, 'Error al actualizar')
       });
     } else {
       this.tpService.create(payload).subscribe({
         next: created => {
-          this.tareasPersonalizadas = [...this.tareasPersonalizadas, created];
-          this.appToast.success(`"${created.tarea}" guardada en tus tareas`, 'Tarea creada');
-          this.tpCancelarEdicion();
+          this.tareasPersonalizadas = this.ordenarTareasPersonalizadas([created, ...this.tareasPersonalizadas]);
+          this.cerrarTpEditor();
+          void this.tpMostrarMensajeGuardado(created.tarea, true);
         },
         error: err => this.appToast.error(err.message, 'Error al guardar')
       });
     }
+  }
+
+  private tpConfirmarGuardado(nombreTarea: string, isNew: boolean): Promise<boolean> {
+    const title = isNew ? '¿Crear tarea personalizada?' : '¿Guardar cambios?';
+    const text = isNew
+      ? `Se agregará "${nombreTarea}" a Mis Tareas.`
+      : `Se actualizará "${nombreTarea}" en Mis Tareas.`;
+    const confirmButtonText = isNew ? 'Sí, crear tarea' : 'Sí, guardar cambios';
+
+    return Swal.fire({
+      title,
+      text,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText,
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#1d68ff',
+      cancelButtonColor: '#7b8ba8',
+      reverseButtons: true,
+      focusCancel: true
+    }).then(result => result.isConfirmed);
+  }
+
+  private tpMostrarMensajeGuardado(nombreTarea: string, isNew: boolean): Promise<void> {
+    const title = isNew ? 'Tarea creada' : 'Tarea actualizada';
+    const text = isNew
+      ? `"${nombreTarea}" ya está disponible en tu lista de tareas personalizadas.`
+      : `Los cambios de "${nombreTarea}" se guardaron correctamente.`;
+
+    return Swal.fire({
+      title,
+      text,
+      icon: 'success',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#1d68ff'
+    }).then(() => undefined);
   }
 
   tpEditar(tp: TareaPersonalizada): void {
@@ -3367,12 +3411,25 @@ fetchUserData(): void {
     this.tpSubmitted = false;
     this.tpForm = { tarea: tp.tarea, descripcion: tp.descripcion, costo: tp.costo };
     this.tpMostrarImportar = false;
+    this.showTpEditorModal = true;
   }
 
   tpCancelarEdicion(): void {
     this.tpEditingId = null;
     this.tpSubmitted = false;
     this.tpForm = { tarea: '', descripcion: '', costo: 0 };
+    this.tpMostrarImportar = false;
+    this.tpFiltroCatalogo = '';
+  }
+
+  abrirTpEditor(): void {
+    this.tpCancelarEdicion();
+    this.showTpEditorModal = true;
+  }
+
+  cerrarTpEditor(): void {
+    this.showTpEditorModal = false;
+    this.tpCancelarEdicion();
   }
 
   tpEliminar(tp: TareaPersonalizada): void {
@@ -3382,7 +3439,7 @@ fetchUserData(): void {
       if (this.trialMode) {
         const list = this.tpLoadDemo().filter(t => t.id !== tp.id);
         this.tpSaveDemo(list);
-        this.tareasPersonalizadas = [...list];
+        this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
         this.appToast.success(`"${tp.tarea}" eliminada`, 'Tarea eliminada');
         return;
       }
@@ -3431,18 +3488,27 @@ fetchUserData(): void {
     if (this.trialMode) {
       const list = this.tpLoadDemo();
       const created: TareaPersonalizada = { ...payload, id: -Date.now() };
-      list.push(created);
+      list.unshift(created);
       this.tpSaveDemo(list);
-      this.tareasPersonalizadas = [...list];
+      this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
       this.appToast.success(`"${created.tarea}" importada a Mis Tareas`, 'Importada');
       return;
     }
     this.tpService.create(payload).subscribe({
       next: created => {
-        this.tareasPersonalizadas = [...this.tareasPersonalizadas, created];
+        this.tareasPersonalizadas = this.ordenarTareasPersonalizadas([created, ...this.tareasPersonalizadas]);
         this.appToast.success(`"${created.tarea}" importada a Mis Tareas`, 'Importada');
+        this.tpMostrarImportar = false;
       },
       error: err => this.appToast.error(err.message, 'Error al importar')
+    });
+  }
+
+  private ordenarTareasPersonalizadas(list: TareaPersonalizada[]): TareaPersonalizada[] {
+    return [...list].sort((a, b) => {
+      const aKey = Math.abs(Number(a.id ?? 0));
+      const bKey = Math.abs(Number(b.id ?? 0));
+      return bKey - aKey;
     });
   }
 
@@ -3450,6 +3516,18 @@ fetchUserData(): void {
     if (!this.tpFiltroCatalogo.trim()) return this.tareasFiltradas.slice(0, 50);
     const q = this.tpFiltroCatalogo.toLowerCase();
     return this.tareas.filter(t => t.tarea.toLowerCase().includes(q)).slice(0, 50);
+  }
+
+  get tareasPersonalizadasFiltradas(): TareaPersonalizada[] {
+    const query = this.tpBusquedaPersonalizada.trim().toLowerCase();
+    if (!query) {
+      return this.tareasPersonalizadas;
+    }
+
+    return this.tareasPersonalizadas.filter(tp =>
+      tp.tarea.toLowerCase().includes(query) ||
+      (tp.descripcion || '').toLowerCase().includes(query)
+    );
   }
 }
 

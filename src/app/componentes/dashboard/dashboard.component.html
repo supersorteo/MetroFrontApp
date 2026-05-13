@@ -1,4 +1,4 @@
-  <div class="fixed-image-container">
+﻿  <div class="fixed-image-container">
     <img
       id="fixedImageIcon"
       class="fixed-image"
@@ -14,7 +14,7 @@
     <div class="program-title" *ngIf="!isContentVisible">
       <h6>Orbita software</h6>
     </div>
-    <button type="button" class="btn-close ms-auto" (click)="toggleMenuPanel()" aria-label="Cerrar menú"></button>
+    <button type="button" class="btn-close ms-auto" (click)="toggleMenuPanel()" aria-label="Cerrar menÃº"></button>
   </div>
 
   <div class="menu-panel__body">
@@ -53,11 +53,11 @@
       <div *ngIf="weatherLoading" class="text-muted">Cargando...</div>
       <div *ngIf="weatherError && !weatherLoading" class="text-danger small">{{ weatherError }}</div>
       <div *ngIf="currentWeather && !weatherLoading">
-        <div class="weather-temp">{{ currentWeather.temperature | number:'1.0-0' }}°C</div>
+        <div class="weather-temp">{{ currentWeather.temperature | number:'1.0-0' }}Â°C</div>
         <div class="weather-desc">{{ weatherDescription(currentWeather.weathercode) }}</div>
         <small class="text-muted d-block">{{ currentWeather.location }}</small>
         <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#weatherModal" (click)="loadWeather()">
-          Ver pronóstico
+          Ver pronÃ³stico
         </button>
       </div>
     </div>
@@ -91,7 +91,118 @@
   </div>
 </aside>
 
-<!-- ── Tareas Personalizadas Modal ───────────────────────────────────────── -->
+<div class="tp-import-backdrop" *ngIf="tpMostrarImportar" (click)="tpMostrarImportar = false"></div>
+<aside class="tp-import-aside" *ngIf="tpMostrarImportar" [class.open]="tpMostrarImportar" aria-label="Importar desde catálogo">
+  <div class="tp-import-aside__header">
+    <div class="tp-import-aside__title">
+      <span class="tp-import-aside__badge" aria-hidden="true">
+        <i class="bi bi-journal-richtext"></i>
+      </span>
+      <div class="tp-import-aside__title-copy">
+        <small>Panel lateral</small>
+        <span>Importar desde catálogo</span>
+      </div>
+    </div>
+    <button type="button" class="btn-close" (click)="tpMostrarImportar = false" aria-label="Cerrar"></button>
+  </div>
+  <p class="tp-import-aside__hint">Tomá una tarea base del catálogo y guardala como personalizada para adaptarla a tu forma de cotizar.</p>
+  <div class="tp-import-aside__toolbar">
+    <div class="input-group">
+      <span class="input-group-text tp-input-addon"><i class="bi bi-search"></i></span>
+      <input class="form-control tp-input" placeholder="Buscar en el catálogo..." [(ngModel)]="tpFiltroCatalogo" />
+    </div>
+  </div>
+  <div class="tp-catalog-list tp-catalog-list--aside">
+    <div *ngFor="let t of tpCatalogoFiltrado" class="tp-catalog-item">
+      <div class="tp-catalog-item__info">
+        <span class="tp-catalog-item__name">{{ t.tarea }}</span>
+        <span class="tp-catalog-item__cost">{{ t.costo | currency:'USD':'symbol':'1.2-2' }}</span>
+      </div>
+      <button class="tp-catalog-item__btn" title="Importar a Mis Tareas" (click)="tpImportarDelCatalogo(t)">
+        <i class="bi bi-bookmark-plus-fill"></i>
+      </button>
+    </div>
+    <div *ngIf="tpCatalogoFiltrado.length === 0" class="tp-empty">
+      <i class="bi bi-inbox me-1"></i>Sin resultados
+    </div>
+  </div>
+</aside>
+
+<div class="tp-editor-backdrop" *ngIf="showTpEditorModal" (click)="cerrarTpEditor()"></div>
+<div class="tp-editor-modal" *ngIf="showTpEditorModal" role="dialog" aria-modal="true">
+  <div class="tp-editor-modal__dialog">
+    <div class="tp-editor-modal__content">
+      <div class="tp-editor-modal__header">
+        <div class="tp-editor-modal__icon">
+          <i class="bi" [ngClass]="tpEditingId != null ? 'bi-pencil-square' : 'bi-journal-plus'"></i>
+        </div>
+        <div class="tp-editor-modal__copy">
+          <span class="tp-editor-modal__eyebrow">{{ tpEditingId != null ? 'Edición rápida' : 'Nueva tarea personalizada' }}</span>
+          <h4 class="tp-editor-modal__title">{{ tpEditingId != null ? 'Actualizar tarea guardada' : 'Crear una tarea profesional' }}</h4>
+          <p class="tp-editor-modal__subtitle">Definí nombre, descripción y costo para guardar una tarea clara, prolija y lista para cotizar.</p>
+        </div>
+        <button type="button" class="btn-close ms-auto" (click)="cerrarTpEditor()" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="tp-editor-modal__body">
+        <div class="row g-4">
+          <div class="col-12">
+            <div class="tp-editor-shell">
+              <div class="tp-editor-shell__section">
+                <div class="tp-editor-shell__title">
+                  <i class="bi bi-card-text"></i>
+                  <span>Datos principales</span>
+                </div>
+
+                <div class="mb-3">
+                  <label class="tp-label">Nombre <span class="text-danger">*</span></label>
+                  <input class="form-control tp-input"
+                         [ngClass]="{'is-invalid': tpSubmitted && !tpForm.tarea.trim()}"
+                         placeholder="Ej: Instalación eléctrica"
+                         [(ngModel)]="tpForm.tarea" />
+                  <div *ngIf="tpSubmitted && !tpForm.tarea.trim()" class="tp-field-error">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>El nombre es obligatorio
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="tp-label">Descripción <span class="tp-optional">(opcional)</span></label>
+                  <textarea class="form-control tp-input" placeholder="Contá brevemente qué incluye esta tarea..." [(ngModel)]="tpForm.descripcion" rows="4"></textarea>
+                </div>
+
+                <div class="mb-0">
+                  <label class="tp-label">Costo unitario ($) <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text tp-input-addon"><i class="bi bi-cash-stack"></i></span>
+                    <input type="number" class="form-control tp-input"
+                           [ngClass]="{'is-invalid': tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)}"
+                           placeholder="0.00" [(ngModel)]="tpForm.costo" min="0.01" step="0.01" />
+                  </div>
+                  <div *ngIf="tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)" class="tp-field-error">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>El costo debe ser mayor a 0
+                  </div>
+                </div>
+              </div>
+
+              <div class="tp-editor-shell__actions">
+                <button class="btn btn-success tp-btn-action tp-btn-action--primary" (click)="tpGuardar()">
+                  <i class="bi bi-{{ tpEditingId != null ? 'check2-circle' : 'save2-fill' }} me-2"></i>
+                  {{ tpEditingId != null ? 'Guardar cambios' : 'Crear tarea' }}
+                </button>
+                <button class="btn btn-outline-light tp-btn-action tp-btn-action--ghost" type="button" (click)="cerrarTpEditor()">
+                  <i class="bi bi-x-circle me-2"></i>Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- â”€â”€ Tareas Personalizadas Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+
 <div class="tp-backdrop" *ngIf="showTareasPersonalizadasPanel" (click)="toggleTareasPersonalizadasPanel()"></div>
 
 <div class="tp-modal" [class.tp-modal--open]="showTareasPersonalizadasPanel" role="dialog" aria-modal="true" *ngIf="showTareasPersonalizadasPanel">
@@ -127,7 +238,7 @@
                   <label class="tp-label">Nombre <span class="text-danger">*</span></label>
                   <input class="form-control tp-input"
                          [ngClass]="{'is-invalid': tpSubmitted && !tpForm.tarea.trim()}"
-                         placeholder="Ej: Instalación eléctrica"
+                         placeholder="Ej: Instalaci?n el?ctrica"
                          [(ngModel)]="tpForm.tarea" />
                   <div *ngIf="tpSubmitted && !tpForm.tarea.trim()" class="tp-field-error">
                     <i class="bi bi-exclamation-circle-fill me-1"></i>El nombre es obligatorio
@@ -154,7 +265,7 @@
                     <i class="bi bi-{{ tpEditingId != null ? 'check2-all' : 'plus-lg' }} me-1"></i>
                     {{ tpEditingId != null ? 'Actualizar' : 'Guardar tarea' }}
                   </button>
-                  <button *ngIf="tpEditingId != null" class="btn btn-outline-secondary tp-btn-action" (click)="tpCancelarEdicion()" title="Cancelar edición">
+                  <button *ngIf="tpEditingId != null" class="btn btn-outline-secondary tp-btn-action" (click)="tpCancelarEdicion()" title="Cancelar edici?n">
                     <i class="bi bi-x-lg"></i>
                   </button>
                 </div>
@@ -287,12 +398,12 @@
                   </div>
                   <div class="row g-3">
                     <div class="col-6">
-                      <label class="form-label">Tamaño (px)</label>
+                      <label class="form-label">TamaÃ±o (px)</label>
                       <input id="qrSizeRange" type="range" class="form-range" min="180" max="600" step="10" value="280" (input)="updateSizeLabel($event); actualizarQR()">
                       <div><small class="text-secondary">Actual: <span id="qrSizeOut">280</span> px</small></div>
                     </div>
                     <div class="col-6">
-                      <label class="form-label">Nivel de corrección</label>
+                      <label class="form-label">Nivel de correcciÃ³n</label>
                       <select id="qrEcLevel" class="form-select" (change)="actualizarQR()">
                         <option value="L">L (7%)</option>
                         <option value="M" selected>M (15%)</option>
@@ -393,7 +504,7 @@
                      <div class="col-12 d-flex gap-3 align-items-center">
                        <img id="qrLogoPreview" class="qr-logo-preview d-none" alt="logo" style="width: 40px; height: 40px; object-fit: contain;">
                        <div class="flex-grow-1">
-                         <label class="form-label mb-1">Tamaño del logo (%)</label>
+                         <label class="form-label mb-1">TamaÃ±o del logo (%)</label>
                          <input id="qrLogoSize" type="range" class="form-range" min="5" max="40" step="1" value="18" (input)="actualizarQR()">
                        </div>
                      </div>
@@ -429,41 +540,148 @@
   <div class="card-body">
     <div class="containerbuscar">
 
-      <div class="d-flex align-items-center justify-content-between mb-2" style="margin-top: 8px;">
-        <button type="button" class="btn btn-light btn-sm" (click)="toggleTareasPersonalizadasPanel()" aria-label="Mis tareas personalizadas" style="width: auto; min-height: 34px; padding: 5px 10px 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #d4edda; color: #1d68ff; box-shadow: 0 2px 6px rgba(25, 135, 84, 0.12); border-radius: 10px;">
+      <div class="d-flex align-items-center justify-content-end mb-2" style="margin-top: 8px;">
+        <!-- <button type="button" class="btn btn-light btn-sm" (click)="toggleTareasPersonalizadasPanel()" aria-label="Mis tareas personalizadas" style="width: auto; min-height: 34px; padding: 5px 10px 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #d4edda; color: #1d68ff; box-shadow: 0 2px 6px rgba(25, 135, 84, 0.12); border-radius: 10px;">
           <i class="bi bi-bookmarks"></i>Mis Tareas
-        </button>
-        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="Cómo usar el buscador" style="width: auto; min-height: 34px; padding: 5px 10px 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #cfe0ff; color: #1d68ff; box-shadow: 0 2px 6px rgba(29, 104, 255, 0.12); border-radius: 10px;">
-          <i class="fas fa-info"></i>cómo buscar
+        </button> -->
+        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="C?mo usar el buscador" style="width: auto; min-height: 34px; padding: 5px 10px 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #cfe0ff; color: #1d68ff; box-shadow: 0 2px 6px rgba(29, 104, 255, 0.12); border-radius: 10px;">
+          <i class="fas fa-info"></i>como buscar
         </button>
       </div>
-      <div class="inputGroup">
-      <input type="text" id="busqueda" required="" autocomplete="off" (input)="buscar($event)">
-      <label for="busqueda">Buscar tarea</label>
-      <span class="inputGroup__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="18" height="18" focusable="false" aria-hidden="true">
-          <path fill="#6c757d" d="M10.5 3a7.5 7.5 0 0 1 5.97 12.05l4.24 4.24-1.42 1.42-4.24-4.24A7.5 7.5 0 1 1 10.5 3zm0 2a5.5 5.5 0 1 0 0 11a5.5 5.5 0 0 0 0-11z"/>
-        </svg>
-      </span>
-    </div>
-    </div>
-    <p style="text-align: center;">Si no encuentras una tarea, selecciona TAREA GENERICA y edita su precio y descripción</p>
-    <div class="table-responsive">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th style="width:85%; min-width:120px;">Tarea</th>
-            <th style="width:15%; min-width:70px; text-align:right;">Costo/$</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let tarea of tareasFiltradas; let i = index" (click)="seleccionar(tarea)" class="hoverable-row" [ngClass]="{'lista-tareas-odd-row': i % 2 === 0, 'lista-tareas-even-row': i % 2 !== 0}">
-            <td style="width:85%; word-break:break-word; white-space:normal;">{{ tarea.tarea }}</td>
-            <td style="width:15%; text-align:right; word-break:break-word; white-space:normal;">{{ tarea.costo | currency:'USD':'symbol':'1.2-2' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <ul class="nav nav-tabs task-tabs mb-3" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a
+            class="nav-link"
+            href="#"
+            [class.active]="activeTaskTab === 'catalogo'"
+            [attr.aria-current]="activeTaskTab === 'catalogo' ? 'page' : null"
+            (click)="$event.preventDefault(); activeTaskTab = 'catalogo'">
+            <i class="bi bi-list-ul me-1"></i> Lista de tareas
+          </a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a
+            class="nav-link"
+            href="#"
+            [class.active]="activeTaskTab === 'personalizadas'"
+            [attr.aria-current]="activeTaskTab === 'personalizadas' ? 'page' : null"
+            (click)="$event.preventDefault(); activeTaskTab = 'personalizadas'">
+            <i class="bi bi-bookmarks me-1"></i> Tareas personalizadas
+            <span class="badge rounded-pill ms-2 task-tabs__badge">{{ tareasPersonalizadas.length }}</span>
+          </a>
+        </li>
+      </ul>
+      <div class="tab-content task-tabs__content">
+        <div class="tab-pane fade" [class.show]="activeTaskTab === 'catalogo'" [class.active]="activeTaskTab === 'catalogo'">
+          <div class="inputGroup">
+            <input type="text" id="busqueda" required="" autocomplete="off" (input)="buscar($event)">
+            <label for="busqueda">Buscar tarea</label>
+            <span class="inputGroup__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" focusable="false" aria-hidden="true">
+                <path fill="#6c757d" d="M10.5 3a7.5 7.5 0 0 1 5.97 12.05l4.24 4.24-1.42 1.42-4.24-4.24A7.5 7.5 0 1 1 10.5 3zm0 2a5.5 5.5 0 1 0 0 11a5.5 5.5 0 0 0 0-11z"/>
+              </svg>
+            </span>
+          </div>
+          <p style="text-align: center;">Si no encuentras una tarea, selecciona TAREA GENERICA y edita su precio y descripción</p>
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th style="width:85%; min-width:120px;">Tarea</th>
+                  <th style="width:15%; min-width:70px; text-align:right;">Costo/$</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let tarea of tareasFiltradas; let i = index" (click)="seleccionar(tarea)" class="hoverable-row" [ngClass]="{'lista-tareas-odd-row': i % 2 === 0, 'lista-tareas-even-row': i % 2 !== 0}">
+                  <td style="width:85%; word-break:break-word; white-space:normal;">{{ tarea.tarea }}</td>
+                  <td style="width:15%; text-align:right; word-break:break-word; white-space:normal;">{{ tarea.costo | currency:'USD':'symbol':'1.2-2' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tab-pane fade" [class.show]="activeTaskTab === 'personalizadas'" [class.active]="activeTaskTab === 'personalizadas'">
+          <div class="tp-inline-panel">
+            <div class="tp-hero">
+              <div class="tp-hero__copy">
+                <span class="tp-hero__eyebrow"><i class="bi bi-stars me-2"></i>Gestión personalizada</span>
+                <h3 class="tp-hero__title">Tus tareas, listas para cotizar</h3>
+                <p class="tp-hero__text">Organizá tus tareas frecuentes, editá valores rápido y agrégalas al presupuesto con un toque.</p>
+              </div>
+              <button class="tp-hero__cta" type="button" (click)="abrirTpEditor()">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Nueva tarea</span>
+              </button>
+            </div>
+
+            <div class="tp-toolbar">
+              <div class="inputGroup tp-toolbar__search">
+                <input type="text" id="busquedaPersonalizada" required="" autocomplete="off" [(ngModel)]="tpBusquedaPersonalizada">
+                <label for="busquedaPersonalizada">Buscar tarea personalizada</label>
+                <span class="inputGroup__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" focusable="false" aria-hidden="true">
+                    <path fill="#6c757d" d="M10.5 3a7.5 7.5 0 0 1 5.97 12.05l4.24 4.24-1.42 1.42-4.24-4.24A7.5 7.5 0 1 1 10.5 3zm0 2a5.5 5.5 0 1 0 0 11a5.5 5.5 0 0 0 0-11z"/>
+                  </svg>
+                </span>
+              </div>
+              <div class="tp-toolbar__actions">
+                <button type="button" class="tp-toolbar__toggle" (click)="tpMostrarImportar = !tpMostrarImportar">
+                  <span class="tp-toolbar__toggle-icon" aria-hidden="true">
+                    <i class="bi bi-collection"></i>
+                  </span>
+                  <span class="tp-toolbar__toggle-text">
+                    <!--small>Acción rápida</small-->
+                    <strong>Importar del catálogo</strong>
+                  </span>
+                  <span class="tp-toolbar__toggle-arrow" aria-hidden="true">
+                    <i class="bi" [ngClass]="tpMostrarImportar ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="tareasPersonalizadas.length === 0" class="tp-empty-state tp-empty-state--hero">
+              <i class="bi bi-bookmark-heart tp-empty-state__icon"></i>
+              <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea desde el botón superior.</p>
+            </div>
+
+            <div *ngIf="tareasPersonalizadas.length > 0 && tareasPersonalizadasFiltradas.length === 0" class="tp-empty-state tp-empty-state--compact">
+              <i class="bi bi-search tp-empty-state__icon"></i>
+              <p class="tp-empty-state__text">No hay tareas personalizadas que coincidan con tu b?squeda.</p>
+            </div>
+
+            <div class="tp-list-shell" *ngIf="tareasPersonalizadasFiltradas.length > 0">
+            <div class="tp-card-grid">
+              <div *ngFor="let tp of tareasPersonalizadasFiltradas" class="tp-card tp-card--wide" [class.tp-card--editing]="tpEditingId === tp.id">
+                <div class="tp-card__accent"></div>
+                <div class="tp-card__content">
+                  <div class="tp-card__top">
+                    <div class="tp-card__heading">
+                      <span class="tp-card__name">{{ tp.tarea }}</span>
+                      <span class="tp-card__tag"><i class="bi bi-bookmark-check-fill me-1"></i>Personalizada</span>
+                    </div>
+                    <span class="tp-card__cost">{{ tp.costo | currency:'USD':'symbol':'1.2-2' }}</span>
+                  </div>
+                  <p *ngIf="tp.descripcion" class="tp-card__desc">{{ tp.descripcion }}</p>
+                  <p *ngIf="!tp.descripcion" class="tp-card__desc tp-card__desc--muted">Sin descripción adicional.</p>
+                  <div class="tp-card__actions">
+                    <button class="tp-card__action tp-card__action--add" title="Agregar al presupuesto" (click)="tpAgregarAlPresupuesto(tp)">
+                      <i class="bi bi-plus-circle-fill"></i><span>Agregar</span>
+                    </button>
+                    <button class="tp-card__action tp-card__action--edit" title="Editar" (click)="tpEditar(tp)">
+                      <i class="bi bi-pencil-square"></i><span>Editar</span>
+                    </button>
+                    <button class="tp-card__action tp-card__action--delete" title="Eliminar" (click)="tpEliminar(tp)">
+                      <i class="bi bi-trash3-fill"></i><span>Eliminar</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
     <div class="row mt-4">
       <div class="w-100 d-flex justify-content-center align-items-center mb-2" style="gap: 8px;">
@@ -541,10 +759,10 @@
               <th class="text-center">Acciones</th>
               <th class="text-center">Tarea</th>
               <!--th-- class="text-center">Rubro</!--th-->
-              <!--th-- class="text-center">Categorï¿½ï¿½a</!--th-->
-              <!--th class="text-center">Descripciï¿½ï¿½n</!--th-->
-              <!--th-- class="text-center">ï¿½?rea (mï¿½ï¿½/mï¿½ï¿½)</!--th-->
-              <th class="text-center">Área (m²/m³)</th>
+              <!--th-- class="text-center">CategorÃ¯Â¿Â½Ã¯Â¿Â½a</!--th-->
+              <!--th class="text-center">DescripciÃ¯Â¿Â½Ã¯Â¿Â½n</!--th-->
+              <!--th-- class="text-center">Ã¯Â¿Â½?rea (mÃ¯Â¿Â½Ã¯Â¿Â½/mÃ¯Â¿Â½Ã¯Â¿Â½)</!--th-->
+              <th class="text-center">Ãrea (mÂ²/mÂ³)</th>
               <th class="text-center">Costo</th>
               <th class="text-center">Total</th>
             </tr>
@@ -575,7 +793,7 @@
     </div>
 
       <div *ngIf="tareasTotalPages > 1" class="tareas-panel__pagination">
-        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === 1" (click)="tareasPrevPage()" aria-label="Página anterior">
+        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === 1" (click)="tareasPrevPage()" aria-label="PÃ¡gina anterior">
           &#8249;
         </button>
         <span class="tareas-panel__pag-info">
@@ -583,7 +801,7 @@
           <span class="tareas-panel__pag-sep">/</span>
           <span class="tareas-panel__pag-total">{{ tareasTotalPages }}</span>
         </span>
-        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === tareasTotalPages" (click)="tareasNextPage()" aria-label="Página siguiente">
+        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === tareasTotalPages" (click)="tareasNextPage()" aria-label="PÃ¡gina siguiente">
           &#8250;
         </button>
       </div>
@@ -649,7 +867,7 @@
                 <input type="text" [(ngModel)]="tareaSeleccionada.rubro" name="rubro" class="form-control" id="rubro" readonly>
               </div-->
               <!--div-- class="mb-3">
-                <label for="categoria" class="col-form-label">Categoría:</label>
+                <label for="categoria" class="col-form-label">CategorÃ­a:</label>
                 <input type="text" [(ngModel)]="tareaSeleccionada.categoria" name="categoria" class="form-control" id="categoria" readonly>
               </!div-->
               <div class="row mb-3">
@@ -674,7 +892,7 @@
               <div class="modal-footer d-flex" style="gap: 8px;">
                 <!--button-- type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</!button-->
                 <button type="button" class="btn btn-outline-primary" (click)="abrirHistorialDesdeModal()">
-                  <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>ÚLTIMAS TAREAS
+                  <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>ÃšLTIMAS TAREAS
                 </button>
                 <button type="button" (click)="agregarTarea()" class="btn btn-primary flex-grow-1" data-bs-dismiss="modal">Agregar</button>
                 <!--button-- type="button" *ngIf="tareaSeleccionada.id" (click)="actualizarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Actualizar</!--button-->
@@ -708,12 +926,12 @@
           </div>
           <div class="form-group mb-3 coolinput">
             <label for="contact" class="text">Contacto:</label>
-            <input type="text" class="form-control input" id="contact" name="clientContact" [(ngModel)]="clientContact" required pattern="\+?\d{7,15}" placeholder="Teléfono" #contact="ngModel">
+            <input type="text" class="form-control input" id="contact" name="clientContact" [(ngModel)]="clientContact" required pattern="\+?\d{7,15}" placeholder="TelÃ©fono" #contact="ngModel">
             @if (contact.touched && contact.errors?.['required']) {
               <div class="text-danger">El contacto es obligatorio.</div>
             }
             @if (contact.touched && contact.errors?.['pattern']) {
-              <div class="text-danger">El contacto debe ser un número de teléfono válido (7-15 dígitos, puede incluir +).</div>
+              <div class="text-danger">El contacto debe ser un nÃºmero de telÃ©fono vÃ¡lido (7-15 dÃ­gitos, puede incluir +).</div>
             }
           </div>
           <div class="form-group mb-3 coolinput">
@@ -723,7 +941,7 @@
               <div class="text-danger">El email es obligatorio.</div>
             }
             @if (email.touched && email.errors?.['email']) {
-              <div class="text-danger">El email debe tener un formato válido.</div>
+              <div class="text-danger">El email debe tener un formato vÃ¡lido.</div>
             }
           </div>
           <div class="form-group mb-3 coolinput">
@@ -736,12 +954,12 @@
           </div>
           <div class="form-group mb-3 coolinput">
             <label for="direccion" class="text">Direccion:</label>
-            <input type="text" class="form-control input" id="direccion" name="clientDireccion" [(ngModel)]="clientDireccion" required minlength="5" placeholder="Dirección" #direccion="ngModel">
+            <input type="text" class="form-control input" id="direccion" name="clientDireccion" [(ngModel)]="clientDireccion" required minlength="5" placeholder="DirecciÃ³n" #direccion="ngModel">
             @if (direccion.touched && direccion.errors?.['required']) {
-              <div class="text-danger">La dirección es obligatoria.</div>
+              <div class="text-danger">La direcciÃ³n es obligatoria.</div>
             }
             @if (direccion.touched && direccion.errors?.['minlength']) {
-              <div class="text-danger">La dirección debe tener al menos 5 caracteres.</div>
+              <div class="text-danger">La direcciÃ³n debe tener al menos 5 caracteres.</div>
             }
           </div>
           <div class="form-group mb-3 coolinput">
@@ -771,75 +989,6 @@
 
 
 
-<!--div-- class="modal fade" id="listaClientesModal" aria-hidden="true" aria-labelledby="listaClientesLabel" tabindex="-1" (shown.bs.modal)="getClientesByUserCode()">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content dash-modal">
-      <div class="modal-header">
-        <h5 class="modal-title" id="listaClientesLabel">Lista de Clientes Asociados</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="table-responsive">
-          <table class="table table-striped table-bordered table-hover table-sm">
-            <thead class="table-light">
-              <tr>
-                <th scope="col">Nombre</th>
-                <th scope="col">Contacto</th>
-                <th scope="col">Email</th>
-                <th scope="col">CUIT/Clave</th>
-                <th scope="col">Dirección</th>
-                <th scope="col">Fecha</th>
-                <th scope="col">Detalles</th>
-                <th scope="col">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let cliente of paginatedClientes">
-                <td>{{ cliente.name }}</td>
-                <td>{{ cliente.contact }}</td>
-                <td>{{ cliente.email }}</td>
-                <td>{{ cliente.clave }}</td>
-                <td>{{ cliente.direccion }}</td>
-                <td>{{ cliente.budgetDate }}</td>
-                <td>{{ cliente.additionalDetails }}</td>
-                <td>
-                  <div class="d-flex gap-2">
-                    <button class="btn btn-danger btn-sm" (click)="cliente.id && solicitarConfirmacionEliminar(cliente.id)">Eliminar</button>
-                    <button class="btn btn-success btn-sm" *ngIf="cliente.id !== undefined" (click)="editarCliente(cliente.id)">Editar</button>
-                  </div>
-                </td>
-              </tr>
-              <tr *ngIf="paginatedClientes.length === 0">
-                <td colspan="8" class="text-center">No hay clientes asociados a este userCode.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <nav aria-label="Paginación de clientes" *ngIf="clientes.length > itemsPerPage">
-          <ul class="pagination justify-content-center flex-wrap">
-            <li class="page-item" [class.disabled]="currentPage === 1">
-              <a class="page-link" (click)="previousPage()" aria-label="Anterior">
-                <span aria-hidden="true">&laquo;</span>
-              </a>
-            </li>
-            <li class="page-item" *ngFor="let page of getPages()" [class.active]="currentPage === page">
-              <a class="page-link" (click)="setPage(page)">{{ page }}</a>
-            </li>
-            <li class="page-item" [class.disabled]="currentPage === totalPages">
-              <a class="page-link" (click)="nextPage()" aria-label="Siguiente">
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</!--div-->
 
 
 
@@ -888,7 +1037,7 @@
                   <p class="card-text mb-1"><strong>Tel:</strong> {{ cliente.contact }}</p>
                   <p class="card-text mb-1"><strong>Email:</strong> {{ cliente.email }}</p>
                   <p class="card-text mb-1"><strong>CUIT/Clave:</strong> {{ cliente.clave }}</p>
-                  <p class="card-text mb-1"><strong>Dirección:</strong> {{ cliente.direccion }}</p>
+                  <p class="card-text mb-1"><strong>DirecciÃ³n:</strong> {{ cliente.direccion }}</p>
                   <p class="card-text mb-1"><strong>Fecha:</strong> {{ cliente.budgetDate }}</p>
                   <p class="card-text mb-2"><strong>Detalles:</strong> {{ cliente.additionalDetails }}</p>
                   <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
@@ -903,8 +1052,8 @@
             </div>
           </div>
         </div>
-        <!-- Controles de paginación -->
-        <nav aria-label="Paginación de clientes" *ngIf="clientes.length > itemsPerPage">
+        <!-- Controles de paginaciÃ³n -->
+        <nav aria-label="PaginaciÃ³n de clientes" *ngIf="clientes.length > itemsPerPage">
           <ul class="pagination justify-content-center flex-wrap">
             <li class="page-item" [class.disabled]="currentPage === 1">
               <a class="page-link" (click)="previousPage()" aria-label="Anterior">
@@ -941,18 +1090,18 @@
       </div>
       <div class="modal-body">
         <p style="text-align: center; font-size: 12px;">
-          Podés editar estos datos las veces que quieras.
+          PodÃ©s editar estos datos las veces que quieras.
         </p>
         <div class="row g-2 align-items-end mb-3">
           <div class="col coolinput">
             <label for="empresaName" class="text">Tu Empresa/nombre personal</label>
-            <input type="text" class="form-control input" id="empresaName" [(ngModel)]="empresaName" placeholder="¿Cómo se llama?">
+            <input type="text" class="form-control input" id="empresaName" [(ngModel)]="empresaName" placeholder="Â¿CÃ³mo se llama?">
           </div>
 
         </div>
         <div class="form-group mb-3 coolinput">
           <label for="empresaPhone" class="text">Tel:</label>
-          <input type="text" class="form-control input" id="empresaPhone" [(ngModel)]="empresaPhone" placeholder="Teléfono de tu empresa">
+          <input type="text" class="form-control input" id="empresaPhone" [(ngModel)]="empresaPhone" placeholder="TelÃ©fono de tu empresa">
         </div>
         <div class="form-group mb-3 coolinput">
           <label for="empresaEmail" class="text">Email:</label>
@@ -960,7 +1109,7 @@
         </div>
         <div class="form-group mb-3 coolinput">
           <label for="additionalDetailsempresa" class="text">Descripcion:</label>
-          <textarea class="form-control input" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de qué se trata tu empresa"></textarea>
+          <textarea class="form-control input" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de quÃ© se trata tu empresa"></textarea>
         </div>
         <div class="form-group mb-3 coolinput">
           <label for="empresaCuilCuit" class="text">CUIL/CUIT (opcional)</label>
@@ -1081,7 +1230,7 @@
 
       <p class="card-text mb-1"><strong>Tel:</strong> {{ empresa.phone }}</p>
       <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
-      <p class="card-text mb-1"><strong>Descripción:</strong> {{ empresa.description }}</p>
+      <p class="card-text mb-1"><strong>DescripciÃ³n:</strong> {{ empresa.description }}</p>
 
       <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
         <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action"
@@ -1106,8 +1255,8 @@
             </div>
           </div>
         </div>
-        <!-- Controles de paginación -->
-        <nav aria-label="Paginación de empresas" *ngIf="empresas.length > itemsPerPageEmpresas">
+        <!-- Controles de paginaciÃ³n -->
+        <nav aria-label="PaginaciÃ³n de empresas" *ngIf="empresas.length > itemsPerPageEmpresas">
           <ul class="pagination justify-content-center flex-wrap">
             <li class="page-item" [class.disabled]="currentEmpresaPage === 1">
               <a class="page-link" (click)="previousEmpresaPage()" aria-label="Anterior">
@@ -1131,9 +1280,9 @@
             <thead class="table-light">
               <tr>
                 <th scope="col">Nombre</th>
-                <th scope="col">Teléfono</th>
+                <th scope="col">TelÃ©fono</th>
                 <th scope="col">Email</th>
-                <th scope="col">Descripción</th>
+                <th scope="col">DescripciÃ³n</th>
                 <th scope="col">Logo</th>
                 <th scope="col">Acciones</th>
               </tr>
@@ -1264,7 +1413,7 @@
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content dash-modal">
       <div class="modal-header">
-        <h5 class="modal-title" id="weatherModalLabel">Próximos 5 días</h5>
+        <h5 class="modal-title" id="weatherModalLabel">PrÃ³ximos 5 dÃ­as</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
@@ -1275,8 +1424,8 @@
                 <div class="fw-bold">{{ day.date | date:'EEEE d MMM' }}</div>
                 <div class="text-muted small">{{ weatherDescription(day.code) }}</div>
                 <div class="d-flex justify-content-between align-items-center mt-3">
-                  <span class="text-primary fw-bold">Máx: {{ day.max | number:'1.0-0' }}°C</span>
-                  <span class="text-secondary">Mín: {{ day.min | number:'1.0-0' }}°C</span>
+                  <span class="text-primary fw-bold">MÃ¡x: {{ day.max | number:'1.0-0' }}Â°C</span>
+                  <span class="text-secondary">MÃ­n: {{ day.min | number:'1.0-0' }}Â°C</span>
                 </div>
               </div>
             </div>
@@ -1303,7 +1452,7 @@
       </div>
       <div class="modal-body" style="text-align: center;">
         <div id="imageCircle" style="display: flex; justify-content: center;">
-          <img #modalImagePreview class="img-fluid" src="#" alt="Previsualización de la imagen" style="display: none; width: 80%; height: 80%;">
+          <img #modalImagePreview class="img-fluid" src="#" alt="PrevisualizaciÃ³n de la imagen" style="display: none; width: 80%; height: 80%;">
         </div>
         <p #uploadMessage style="margin-top: 10px; color: rgb(6, 113, 254); display: none;">Imagen subida</p>
         <input type="file" #imageInput accept="image/*" class="form-control" style="margin-top: 10px;" (change)="onImageChange($event)">
@@ -1328,7 +1477,7 @@
           </div>
           <div class="modal-body">
             <h6 id="zonaBloqueadaMensaje" class="text-danger mt-2" style="display: block;">
-              Esta función solo se activa con código de acceso.
+              Esta funciÃ³n solo se activa con cÃ³digo de acceso.
             </h6>
 
             <select class="form-select" id="provinciaSelect" [(ngModel)]="provinciaSeleccionada" name="provinciaSeleccionada">
@@ -1336,19 +1485,19 @@
               <option *ngFor="let provincia of provincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
             </select>
 
-            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el país seleccionado.</div>
+            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el paÃ­s seleccionado.</div>
 
             <div class="mt-3">
               <h6 class="modal-zona-title">valor sugerido de mano de obra pura sin cargas sociales</h6>
               <hr>
               <div class="modal-zona-card">
                 <span class="modal-zona-label">Zona 1:</span>
-                Buenos Aires, Santa Fe, Mendoza, Córdoba, Tucumán, Salta, Jujuy, Entre Ríos, Corrientes, Formosa,
+                Buenos Aires, Santa Fe, Mendoza, CÃ³rdoba, TucumÃ¡n, Salta, Jujuy, Entre RÃ­os, Corrientes, Formosa,
                 La Pampa, San Luis, La Rioja, Santiago del Estero, Chaco, Misiones, Catamarca, San Juan.
               </div>
               <div class="modal-zona-card">
                 <span class="modal-zona-label">Zona 2:</span>
-                Neuquén, Río Negro, Chubut.
+                NeuquÃ©n, RÃ­o Negro, Chubut.
               </div>
               <div class="modal-zona-card">
                 <span class="modal-zona-label">Zona 3:</span>
@@ -1376,7 +1525,7 @@
     <div class="modal-content modal-zona" style="border-radius: 14px;">
       <div class="modal-header">
         <div class="modal-title" id="recentTasksModalLabel">
-          <h5 style="margin-bottom: 0;"><i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>Últimas tareas cotizadas</h5>
+          <h5 style="margin-bottom: 0;"><i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>Ãšltimas tareas cotizadas</h5>
           <div style="font-size: 10px; color: #4b5563; font-weight: normal; margin-top: 2px;">
             toca "AGREGAR" para cargar la tarea y editarla
           </div>
@@ -1386,7 +1535,7 @@
       <div class="modal-body" style="max-height: 400px; overflow-y: auto; padding: 12px;">
         <div *ngIf="recentTasks.length === 0" class="text-center py-4">
           <i class="fas fa-info-circle text-muted mb-2" style="font-size: 24px;"></i>
-          <p class="text-muted">No tenés tareas recientes en este dispositivo.</p>
+          <p class="text-muted">No tenÃ©s tareas recientes en este dispositivo.</p>
         </div>
 
         <div class="row g-2">
@@ -1398,7 +1547,7 @@
                   <span class="badge bg-light text-dark" style="font-size: 10px;">${{ rt.costo | number:'1.0-0' }}</span>
                 </div>
                 <p class="card-text text-muted mb-3" style="font-size: 12px; line-height: 1.4;">
-                  {{ rt.descripcion || 'Sin descripción adicional' }}
+                  {{ rt.descripcion || 'Sin descripciÃ³n adicional' }}
                 </p>
                 <div class="d-flex justify-content-between align-items-center">
                    <div style="font-size: 10px; color: #9ca3af;">
@@ -1427,15 +1576,15 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content" style="border-radius: 14px; border: 1px solid rgba(64,158,255,.2);">
       <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6);">
-        <h5 class="modal-title" id="buscadorInfoModalLabel">Cómo usar el buscador</h5>
+        <h5 class="modal-title" id="buscadorInfoModalLabel">CÃ³mo usar el buscador</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body" style="background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); font-size: 12px;">
-        <p class="mb-2"><i class="fas fa-search mr-2 text-primary"></i> Podés buscar por palabras sueltas (ej: <em>colocacion puerta</em>).</p>
-        <p class="mb-2"><i class="fas fa-font mr-2 text-primary"></i> Ya funciona aunque escribas con acentos (ej: <em>medición</em> encuentra <em>medicion</em>).</p>
-        <p class="mb-2"><i class="fas fa-puzzle-piece mr-2 text-primary"></i> Podés buscar por fragmentos de palabras (ej: <em>coloc puert</em> para <em>colocación de puerta</em>).</p>
-        <p class="mb-2"><i class="fas fa-lightbulb mr-2 text-primary"></i> Probá con una palabra más general si no aparece exacto (ej: <em>caldera</em>, <em>zócalo</em>, <em>tablero</em>).</p>
-        <p class="mb-0"><i class="fas fa-plus-circle mr-2 text-primary"></i> Si no encontrás una tarea, usá <em>TAREA GENERICA</em> y completá descripción y precio.</p>
+        <p class="mb-2"><i class="fas fa-search mr-2 text-primary"></i> PodÃ©s buscar por palabras sueltas (ej: <em>colocacion puerta</em>).</p>
+        <p class="mb-2"><i class="fas fa-font mr-2 text-primary"></i> Ya funciona aunque escribas con acentos (ej: <em>mediciÃ³n</em> encuentra <em>medicion</em>).</p>
+        <p class="mb-2"><i class="fas fa-puzzle-piece mr-2 text-primary"></i> PodÃ©s buscar por fragmentos de palabras (ej: <em>coloc puert</em> para <em>colocaciÃ³n de puerta</em>).</p>
+        <p class="mb-2"><i class="fas fa-lightbulb mr-2 text-primary"></i> ProbÃ¡ con una palabra mÃ¡s general si no aparece exacto (ej: <em>caldera</em>, <em>zÃ³calo</em>, <em>tablero</em>).</p>
+        <p class="mb-0"><i class="fas fa-plus-circle mr-2 text-primary"></i> Si no encontrÃ¡s una tarea, usÃ¡ <em>TAREA GENERICA</em> y completÃ¡ descripciÃ³n y precio.</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
@@ -1454,15 +1603,15 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body" style="padding: 14px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9);">
-        <p style="margin-bottom: 10px; color:#4b5563; font-size: 13px;">Ajustá precios y tamaño de texto de la lista de tareas.</p>
+        <p style="margin-bottom: 10px; color:#4b5563; font-size: 13px;">AjustÃ¡ precios y tamaÃ±o de texto de la lista de tareas.</p>
         <div style="margin-bottom: 10px; background: rgba(103,165,246,.08); border: 1px solid rgba(64,158,255,.16); border-radius: 10px; padding: 10px;">
           <div style="font-size: 12px; color:#0b69a6; font-weight:700; margin-bottom: 4px;">
-            <i class="fas fa-key" aria-hidden="true" style="margin-right: 6px;"></i>Código de acceso
+            <i class="fas fa-key" aria-hidden="true" style="margin-right: 6px;"></i>CÃ³digo de acceso
           </div>
           <div id="ajustesListaCodigoAcceso" style="font-size: 20px; color:#1f2937; word-break: break-all;">No disponible</div>
         </div>
         <p style="font-size: 11px; color: #6b7280; margin-top: -5px; margin-bottom: 15px; padding-left: 5px;">
-          <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 4px;"></i> recibirás un whatapps para renovar tu acceso el día de vencimiento
+          <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 4px;"></i> recibirÃ¡s un whatapps para renovar tu acceso el dÃ­a de vencimiento
         </p>
         <button type="button" class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#faqModalAjustes" data-bs-dismiss="modal">
           PREGUNTAS FRECUENTES
@@ -1475,19 +1624,19 @@
         <div class="form-group mb-3" style="background: rgba(103,165,246,.08); border: 1px solid rgba(64,158,255,.16); border-radius: 10px; padding: 10px;">
           <input type="range" id="fontSizeListaRange" class="form-range" min="10" max="24" step="1" value="12">
           <div style="font-size: 12px; color:#4b5563;">
-            Tamaño actual: <strong id="fontSizeListaValue">12px</strong>
+            TamaÃ±o actual: <strong id="fontSizeListaValue">12px</strong>
           </div>
         </div>
 
         <button type="button" class="btn btn-outline-info w-100 mb-2" (click)="showAjustesListaInfo = !showAjustesListaInfo">
-          <i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 6px;"></i>Cómo usar subir/bajar lista
+          <i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 6px;"></i>CÃ³mo usar subir/bajar lista
         </button>
 
         <div class="collapse mb-3" [class.show]="showAjustesListaInfo" id="ajustesListaInfoCollapse">
           <div style="background: rgba(64,158,255,.09); border: 1px solid rgba(64,158,255,.22); border-radius: 10px; padding: 10px; font-size: 12px; color:#374151;">
-            <p style="margin-bottom: 8px;"><strong>Dinámica:</strong> escribí un porcentaje y tocá <strong>SUBIR</strong> para aumentar toda la lista, o <strong>BAJAR</strong> para reducirla. El ajuste se aplica de forma general a todos los ítems de la tabla.</p>
-            <p style="margin-bottom: 8px;"><strong>Ejemplos rápidos:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
-            <p style="margin-bottom: 0;"><strong>Beneficio para el constructor:</strong> te permite adaptar presupuestos en segundos según zona, complejidad, urgencia o variación de costos, sin editar tarea por tarea. Si querés volver al valor base, usá <strong>Reestablecer valor original de lista</strong>.</p>
+            <p style="margin-bottom: 8px;"><strong>DinÃ¡mica:</strong> escribÃ­ un porcentaje y tocÃ¡ <strong>SUBIR</strong> para aumentar toda la lista, o <strong>BAJAR</strong> para reducirla. El ajuste se aplica de forma general a todos los Ã­tems de la tabla.</p>
+            <p style="margin-bottom: 8px;"><strong>Ejemplos rÃ¡pidos:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
+            <p style="margin-bottom: 0;"><strong>Beneficio para el constructor:</strong> te permite adaptar presupuestos en segundos segÃºn zona, complejidad, urgencia o variaciÃ³n de costos, sin editar tarea por tarea. Si querÃ©s volver al valor base, usÃ¡ <strong>Reestablecer valor original de lista</strong>.</p>
           </div>
         </div>
 
@@ -1535,12 +1684,12 @@
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
             <h2 class="accordion-header" id="faq1">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
-                <i class="fas fa-percent" style="margin-right: 8px;"></i>¿Cómo funciona subir o bajar los precios de la lista?
+                <i class="fas fa-percent" style="margin-right: 8px;"></i>Â¿CÃ³mo funciona subir o bajar los precios de la lista?
               </button>
             </h2>
             <div id="faq1Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
-                <p>Escribí un porcentaje en el campo correspondiente y tocá <strong>SUBIR</strong> para aumentar todos los precios de la lista, o <strong>BAJAR</strong> para reducirlos. El ajuste se aplica de forma general a todos los ítems.</p>
+                <p>EscribÃ­ un porcentaje en el campo correspondiente y tocÃ¡ <strong>SUBIR</strong> para aumentar todos los precios de la lista, o <strong>BAJAR</strong> para reducirlos. El ajuste se aplica de forma general a todos los Ã­tems.</p>
                 <p style="margin-bottom:0;"><strong>Ejemplo:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
               </div>
             </div>
@@ -1549,12 +1698,12 @@
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
             <h2 class="accordion-header" id="faq2">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
-                <i class="fas fa-undo-alt" style="margin-right: 8px;"></i>¿Cómo restablezco los precios originales?
+                <i class="fas fa-undo-alt" style="margin-right: 8px;"></i>Â¿CÃ³mo restablezco los precios originales?
               </button>
             </h2>
             <div id="faq2Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
-                <p style="margin-bottom:0;">Usá el botón <strong>"Reestablecer valor original de lista"</strong>. Esto recarga los precios desde el servidor, deshaciendo cualquier ajuste porcentual que hayas aplicado.</p>
+                <p style="margin-bottom:0;">UsÃ¡ el botÃ³n <strong>"Reestablecer valor original de lista"</strong>. Esto recarga los precios desde el servidor, deshaciendo cualquier ajuste porcentual que hayas aplicado.</p>
               </div>
             </div>
           </div>
@@ -1562,12 +1711,12 @@
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
             <h2 class="accordion-header" id="faq3">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
-                <i class="fas fa-text-height" style="margin-right: 8px;"></i>¿Para qué sirve el control de tamaño de texto?
+                <i class="fas fa-text-height" style="margin-right: 8px;"></i>Â¿Para quÃ© sirve el control de tamaÃ±o de texto?
               </button>
             </h2>
             <div id="faq3Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
-                <p style="margin-bottom:0;">El slider ajusta el tamaño de la fuente de la tabla de tareas. Útil para ver más ítems en pantalla (texto más chico) o para mejorar la legibilidad en dispositivos grandes (texto más grande).</p>
+                <p style="margin-bottom:0;">El slider ajusta el tamaÃ±o de la fuente de la tabla de tareas. Ãštil para ver mÃ¡s Ã­tems en pantalla (texto mÃ¡s chico) o para mejorar la legibilidad en dispositivos grandes (texto mÃ¡s grande).</p>
               </div>
             </div>
           </div>
@@ -1575,12 +1724,12 @@
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
             <h2 class="accordion-header" id="faq4">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
-                <i class="fas fa-key" style="margin-right: 8px;"></i>¿Qué es el Código de Acceso?
+                <i class="fas fa-key" style="margin-right: 8px;"></i>Â¿QuÃ© es el CÃ³digo de Acceso?
               </button>
             </h2>
             <div id="faq4Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
-                <p style="margin-bottom:0;">Es tu identificador único en el sistema. Lo usás para ingresar a la aplicación y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro. Antes del vencimiento recibirás un WhatsApp para renovarlo.</p>
+                <p style="margin-bottom:0;">Es tu identificador Ãºnico en el sistema. Lo usÃ¡s para ingresar a la aplicaciÃ³n y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro. Antes del vencimiento recibirÃ¡s un WhatsApp para renovarlo.</p>
               </div>
             </div>
           </div>
@@ -1588,12 +1737,12 @@
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 0; border: 1px solid rgba(64,158,255,.2);">
             <h2 class="accordion-header" id="faq5">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
-                <i class="fas fa-save" style="margin-right: 8px;"></i>¿Los cambios en los precios se guardan permanentemente?
+                <i class="fas fa-save" style="margin-right: 8px;"></i>Â¿Los cambios en los precios se guardan permanentemente?
               </button>
             </h2>
             <div id="faq5Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
-                <p style="margin-bottom:0;">Sí, los cambios se guardan en tu lista de tareas activa. Si querés volver a los precios base, usá <strong>"Reestablecer valor original de lista"</strong>. Los precios de la tabla de referencia (buscador) nunca se modifican.</p>
+                <p style="margin-bottom:0;">SÃ­, los cambios se guardan en tu lista de tareas activa. Si querÃ©s volver a los precios base, usÃ¡ <strong>"Reestablecer valor original de lista"</strong>. Los precios de la tabla de referencia (buscador) nunca se modifican.</p>
               </div>
             </div>
           </div>
@@ -1633,7 +1782,7 @@
               </div>
             </div>
 
-            <!-- Sección Gradient -->
+            <!-- SecciÃ³n Gradient -->
             <div class="p-2 mb-3 border rounded bg-light">
               <label class="form-label small fw-bold text-primary mb-2">Fondo (Gradiente)</label>
               <div class="row g-2">
@@ -1646,12 +1795,12 @@
                   <input type="color" class="form-control form-control-color w-100" [(ngModel)]="presupuestoColorSecundario2">
                 </div>
                 <div class="col-12">
-                  <label class="x-small mb-1">Dirección</label>
+                  <label class="x-small mb-1">DirecciÃ³n</label>
                   <select class="form-select form-select-sm" [(ngModel)]="presupuestoGradienteAngulo">
-                    <option value="to bottom">Abajo ↓</option>
-                    <option value="to top">Arriba ↑</option>
-                    <option value="to right">Derecha →</option>
-                    <option value="to left">Izquierda ←</option>
+                    <option value="to bottom">Abajo â†“</option>
+                    <option value="to top">Arriba â†‘</option>
+                    <option value="to right">Derecha â†’</option>
+                    <option value="to left">Izquierda â†</option>
                   </select>
                 </div>
               </div>
@@ -1760,7 +1909,7 @@
               </div>
               <!-- Professional Watermark -->
               <div style="position: absolute; bottom: 5px; right: 8px; font-size: 8px; opacity: 0.3;">
-                METRO - Software de Cotización
+                METRO - Software de CotizaciÃ³n
               </div>
             </div>
           </div>
@@ -1776,3 +1925,5 @@
     </div>
   </div>
 </div>
+
+
