@@ -263,6 +263,8 @@
 .pg-modal__body {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding: 22px 22px 8px;
   display: flex;
   flex-direction: column;
@@ -322,7 +324,6 @@
 .pg-section {
   border: 1px solid #e5e9f2;
   border-radius: 14px;
-  overflow: hidden;
 }
 
 .pg-section--add {
@@ -363,8 +364,10 @@
 .pg-tareas-list {
   display: flex;
   flex-direction: column;
-  max-height: 220px;
+  max-height: 280px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding: 6px 8px;
   gap: 4px;
 

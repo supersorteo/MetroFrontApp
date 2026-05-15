@@ -20,7 +20,7 @@ import { PresupuestosGuardadosComponent } from '../presupuestos-guardados/presup
 
 import { firstValueFrom } from 'rxjs';
 //import { SavedPresupuesto } from '../../servicios/budget-storage.service';
-import { SavedPresupuesto } from '../../servicios/budget.service';
+import { BudgetService, SavedPresupuesto } from '../../servicios/budget.service';
 import { OfflineSyncService, PendingSyncSummary } from '../../servicios/offline-sync.service';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
 import { EmpresaStore } from '../../stores/empresa.store';
@@ -444,7 +444,7 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
     const modal = bootstrap.Modal.getInstance(document.getElementById('clientModal'));
     modal?.hide();
     this.isSavingClient = false;
-    this.appToast.success(message);
+    this.uiDialog.success({ title: 'Cliente guardado', text: message });
   }
 
   private applySavedCliente(cliente: Cliente): void {
@@ -718,7 +718,8 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private localStore: OfflineLocalStoreService,
     private tpService: TareaPersonalizadaService,
     private appToast: AppToastService,
-    private uiDialog: UiDialogService
+    private uiDialog: UiDialogService,
+    private budgetService: BudgetService
   ) {
     // Sync empresas IDB → lista local + paginación
     effect(() => {
@@ -1054,15 +1055,16 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       this.empresaService.deleteEmpresa(id).subscribe({
         next: () => {
           this.removeEmpresaFromState(id);
-          this.appToast.success(
-            navigator.onLine
-              ? 'Empresa eliminada correctamente'
-              : 'Empresa eliminada localmente. Se sincronizara cuando vuelva la conexion.'
-          );
+          this.uiDialog.success({
+            title: 'Empresa eliminada',
+            text: navigator.onLine
+              ? 'La empresa fue eliminada correctamente.'
+              : 'Empresa eliminada localmente. Se sincronizará cuando vuelva la conexión.'
+          });
         },
         error: (error) => {
-          this.appToast.error(error.message || 'Error al eliminar la empresa');
           console.error('[EMPRESA] Error al eliminar empresa:', error);
+          this.uiDialog.error({ title: 'Error al eliminar', text: error.message || 'No se pudo eliminar la empresa.' });
         }
       });
     });
@@ -1072,38 +1074,56 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 
 
   deleteCliente(id: number): void {
-
     this.clienteService.deleteCliente(id).subscribe({
       next: () => {
         this.removeClienteFromState(id);
-        this.appToast.success(
-          navigator.onLine
-            ? 'Cliente eliminado correctamente'
-            : 'Cliente eliminado localmente. Se sincronizara cuando vuelva la conexion.',
-          'Exito'
-        );
+        this.uiDialog.success({
+          title: 'Cliente eliminado',
+          text: navigator.onLine
+            ? 'El cliente fue eliminado correctamente.'
+            : 'Cliente eliminado localmente. Se sincronizará cuando vuelva la conexión.'
+        });
       },
       error: (error) => {
         console.error('Error al eliminar cliente:', error);
-        this.appToast.error(error.message || 'Error al eliminar el cliente', 'Error');
+        this.uiDialog.error({ title: 'Error al eliminar', text: error.message || 'No se pudo eliminar el cliente.' });
       }
     });
   }
 
-  solicitarConfirmacionEliminar(id: number): void {
-if (this.trialMode) {
-  const key = `demoCliente_${id}`;
-  localStorage.removeItem(key);
+  async solicitarConfirmacionEliminar(id: number): Promise<void> {
+    if (this.trialMode) {
+      const key = `demoCliente_${id}`;
+      localStorage.removeItem(key);
+      this.removeClienteFromState(id);
+      this.uiDialog.success({ title: 'Cliente eliminado', text: 'El cliente fue eliminado del modo demo.' });
+      return;
+    }
 
-  this.removeClienteFromState(id);
-  this.appToast.success('Cliente eliminado en modo demo', 'Éxito');
-  return;
-}
+    const paso1 = await this.uiDialog.confirmDelete('cliente', '¿Deseas eliminar este cliente? Esta acción no se puede deshacer.');
+    if (!paso1) return;
 
+    const esClienteSeleccionado = id === this.clienteSeleccionado?.id;
+    const cantPresupuestos = esClienteSeleccionado ? this.budgetService.presupuestosActuales.length : 0;
+    const cantTareas = esClienteSeleccionado ? (this.tareasAgregadas?.length ?? 0) : 0;
 
-    this.uiDialog.confirmDelete('cliente', '¿Deseas eliminar este cliente? Esta acción no se puede deshacer.').then(confirmed => {
-      if (confirmed) this.deleteCliente(id);
-    });
+    if (cantPresupuestos > 0 || cantTareas > 0) {
+      const partes: string[] = [];
+      if (cantPresupuestos > 0) partes.push(`${cantPresupuestos} presupuesto${cantPresupuestos !== 1 ? 's' : ''}`);
+      if (cantTareas > 0) partes.push(`${cantTareas} tarea${cantTareas !== 1 ? 's' : ''} asociada${cantTareas !== 1 ? 's' : ''}`);
+
+      const paso2 = await this.uiDialog.confirm({
+        title: 'Este cliente tiene datos asociados',
+        text: `Al eliminarlo también se eliminarán sus ${partes.join(' y ')}. ¿Confirmas que deseas eliminar todo?`,
+        confirmText: 'Sí, eliminar todo',
+        cancelText: 'Cancelar',
+        tone: 'danger',
+        icon: 'warning'
+      });
+      if (!paso2) return;
+    }
+
+    this.deleteCliente(id);
   }
 
   cancelarEliminarCliente(): void {
@@ -1533,22 +1553,22 @@ actualizarTarea(): void {
       };
       this.userTareaService.updateUserTarea(this.tareaSeleccionada.id, updatedTarea).subscribe({
         next: (tareaActualizada) => {
-          this.appToast.success('Tarea actualizada', 'Éxito');
           const index = this.tareasAgregadas.findIndex(t => t.id === this.tareaSeleccionada.id);
           if (index !== -1) {
             this.tareasAgregadas[index] = tareaActualizada;
           }
           this.actualizarTablaYStorage();
           this.resetTareaSeleccionada();
+          this.uiDialog.success({ title: 'Tarea actualizada', text: 'Los cambios fueron guardados correctamente.' });
         },
         error: () => {
           const index = this.tareasAgregadas.findIndex(t => t.id === this.tareaSeleccionada.id);
           if (index !== -1) {
             this.tareasAgregadas[index] = updatedTarea;
             this.actualizarTablaYStorage();
-            this.appToast.error('Error al actualizar la tarea en el backend, actualizada localmente', 'Error');
           }
           this.resetTareaSeleccionada();
+          this.uiDialog.error({ title: 'Error al actualizar', text: 'No se pudo sincronizar con el servidor. La tarea fue actualizada localmente.' });
         }
       });
     }
@@ -1591,7 +1611,7 @@ if (this.trialMode) {
 
   this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
   this.updatePaginatedTareasPanel();
-  this.appToast.success('Tarea agregada en modo demo');
+  this.uiDialog.success({ title: 'Tarea agregada', text: 'La tarea fue agregada en modo demo.' });
   this.saveToRecent(nuevaTarea); // Save even in demo
   this.resetTareaSeleccionada();
   return;
@@ -1646,7 +1666,7 @@ if (this.trialMode) {
         // liveQuery effect updates tareasAgregadas; just update secondary state
         this.mostrarTabla = true;
         this.saveToRecent(tarea);
-        this.appToast.success('Tarea agregada');
+        this.uiDialog.success({ title: 'Tarea agregada', text: 'La tarea fue agregada correctamente.' });
         this.resetTareaSeleccionada();
       },
       error: (error) => {
@@ -2025,7 +2045,7 @@ eliminarTarea(id: number): void {
   this.showTareasPanel = false;
 }
 
-  this.appToast.success('Tarea eliminada en modo demo');
+  this.uiDialog.success({ title: 'Tarea eliminada', text: 'La tarea fue eliminada en modo demo.' });
   return;
 }
 
@@ -2034,7 +2054,7 @@ eliminarTarea(id: number): void {
       // Éxito: tarea eliminada del backend
       this.tareasAgregadas = this.tareasAgregadas.filter(t => t.id !== id);
       this.actualizarTablaYStorage();
-      this.appToast.success('Tarea eliminada correctamente');
+      this.uiDialog.success({ title: 'Tarea eliminada', text: 'La tarea fue eliminada correctamente.' });
     },
     error: (err) => {
       console.error('Error completo al eliminar tarea:', err); // Para debug
@@ -2066,15 +2086,12 @@ eliminarTarea(id: number): void {
         mensajeBackend.toLowerCase().includes('referenced') ||
         mensajeBackend.toLowerCase().includes('usada')
       ) {
-        this.appToast.warning(
-          'No se puede eliminar esta tarea porque está incluida en uno o más presupuestos guardados.\n' +
-          'Si deseas borrarla permanentemente, elimina primero los presupuestos que la contienen.',
-          'Tarea en uso',
-          { timeOut: 10000, closeButton: true, enableHtml: true }
-        );
+        this.uiDialog.warning({
+          title: 'Tarea en uso',
+          text: 'No se puede eliminar esta tarea porque está incluida en uno o más presupuestos guardados. Si deseas borrarla permanentemente, elimina primero los presupuestos que la contienen.'
+        });
       } else {
-        // Cualquier otro error
-        this.appToast.error(mensajeBackend, 'Error');
+        this.uiDialog.error({ title: 'Error al eliminar', text: mensajeBackend });
       }
 
       // Opcional: mantener consistencia visual aunque no se elimine del backend
@@ -2235,7 +2252,7 @@ calcularCostoTotal(): number {
       mainPreview.src = dataUrl;
       mainPreview.style.display = 'block';
     }
-    this.appToast.success('Imagen guardada en modo demo');
+    this.uiDialog.success({ title: 'Imagen guardada', text: 'Imagen guardada en modo demo.' });
   };
   reader.readAsDataURL(file);
   return;
@@ -2253,14 +2270,15 @@ calcularCostoTotal(): number {
       next: (url) => {
         localStorage.setItem('uploadedImage', url);
         this.applyImageUrl(url);
-        this.appToast.success(
-          navigator.onLine
-            ? 'Imagen subida con exito.'
-            : 'Imagen guardada localmente. Se subira cuando vuelva la conexion.'
-        );
+        this.uiDialog.success({
+          title: 'Imagen guardada',
+          text: navigator.onLine
+            ? 'Imagen subida con éxito.'
+            : 'Imagen guardada localmente. Se subirá cuando vuelva la conexión.'
+        });
       },
       error: (err) => {
-        this.appToast.error(`Error al subir la imagen: ${err.message}`);
+        this.uiDialog.error({ title: 'Error al subir imagen', text: err.message });
       }
     });
   }
@@ -2337,7 +2355,8 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
   localStorage.setItem('selectedEmpresa', JSON.stringify(nuevaEmpresa));
 
   this.actualizarImagenEmpresa(nuevaEmpresa);
-  this.appToast.success('Empresa creada en modo demo');
+  this.closeEmpresaModal();
+  this.uiDialog.success({ title: 'Empresa creada', text: 'La empresa demo fue creada correctamente.' });
   this.limpiarEmpresaForm();
   return;
 }
@@ -2391,45 +2410,52 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       // Modo edición: actualizar empresa existente
       this.empresaService.updateEmpresa(this.empresaEditId, formData).subscribe({
         next: (empresaActualizada) => {
-          this.appToast.success(
-            Number(empresaActualizada?.id) < 0
-              ? 'Empresa actualizada localmente. Se sincronizara cuando vuelva la conexion.'
-              : 'Empresa actualizada correctamente',
-            'Exito'
-          );
           this.applySavedEmpresa({ ...formData, ...empresaActualizada, id: this.empresaEditId ?? empresaActualizada.id });
           if (navigator.onLine) {
             this.getEmpresasByUserCode();
           }
+          this.closeEmpresaModal();
           this.limpiarEmpresaForm();
+          this.uiDialog.success({
+            title: 'Empresa actualizada',
+            text: Number(empresaActualizada?.id) < 0
+              ? 'Empresa actualizada localmente. Se sincronizará cuando vuelva la conexión.'
+              : 'Los datos de la empresa fueron actualizados correctamente.'
+          });
         },
         error: (err) => {
-          this.appToast.error(`Error al actualizar la empresa: ${err.message}`);
           console.error('[EMPRESA] Error al actualizar empresa:', err);
+          this.uiDialog.error({ title: 'Error al actualizar', text: err.message || 'No se pudo actualizar la empresa.' });
         }
       });
     } else {
       // Modo creación: crear nueva empresa
       this.empresaService.saveEmpresa(formData).subscribe({
         next: (empresaCreada) => {
-          this.appToast.success(
-            Number(empresaCreada?.id) < 0
-              ? 'Empresa guardada localmente. Se sincronizara cuando vuelva la conexion.'
-              : 'Datos de la empresa guardados',
-            'Exito'
-          );
           this.applySavedEmpresa(empresaCreada);
           if (navigator.onLine) {
             this.getEmpresasByUserCode();
           }
+          this.closeEmpresaModal();
           this.limpiarEmpresaForm();
+          this.uiDialog.success({
+            title: 'Empresa creada',
+            text: Number(empresaCreada?.id) < 0
+              ? 'Empresa guardada localmente. Se sincronizará cuando vuelva la conexión.'
+              : 'La empresa fue creada correctamente.'
+          });
         },
         error: (err) => {
-          this.appToast.error(`Error al guardar la empresa: ${err.message}`);
           console.error('[EMPRESA] Error al crear empresa:', err);
+          this.uiDialog.error({ title: 'Error al crear', text: err.message || 'No se pudo guardar la empresa.' });
         }
       });
     }
+  }
+
+  private closeEmpresaModal(): void {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModal'));
+    modal?.hide();
   }
 
   limpiarEmpresaForm(): void {
@@ -2538,7 +2564,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       error: (error) => {
         localStorage.setItem(`clientData_temp_${Date.now()}`, JSON.stringify(clientData));
         console.error('Error al guardar cliente:', error.message, clientData);
-        this.appToast.error(error.message || 'Error al guardar el cliente');
+        this.uiDialog.error({ title: 'Error al guardar', text: error.message || 'No se pudo guardar el cliente.' });
         this.isSavingClient = false;
       }
     });
@@ -3155,14 +3181,14 @@ fetchUserData(): void {
           localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresas));
         }
       }
-      this.appToast.success('Colores aplicados (modo demo)', 'Paleta');
+      this.uiDialog.success({ title: 'Paleta aplicada', text: 'Colores aplicados en modo demo.' });
       return;
     }
 
     if (this.selectedEmpresaId.id) {
       this.empresaService.updateEmpresa(this.selectedEmpresaId.id, this.selectedEmpresaId).subscribe({
-        next: () => this.appToast.success('Colores guardados correctamente', 'Paleta'),
-        error: (err) => this.appToast.error(`Error al guardar colores: ${err.message}`, 'Error')
+        next: () => this.uiDialog.success({ title: 'Paleta guardada', text: 'Colores guardados correctamente.' }),
+        error: (err) => this.uiDialog.error({ title: 'Error al guardar colores', text: err.message })
       });
     }
   }
@@ -3262,7 +3288,7 @@ fetchUserData(): void {
           this.cerrarTpEditor();
           void this.tpMostrarMensajeGuardado(updated.tarea, false);
         },
-        error: err => this.appToast.error(err.message, 'Error al actualizar')
+        error: err => this.uiDialog.error({ title: 'Error al actualizar', text: err.message })
       });
     } else {
       this.tpService.create(payload).subscribe({
@@ -3271,7 +3297,7 @@ fetchUserData(): void {
           this.cerrarTpEditor();
           void this.tpMostrarMensajeGuardado(created.tarea, true);
         },
-        error: err => this.appToast.error(err.message, 'Error al guardar')
+        error: err => this.uiDialog.error({ title: 'Error al guardar', text: err.message })
       });
     }
   }
@@ -3323,21 +3349,21 @@ fetchUserData(): void {
 
   tpEliminar(tp: TareaPersonalizada): void {
     if (tp.id == null) return;
-    this.appToast.confirm(`Se eliminará "${tp.tarea}" de tus tareas personalizadas.`, '¿Eliminar tarea?').then(confirmed => {
+    this.uiDialog.confirmDelete(tp.tarea, 'Se eliminará de tu lista de tareas personalizadas.').then(confirmed => {
       if (!confirmed) return;
       if (this.trialMode) {
         const list = this.tpLoadDemo().filter(t => t.id !== tp.id);
         this.tpSaveDemo(list);
         this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
-        this.appToast.success(`"${tp.tarea}" eliminada`, 'Tarea eliminada');
+        this.uiDialog.success({ title: 'Eliminada', text: `"${tp.tarea}" fue eliminada de tus tareas personalizadas.` });
         return;
       }
       this.tpService.delete(tp.id!, this.userCode).subscribe({
         next: () => {
           this.tareasPersonalizadas = this.tareasPersonalizadas.filter(t => t.id !== tp.id);
-          this.appToast.success(`"${tp.tarea}" eliminada`, 'Tarea eliminada');
+          this.uiDialog.success({ title: 'Eliminada', text: `"${tp.tarea}" fue eliminada de tus tareas personalizadas.` });
         },
-        error: err => this.appToast.error(err.message, 'Error al eliminar')
+        error: err => this.uiDialog.error({ title: 'Error al eliminar', text: err.message })
       });
     });
   }
@@ -3362,34 +3388,41 @@ fetchUserData(): void {
   tpImportarDelCatalogo(tarea: Tarea): void {
     const limit = this.trialMode ? this.TP_LIMIT_DEMO : this.TP_LIMIT_VIP;
     if (this.tareasPersonalizadas.length >= limit) {
-      this.appToast.warning(
-        `Alcanzaste el límite de ${limit} tareas personalizadas`,
-        'Límite alcanzado'
-      );
+      this.uiDialog.warning({ title: 'Límite alcanzado', text: `Alcanzaste el límite de ${limit} tareas personalizadas.` });
       return;
     }
-    const payload: TareaPersonalizada = {
-      userCode: this.userCode,
-      tarea: tarea.tarea,
-      descripcion: tarea.descripcion || '',
-      costo: tarea.costo
-    };
-    if (this.trialMode) {
-      const list = this.tpLoadDemo();
-      const created: TareaPersonalizada = { ...payload, id: -Date.now() };
-      list.unshift(created);
-      this.tpSaveDemo(list);
-      this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
-      this.appToast.success(`"${created.tarea}" importada a Mis Tareas`, 'Importada');
-      return;
-    }
-    this.tpService.create(payload).subscribe({
-      next: created => {
-        this.tareasPersonalizadas = this.ordenarTareasPersonalizadas([created, ...this.tareasPersonalizadas]);
-        this.appToast.success(`"${created.tarea}" importada a Mis Tareas`, 'Importada');
-        this.tpMostrarImportar = false;
-      },
-      error: err => this.appToast.error(err.message, 'Error al importar')
+    this.uiDialog.confirm({
+      title: '¿Importar tarea?',
+      text: `"${tarea.tarea}" se agregará a tu lista de tareas personalizadas.`,
+      confirmText: 'Importar',
+      cancelText: 'Cancelar',
+      tone: 'primary',
+      icon: 'question'
+    }).then(confirmed => {
+      if (!confirmed) return;
+      const payload: TareaPersonalizada = {
+        userCode: this.userCode,
+        tarea: tarea.tarea,
+        descripcion: tarea.descripcion || '',
+        costo: tarea.costo
+      };
+      if (this.trialMode) {
+        const list = this.tpLoadDemo();
+        const created: TareaPersonalizada = { ...payload, id: -Date.now() };
+        list.unshift(created);
+        this.tpSaveDemo(list);
+        this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
+        this.uiDialog.success({ title: 'Importada', text: `"${created.tarea}" se agregó a tus tareas personalizadas.` });
+        return;
+      }
+      this.tpService.create(payload).subscribe({
+        next: created => {
+          this.tareasPersonalizadas = this.ordenarTareasPersonalizadas([created, ...this.tareasPersonalizadas]);
+          this.tpMostrarImportar = false;
+          this.uiDialog.success({ title: 'Importada', text: `"${created.tarea}" se agregó a tus tareas personalizadas.` });
+        },
+        error: err => this.uiDialog.error({ title: 'Error al importar', text: err.message })
+      });
     });
   }
 
@@ -3437,16 +3470,16 @@ fetchUserData(): void {
         list.unshift(created);
         this.tpSaveDemo(list);
         this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
-        this.appToast.success(`"${nombre}" guardada en Mis Tareas`, 'Exportada');
+        this.uiDialog.success({ title: 'Guardada', text: `"${nombre}" se agregó a tus tareas personalizadas.` });
         return;
       }
 
       this.tpService.create(payload).subscribe({
         next: created => {
           this.tareasPersonalizadas = this.ordenarTareasPersonalizadas([created, ...this.tareasPersonalizadas]);
-          this.appToast.success(`"${nombre}" guardada en Mis Tareas`, 'Exportada');
+          this.uiDialog.success({ title: 'Guardada', text: `"${nombre}" se agregó a tus tareas personalizadas.` });
         },
-        error: err => this.appToast.error(err.message || 'Error al exportar la tarea')
+        error: err => this.uiDialog.error({ title: 'Error al guardar', text: err.message || 'No se pudo exportar la tarea.' })
       });
     });
   }

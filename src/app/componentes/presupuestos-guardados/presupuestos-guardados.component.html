@@ -66,7 +66,7 @@
             <small>Creado {{ presupuesto.createdAt | date: 'short' }}</small>
             <div class="text-muted small">
               <span>Empresa: {{ presupuesto.empresa?.name || empresaActual?.name || 'Sin empresa' }}</span> |
-              <span>Cliente: {{ presupuesto.cliente.name || 'Sin cliente' }}</span> |
+              <span>Cliente: {{ presupuesto.cliente?.name || clienteActual?.name || 'Sin cliente' }}</span> |
               <span>Tareas: {{ presupuesto.tareas.length || 0 }}</span>
             </div>
           </div>

@@ -131,7 +131,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
         },
         error: (err) => {
           this.isSavingBudget = false;
-          this.appToast.error(err.error?.error || 'Error al actualizar el presupuesto');
+          this.uiDialog.error({ title: 'Error al actualizar', text: err.error?.error || 'No se pudo actualizar el presupuesto.' });
         }
       });
       return;
@@ -146,7 +146,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       },
       error: (err) => {
         this.isSavingBudget = false;
-        this.appToast.error(err.error?.error || 'Error al guardar el presupuesto');
+        this.uiDialog.error({ title: 'Error al guardar', text: err.error?.error || 'No se pudo guardar el presupuesto.' });
       }
     });
   }
@@ -155,7 +155,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     if (this.shouldSkipBudgetAction('load', presupuesto.id)) return;
     this.presupuestoHabilitadoParaActualizarId = presupuesto.id;
     this.cargarPresupuesto.emit(presupuesto);
-    this.showBudgetSuccess(`Presupuesto "${presupuesto.name}" cargado correctamente`, 'Listo');
+    this.uiDialog.success({ title: 'Listo', text: `Presupuesto "${presupuesto.name}" cargado correctamente.` });
   }
 
   async eliminar(presupuesto: SavedPresupuesto): Promise<void> {
@@ -167,7 +167,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     if (!confirmed) return;
     this.budgetService.eliminarPresupuesto(presupuesto.id).subscribe({
       next: () => { this.notifyBudgetDeleted(presupuesto); this.presupuestoEliminado.emit(presupuesto); },
-      error: () => this.appToast.error('Error al eliminar')
+      error: () => this.uiDialog.error({ title: 'Error al eliminar', text: 'No se pudo eliminar el presupuesto.' })
     });
   }
 
@@ -178,7 +178,10 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     }
     this.presupuestoEditando = {
       ...presupuesto,
-      cliente: { ...presupuesto.cliente },
+      cliente: {
+        ...presupuesto.cliente,
+        name: presupuesto.cliente?.name || this.clienteActual?.name || ''
+      },
       tareas: presupuesto.tareas ? [...presupuesto.tareas] : []
     };
     this.tareaAAgregarId = null;
@@ -243,7 +246,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
         error: (err) => {
           this.isConfirmingBudgetEdit = false;
           console.error('%cERROR AL ACTUALIZAR', 'color: #F44336', err);
-          this.appToast.error(err.error?.error || 'Error al actualizar');
+          this.uiDialog.error({ title: 'Error al actualizar', text: err.error?.error || 'No se pudo actualizar el presupuesto.' });
         }
       });
     });
@@ -362,7 +365,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       this.showBudgetInfo(`Presupuesto ${action} localmente. Se sincronizará cuando vuelva la conexión.`, 'Guardado offline');
       return;
     }
-    this.showBudgetSuccess(`Presupuesto ${action} correctamente`);
+    this.uiDialog.success({ title: 'Listo', text: `Presupuesto ${action} correctamente.` });
   }
 
   private notifyBudgetDeleted(presupuesto: SavedPresupuesto): void {
@@ -370,7 +373,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       this.showBudgetInfo('Presupuesto eliminado localmente. El cambio se sincronizará cuando vuelva la conexión.', 'Eliminado offline');
       return;
     }
-    this.showBudgetInfo('Presupuesto eliminado');
+    this.uiDialog.success({ title: 'Eliminado', text: 'El presupuesto fue eliminado correctamente.' });
   }
 
   private showBudgetSuccess(message: string, title?: string): void {

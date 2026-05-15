@@ -52,16 +52,18 @@ export class BudgetService {
 
     return this.http.get<SavedPresupuesto[]>(`${this.apiUrl}/cliente/${clienteId}`).pipe(
       tap(presupuestos => {
-        this.setBudgets(presupuestos);
-        this.persistBudgets(clienteId, presupuestos);
         const empresa = this.getSelectedEmpresa();
-        presupuestos.forEach(presupuesto => {
-          // Enrich con empresa si el server no la retorna, para que IDB tenga referencia correcta
-          const enriched = empresa && !presupuesto.empresa
-            ? { ...presupuesto, empresa }
-            : presupuesto;
-          void this.localStore.upsertPresupuesto(enriched);
+        const selectedCliente = this.getSelectedCliente();
+        const enriched = presupuestos.map(p => {
+          const withEmpresa = empresa && !p.empresa ? { ...p, empresa } : p;
+          const withCliente = withEmpresa.cliente && !withEmpresa.cliente.name && selectedCliente?.id === withEmpresa.cliente.id
+            ? { ...withEmpresa, cliente: { ...selectedCliente, ...withEmpresa.cliente } }
+            : withEmpresa;
+          return withCliente;
         });
+        this.setBudgets(enriched);
+        this.persistBudgets(clienteId, enriched);
+        enriched.forEach(p => void this.localStore.upsertPresupuesto(p));
       }),
       catchError(err =>
         from(this.getLocalBudgets(clienteId)).pipe(

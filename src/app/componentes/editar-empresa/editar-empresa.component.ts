@@ -162,9 +162,11 @@ export class EditarEmpresaComponent implements OnInit {
           this.localStore.setState(this.dashboardStateKey('selectedEmpresa'), this.empresa);
         }
         this.loading = false;
+        this.uiDialog.success({ title: 'Imagen subida', text: 'La imagen se subió correctamente.' });
       },
       error: () => {
         this.loading = false;
+        this.uiDialog.error({ title: 'Error', text: 'No se pudo subir la imagen.' });
       }
     });
   }
