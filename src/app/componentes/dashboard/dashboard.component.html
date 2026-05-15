@@ -306,7 +306,7 @@
           <div class="col-12 col-md-7">
             <div class="tp-list-header">
               <span class="tp-list-header__title"><i class="bi bi-list-check me-2"></i>Tareas guardadas</span>
-              <span class="badge tp-list-header__badge">{{ tareasPersonalizadas.length }}</span>
+              <span class="badge tp-list-header__badge">{{ tareasPersonalizadas.length }} / {{ tpLimitActual }}</span>
             </div>
 
             <div *ngIf="tareasPersonalizadas.length === 0" class="tp-empty-state">
@@ -633,6 +633,16 @@
                   </svg>
                 </span>
               </div>
+
+              <div class="tp-capacity-chip"
+                [class.tp-capacity-chip--warning]="tareasPersonalizadas.length / tpLimitActual >= 0.8 && tareasPersonalizadas.length < tpLimitActual"
+                [class.tp-capacity-chip--full]="tareasPersonalizadas.length >= tpLimitActual">
+                <i class="bi bi-list-ol"></i>
+                <strong>{{ tareasPersonalizadas.length }}</strong>
+                <span class="tp-capacity-chip__sep">/</span>
+                <span class="tp-capacity-chip__max">{{ tpLimitActual }}</span>
+              </div>
+
               <div class="tp-toolbar__actions">
                 <button type="button" class="tp-toolbar__toggle" (click)="tpMostrarImportar = !tpMostrarImportar">
                   <span class="tp-toolbar__toggle-icon" aria-hidden="true">

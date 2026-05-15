@@ -3498,6 +3498,10 @@ fetchUserData(): void {
     return this.tareas.filter(t => t.tarea.toLowerCase().includes(q)).slice(0, 50);
   }
 
+  get tpLimitActual(): number {
+    return this.trialMode ? this.TP_LIMIT_DEMO : this.TP_LIMIT_VIP;
+  }
+
   get tareasPersonalizadasFiltradas(): TareaPersonalizada[] {
     const query = this.tpBusquedaPersonalizada.trim().toLowerCase();
     if (!query) {

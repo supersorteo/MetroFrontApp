@@ -363,7 +363,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  flex-wrap: wrap;
+  gap: 10px 14px;
   margin-bottom: 18px;
 }
 
@@ -447,6 +448,55 @@
   background: rgba(29, 104, 255, 0.08);
   color: #1d68ff;
   flex: 0 0 auto;
+}
+
+.tp-capacity-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f0f4ff;
+  border: 1px solid rgba(29, 104, 255, 0.15);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  color: #3a5a8c;
+  white-space: nowrap;
+
+  i { font-size: 0.82rem; color: #5a80b8; }
+
+  strong {
+    color: #0b5ed7;
+    font-weight: 700;
+  }
+
+  &__sep {
+    color: #8098b8;
+    margin: 0 1px;
+  }
+
+  &__max {
+    color: #5c7aa0;
+    font-weight: 600;
+  }
+
+  &--warning {
+    background: #fff8f0;
+    border-color: rgba(234, 88, 12, 0.22);
+    color: #7c3503;
+    i { color: #d97706; }
+    strong { color: #ea580c; }
+    .tp-capacity-chip__max { color: #9a6234; }
+  }
+
+  &--full {
+    background: #fff0f0;
+    border-color: rgba(220, 38, 38, 0.22);
+    color: #7f1d1d;
+    i { color: #dc2626; }
+    strong { color: #dc2626; }
+    .tp-capacity-chip__max { color: #9b2c2c; }
+  }
 }
 
 .tp-import-backdrop {
