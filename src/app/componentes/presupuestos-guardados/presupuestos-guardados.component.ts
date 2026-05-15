@@ -173,7 +173,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
 
   editarPresupuesto(presupuesto: SavedPresupuesto): void {
     if (!this.esPresupuestoCargado(presupuesto)) {
-      this.showBudgetInfo('Debe cargar este presupuesto para poder editarlo.', 'Cargar presupuesto');
+      this.uiDialog.info({ title: 'Cargar presupuesto', text: 'Debe cargar este presupuesto antes de poder editarlo.' });
       return;
     }
     this.presupuestoEditando = {

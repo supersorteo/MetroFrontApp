@@ -2169,7 +2169,7 @@ calcularCostoTotal(): number {
         cleanupBootstrapModals();
         this.authService.logout();
         this.route.navigate(['']);
-        this.appToast.success('Sesión cerrada correctamente');
+        this.uiDialog.success({ title: 'Sesión cerrada', text: 'Tu sesión fue cerrada correctamente.' });
       }
     });
   }
