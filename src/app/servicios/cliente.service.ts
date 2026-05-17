@@ -16,7 +16,7 @@ export interface Cliente {
   email: string;
   clave: string;
   direccion: string;
-  empresaId: number;
+  empresaId?: number;
 }
 
 @Injectable({ providedIn: 'root' })

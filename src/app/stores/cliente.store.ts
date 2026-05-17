@@ -23,15 +23,14 @@ export class ClienteStore {
   });
 
   readonly clientes = toSignal(
-    toObservable(this.empresaStore.selectedId).pipe(
-      switchMap(empresaId =>
-        empresaId
+    toObservable(this.empresaStore.userCode).pipe(
+      switchMap(userCode =>
+        userCode
           ? from(liveQuery(() =>
               metroDB.clientes
                 .filter(r =>
                   !r.deletedAt &&
-                  (Number(r.empresaServerId) === empresaId ||
-                   Number(r.data?.empresaId) === empresaId)
+                  r.data?.userCode === userCode
                 )
                 .toArray()
             )).pipe(
@@ -48,24 +47,23 @@ export class ClienteStore {
   );
 
   constructor() {
-    // Cuando cambia la empresa seleccionada → disparar HTTP en background
+    // Cuando cambia el userCode → cargar clientes desde backend en background
     effect(() => {
-      const empresaId = this.empresaStore.selectedId();
-      if (!empresaId) {
+      const userCode = this.empresaStore.userCode();
+      if (!userCode) {
         this._selected.set(null);
         return;
       }
       this._loading.set(true);
-      this.svc.getClientesByEmpresaId(empresaId).subscribe({
+      this.svc.getClienteByUserCode(userCode).subscribe({
         next: () => this._loading.set(false),
         error: () => this._loading.set(false)
       });
     }, { allowSignalWrites: true });
 
-    // Cuando cambia la lista, restaurar selección desde localStorage (per-empresa)
+    // Cuando cambia la lista, restaurar selección desde localStorage
     effect(() => {
       const list = this.clientes();
-      const empresaId = this.empresaStore.selectedId();
       const pendingSelectedId = this._pendingSelectedId();
 
       const current = this._selected();
@@ -84,49 +82,31 @@ export class ClienteStore {
         return;
       }
 
-      // Preferir clave per-empresa para no mezclar selecciones entre empresas
-      const perEmpresaKey = empresaId ? `selectedClienteId_empresa_${empresaId}` : null;
-      const savedId =
-        (perEmpresaKey && localStorage.getItem(perEmpresaKey)) ||
-        localStorage.getItem('selectedClienteId');
-
       if (pendingSelectedId != null) {
         const pendingMatch = list.find(c => c.id === pendingSelectedId) ?? null;
         if (pendingMatch) {
           this._selected.set(pendingMatch);
           this._pendingSelectedId.set(null);
-          if (perEmpresaKey) {
-            localStorage.setItem(perEmpresaKey, String(pendingMatch.id));
-          }
           return;
         }
 
-        if (pendingSelectedId > 0 && current?.id === pendingSelectedId && current.empresaId === empresaId) {
+        if (pendingSelectedId > 0 && current?.id === pendingSelectedId) {
           return;
         }
       }
 
+      const savedId = localStorage.getItem('selectedClienteId');
       const match = savedId ? list.find(c => String(c.id) === savedId) : null;
-      const selected = match ?? list[0] ?? null;
-      this._selected.set(selected);
+      this._selected.set(match ?? list[0] ?? null);
       this._pendingSelectedId.set(null);
-      // Persist per-empresa key on auto-restore so future returns use the right client
-      if (selected?.id && perEmpresaKey) {
-        localStorage.setItem(perEmpresaKey, String(selected.id));
-      }
     }, { allowSignalWrites: true });
   }
 
   select(cliente: Cliente | null): void {
     this._selected.set(cliente);
     this._pendingSelectedId.set(cliente?.id ?? null);
-    const empresaId = this.empresaStore.selectedId();
     if (cliente?.id) {
-      // Guardar selección tanto globalmente como per-empresa
       localStorage.setItem('selectedClienteId', String(cliente.id));
-      if (empresaId) {
-        localStorage.setItem(`selectedClienteId_empresa_${empresaId}`, String(cliente.id));
-      }
       localStorage.setItem('selectedCliente', JSON.stringify(cliente));
     } else {
       localStorage.removeItem('selectedClienteId');

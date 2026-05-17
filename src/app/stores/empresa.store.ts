@@ -16,6 +16,7 @@ export class EmpresaStore {
 
   readonly loading = this._loading.asReadonly();
   readonly selected = this._selected.asReadonly();
+  readonly userCode = this._userCode.asReadonly();
   readonly selectedId = computed(() => {
     const id = this._selected()?.id;
     return typeof id === 'number' ? id : null;
