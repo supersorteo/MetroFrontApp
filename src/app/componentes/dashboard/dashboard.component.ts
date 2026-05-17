@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit, HostListener, effect, inject } from '@angular/core';
 import { interval, Subject } from 'rxjs';
@@ -28,6 +28,7 @@ import { ClienteStore } from '../../stores/cliente.store';
 import { UserTareaStore } from '../../stores/user-tarea.store';
 import { TareaPersonalizadaService, TareaPersonalizada } from '../../servicios/tarea-personalizada.service';
 import { AppToastService } from '../../servicios/app-toast.service';
+import { MembershipLimits, MembershipLimitsService } from '../../servicios/membership-limits.service';
 
 
 declare var bootstrap: any;
@@ -283,6 +284,17 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   currentEmpresaLogoUrl: string = '';
   empresaLogoUrls: Record<string, string> = {};
   trialMode: boolean = false;
+  totalClientesUsuario: number = 0;
+  membershipLimits: MembershipLimits = {
+    id: null,
+    pais: '',
+    demoMaxEmpresas: 3,
+    vip3MaxEmpresas: 1,
+    vip6MaxEmpresas: 3,
+    demoMaxClientes: 6,
+    vip3MaxClientes: 30,
+    vip6MaxClientes: 60
+  };
 
   private demoTareasKey(clienteId: number | null | undefined): string {
   return `demoTareasCliente_${clienteId ?? 'sinCliente'}`;
@@ -357,8 +369,6 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
     this.presupuestoPendiente = null;
     this.clienteSeleccionado = null;
     this.currentEmpresaLogoUrl = '';
-    this.clientes = [];
-    this.updatePaginatedClientes();
     this.clearVisibleTasks();
     localStorage.removeItem('selectedTareas');
     localStorage.removeItem('presupuestoCargado');
@@ -458,6 +468,7 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
     }
 
     this.updatePaginatedClientes();
+    this.totalClientesUsuario = this.trialMode ? this.getDemoClientesCount() : this.totalClientesUsuario + (index >= 0 ? 0 : 1);
     if (this.trialMode) {
       this.clearVisibleTasks();
       this.clienteSeleccionado = normalized;
@@ -511,26 +522,39 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
     }
 
     this.updatePaginatedClientes();
+    this.totalClientesUsuario = this.trialMode ? this.getDemoClientesCount() : Math.max(0, this.totalClientesUsuario - 1);
   }
 
   private removeEmpresaFromState(id: number): void {
     this.empresas = this.empresas.filter(empresa => empresa.id !== id);
 
     if (this.selectedEmpresaId?.id === id) {
-      this.selectedEmpresaId = null;
-      this.clienteSeleccionado = null;
-      this.syncSelectedClienteStorage();
-      this.clientes = [];
-      this.applyCurrentTasks([]);
-      localStorage.removeItem('selectedEmpresaId');
-      localStorage.removeItem('selectedEmpresa');
-      localStorage.removeItem('selectedTareas');
-      localStorage.removeItem('presupuestoCargado');
-      localStorage.removeItem('selectedPresupuestoName');
-      this.presupuestoSeleccionado = null;
-      this.cargarDatosEmpresaSeleccionada();
-      this.actualizarImagenEmpresa(null);
-      this.updatePaginatedClientes();
+      if (this.trialMode) {
+        this.selectedEmpresaId = this.empresas[0] ?? null;
+        this.syncSelectedEmpresaStorage(this.selectedEmpresaId);
+        this.cargarDatosEmpresaSeleccionada();
+        void this.actualizarImagenEmpresa(this.selectedEmpresaId);
+        this.loadDemoClientesGlobales();
+      } else {
+        this.selectedEmpresaId = null;
+        this.clienteSeleccionado = null;
+        this.syncSelectedClienteStorage();
+        this.clientes = [];
+        this.applyCurrentTasks([]);
+        localStorage.removeItem('selectedEmpresaId');
+        localStorage.removeItem('selectedEmpresa');
+        localStorage.removeItem('selectedTareas');
+        localStorage.removeItem('presupuestoCargado');
+        localStorage.removeItem('selectedPresupuestoName');
+        this.presupuestoSeleccionado = null;
+        this.cargarDatosEmpresaSeleccionada();
+        this.actualizarImagenEmpresa(null);
+        this.updatePaginatedClientes();
+      }
+    }
+
+    if (this.paginatedEmpresas.length === 1 && this.currentEmpresaPage > 1) {
+      this.currentEmpresaPage--;
     }
 
     this.updatePaginatedEmpresas();
@@ -713,6 +737,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private presupuestoService: PresupuestoService,
     private empresaService: EmpresaService,
     private clienteService: ClienteService,
+    private membershipLimitsService: MembershipLimitsService,
     private http: HttpClient,
     readonly offlineSync: OfflineSyncService,
     private localStore: OfflineLocalStoreService,
@@ -721,7 +746,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private uiDialog: UiDialogService,
     private budgetService: BudgetService
   ) {
-    // Sync empresas IDB → lista local + paginación
+    // Sync empresas IDB â†’ lista local + paginación
     effect(() => {
       if (this.trialMode) return;
       this.empresas = this.empresaStore.empresas();
@@ -729,7 +754,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       void this.refreshEmpresaLogoUrls(this.empresas);
     });
 
-    // Sync empresa seleccionada → formulario + imagen
+    // Sync empresa seleccionada â†’ formulario + imagen
     effect(() => {
       if (this.trialMode) return;
       const empresa = this.empresaStore.selected();
@@ -738,14 +763,14 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       void this.actualizarImagenEmpresa(empresa);
     });
 
-    // Sync clientes IDB → lista local + paginación
+    // Sync clientes IDB â†’ lista local + paginación
     effect(() => {
       if (this.trialMode) return;
       this.clientes = this.clienteStore.clientes();
       this.updatePaginatedClientes();
     });
 
-    // Sync cliente seleccionado → estado local + presupuesto pendiente
+    // Sync cliente seleccionado â†’ estado local + presupuesto pendiente
     effect(() => {
       if (this.trialMode) return;
       this.clienteSeleccionado = this.clienteStore.selected();
@@ -761,7 +786,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       }
     });
 
-    // Sync user-tareas IDB → tareasAgregadas (solo modo autenticado)
+    // Sync user-tareas IDB â†’ tareasAgregadas (solo modo autenticado)
     effect(() => {
       if (this.trialMode) return;
       this.tareasAgregadas = [...this.userTareaStore.tareas()];
@@ -788,11 +813,13 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     }
   }
 
-  // ── Sesión: leer userCode, detectar demo, fetchUserData o redirigir ──────
+  // â”€â”€ Sesión: leer userCode, detectar demo, fetchUserData o redirigir â”€â”€â”€â”€â”€â”€
   private initSession(): void {
     this.trialMode = this.isTrialMode();
     if (this.trialMode) {
       this.loadDemoData();
+      this.totalClientesUsuario = this.getDemoClientesCount();
+      this.loadMembershipLimits();
       return;
     }
     this.loadUserCode();
@@ -800,8 +827,8 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     localStorage.removeItem('reloadClientes');
   }
 
-  // ── Presupuesto pendiente: leer antes de initEmpresas para que el ────────
-  //    callback de clientes lo encuentre en this.presupuestoPendiente ────────
+  // â”€â”€ Presupuesto pendiente: leer antes de initEmpresas para que el â”€â”€â”€â”€â”€â”€â”€â”€
+  //    callback de clientes lo encuentre en this.presupuestoPendiente â”€â”€â”€â”€â”€â”€â”€â”€
   private restorePendingBudget(): void {
     const stored = localStorage.getItem('presupuestoCargado');
     if (stored) {
@@ -809,7 +836,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     }
   }
 
-  // ── UI auxiliar: countdown, colorScheme, fecha de presupuesto ────────────
+  // â”€â”€ UI auxiliar: countdown, colorScheme, fecha de presupuesto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   private initUiState(): void {
     interval(1000).pipe(takeUntil(this.destroy$)).subscribe(() => {
       if (this.userData?.fechaVencimiento) {
@@ -899,6 +926,8 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   this.tareasAgregadas = [];
   this.mostrarTabla = false;
   this.remainingTime = 'Modo demo';
+  this.loadDemoClientesGlobales();
+  this.loadMembershipLimits();
 
   if (this.selectedEmpresaId?.id) {
     localStorage.setItem('selectedEmpresaId', String(this.selectedEmpresaId.id));
@@ -1052,6 +1081,24 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   solicitarConfirmacionEliminarEmpresa(id: number): void {
     this.uiDialog.confirmDelete('empresa', '¿Deseas eliminar esta empresa? Esta acción no se puede deshacer.').then(confirmed => {
       if (!confirmed) return;
+
+      if (this.trialMode) {
+        const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
+        const demoEmpresas: Empresa[] = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
+        const nextEmpresas = demoEmpresas.filter(empresa => Number(empresa.id) !== Number(id));
+
+        localStorage.setItem('demoEmpresas', JSON.stringify(nextEmpresas));
+        this.empresas = nextEmpresas;
+        this.updatePaginatedEmpresas();
+        this.removeEmpresaFromState(id);
+        this.cargarDatosEmpresaSeleccionada();
+        this.uiDialog.success({
+          title: 'Empresa eliminada',
+          text: 'La empresa fue eliminada del modo demo.'
+        });
+        return;
+      }
+
       this.empresaService.deleteEmpresa(id).subscribe({
         next: () => {
           this.removeEmpresaFromState(id);
@@ -1069,7 +1116,6 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       });
     });
   }
-
 
 
 
@@ -1092,6 +1138,9 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   }
 
   async solicitarConfirmacionEliminar(id: number): Promise<void> {
+    const confirmed = await this.uiDialog.confirmDelete('cliente', '¿Deseas eliminar este cliente? Esta acción no se puede deshacer.');
+    if (!confirmed) return;
+
     if (this.trialMode) {
       const key = `demoCliente_${id}`;
       localStorage.removeItem(key);
@@ -1099,9 +1148,6 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       this.uiDialog.success({ title: 'Cliente eliminado', text: 'El cliente fue eliminado del modo demo.' });
       return;
     }
-
-    const paso1 = await this.uiDialog.confirmDelete('cliente', '¿Deseas eliminar este cliente? Esta acción no se puede deshacer.');
-    if (!paso1) return;
 
     const esClienteSeleccionado = id === this.clienteSeleccionado?.id;
     const cantPresupuestos = esClienteSeleccionado ? this.budgetService.presupuestosActuales.length : 0;
@@ -1114,11 +1160,12 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 
       const paso2 = await this.uiDialog.confirm({
         title: 'Este cliente tiene datos asociados',
-        text: `Al eliminarlo también se eliminarán sus ${partes.join(' y ')}. ¿Confirmas que deseas eliminar todo?`,
-        confirmText: 'Sí, eliminar todo',
+        text: `Si lo eliminás, también dejarás de ver ${partes.join(' y ')}. ¿Querés continuar?`,
+        confirmText: 'Eliminar igual',
         cancelText: 'Cancelar',
-        tone: 'danger',
-        icon: 'warning'
+        tone: 'warning',
+        icon: 'warning',
+        reverseButtons: true
       });
       if (!paso2) return;
     }
@@ -1953,10 +2000,6 @@ private loadColorScheme(): ColorScheme {
 
 
 abrirModalClientes(): void {
-  if (!this.selectedEmpresaId) {
-    this.appToast.warning('Primero creá o seleccioná una empresa', 'Sin empresa');
-    return;
-  }
   const el = document.getElementById('listaClientesModal');
   if (el) {
     const instance = bootstrap.Modal.getOrCreateInstance(el);
@@ -1965,16 +2008,20 @@ abrirModalClientes(): void {
 }
 
 openClientModal(): void {
-  if (this.trialMode) {
-    const demoClientes = Object.keys(localStorage)
-      .filter(key => key.startsWith('demoCliente_'))
-      .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
-      .filter(c => c && c.empresaId === this.selectedEmpresaId?.id);
+  if (this.trialMode && this.getDemoClientesCount() >= this.currentClienteLimit) {
+    this.uiDialog.info({
+      title: 'Límite alcanzado',
+      text: 'En modo demo podés guardar hasta ' + this.currentClienteLimit + ' clientes.'
+    });
+    return;
+  }
 
-    if (demoClientes.length >= 2) {
-      this.appToast.info('En modo demo solo podés crear 1 cliente', 'Modo demo');
-      return;
-    }
+  if (!this.trialMode && this.totalClientesUsuario >= this.currentClienteLimit) {
+    this.uiDialog.info({
+      title: 'Límite alcanzado',
+      text: 'Tu plan permite guardar hasta ' + this.currentClienteLimit + ' clientes.'
+    });
+    return;
   }
 
   const listaModalEl = document.getElementById('listaClientesModal');
@@ -2059,7 +2106,7 @@ eliminarTarea(id: number): void {
     error: (err) => {
       console.error('Error completo al eliminar tarea:', err); // Para debug
 
-      // 🔥 Extraer el mensaje del backend de forma robusta
+      // ðŸ”¥ Extraer el mensaje del backend de forma robusta
       let mensajeBackend = 'Error al eliminar la tarea del servidor';
 
       // Caso 1: Backend devuelve { error: "mensaje" }
@@ -2079,7 +2126,7 @@ eliminarTarea(id: number): void {
         mensajeBackend = err.message;
       }
 
-      // 🔥 Ahora sí: detectar si la tarea está asociada a presupuestos
+      // ðŸ”¥ Ahora sí: detectar si la tarea está asociada a presupuestos
       if (
         mensajeBackend.toLowerCase().includes('presupuesto') ||
         mensajeBackend.toLowerCase().includes('asociada') ||
@@ -2110,7 +2157,7 @@ private actualizarTablaYStorage() {
   localStorage.setItem(this.authTareasKey(this.clienteSeleccionado?.id ?? null), JSON.stringify(this.tareasAgregadas));
   this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
   // persistCurrentTasksLocal() removido: los servicios ya escriben en IDB
-  // al mutar; llamarlo aquí causaría loop liveQuery → effect → IDB → liveQuery
+  // al mutar; llamarlo aquí causaría loop liveQuery â†’ effect â†’ IDB â†’ liveQuery
 
   if (!this.trialMode) {
     if (this.clienteSeleccionado?.id) {
@@ -2294,23 +2341,14 @@ onImageChange(event: Event): void {
 
 
 
-  saveFormData(): void {
+    saveFormData(): void {
 
  if (this.trialMode) {
   const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
   const demoEmpresas = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
 
-  /*const soloDefault =
-  demoEmpresas.length === 1 && demoEmpresas[0].id === 1234;
-
-if (demoEmpresas.length >= 1 && !soloDefault) {
-  this.appToast.info('En modo demo solo podés tener 1 empresa', 'Modo demo');
-  return;
-}*/
-
-  // Si ya existe una empresa demo, bloquear nuevas
-  if (demoEmpresas.length >= 2) {
-    this.appToast.info('En modo demo solo podés crear 1 empresa', 'Modo demo');
+  if (this.isEmpresaCreateLimitReached) {
+    this.uiDialog.info({ title: 'Límite alcanzado', text: 'En modo demo podés guardar hasta ' + this.currentEmpresaLimit + ' empresas.' });
     return;
   }
 
@@ -2340,11 +2378,6 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
     infoBoxColorHex: this.presupuestoInfoBoxColorHex,
     infoBoxOpacity: this.presupuestoInfoBoxOpacity
   };
-
-/*if (soloDefault) {
-  demoEmpresas.length = 0; // elimina la demo por defecto
-}*/
-
 
   demoEmpresas.push(nuevaEmpresa);
   localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresas));
@@ -2378,6 +2411,11 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       return;
     }
 
+    if (this.isEmpresaCreateLimitReached) {
+      this.uiDialog.info({ title: 'Límite alcanzado', text: 'Tu plan permite crear hasta ' + this.currentEmpresaLimit + ' empresa' + (this.currentEmpresaLimit === 1 ? '' : 's') + '.' });
+      return;
+    }
+
     const syncedUploadedImage = localStorage.getItem('uploadedImage') || '';
     const resolvedLogoUrl = navigator.onLine && this.logoUrl.startsWith('data:image/')
       ? syncedUploadedImage || this.logoUrl
@@ -2407,7 +2445,6 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       infoBoxOpacity: this.presupuestoInfoBoxOpacity
     };
     if (this.empresaEditId !== null) {
-      // Modo edición: actualizar empresa existente
       this.empresaService.updateEmpresa(this.empresaEditId, formData).subscribe({
         next: (empresaActualizada) => {
           this.applySavedEmpresa({ ...formData, ...empresaActualizada, id: this.empresaEditId ?? empresaActualizada.id });
@@ -2429,7 +2466,6 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
         }
       });
     } else {
-      // Modo creación: crear nueva empresa
       this.empresaService.saveEmpresa(formData).subscribe({
         next: (empresaCreada) => {
           this.applySavedEmpresa(empresaCreada);
@@ -2452,7 +2488,6 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       });
     }
   }
-
   private closeEmpresaModal(): void {
     const modal = bootstrap.Modal.getInstance(document.getElementById('exampleModal'));
     modal?.hide();
@@ -2493,7 +2528,7 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
 
 
 
-  saveClientData(form: NgForm): void {
+    saveClientData(form: NgForm): void {
 
     if (!this.validateForm(form)) {
       return;
@@ -2501,6 +2536,16 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
 
     if (!this.selectedEmpresaId?.id) {
       this.appToast.error('Debe seleccionar una empresa', 'Error');
+      return;
+    }
+
+    if (this.trialMode && this.getDemoClientesCount() >= this.currentClienteLimit) {
+      this.uiDialog.info({ title: 'Límite alcanzado', text: 'En modo demo podés guardar hasta ' + this.currentClienteLimit + ' clientes.' });
+      return;
+    }
+
+    if (!this.trialMode && this.totalClientesUsuario >= this.currentClienteLimit) {
+      this.uiDialog.info({ title: 'Límite alcanzado', text: 'Tu plan permite guardar hasta ' + this.currentClienteLimit + ' clientes.' });
       return;
     }
 
@@ -2513,48 +2558,26 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       email: this.clientEmail,
       clave: this.clientClave,
       direccion: this.clientDireccion,
-      empresaId: this.selectedEmpresaId.id // Usa selectedEmpresaId.id
+      empresaId: this.selectedEmpresaId.id
     };
 
     if (this.trialMode) {
+      const localId = Date.now();
+      const localCliente = { ...clientData, id: localId };
+      localStorage.setItem(`demoCliente_${localId}`, JSON.stringify(localCliente));
 
-  const demoClientes = Object.keys(localStorage)
-    .filter(key => key.startsWith('demoCliente_'))
-    .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
-    .filter(c => c && c.empresaId === this.selectedEmpresaId?.id);
-
-  if (demoClientes.length >= 2) {
-    this.appToast.info('En modo demo solo podés crear 1 cliente', 'Modo demo');
-    return;
-  }
-  const clientData: Cliente = {
-    name: this.clientName,
-    contact: this.clientContact,
-    budgetDate: this.budgetDate,
-    additionalDetails: this.additionalDetailsClient,
-    userCode: this.userCode,
-    email: this.clientEmail,
-    clave: this.clientClave,
-    direccion: this.clientDireccion,
-    empresaId: this.selectedEmpresaId.id
-  };
-
-  // Guardar localmente en demo
-  const localId = Date.now();
-  const localCliente = { ...clientData, id: localId };
-  localStorage.setItem(`demoCliente_${localId}`, JSON.stringify(localCliente));
-
-  this.applySavedCliente(localCliente);
-  this.finishClientSaveFlow('Cliente guardado en modo demo');
-  return;
-}
-
+      this.applySavedCliente(localCliente);
+      this.totalClientesUsuario = this.getDemoClientesCount();
+      this.finishClientSaveFlow('Cliente guardado en modo demo');
+      return;
+    }
 
     this.isSavingClient = true;
     this.clienteService.saveCliente(clientData).subscribe({
       next: (cliente) => {
         localStorage.setItem(`clientData_${cliente.id || Date.now()}`, JSON.stringify(cliente));
         this.applySavedCliente(cliente);
+        this.refreshClienteCount();
         this.finishClientSaveFlow(
           Number(cliente?.id) < 0
             ? 'Cliente guardado localmente. Se sincronizara cuando vuelva la conexion.'
@@ -2569,7 +2592,6 @@ if (demoEmpresas.length >= 1 && !soloDefault) {
       }
     });
   }
-
   validateForm(form: NgForm): boolean {
     if (!form.valid) {
       const nameCtrl = form.controls['clientName'];
@@ -2749,7 +2771,11 @@ getClientesByUserCode(): void {
 
 
 openListaClientesModal(): void {
-    this.getClientesByUserCode();
+    if (this.trialMode) {
+      this.loadDemoClientesGlobales();
+    } else {
+      this.getClientesByUserCode();
+    }
     const modalElement = document.getElementById('listaClientesModal');
     if (!modalElement) {
       console.error('Modal listaClientesModal no encontrado en el DOM');
@@ -2771,6 +2797,8 @@ fetchUserData(): void {
       if (this.userData?.fechaVencimiento) {
         this.calculateRemainingTime(this.userData.fechaVencimiento);
       }
+      this.loadMembershipLimits();
+      this.refreshClienteCount();
       this.loadProvincias();
       this.obtenerTareas();
       this.loadWeather();
@@ -2785,6 +2813,8 @@ fetchUserData(): void {
       if (this.userData.fechaVencimiento) {
         this.calculateRemainingTime(this.userData.fechaVencimiento);
       }
+      this.loadMembershipLimits();
+      this.refreshClienteCount();
       if (!hasCachedData) {
         this.loadProvincias();
         this.obtenerTareas();
@@ -2801,6 +2831,8 @@ fetchUserData(): void {
         if (this.userData?.fechaVencimiento) {
           this.calculateRemainingTime(this.userData.fechaVencimiento);
         }
+        this.loadMembershipLimits();
+        this.refreshClienteCount();
         this.loadProvincias();
         this.obtenerTareas();
         this.loadWeather();
@@ -2851,32 +2883,20 @@ fetchUserData(): void {
       this.syncSelectedEmpresaStorage(normalizedEmpresa);
       this.cargarDatosEmpresaSeleccionada();
       void this.actualizarImagenEmpresa(normalizedEmpresa);
+      if (this.trialMode) {
+        this.loadDemoClientesGlobales();
+      }
       return;
     }
 
     this.clearEmpresaDependentState();
 
     if (this.trialMode) {
-      // Demo: cargar clientes hardcodeados + localStorage
       this.selectedEmpresaId = normalizedEmpresa;
       this.syncSelectedEmpresaStorage(normalizedEmpresa);
       this.cargarDatosEmpresaSeleccionada();
       void this.actualizarImagenEmpresa(normalizedEmpresa);
-      if (normalizedEmpresa?.id) {
-        const demoClientes = Object.keys(localStorage)
-          .filter(key => key.startsWith('demoCliente_'))
-          .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
-          .filter(c => c && c.empresaId === normalizedEmpresa.id);
-        const testClients: Cliente[] = [
-          { id: 10001, name: 'Constructora del Sol S.A.', contact: '11-4455-6677', email: 'contacto@constructoradelsol.com', direccion: 'Av. Libertador 1500, CABA', budgetDate: new Date().toISOString().split('T')[0], empresaId: normalizedEmpresa.id, additionalDetails: 'Cliente corporativo - Refacción oficinas', userCode: 'demo', clave: '30-12345678-9' },
-          { id: 10002, name: 'Ing. Ricardo Martínez', contact: '221-555-0987', email: 'rmartinez@email.com', direccion: 'Calle 50 nro 123, La Plata', budgetDate: new Date().toISOString().split('T')[0], empresaId: normalizedEmpresa.id, additionalDetails: 'Particular - Proyecto vivienda unifamiliar', userCode: 'demo', clave: '20-98765432-1' }
-        ];
-        this.clientes = [...testClients, ...demoClientes];
-        this.updatePaginatedClientes();
-        const savedId = localStorage.getItem('selectedClienteId');
-        const clienteFinal = (savedId ? this.clientes.find(c => String(c.id) === savedId) : null) ?? this.clientes[0];
-        if (clienteFinal) this.seleccionarCliente(clienteFinal);
-      }
+      this.loadDemoClientesGlobales();
       return;
     }
 
@@ -3193,7 +3213,7 @@ fetchUserData(): void {
     }
   }
 
-  // ── Tareas Personalizadas ────────────────────────────────────────────────
+  // â”€â”€ Tareas Personalizadas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   private readonly TP_DEMO_KEY = 'demo_tareas_personalizadas';
   private readonly TP_LIMIT_DEMO = 5;
   private readonly TP_LIMIT_VIP = 500;
@@ -3502,7 +3522,7 @@ fetchUserData(): void {
     return this.trialMode ? this.TP_LIMIT_DEMO : this.TP_LIMIT_VIP;
   }
 
-  get tareasPersonalizadasFiltradas(): TareaPersonalizada[] {
+    get tareasPersonalizadasFiltradas(): TareaPersonalizada[] {
     const query = this.tpBusquedaPersonalizada.trim().toLowerCase();
     if (!query) {
       return this.tareasPersonalizadas;
@@ -3513,7 +3533,175 @@ fetchUserData(): void {
       (tp.descripcion || '').toLowerCase().includes(query)
     );
   }
+
+  get isEmpresaCreateLimitReached(): boolean {
+    return this.empresaEditId === null && this.empresas.length >= this.currentEmpresaLimit;
+  }
+
+  get currentEmpresaLimit(): number {
+    if (this.trialMode) {
+      return this.membershipLimits.demoMaxEmpresas || 3;
+    }
+
+    return this.resolveCurrentPlanMonths() >= 6
+      ? (this.membershipLimits.vip6MaxEmpresas || 3)
+      : (this.membershipLimits.vip3MaxEmpresas || 1);
+  }
+
+  get currentClienteLimit(): number {
+    if (this.trialMode) {
+      return this.membershipLimits.demoMaxClientes || 6;
+    }
+
+    return this.resolveCurrentPlanMonths() >= 6
+      ? (this.membershipLimits.vip6MaxClientes || 60)
+      : (this.membershipLimits.vip3MaxClientes || 30);
+  }
+
+  private loadMembershipLimits(): void {
+    const pais = (this.userData?.pais || this.userData?.province || '').toString().trim();
+    if (!pais) {
+      return;
+    }
+
+    this.membershipLimitsService.getByPais(pais).subscribe({
+      next: limits => {
+        if (limits) {
+          this.membershipLimits = { ...this.membershipLimits, ...limits };
+        }
+      },
+      error: () => {
+        // Mantener defaults locales si falla la carga.
+      }
+    });
+  }
+
+  private refreshClienteCount(): void {
+    if (this.trialMode) {
+      this.totalClientesUsuario = this.getDemoClientesCount();
+      return;
+    }
+
+    if (!this.userCode?.trim()) {
+      this.totalClientesUsuario = 0;
+      return;
+    }
+
+    this.clienteService.getClienteByUserCode(this.userCode).pipe(takeUntil(this.destroy$)).subscribe({
+      next: clientes => {
+        this.totalClientesUsuario = Array.isArray(clientes) ? clientes.length : 0;
+      },
+      error: () => {
+        // Mantener el último valor conocido si falla la consulta.
+      }
+    });
+  }
+
+  private getDemoDefaultClientes(): Cliente[] {
+    const today = new Date().toISOString().split('T')[0];
+    return [
+      {
+        id: 10001,
+        name: 'Constructora del Sol S.A.',
+        contact: '11-4455-6677',
+        email: 'contacto@constructoradelsol.com',
+        direccion: 'Av. Libertador 1500, CABA',
+        budgetDate: today,
+        additionalDetails: 'Cliente corporativo - Refaccion de oficinas',
+        userCode: this.userCode,
+        clave: '30-12345678-9',
+        empresaId: 1
+      },
+      {
+        id: 10002,
+        name: 'Ing. Ricardo Martinez',
+        contact: '221-555-0987',
+        email: 'rmartinez@email.com',
+        direccion: 'Calle 50 nro 123, La Plata',
+        budgetDate: today,
+        additionalDetails: 'Particular - Proyecto vivienda unifamiliar',
+        userCode: this.userCode,
+        clave: '20-98765432-1',
+        empresaId: 1
+      },
+      {
+        id: 10003,
+        name: 'Hotel Costa Azul',
+        contact: '341-555-2211',
+        email: 'administracion@hotelcostaazul.com',
+        direccion: 'Boulevard Costero 88, Mar del Plata',
+        budgetDate: today,
+        additionalDetails: 'Cadena hotelera - Mantenimiento y mejoras',
+        userCode: this.userCode,
+        clave: '30-45678912-3',
+        empresaId: 1
+      }
+    ];
+  }
+  private getDemoClientes(): Cliente[] {
+    const savedClientes = Object.keys(localStorage)
+      .filter(key => key.startsWith('demoCliente_'))
+      .map(key => JSON.parse(localStorage.getItem(key) || '{}'))
+      .filter(cliente => cliente && cliente.userCode === this.userCode);
+    return [...this.getDemoDefaultClientes(), ...savedClientes];
+  }
+  private loadDemoClientesGlobales(): void {
+    this.clientes = this.getDemoClientes();
+    this.updatePaginatedClientes();
+    this.totalClientesUsuario = this.clientes.length;
+    const savedId = localStorage.getItem('selectedClienteId');
+    const clienteFinal =
+      (savedId ? this.clientes.find(cliente => String(cliente.id) === savedId) : null) ??
+      this.clienteSeleccionado ??
+      this.clientes[0] ??
+      null;
+    if (clienteFinal) {
+      this.clienteSeleccionado = clienteFinal;
+      this.syncSelectedClienteStorage();
+    }
+  }
+  private getDemoClientesCount(): number {
+    return this.getDemoClientes().length;
+  }
+
+  private resolveCurrentPlanMonths(): number {
+    const directCandidates = [
+      this.userData?.planMonths,
+      this.userData?.membershipPlanMonths,
+      this.userData?.durationMonths,
+      this.userData?.months,
+      this.userData?.plan?.months,
+      this.userData?.plan?.planMonths,
+      this.userData?.membership?.months,
+      this.userData?.membership?.planMonths
+    ];
+
+    for (const candidate of directCandidates) {
+      const parsed = Number(candidate);
+      if (!Number.isNaN(parsed) && parsed > 0) {
+        return parsed >= 6 ? 6 : 3;
+      }
+    }
+
+    const fechaRegistro = this.userData?.fechaRegistro ? new Date(this.userData.fechaRegistro) : null;
+    const fechaVencimiento = this.userData?.fechaVencimiento ? new Date(this.userData.fechaVencimiento) : null;
+    if (fechaRegistro && fechaVencimiento && !Number.isNaN(fechaRegistro.getTime()) && !Number.isNaN(fechaVencimiento.getTime())) {
+      const diffDays = Math.round((fechaVencimiento.getTime() - fechaRegistro.getTime()) / 86400000);
+      if (diffDays >= 150) {
+        return 6;
+      }
+      if (diffDays > 0) {
+        return 3;
+      }
+    }
+
+    return this.userCode?.trim().length >= 6 ? 6 : 3;
+  }
 }
+
+
+
+
 
 
 

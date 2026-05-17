@@ -20,6 +20,10 @@ declare const html2pdf: any;
   styleUrl: './presupuestos-guardados.component.scss'
 })
 export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
+  private static readonly VIP_3_MONTH_LIMIT = 30;
+  private static readonly VIP_6_MONTH_LIMIT = 60;
+  private static readonly VIP_6_MONTH_THRESHOLD_DAYS = 150;
+
   @Input() tareasActuales: UserTarea[] = [];
   @Input() clienteActual: Cliente | null = null;
   @Input() empresaActual: Empresa | null = null;
@@ -32,7 +36,6 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
 
   nombreTemporal = '';
   filtro = '';
-  maxItems = 30;
   presupuestos: SavedPresupuesto[] = [];
   presupuestoEditando: SavedPresupuesto | null = null;
   tareaAAgregarId: number | null = null;
@@ -108,6 +111,13 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     const nombre = this.nombreTemporal.trim();
     if (!nombre) { this.appToast.error('El nombre del presupuesto es obligatorio'); return; }
     if (this.nombreYaExiste(nombre)) { this.appToast.error('Ya existe un presupuesto con este nombre. Elige otro.'); return; }
+    if (!this.presupuestoCargado?.id && this.limiteAlcanzado) {
+      this.uiDialog.info({
+        title: 'Limite alcanzado',
+        text: `Tu plan permite guardar hasta ${this.maxItems} presupuestos. Elimina uno existente para guardar otro.`
+      });
+      return;
+    }
 
     const payload = {
       name: nombre,
@@ -275,12 +285,18 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
 
   get totalGuardados(): number { return this.presupuestos.length; }
 
+  get maxItems(): number { return this.resolveBudgetLimit(); }
+
   get puedeGuardar(): boolean { return this.tareasActuales.length > 0 && this.totalGuardados < this.maxItems; }
 
   get puedeGuardarr(): boolean {
     const nombreValido = this.nombreTemporal.trim().length > 0;
     const nombreUnico = !this.nombreYaExiste(this.nombreTemporal);
     return this.tareasActuales.length > 0 && nombreValido && nombreUnico;
+  }
+
+  get puedeCrearPresupuesto(): boolean {
+    return this.puedeGuardarr && !this.limiteAlcanzado;
   }
 
   get tienePresupuestoCargado(): boolean { return !!this.presupuestoCargado?.id; }
@@ -292,7 +308,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   }
 
   get puedeEjecutarAccionPrincipal(): boolean {
-    return this.tienePresupuestoCargado ? this.puedeActualizarPresupuestoCargado : this.puedeGuardarr;
+    return this.tienePresupuestoCargado ? this.puedeActualizarPresupuestoCargado : this.puedeCrearPresupuesto;
   }
 
   get isOffline(): boolean { return !navigator.onLine; }
@@ -321,6 +337,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     if (this.tareasActuales.length === 0) return 'Agrega tareas para guardar';
     if (!this.nombreTemporal.trim()) return 'Ingresa un nombre para el presupuesto';
     if (this.nombreYaExiste(this.nombreTemporal)) return 'Nombre ya utilizado';
+    if (this.limiteAlcanzado && !this.tienePresupuestoCargado) return `Has alcanzado el limite de ${this.maxItems} presupuestos`;
     return 'Guardar presupuesto';
   }
 
@@ -402,6 +419,82 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     this.lastBudgetActionKey = key;
     this.lastBudgetActionAt = now;
     return false;
+  }
+
+  private resolveBudgetLimit(): number {
+    const userData = this.readCurrentUserData();
+    const planMonths = this.resolveUserPlanMonths(userData);
+
+    if (planMonths !== null) {
+      return planMonths >= 6
+        ? PresupuestosGuardadosComponent.VIP_6_MONTH_LIMIT
+        : PresupuestosGuardadosComponent.VIP_3_MONTH_LIMIT;
+    }
+
+    const planDurationDays = this.resolvePlanDurationDays(
+      userData?.['fechaRegistro'],
+      userData?.['fechaVencimiento']
+    );
+    if (planDurationDays !== null && planDurationDays >= PresupuestosGuardadosComponent.VIP_6_MONTH_THRESHOLD_DAYS) {
+      return PresupuestosGuardadosComponent.VIP_6_MONTH_LIMIT;
+    }
+
+    return PresupuestosGuardadosComponent.VIP_3_MONTH_LIMIT;
+  }
+
+  private readCurrentUserData(): Record<string, unknown> | null {
+    try {
+      const raw = localStorage.getItem('userData');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === 'object' ? parsed as Record<string, unknown> : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private resolveUserPlanMonths(userData: Record<string, unknown> | null): number | null {
+    if (!userData) return null;
+
+    const nestedPlan = this.asRecord(userData['plan']);
+    const nestedMembership = this.asRecord(userData['membership']);
+    const candidates = [
+      userData['planMonths'],
+      userData['membershipPlanMonths'],
+      userData['durationMonths'],
+      userData['months'],
+      nestedPlan?.['months'],
+      nestedPlan?.['planMonths'],
+      nestedMembership?.['months'],
+      nestedMembership?.['planMonths']
+    ];
+
+    for (const candidate of candidates) {
+      const numericValue = Number(candidate);
+      if (Number.isFinite(numericValue) && numericValue > 0) {
+        return numericValue;
+      }
+    }
+
+    return null;
+  }
+
+  private resolvePlanDurationDays(fechaRegistro: unknown, fechaVencimiento: unknown): number | null {
+    if (typeof fechaRegistro !== 'string' || typeof fechaVencimiento !== 'string') {
+      return null;
+    }
+
+    const start = new Date(fechaRegistro).getTime();
+    const end = new Date(fechaVencimiento).getTime();
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) {
+      return null;
+    }
+
+    return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+  }
+
+  private asRecord(value: unknown): Record<string, unknown> | null {
+    return value && typeof value === 'object' ? value as Record<string, unknown> : null;
   }
 
   private buildPrintableDocument(presupuesto: SavedPresupuesto): HTMLElement {
