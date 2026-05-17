@@ -238,7 +238,7 @@ login(): void {
     const normalizedCode = this.accessCodeService.normalizeCode(this.code);
 
     this.accessCodeService.getCodeCountry(normalizedCode).subscribe({
-      next: (detectedCountry) => {
+      next: async (detectedCountry) => {
         this.code = normalizedCode;
         this.codeCountry = detectedCountry;
         this.codeCountryErrorMessage = this.getCodeCountryMismatchMessage();
@@ -248,6 +248,14 @@ login(): void {
           this.uiDialog.error({ title: 'Error', text: this.codeCountryErrorMessage });
           return;
         }
+
+        const confirmed = await this.uiDialog.confirm({
+          title: 'Confirmar registro',
+          text: `¿Confirmas registrar el correo "${this.email}" con el código "${this.code}"?`,
+          confirmText: 'Registrar',
+          cancelText: 'Cancelar'
+        });
+        if (!confirmed) return;
 
         this.authService.assignEmail({
           code: this.code,
@@ -385,184 +393,15 @@ login(): void {
 
 
   activarModoPrueba(): void {
-  const trialUserData = {
-    pais: 'Argentina',
-    provincia: 'Buenos Aires',
-    fechaVencimiento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-  };
-
-  const demoEmpresa = [
-    {
-      id: 1234,
-      name: 'Empresa Demo',
-      phone: '11 0000-0000',
-      email: 'demo@metroapp.site',
-      description: 'Empresa de prueba',
-      logoUrl: 'assets/demo-logo/demo-logo.jpg',
-      userCode: 'demo'
-    }
-  ];
-
-
-
-  const demoTareas = [
-  {
-    id: 1,
-    tarea: 'BASE ZAPATA ARMADO Y LLENADO H O (1,00X1,00X0,80)',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 2,
-    tarea: 'BASE ZAPATA ARMADO Y LLENADO H O X M3',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 3,
-    tarea: 'BASE ZAPATA SOLO CAVADO 0,80X0,80X1M',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 4,
-    tarea: 'BASE COAT',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 5,
-    tarea: 'BASE H O LIMPIEZA 5 CM DE ESPESOR H O 180 A200 KG/M3 + CENTRADO ARMADURA',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 6,
-    tarea: 'BASES ARMADO (GANDES OBRAS) X CANTIDAD 0,8X0,8 (PARRILLA Y ATADO PIE ARMADURA DE COLUMNA APLOMADA EN EXCAVACION)',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 7,
-    tarea: 'BASES ZAPATAS LLENADO M3 (GRANDES OBRAS)',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 8,
-    tarea: 'BIDE ARMADO GRIFERIA',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 9,
-    tarea: 'BOCA DE CALDERA',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 10,
-    tarea: 'BOCA DE CIRCUITO',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  }
-];
-
-const demoCliente = {
-    id: 5678,
-    name: 'Cliente Demo',
-    contact: '11 1111-1111',
-    budgetDate: new Date().toISOString().split('T')[0],
-    additionalDetails: 'Cliente de prueba',
-    userCode: 'demo',
-    email: 'cliente@metroapp.site',
-    clave: '20-00000000-0',
-    direccion: 'Direccion demo 123',
-   // empresaId: 1234
-  };
-
-  // Limpiar claves de sesión VIP que podrían interferir
+  ['demoEmpresas', 'demoTareas', 'selectedEmpresaId', 'selectedEmpresa',
+   'selectedClienteId', 'selectedCliente', 'tareasAgregadas', 'userData']
+    .forEach(k => localStorage.removeItem(k));
   Object.keys(localStorage)
-    .filter(key => key.startsWith('demoCliente_') || key.startsWith('selectedClienteId_empresa_'))
-    .forEach(key => localStorage.removeItem(key));
-
-  const selectedDemoEmpresa = demoEmpresa[0];
+    .filter(k => k.startsWith('demoCliente_') || k.startsWith('demoTareasCliente_'))
+    .forEach(k => localStorage.removeItem(k));
 
   localStorage.setItem('trialMode', 'true');
   localStorage.setItem('userCode', 'demo');
-  localStorage.setItem('userData', JSON.stringify(trialUserData));
-  localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresa));
-  localStorage.setItem('demoTareas', JSON.stringify(demoTareas));
-  localStorage.setItem(`demoCliente_${demoCliente.id}`, JSON.stringify(demoCliente));
-  localStorage.removeItem('selectedEmpresaId');
-  localStorage.removeItem('selectedEmpresa');
-  localStorage.setItem('selectedEmpresaId', String(selectedDemoEmpresa.id));
-  localStorage.setItem('selectedEmpresa', JSON.stringify(selectedDemoEmpresa));
-  localStorage.removeItem('selectedClienteId');
-  localStorage.removeItem('selectedCliente');
-  localStorage.setItem('selectedClienteId', String(demoCliente.id));
-  localStorage.setItem('selectedCliente', JSON.stringify(demoCliente));
-  localStorage.removeItem('tareasAgregadas');
   this.route.navigate(['dashboard']);
 }
 

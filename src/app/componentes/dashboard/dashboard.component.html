@@ -137,9 +137,9 @@
           <i class="bi" [ngClass]="tpEditingId != null ? 'bi-pencil-square' : 'bi-journal-plus'"></i>
         </div>
         <div class="tp-editor-modal__copy">
-          <span class="tp-editor-modal__eyebrow">{{ tpEditingId != null ? 'EdiciÛn r·pida' : 'Nueva tarea personalizada' }}</span>
+          <span class="tp-editor-modal__eyebrow">{{ tpEditingId != null ? 'Edicion r√°pida' : 'Nueva tarea personalizada' }}</span>
           <h4 class="tp-editor-modal__title">{{ tpEditingId != null ? 'Actualizar tarea guardada' : 'Crear una tarea profesional' }}</h4>
-          <p class="tp-editor-modal__subtitle">DefinÌ nombre, descripciÛn y costo para guardar una tarea clara, prolija y lista para cotizar.</p>
+          <p class="tp-editor-modal__subtitle">Define nombre, descripci√≥n y costo para guardar una tarea clara, prolija y lista para cotizar.</p>
         </div>
         <button type="button" class="btn-close ms-auto" (click)="cerrarTpEditor()" aria-label="Cerrar"></button>
       </div>
@@ -166,7 +166,7 @@
                 </div>
 
                 <div class="mb-3">
-                  <label class="tp-label">DescripciÛn <span class="tp-optional">(opcional)</span></label>
+                  <label class="tp-label">DescripciÔøΩn <span class="tp-optional">(opcional)</span></label>
                   <textarea class="form-control tp-input" placeholder="Cont√° brevemente qu√© incluye esta tarea..." [(ngModel)]="tpForm.descripcion" rows="4"></textarea>
                 </div>
 
@@ -245,7 +245,7 @@
                   </div>
                 </div>
                 <div class="mb-3">
-                  <label class="tp-label">DescripciÛn <span class="tp-optional">(opcional)</span></label>
+                  <label class="tp-label">DescripciÔøΩn <span class="tp-optional">(opcional)</span></label>
                   <textarea class="form-control tp-input" placeholder="Detalle opcional..." [(ngModel)]="tpForm.descripcion" rows="3"></textarea>
                 </div>
                 <div class="mb-3">
@@ -574,7 +574,7 @@
           </li>
         </ul>
         <div class="task-tabs-toolbar__action">
-          <button type="button" class="task-help-btn" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="CÛmo usar el buscador">
+          <button type="button" class="task-help-btn" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="CÔøΩmo usar el buscador">
             <i class="fas fa-info-circle" aria-hidden="true"></i>
             <span>C√≥mo buscar</span>
           </button>
@@ -779,7 +779,7 @@
               <th class="text-center">Tarea</th>
               <!--th-- class="text-center">Rubro</!--th-->
               <!--th class="text-center">Categor√≠a</th-->
-              <!--th class="text-center">DescripciÛn</th-->
+              <!--th class="text-center">DescripciÔøΩn</th-->
               <!--th class="text-center">√Årea (m¬≤/m¬≥)</th-->
               <th class="text-center">√Årea (m¬≤/m¬≥)</th>
               <th class="text-center">Costo</th>
@@ -1069,7 +1069,17 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content modal-zona">
       <div class="modal-header">
-        <h5 class="modal-title" id="listaClientesLabel">Lista de Clientes</h5>
+        <div class="d-flex align-items-center gap-3 flex-grow-1">
+          <h5 class="modal-title mb-0" id="listaClientesLabel">Lista de Clientes</h5>
+          <span
+            class="badge rounded-pill fs-6 px-3 py-2"
+            [ngClass]="{
+              'bg-success':  totalClientesUsuario < currentClienteLimit * 0.8,
+              'bg-warning text-dark': totalClientesUsuario >= currentClienteLimit * 0.8 && totalClientesUsuario < currentClienteLimit,
+              'bg-danger':   totalClientesUsuario >= currentClienteLimit
+            }"
+          >{{ totalClientesUsuario }} / {{ currentClienteLimit }}</span>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -1216,7 +1226,7 @@
           </div>
 
           <div class="mb-3 coolinput">
-            <label for="additionalDetailsempresa" class="text">DescripciÛn <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+            <label for="additionalDetailsempresa" class="text">Descripci√≥n <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
             <textarea class="form-control input" id="additionalDetailsempresa" name="additionalDetailsEmpresa"
                       [(ngModel)]="additionalDetailsEmpresa" rows="2"
                       placeholder="Contale a tus clientes de qu√© se trata tu empresa"></textarea>
@@ -1264,7 +1274,7 @@
             <div class="mb-3 coolinput">
               <label for="empresaFacebook" class="text">Facebook <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
               <input type="text" class="form-control input" id="empresaFacebook" name="empresaFacebook"
-                     [(ngModel)]="empresaFacebook" placeholder="URL de tu p·gina" />
+                     [(ngModel)]="empresaFacebook" placeholder="URL de tu pÔøΩgina" />
             </div>
           </div>
 
@@ -1274,7 +1284,7 @@
 
           <div class="modal-footer d-flex justify-content-between px-0 pb-0 mt-3">
             <button type="button" class="btn btn-secondary" (click)="openListaEmpresasModal()">Seleccionar empresa</button>
-            <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'LÌmite alcanzado para tu plan' : null">
+            <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'LÔøΩmite alcanzado para tu plan' : null">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
                 <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
               </svg>
@@ -1294,7 +1304,17 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content modal-zona">
       <div class="modal-header">
-        <h5 class="modal-title" id="listaEmpresasLabel">Lista de Empresas</h5>
+        <div class="d-flex align-items-center gap-3 flex-grow-1">
+          <h5 class="modal-title mb-0" id="listaEmpresasLabel">Lista de Empresas</h5>
+          <span
+            class="badge rounded-pill fs-6 px-3 py-2"
+            [ngClass]="{
+              'bg-success':  empresas.length < currentEmpresaLimit * 0.8,
+              'bg-warning text-dark': empresas.length >= currentEmpresaLimit * 0.8 && empresas.length < currentEmpresaLimit,
+              'bg-danger':   empresas.length >= currentEmpresaLimit
+            }"
+          >{{ empresas.length }} / {{ currentEmpresaLimit }}</span>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -1361,7 +1381,7 @@
 
       <p class="card-text mb-1"><strong>Tel:</strong> {{ empresa.phone }}</p>
       <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
-      <p class="card-text mb-1"><strong>DescripciÛn:</strong> {{ empresa.description }}</p>
+      <p class="card-text mb-1"><strong>Descripci√≥n:</strong> {{ empresa.description }}</p>
 
       <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
         <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action"
@@ -1413,7 +1433,7 @@
                 <th scope="col">Nombre</th>
                 <th scope="col">Tel√©fono</th>
                 <th scope="col">Email</th>
-                <th scope="col">DescripciÛn</th>
+                <th scope="col">DescripciÔøΩn</th>
                 <th scope="col">Logo</th>
                 <th scope="col">Acciones</th>
               </tr>
@@ -1707,7 +1727,7 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content" style="border-radius: 14px; border: 1px solid rgba(64,158,255,.2);">
       <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6);">
-        <h5 class="modal-title" id="buscadorInfoModalLabel">CÛmo usar el buscador</h5>
+        <h5 class="modal-title" id="buscadorInfoModalLabel">CÔøΩmo usar el buscador</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body" style="background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); font-size: 12px;">

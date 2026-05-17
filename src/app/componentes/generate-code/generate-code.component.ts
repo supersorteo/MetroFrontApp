@@ -190,11 +190,19 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     this.applyFilter();
   }
 
-  validateAndGenerateCode(): void {
+  async validateAndGenerateCode(): Promise<void> {
     if (!this.code.trim()) {
       this.uiDialog.warning({ title: 'Campo requerido', text: 'Debe ingresar un código.' });
       return;
     }
+
+    const confirmed = await this.uiDialog.confirm({
+      title: 'Agregar código',
+      text: `¿Confirmas agregar el código "${this.code.trim()}"?`,
+      confirmText: 'Agregar',
+      cancelText: 'Cancelar'
+    });
+    if (!confirmed) return;
 
     this.authService.agregarCode({ code: this.code, email: null, pais: this.admin.pais }).subscribe({
       next: response => {
@@ -210,12 +218,21 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     });
   }
 
-  generateCodes(months: 3 | 6): void {
+  async generateCodes(months: 3 | 6): Promise<void> {
     const count = months === 3 ? this.codeCount3 : this.codeCount6;
     if (count <= 0) {
       this.uiDialog.warning({ title: 'Cantidad inválida', text: 'La cantidad debe ser mayor a 0.' });
       return;
     }
+
+    const plural = count !== 1 ? 's' : '';
+    const confirmed = await this.uiDialog.confirm({
+      title: `Generar ${count} código${plural}`,
+      text: `¿Confirmas generar ${count} código${plural} de ${months} meses?`,
+      confirmText: 'Generar',
+      cancelText: 'Cancelar'
+    });
+    if (!confirmed) return;
 
     const length = months === 3 ? 5 : 6;
     const newCodes: AccessCode[] = Array.from({ length: count }, () => ({
@@ -342,7 +359,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     this.limitsSaving = false;
   }
 
-  saveLimits(): void {
+  async saveLimits(): Promise<void> {
     if (!this.limitsDraft?.id) {
       this.uiDialog.error({ title: 'Error', text: 'No se pudo identificar la configuración a actualizar.' });
       return;
@@ -361,6 +378,14 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       this.uiDialog.warning({ title: 'Valores inválidos', text: 'Todos los límites deben ser números válidos mayores o iguales a 0.' });
       return;
     }
+
+    const confirmed = await this.uiDialog.confirm({
+      title: 'Guardar límites',
+      text: '¿Confirmas guardar los cambios en los límites de membresía?',
+      confirmText: 'Guardar',
+      cancelText: 'Cancelar'
+    });
+    if (!confirmed) return;
 
     this.limitsSaving = true;
     this.adminService.updateLimits(this.limitsDraft.id, this.limitsDraft).subscribe({
@@ -381,11 +406,19 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     });
   }
 
-  saveAdminChanges(): void {
+  async saveAdminChanges(): Promise<void> {
     if (!this.editAdminUsername.trim()) {
       this.editAdminError = 'El usuario no puede estar vacío.';
       return;
     }
+
+    const confirmed = await this.uiDialog.confirm({
+      title: 'Guardar perfil',
+      text: '¿Confirmas guardar los cambios del perfil de administrador?',
+      confirmText: 'Guardar',
+      cancelText: 'Cancelar'
+    });
+    if (!confirmed) return;
 
     const newPass = this.editAdminPasswordNew.trim() || this.editAdminPassword;
     this.adminService.updateAdmin(this.admin.id, {
@@ -447,7 +480,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     setTimeout(() => document.getElementById('tarea-form-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   }
 
-  tareaGuardar(): void {
+  async tareaGuardar(): Promise<void> {
     this.tareaSubmitted = true;
     if (!this.tareaForm.tarea.trim()) {
       this.uiDialog.warning({ title: 'Campo requerido', text: 'El nombre de la tarea es obligatorio.' });
@@ -457,6 +490,17 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       this.uiDialog.warning({ title: 'Campo requerido', text: 'El costo debe ser mayor a 0.' });
       return;
     }
+
+    const isEditing = this.tareaEditingId != null;
+    const confirmed = await this.uiDialog.confirm({
+      title: isEditing ? 'Actualizar tarea' : 'Crear tarea',
+      text: isEditing
+        ? `¿Confirmas actualizar "${this.tareaForm.tarea.trim()}"?`
+        : `¿Confirmas agregar "${this.tareaForm.tarea.trim()}" al catálogo?`,
+      confirmText: isEditing ? 'Actualizar' : 'Crear',
+      cancelText: 'Cancelar'
+    });
+    if (!confirmed) return;
 
     const payload: Tarea = {
       ...this.tareaForm,

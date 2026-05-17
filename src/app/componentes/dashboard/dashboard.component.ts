@@ -886,15 +886,12 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 
 
   private loadDemoData(): void {
-  const demoUserData = localStorage.getItem('userData');
-  this.userData = demoUserData ? JSON.parse(demoUserData) : { pais: 'Argentina', provincia: 'Buenos Aires' };
+  this.userData = { pais: 'Argentina', provincia: 'Buenos Aires' };
   this.userCode = 'demo';
 
-  const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
-  this.empresas = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
-
+  const DEMO_EMPRESA_ID = 1;
   const demoEmpresaBase = {
-    id: 1,
+    id: DEMO_EMPRESA_ID,
     name: 'Metro Constructora Demo',
     phone: '11-2233-4455',
     email: 'contacto@metrodemo.com',
@@ -908,23 +905,32 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     cuilCuit: '30-77889900-1'
   };
 
-  if (this.empresas.length === 0) {
-    this.empresas = [demoEmpresaBase];
-  } else {
-    // Parchar siempre la empresa demo con los campos de redes para evitar datos stale
-    this.empresas = this.empresas.map(e =>
-      e.id === 1 ? { ...demoEmpresaBase, ...e, tiktok: demoEmpresaBase.tiktok, instagram: demoEmpresaBase.instagram, facebook: demoEmpresaBase.facebook, website: demoEmpresaBase.website } : e
-    );
-  }
+  const storedRaw = localStorage.getItem('demoEmpresas');
+  const storedList: any[] = storedRaw ? JSON.parse(storedRaw) : [];
+  const stored = storedList.find(e => e.id === DEMO_EMPRESA_ID);
+  this.empresas = [stored
+    ? { ...demoEmpresaBase, ...stored, tiktok: demoEmpresaBase.tiktok, instagram: demoEmpresaBase.instagram, facebook: demoEmpresaBase.facebook, website: demoEmpresaBase.website }
+    : demoEmpresaBase
+  ];
   localStorage.setItem('demoEmpresas', JSON.stringify(this.empresas));
 
   this.updatePaginatedEmpresas();
-  this.selectedEmpresaId = this.empresas[0] || null;
+  this.selectedEmpresaId = this.empresas[0] ?? null;
 
-  const demoTareas = localStorage.getItem('demoTareas');
-  const tareas = demoTareas ? JSON.parse(demoTareas) : [];
-  this.tareas = tareas;
-  this.tareasFiltradas = this.tareas.map(t => ({ ...t, costo: 1234, totalCost: 1234 }));
+  const demoTareasDefault: Tarea[] = [
+    { id: 1,  tarea: 'BASE ZAPATA ARMADO Y LLENADO H O (1,00X1,00X0,80)',              costo: 1234, rubro: 'Demo', categoria: 'Demo', pais: 'Argentina', descripcion: '', descuento: 0, area: 1, totalCost: 1234 },
+    { id: 2,  tarea: 'BASE ZAPATA ARMADO Y LLENADO H O X M3',                          costo: 1234, rubro: 'Demo', categoria: 'Demo', pais: 'Argentina', descripcion: '', descuento: 0, area: 1, totalCost: 1234 },
+    { id: 3,  tarea: 'BASE ZAPATA SOLO CAVADO 0,80X0,80X1M',                           costo: 1234, rubro: 'Demo', categoria: 'Demo', pais: 'Argentina', descripcion: '', descuento: 0, area: 1, totalCost: 1234 },
+    { id: 4,  tarea: 'BASE COAT',                                                       costo: 1234, rubro: 'Demo', categoria: 'Demo', pais: 'Argentina', descripcion: '', descuento: 0, area: 1, totalCost: 1234 },
+    { id: 5,  tarea: 'BASE H O LIMPIEZA 5 CM DE ESPESOR H O 180 A200 KG/M3',          costo: 1234, rubro: 'Demo', categoria: 'Demo', pais: 'Argentina', descripcion: '', descuento: 0, area: 1, totalCost: 1234 },
+    { id: 6,  tarea: 'BASES ARMADO (GRANDES OBRAS) X CANTIDAD 0,8X0,8',               costo: 1234, rubro: 'Demo', categoria: 'Demo', pais: 'Argentina', descripcion: '', descuento: 0, area: 1, totalCost: 1234 },
+    { id: 7,  tarea: 'BASES ZAPATAS LLENADO M3 (GRANDES OBRAS)',                       costo: 1234, rubro: 'Demo', categoria: 'Demo', pais: 'Argentina', descripcion: '', descuento: 0, area: 1, totalCost: 1234 },
+    { id: 8,  tarea: 'BIDE ARMADO GRIFERIA',                                           costo: 1234, rubro: 'Demo', categoria: 'Demo', pais: 'Argentina', descripcion: '', descuento: 0, area: 1, totalCost: 1234 },
+    { id: 9,  tarea: 'BOCA DE CALDERA',                                                costo: 1234, rubro: 'Demo', categoria: 'Demo', pais: 'Argentina', descripcion: '', descuento: 0, area: 1, totalCost: 1234 },
+    { id: 10, tarea: 'BOCA DE CIRCUITO',                                               costo: 1234, rubro: 'Demo', categoria: 'Demo', pais: 'Argentina', descripcion: '', descuento: 0, area: 1, totalCost: 1234 }
+  ];
+  this.tareas = demoTareasDefault;
+  this.tareasFiltradas = [...demoTareasDefault];
 
   this.tareasAgregadas = [];
   this.mostrarTabla = false;
@@ -937,7 +943,6 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
     this.onEmpresaSeleccionada(this.selectedEmpresaId);
   }
-
 }
 
 
@@ -2534,11 +2539,6 @@ onImageChange(event: Event): void {
     saveClientData(form: NgForm): void {
 
     if (!this.validateForm(form)) {
-      return;
-    }
-
-    if (!this.selectedEmpresaId?.id) {
-      this.appToast.error('Debe seleccionar una empresa', 'Error');
       return;
     }
 
