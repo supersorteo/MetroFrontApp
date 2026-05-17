@@ -192,28 +192,28 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
 
   validateAndGenerateCode(): void {
     if (!this.code.trim()) {
-      this.appToast.error('Debe ingresar un código');
+      this.uiDialog.warning({ title: 'Campo requerido', text: 'Debe ingresar un código.' });
       return;
     }
 
     this.authService.agregarCode({ code: this.code, email: null, pais: this.admin.pais }).subscribe({
       next: response => {
         if (response.message === 'Código agregado con éxito') {
-          this.appToast.success(response.message);
+          this.uiDialog.success({ title: 'Código agregado', text: response.message });
           this.code = '';
           this.loadCodes();
         } else {
-          this.appToast.error(response.message);
+          this.uiDialog.error({ title: 'No se pudo agregar', text: response.message });
         }
       },
-      error: err => this.appToast.error(err.message)
+      error: err => this.uiDialog.error({ title: 'Error', text: err.message })
     });
   }
 
   generateCodes(months: 3 | 6): void {
     const count = months === 3 ? this.codeCount3 : this.codeCount6;
     if (count <= 0) {
-      this.appToast.error('Cantidad inválida');
+      this.uiDialog.warning({ title: 'Cantidad inválida', text: 'La cantidad debe ser mayor a 0.' });
       return;
     }
 
@@ -232,10 +232,10 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
 
     this.authService.agregarCodes(newCodes).subscribe({
       next: res => {
-        this.appToast.success(res.message);
+        this.uiDialog.success({ title: 'Códigos generados', text: res.message });
         this.loadCodes();
       },
-      error: err => this.appToast.error(err.message)
+      error: err => this.uiDialog.error({ title: 'Error al generar', text: err.message })
     });
   }
 
@@ -249,10 +249,10 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       if (!confirmed) return;
       this.authService.deleteCode(code).subscribe({
         next: () => {
-          this.appToast.success('Código eliminado');
+          this.uiDialog.success({ title: 'Código eliminado', text: `El código ${code} fue eliminado correctamente.` });
           this.loadCodes();
         },
-        error: () => this.appToast.error('Error al eliminar')
+        error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudo eliminar el código.' })
       });
     });
   }
@@ -344,7 +344,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
 
   saveLimits(): void {
     if (!this.limitsDraft?.id) {
-      this.appToast.error('No se pudo identificar la configuración a actualizar');
+      this.uiDialog.error({ title: 'Error', text: 'No se pudo identificar la configuración a actualizar.' });
       return;
     }
 
@@ -358,7 +358,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     ];
 
     if (values.some(value => Number(value) < 0 || Number.isNaN(Number(value)))) {
-      this.appToast.warning('Todos los límites deben ser números válidos mayores o iguales a 0');
+      this.uiDialog.warning({ title: 'Valores inválidos', text: 'Todos los límites deben ser números válidos mayores o iguales a 0.' });
       return;
     }
 
@@ -367,16 +367,16 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       next: updated => {
         this.limitsSaving = false;
         if (!updated) {
-          this.appToast.error('No se pudieron actualizar los límites');
+          this.uiDialog.error({ title: 'Error', text: 'No se pudieron actualizar los límites.' });
           return;
         }
         this.membershipLimits = updated;
-        this.appToast.success('Límites actualizados');
+        this.uiDialog.success({ title: 'Límites actualizados', text: 'Los límites de membresía fueron guardados correctamente.' });
         this.closeLimitsPanel();
       },
       error: () => {
         this.limitsSaving = false;
-        this.appToast.error('Error al guardar los límites');
+        this.uiDialog.error({ title: 'Error', text: 'No se pudieron guardar los límites.' });
       }
     });
   }
@@ -398,7 +398,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
         return;
       }
       this.admin = this.adminService.getCurrentAdmin()!;
-      this.appToast.success('Perfil actualizado');
+      this.uiDialog.success({ title: 'Perfil actualizado', text: 'Los cambios del perfil fueron guardados correctamente.' });
       this.showEditAdminPanel = false;
     });
   }
@@ -450,11 +450,11 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   tareaGuardar(): void {
     this.tareaSubmitted = true;
     if (!this.tareaForm.tarea.trim()) {
-      this.appToast.warning('El nombre es obligatorio', 'Campo requerido');
+      this.uiDialog.warning({ title: 'Campo requerido', text: 'El nombre de la tarea es obligatorio.' });
       return;
     }
     if (!this.tareaForm.costo || this.tareaForm.costo <= 0) {
-      this.appToast.warning('El costo debe ser mayor a 0', 'Campo requerido');
+      this.uiDialog.warning({ title: 'Campo requerido', text: 'El costo debe ser mayor a 0.' });
       return;
     }
 
@@ -467,22 +467,22 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     if (this.tareaEditingId != null) {
       this.tareaService.actualizarTarea(this.tareaEditingId, payload).subscribe({
         next: updated => {
-          this.appToast.success(`"${updated.tarea}" actualizada`);
+          this.uiDialog.success({ title: 'Tarea actualizada', text: `"${updated.tarea}" fue actualizada correctamente.` });
           this.tareaReset();
           this.tareaService.invalidatePaisCache(this.admin.pais);
           this.loadTareas();
         },
-        error: () => this.appToast.error('Error al actualizar la tarea')
+        error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudo actualizar la tarea.' })
       });
     } else {
       this.tareaService.agregarTarea(payload).subscribe({
         next: created => {
-          this.appToast.success(`"${created.tarea}" creada`);
+          this.uiDialog.success({ title: 'Tarea creada', text: `"${created.tarea}" fue agregada al catálogo.` });
           this.tareaReset();
           this.tareaService.invalidatePaisCache(this.admin.pais);
           this.loadTareas();
         },
-        error: () => this.appToast.error('Error al crear la tarea')
+        error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudo crear la tarea.' })
       });
     }
   }
@@ -493,11 +493,11 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       if (!confirmed) return;
       this.tareaService.eliminarTarea(t.id!).subscribe({
         next: () => {
-          this.appToast.success(`"${t.tarea}" eliminada`);
+          this.uiDialog.success({ title: 'Tarea eliminada', text: `"${t.tarea}" fue eliminada del catálogo.` });
           this.tareaService.invalidatePaisCache(this.admin.pais);
           this.loadTareas();
         },
-        error: () => this.appToast.error('Error al eliminar la tarea')
+        error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudo eliminar la tarea.' })
       });
     });
   }
