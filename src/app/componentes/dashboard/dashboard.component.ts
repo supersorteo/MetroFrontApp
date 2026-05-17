@@ -805,6 +805,9 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     this.refreshPendingSyncSummary();
     this.restorePendingBudget();
     this.initUiState();
+    this.tareaService.tareasPaisChanged$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      this.obtenerTareas();
+    });
     if (this.trialMode) return;
     // Los stores reaccionan a IDB via liveQuery desde el primer momento.
     // HTTP corre en background y actualiza IDB; los effects sincronizan al componente.
@@ -2557,8 +2560,7 @@ onImageChange(event: Event): void {
       userCode: this.userCode,
       email: this.clientEmail,
       clave: this.clientClave,
-      direccion: this.clientDireccion,
-      empresaId: this.selectedEmpresaId.id
+      direccion: this.clientDireccion
     };
 
     if (this.trialMode) {
@@ -3609,8 +3611,7 @@ fetchUserData(): void {
         budgetDate: today,
         additionalDetails: 'Cliente corporativo - Refaccion de oficinas',
         userCode: this.userCode,
-        clave: '30-12345678-9',
-        empresaId: 1
+        clave: '30-12345678-9'
       },
       {
         id: 10002,
@@ -3621,8 +3622,7 @@ fetchUserData(): void {
         budgetDate: today,
         additionalDetails: 'Particular - Proyecto vivienda unifamiliar',
         userCode: this.userCode,
-        clave: '20-98765432-1',
-        empresaId: 1
+        clave: '20-98765432-1'
       },
       {
         id: 10003,
@@ -3633,8 +3633,7 @@ fetchUserData(): void {
         budgetDate: today,
         additionalDetails: 'Cadena hotelera - Mantenimiento y mejoras',
         userCode: this.userCode,
-        clave: '30-45678912-3',
-        empresaId: 1
+        clave: '30-45678912-3'
       }
     ];
   }

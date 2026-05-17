@@ -538,7 +538,7 @@ const demoCliente = {
     email: 'cliente@metroapp.site',
     clave: '20-00000000-0',
     direccion: 'Direccion demo 123',
-    empresaId: 1234
+   // empresaId: 1234
   };
 
   // Limpiar claves de sesión VIP que podrían interferir

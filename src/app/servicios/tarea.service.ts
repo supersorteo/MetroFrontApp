@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, from, mergeMap, Observable, of, tap, throwError } from 'rxjs';
+import { catchError, from, mergeMap, Observable, of, Subject, tap, throwError } from 'rxjs';
 
 import {  shareReplay } from 'rxjs/operators';
 
@@ -35,6 +35,8 @@ export class TareaService {
 //private apiUrl = 'http://localhost:8080/api/tareas'
 //private apiUrl = 'https://adequate-education-production.up.railway.app/api/tareas';
 private tareasCache = new Map<string, Observable<Tarea[]>>();
+private readonly _tareasPaisChanged$ = new Subject<string>();
+readonly tareasPaisChanged$ = this._tareasPaisChanged$.asObservable();
 
 private apiUrl = `${APP_API_URL}/tareas`;
 
@@ -110,7 +112,11 @@ private apiUrl = `${APP_API_URL}/tareas`;
   }
 
   invalidatePaisCache(pais: string): void {
-    this.tareasCache.delete(this.normalizePais(pais));
+    const key = this.normalizePais(pais);
+    this.tareasCache.delete(key);
+    localStorage.removeItem(this.tareasPaisStorageKey(key));
+    void this.localStore.setState(this.tareasPaisCacheKey(key), []).catch(() => {});
+    this._tareasPaisChanged$.next(key);
   }
 
   private handleError(error: any): Observable<never> {
