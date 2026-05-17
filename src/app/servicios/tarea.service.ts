@@ -109,6 +109,10 @@ private apiUrl = `${APP_API_URL}/tareas`;
     return this.http.delete<void>(`${this.apiUrl}/${id}`) .pipe( catchError(this.handleError) );
   }
 
+  invalidatePaisCache(pais: string): void {
+    this.tareasCache.delete(this.normalizePais(pais));
+  }
+
   private handleError(error: any): Observable<never> {
     const errorMessage = extractApiErrorMessage(
       error,

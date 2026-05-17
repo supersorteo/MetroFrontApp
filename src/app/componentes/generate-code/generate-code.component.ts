@@ -467,21 +467,20 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     if (this.tareaEditingId != null) {
       this.tareaService.actualizarTarea(this.tareaEditingId, payload).subscribe({
         next: updated => {
-          const idx = this.tareas.findIndex(t => t.id === this.tareaEditingId);
-          if (idx !== -1) this.tareas[idx] = updated;
-          this.filtrarTareas();
           this.appToast.success(`"${updated.tarea}" actualizada`);
           this.tareaReset();
+          this.tareaService.invalidatePaisCache(this.admin.pais);
+          this.loadTareas();
         },
         error: () => this.appToast.error('Error al actualizar la tarea')
       });
     } else {
       this.tareaService.agregarTarea(payload).subscribe({
         next: created => {
-          this.tareas = [...this.tareas, created];
-          this.filtrarTareas();
           this.appToast.success(`"${created.tarea}" creada`);
           this.tareaReset();
+          this.tareaService.invalidatePaisCache(this.admin.pais);
+          this.loadTareas();
         },
         error: () => this.appToast.error('Error al crear la tarea')
       });
@@ -494,9 +493,9 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       if (!confirmed) return;
       this.tareaService.eliminarTarea(t.id!).subscribe({
         next: () => {
-          this.tareas = this.tareas.filter(x => x.id !== t.id);
-          this.filtrarTareas();
           this.appToast.success(`"${t.tarea}" eliminada`);
+          this.tareaService.invalidatePaisCache(this.admin.pais);
+          this.loadTareas();
         },
         error: () => this.appToast.error('Error al eliminar la tarea')
       });
