@@ -15,6 +15,7 @@ export interface UserTarea {
   descuento: number;
   totalCost: number;
   clienteId: number;
+  empresaId?: number;
   pais: string;
   rubro?: string;
   categoria?: string;
@@ -79,7 +80,6 @@ export class UserTareaService {
       map(tareas => tareas ?? []),
       tap(tareas => {
         void this.cacheTareasByClienteId(clienteId, tareas).catch(() => {});
-        // Incluir clienteId explícito para garantizar que clienteServerId quede en IDB
         tareas.forEach(tarea => void this.localStore.upsertUserTarea({ ...tarea, clienteId }).catch(() => {}));
       }),
       catchError(() =>
@@ -88,6 +88,26 @@ export class UserTareaService {
             cached
               ? of(cached as UserTarea[])
               : throwError(() => new Error('Sin conexión y sin tareas en caché para este cliente.'))
+          )
+        )
+      )
+    );
+  }
+
+  getTareasByClienteAndEmpresa(clienteId: number, empresaId: number): Observable<UserTarea[]> {
+    const cacheKey = this.clienteEmpresaCacheKey(clienteId, empresaId);
+    return this.http.get<UserTarea[]>(`${this.apiUrl}/by-cliente/${clienteId}/empresa/${empresaId}`).pipe(
+      map(tareas => tareas ?? []),
+      tap(tareas => {
+        void this.offlineSync.cacheUserTareas(cacheKey, tareas).catch(() => {});
+        tareas.forEach(tarea => void this.localStore.upsertUserTarea({ ...tarea, clienteId, empresaId }).catch(() => {}));
+      }),
+      catchError(() =>
+        from(this.offlineSync.getCachedUserTareas(cacheKey)).pipe(
+          mergeMap(cached =>
+            cached
+              ? of(cached as UserTarea[])
+              : throwError(() => new Error('Sin conexión y sin tareas en caché para este cliente/empresa.'))
           )
         )
       )
@@ -117,9 +137,18 @@ export class UserTareaService {
       return throwError(() => new Error('Sin conexión. No es posible eliminar en masa en modo offline.'));
     }
     return this.http.delete<void>(`${this.apiUrl}/by-cliente/${clienteId}`).pipe(
-      tap(() => void this.offlineSync.getCachedUserTareas(this.clienteCacheKey(clienteId))
-        .then(() => this.cacheTareasByClienteId(clienteId, []))
-        .catch(() => {})),
+      tap(() => void this.cacheTareasByClienteId(clienteId, []).catch(() => {})),
+      catchError(this.handleError)
+    );
+  }
+
+  deleteAllTareasByClienteAndEmpresa(clienteId: number, empresaId: number): Observable<void> {
+    if (!navigator.onLine) {
+      return throwError(() => new Error('Sin conexión. No es posible eliminar en masa en modo offline.'));
+    }
+    const cacheKey = this.clienteEmpresaCacheKey(clienteId, empresaId);
+    return this.http.delete<void>(`${this.apiUrl}/by-cliente/${clienteId}/empresa/${empresaId}`).pipe(
+      tap(() => void this.offlineSync.cacheUserTareas(cacheKey, []).catch(() => {})),
       catchError(this.handleError)
     );
   }
@@ -158,6 +187,10 @@ export class UserTareaService {
 
   private clienteCacheKey(clienteId: number): string {
     return `cliente:${clienteId}`;
+  }
+
+  private clienteEmpresaCacheKey(clienteId: number, empresaId: number): string {
+    return `cliente:${clienteId}:empresa:${empresaId}`;
   }
 
   private handleOfflineUpdate(id: number, userTarea: UserTarea): Observable<UserTarea> {

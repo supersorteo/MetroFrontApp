@@ -1594,7 +1594,8 @@ actualizarTarea(): void {
     if (this.tareaSeleccionada?.id) {
       const updatedTarea: UserTarea = {
         ...this.tareaSeleccionada,
-  clienteId: this.clienteSeleccionado?.id ?? 0, // Usa clienteId seguro
+        clienteId: this.clienteSeleccionado?.id ?? 0,
+        empresaId: this.selectedEmpresaId?.id ?? undefined,
         pais: this.userData.pais,
         rubro: this.tareaSeleccionada.rubro || '',
         categoria: this.tareaSeleccionada.categoria || '',
@@ -1646,6 +1647,7 @@ if (this.trialMode) {
     ...this.tareaSeleccionada,
     id: this.tareaSeleccionada.id || Date.now(),
     clienteId: clienteId ?? 0,
+    empresaId: this.selectedEmpresaId?.id ?? undefined,
     pais: this.userData?.pais || 'Argentina',
     rubro: this.tareaSeleccionada.rubro || '',
     categoria: this.tareaSeleccionada.categoria || '',
@@ -1684,6 +1686,7 @@ if (this.trialMode) {
       ...this.tareaSeleccionada,
       id: this.tareaSeleccionada.id || Date.now(),
       clienteId: clienteId ?? 0,
+      empresaId: this.selectedEmpresaId?.id ?? undefined,
       pais: this.userData.pais,
       rubro: this.tareaSeleccionada.rubro || '',
       categoria: this.tareaSeleccionada.categoria || '',
@@ -1900,14 +1903,15 @@ async eliminarTodasLasTareas(): Promise<void> {
   if (!confirmed) return;
 
   const clienteId = this.clienteSeleccionado?.id as number | undefined;
+  const empresaId = this.selectedEmpresaId?.id as number | undefined;
 
   // 1. Limpiar IDB (todas las capas de caché)
-  const idbClean: Promise<any>[] = [];
   if (clienteId) {
-    idbClean.push(this.localStore.markAllUserTareasDeletedByClienteId(clienteId).catch(() => {}));
-    idbClean.push(this.userTareaService.cacheTareasByClienteId(clienteId, []).catch(() => {}));
+    await this.localStore.markAllUserTareasDeletedByClienteId(clienteId).catch(() => {});
+    if (empresaId) {
+      void this.userTareaService.cacheTareasByClienteId(clienteId, []).catch(() => {});
+    }
   }
-  await Promise.all(idbClean);
 
   // 2. Limpiar estado local + localStorage
   this.tareasAgregadas = [];
@@ -1918,9 +1922,9 @@ async eliminarTodasLasTareas(): Promise<void> {
   localStorage.removeItem('selectedTareas');
   void this.localStore.removeState('budget:active-preview').catch(() => {});
 
-  // 3. Sincronizar con el servidor en background (sin bloquear la UI)
-  if (!this.trialMode && clienteId) {
-    this.userTareaService.deleteAllTareasByClienteId(clienteId)
+  // 3. Sincronizar con el servidor en background
+  if (!this.trialMode && clienteId && empresaId) {
+    this.userTareaService.deleteAllTareasByClienteAndEmpresa(clienteId, empresaId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron eliminar las tareas del servidor. Quedarán pendientes de sincronización.' })
