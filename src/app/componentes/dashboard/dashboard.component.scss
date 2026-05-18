@@ -2948,6 +2948,12 @@ p {
   font-weight: 700;
   border-radius: 999px;
   padding: 4px 10px;
+
+  &--danger {
+    background: #fff0f0;
+    color: #dc3545;
+    &:hover { background: #dc3545; color: #fff; }
+  }
 }
 
 .tareas-panel .tareas-agregadas {

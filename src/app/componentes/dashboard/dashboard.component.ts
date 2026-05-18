@@ -367,21 +367,13 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
   private clearEmpresaDependentState(): void {
     this.presupuestoSeleccionado = null;
     this.presupuestoPendiente = null;
-    this.clienteSeleccionado = null;
     this.currentEmpresaLogoUrl = '';
     this.clearVisibleTasks();
     localStorage.removeItem('selectedTareas');
     localStorage.removeItem('presupuestoCargado');
     localStorage.removeItem('selectedPresupuestoName');
     void this.localStore.removeState('budget:active-preview').catch(() => {});
-
-    if (this.trialMode) {
-      this.syncSelectedClienteStorage();
-      return;
-    }
-
-    this.syncSelectedClienteStorage();
-    this.clienteStore.select(null);
+    // El cliente es independiente de la empresa: no se limpia al cambiar empresa.
   }
 
   compareEmpresaById(a: Empresa | null | undefined, b: Empresa | null | undefined): boolean {
@@ -1892,6 +1884,42 @@ onPresupuestoEliminado(p: SavedPresupuesto) {
 }
 
 
+
+async eliminarTodasLasTareas(): Promise<void> {
+  const confirmed = await this.uiDialog.confirmDelete(
+    'todas las tareas',
+    'Se eliminarán todas las tareas del presupuesto actual. Esta acción no se puede deshacer.'
+  );
+  if (!confirmed) return;
+
+  const clienteId = this.clienteSeleccionado?.id as number | undefined;
+
+  // 1. Limpiar IDB (todas las capas de caché)
+  const idbClean: Promise<any>[] = [];
+  if (clienteId) {
+    idbClean.push(this.localStore.markAllUserTareasDeletedByClienteId(clienteId).catch(() => {}));
+    idbClean.push(this.userTareaService.cacheTareasByClienteId(clienteId, []).catch(() => {}));
+  }
+  await Promise.all(idbClean);
+
+  // 2. Limpiar estado local + localStorage
+  this.tareasAgregadas = [];
+  this.tareasAgregadasPaginadas = [];
+  this.tareasCurrentPage = 1;
+  this.mostrarTabla = false;
+  this.presupuestoService.setTareasAgregadas([]);
+  localStorage.removeItem('selectedTareas');
+  void this.localStore.removeState('budget:active-preview').catch(() => {});
+
+  // 3. Sincronizar con el servidor en background (sin bloquear la UI)
+  if (!this.trialMode && clienteId) {
+    this.userTareaService.deleteAllTareasByClienteId(clienteId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron eliminar las tareas del servidor. Quedarán pendientes de sincronización.' })
+      });
+  }
+}
 
 limpiarPresupuestoCargado() {
   if (this.trialMode) {

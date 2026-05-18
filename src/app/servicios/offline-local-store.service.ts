@@ -424,6 +424,16 @@ export class OfflineLocalStoreService {
     }
   }
 
+  async markAllUserTareasDeletedByClienteId(clienteId: number): Promise<void> {
+    const now = Date.now();
+    const records = await metroDB.userTareas
+      .filter(r => !r.deletedAt && (Number(r.clienteServerId) === clienteId || Number(r.data?.clienteId) === clienteId))
+      .toArray();
+    await Promise.all(
+      records.map(r => metroDB.userTareas.update(r.localId, { deletedAt: now, syncStatus: 'pending', updatedAt: now }))
+    );
+  }
+
   async markUserTareaSynced(localOrServerId: number, remoteData?: any): Promise<void> {
     const record = await this.findUserTareaByAnyId(localOrServerId, remoteData?.id);
     if (!record) {

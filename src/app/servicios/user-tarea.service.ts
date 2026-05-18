@@ -112,6 +112,18 @@ export class UserTareaService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError));
   }
 
+  deleteAllTareasByClienteId(clienteId: number): Observable<void> {
+    if (!navigator.onLine) {
+      return throwError(() => new Error('Sin conexión. No es posible eliminar en masa en modo offline.'));
+    }
+    return this.http.delete<void>(`${this.apiUrl}/by-cliente/${clienteId}`).pipe(
+      tap(() => void this.offlineSync.getCachedUserTareas(this.clienteCacheKey(clienteId))
+        .then(() => this.cacheTareasByClienteId(clienteId, []))
+        .catch(() => {})),
+      catchError(this.handleError)
+    );
+  }
+
   deleteUserTarea(id: number): Observable<void> {
     if (!navigator.onLine) {
       return this.handleOfflineDelete(id);

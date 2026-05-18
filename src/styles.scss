@@ -34,6 +34,14 @@ body.modal-open app-dashboard .floating-toolbar-container {
 	display: none;
 }
 
+/* ── Bootstrap modals deben superar el aside (z-index: 9010) ── */
+.modal-backdrop {
+  z-index: 9015 !important;
+}
+.modal {
+  z-index: 9020 !important;
+}
+
 
 .swal2-container {
   z-index: 20000 !important;

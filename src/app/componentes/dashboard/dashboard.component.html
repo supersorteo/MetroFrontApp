@@ -546,7 +546,9 @@
             id="fixedImageIcon"
             class="fixed-image"
             [src]="currentEmpresaLogoUrl || '#'"
-            alt="Logo Empresa">
+            alt="Logo Empresa"
+            style="cursor:pointer"
+            (click)="openListaEmpresasModal()">
         </div>
       </div>
       <div class="task-tabs-toolbar mb-3">
@@ -746,16 +748,27 @@
   <aside class="tareas-panel" *ngIf="showTareasPanel" [class.open]="showTareasPanel">
     <div class="container mt-4 tareas-agregadas">
       <div class="tareas-agregadas__header">
-        <div>
+        <div style="display:flex;align-items:center;gap:8px;">
           <div class="tareas-agregadas__title">
             <img
               *ngIf="currentEmpresaLogoUrl"
               [src]="currentEmpresaLogoUrl"
               alt="Logo empresa"
               class="tareas-agregadas__logo"
+              style="cursor:pointer"
+              (click)="openListaEmpresasModal()"
             >
           </div>
-          <div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            style="border-radius:50%;width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;"
+            title="Seleccionar cliente"
+            (click)="$event.stopPropagation(); openListaClientesModal()">
+            <i class="fas fa-user-tie" style="font-size:13px;"></i>
+          </button>
         </div>
         <div class="tareas-agregadas__cliente" *ngIf="clienteSeleccionado">
           <!--span class="tareas-agregadas__cliente-nombre">{{ presupuestoSeleccionado?.name }}</!--span-->
@@ -832,14 +845,20 @@
         <button class="tareas-panel__close" type="button" (click)="toggleTareasPanel()" aria-label="Cerrar panel">
           cerrar
         </button>
-        <button class="tareas-panel__close " (click)="toggleSavedBudgetsPanel()">
+        <button class="tareas-panel__close" (click)="toggleSavedBudgetsPanel()">
           Guardar
         </button>
-
         <button class="tareas-panel__close" type="button" (click)="limpiarPresupuestoCargado()">
-  Quitar carga
-</button>
-
+          Quitar carga
+        </button>
+        <button
+          *ngIf="tareasAgregadas?.length"
+          class="tareas-panel__close tareas-panel__close--danger"
+          type="button"
+          (click)="eliminarTodasLasTareas()"
+          title="Eliminar todas las tareas">
+          <i class="fas fa-trash-alt"></i> Eliminar todo
+        </button>
       </div>
     </div>
   </aside>

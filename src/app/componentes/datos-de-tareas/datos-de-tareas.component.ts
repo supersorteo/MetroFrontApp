@@ -5,6 +5,7 @@ import { PresupuestoService, Tarea } from '../../servicios/presupuesto.service';
 import { Cliente, ClienteService } from '../../servicios/cliente.service';
 import { Empresa, EmpresaService } from '../../servicios/empresa.service';
 import { AppToastService } from '../../servicios/app-toast.service';
+import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { AccessCode, AuthService } from '../../servicios/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
@@ -42,6 +43,18 @@ export class DatosDeTareasComponent implements OnInit {
   showDownloadModal: boolean = false;
   readonly PREVIEW_OPTIONS_KEY = 'metroBudgetPreviewVisibility';
 
+  // Modal de edición de tarea
+  showEditModal = false;
+  editingIndex = -1;
+  editForm: { tarea: string; descripcion: string; area: number; costo: number; descuento: number } = {
+    tarea: '', descripcion: '', area: 0, costo: 0, descuento: 0
+  };
+
+  get editTotalCost(): number {
+    const base = (this.editForm.costo || 0) * (this.editForm.area || 0);
+    return base * (1 - (this.editForm.descuento || 0) / 100);
+  }
+
   // Color scheme
   colorSchemeMessageVisible = false;
   readonly defaultColorScheme: ColorScheme = {
@@ -64,6 +77,7 @@ export class DatosDeTareasComponent implements OnInit {
     private clienteService: ClienteService,
     private empresaService: EmpresaService,
     private appToast: AppToastService,
+    private uiDialog: UiDialogService,
     private route: Router,
     private localStore: OfflineLocalStoreService
   ) {}
@@ -135,6 +149,60 @@ export class DatosDeTareasComponent implements OnInit {
       localStorage.setItem('trialMode', 'true');
     }
     this.route.navigate(['/dashboard']);
+  }
+
+  // ============ EDITAR TAREA ============
+  abrirEditarTarea(index: number): void {
+    const t = this.tareasAgregadas[index];
+    if (!t) return;
+    this.editingIndex = index;
+    this.editForm = {
+      tarea:       t.tarea,
+      descripcion: t.descripcion || '',
+      area:        t.area || 0,
+      costo:       t.costo || 0,
+      descuento:   t.descuento || 0
+    };
+    this.showEditModal = true;
+  }
+
+  cerrarEditarTarea(): void {
+    this.showEditModal = false;
+    this.editingIndex = -1;
+  }
+
+  async guardarEditarTarea(): Promise<void> {
+    if (this.editingIndex < 0) return;
+    const totalCost = this.editTotalCost;
+    this.tareasAgregadas = this.tareasAgregadas.map((t, i) =>
+      i === this.editingIndex ? { ...t, ...this.editForm, totalCost } : t
+    );
+    localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas));
+    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+    const activePreview = await this.localStore.getState<any>('budget:active-preview');
+    if (activePreview) {
+      await this.localStore.setState('budget:active-preview', { ...activePreview, tareas: this.tareasAgregadas });
+    }
+    this.cerrarEditarTarea();
+  }
+
+  // ============ ELIMINAR TAREA ============
+  async eliminarTarea(index: number): Promise<void> {
+    const tarea = this.tareasAgregadas[index];
+    if (!tarea) return;
+
+    const confirmed = await this.uiDialog.confirmDelete(tarea.tarea);
+    if (!confirmed) return;
+
+    this.tareasAgregadas = this.tareasAgregadas.filter((_, i) => i !== index);
+
+    localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas));
+    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+
+    const activePreview = await this.localStore.getState<any>('budget:active-preview');
+    if (activePreview) {
+      await this.localStore.setState('budget:active-preview', { ...activePreview, tareas: this.tareasAgregadas });
+    }
   }
 
   // ============ TOGGLES DE VISIBILIDAD ============
