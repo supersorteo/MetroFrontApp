@@ -368,12 +368,14 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
     this.presupuestoSeleccionado = null;
     this.presupuestoPendiente = null;
     this.currentEmpresaLogoUrl = '';
-    this.clearVisibleTasks();
-    localStorage.removeItem('selectedTareas');
+    // Cerrar el aside y resetear paginación, pero NO limpiar tareas ni cliente.
+    // Las tareas pertenecen al cliente, que es independiente de la empresa.
+    this.showTareasPanel = false;
+    this.tareasCurrentPage = 1;
+    this.updatePaginatedTareasPanel();
     localStorage.removeItem('presupuestoCargado');
     localStorage.removeItem('selectedPresupuestoName');
     void this.localStore.removeState('budget:active-preview').catch(() => {});
-    // El cliente es independiente de la empresa: no se limpia al cambiar empresa.
   }
 
   compareEmpresaById(a: Empresa | null | undefined, b: Empresa | null | undefined): boolean {
