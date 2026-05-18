@@ -1855,6 +1855,13 @@ toggleSavedBudgetsPanel(): void {
 
 
 toggleTareasPanel(): void {
+  // Si el panel ya está abierto, cerrarlo sin validaciones.
+  if (this.showTareasPanel) {
+    this.showTareasPanel = false;
+    return;
+  }
+
+  // A partir de aquí: intento de ABRIR el panel.
   if (!this.trialMode) {
     const storeTareas = this.userTareaStore.tareas();
     const currentId = this.clienteSeleccionado?.id;
@@ -1871,11 +1878,9 @@ toggleTareasPanel(): void {
     return;
   }
 
-  if (!this.showTareasPanel) {
-    this.tareasCurrentPage = 1;
-    this.updatePaginatedTareasPanel();
-  }
-  this.showTareasPanel = !this.showTareasPanel;
+  this.tareasCurrentPage = 1;
+  this.updatePaginatedTareasPanel();
+  this.showTareasPanel = true;
 }
 
 onPresupuestoEliminado(p: SavedPresupuesto) {
