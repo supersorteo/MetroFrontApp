@@ -2,9 +2,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AppToastService } from '../../servicios/app-toast.service';
+
 import { UiDialogService } from '../../core/services/ui-dialog.service';
-import { AuthService } from '../../servicios/auth.service';
+import { AuthService, UserDataSummary } from '../../servicios/auth.service';
 import { Admin, AdminMembershipLimits, AdminService } from '../../servicios/admin.service';
 import { Tarea, TareaService } from '../../servicios/tarea.service';
 
@@ -19,6 +19,7 @@ interface AccessCode {
   fechaRegistro?: any;
   fechaVencimiento?: any;
   remainingTime?: string;
+  disabled?: boolean;
 }
 
 @Component({
@@ -90,7 +91,6 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     private adminService: AdminService,
     private tareaService: TareaService,
     private router: Router,
-    private appToast: AppToastService,
     private uiDialog: UiDialogService
   ) {}
 
@@ -149,7 +149,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
         this.applyFilter();
         this.computeStats();
       },
-      error: () => this.appToast.error('Error al cargar los códigos')
+      error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron cargar los códigos.' })
     });
   }
 
@@ -262,22 +262,91 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   }
 
   confirmDeleteCode(code: string): void {
-    this.uiDialog.confirmDelete(code, `¿Eliminar el código ${code}? Esta acción no se puede deshacer.`).then(confirmed => {
+    // Paso 1: confirmación simple e inmediata
+    this.uiDialog.confirmDelete(code).then(async firstConfirmed => {
+      if (!firstConfirmed) return;
+
+      // Paso 2: verificar si el código tiene datos
+      this.authService.getUserDataSummary(code).subscribe(async summary => {
+        if (!summary || !summary.hasData) {
+          // Sin datos — borrar el código directamente
+          this.authService.deleteCode(code).subscribe({
+            next: () => {
+              this.uiDialog.success({ title: 'Código eliminado', text: `El código ${code} fue eliminado correctamente.` });
+              this.loadCodes();
+            },
+            error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudo eliminar el código.' })
+          });
+        } else {
+          // Tiene datos — segundo modal con el detalle
+          const secondConfirmed = await this.uiDialog.confirm({
+            title: 'Este código tiene datos asociados',
+            html: `
+              <div style="text-align:left;font-size:14px">
+                <p>El código <strong>${code}</strong> pertenece a <strong>${summary.email}</strong> y tiene:</p>
+                <ul style="margin:8px 0 12px 16px;line-height:1.8">
+                  <li>${summary.empresas} empresa${summary.empresas !== 1 ? 's' : ''}</li>
+                  <li>${summary.clientes} cliente${summary.clientes !== 1 ? 's' : ''}</li>
+                  <li>${summary.presupuestos} presupuesto${summary.presupuestos !== 1 ? 's' : ''}</li>
+                  <li>${summary.tareasPersonalizadas} tarea${summary.tareasPersonalizadas !== 1 ? 's' : ''} personalizada${summary.tareasPersonalizadas !== 1 ? 's' : ''}</li>
+                </ul>
+                <p style="color:#dc3545;font-weight:600">Todo esto se eliminará de forma permanente. Esta acción no se puede deshacer.</p>
+              </div>`,
+            confirmText: 'Sí, eliminar todo',
+            cancelText: 'Cancelar',
+            tone: 'danger',
+            icon: 'warning'
+          });
+          if (!secondConfirmed) return;
+          this.authService.deleteUserData(code).subscribe({
+            next: () => {
+              this.uiDialog.success({ title: 'Cuenta eliminada', text: `El código ${code} y todos sus datos fueron eliminados. El slot queda disponible para reasignar.` });
+              this.loadCodes();
+            },
+            error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron eliminar todos los datos. Intentá de nuevo.' })
+          });
+        }
+      });
+    });
+  }
+
+  toggleDisableCode(item: AccessCode): void {
+    const action = item.disabled ? 'reactivar' : 'desactivar';
+    const actionText = item.disabled ? 'reactivará' : 'desactivará';
+    const icon = item.disabled ? 'question' : 'warning';
+    this.uiDialog.confirm({
+      title: `¿${action.charAt(0).toUpperCase() + action.slice(1)} el código ${item.code}?`,
+      text: item.disabled
+        ? `El usuario ${item.email} podrá volver a iniciar sesión.`
+        : `El usuario ${item.email} no podrá iniciar sesión hasta que lo reactives. Sus datos se conservan.`,
+      confirmText: `Sí, ${action}`,
+      cancelText: 'Cancelar',
+      tone: item.disabled ? 'primary' : 'warning',
+      icon
+    }).then(confirmed => {
       if (!confirmed) return;
-      this.authService.deleteCode(code).subscribe({
-        next: () => {
-          this.uiDialog.success({ title: 'Código eliminado', text: `El código ${code} fue eliminado correctamente.` });
-          this.loadCodes();
+      const obs = item.disabled
+        ? this.authService.enableCode(item.code)
+        : this.authService.disableCode(item.code);
+      obs.subscribe({
+        next: res => {
+          item.disabled = res.disabled;
+          this.uiDialog.success({
+            title: item.disabled ? 'Código desactivado' : 'Código reactivado',
+            text: item.disabled
+              ? `El código ${item.code} fue desactivado. El usuario no puede iniciar sesión.`
+              : `El código ${item.code} fue reactivado correctamente.`
+          });
         },
-        error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudo eliminar el código.' })
+        error: () => this.uiDialog.error({ title: 'Error', text: `No se pudo ${action} el código.` })
       });
     });
   }
 
   copyToClipboard(code: string): void {
     navigator.clipboard.writeText(code).then(
-      () => this.appToast.success('Copiado al portapapeles', 'Portapapeles'),
-      () => this.appToast.error('Error al copiar')
+      () => this.uiDialog.success({ title: 'Copiado', text: `El código ${code} fue copiado al portapapeles.` }),
+      () => this.uiDialog.error({ title: 'Error', text: 'No se pudo copiar el código.' })
     );
   }
 
@@ -333,7 +402,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
         if (!limits) return;
         this.membershipLimits = limits;
       },
-      error: () => this.appToast.error('Error al cargar los límites de membresía')
+      error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron cargar los límites de membresía.' })
     });
   }
 
@@ -442,7 +511,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
         this.tareas = list;
         this.filtrarTareas();
       },
-      error: () => this.appToast.error('Error al cargar tareas')
+      error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron cargar las tareas.' })
     });
   }
 

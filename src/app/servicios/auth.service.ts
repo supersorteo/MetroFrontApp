@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, Observable, of, throwError } from 'rxjs';
+import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { AUTH_API_URL } from '../core/api/api.config';
 import { extractApiErrorMessage } from '../core/http/api-error.util';
 
@@ -28,6 +28,16 @@ export interface AccessCode {
   provincia?: string;
   fechaRegistro?: string;
   fechaVencimiento?: string;
+  disabled?: boolean;
+}
+
+export interface UserDataSummary {
+  email: string;
+  empresas: number;
+  clientes: number;
+  presupuestos: number;
+  tareasPersonalizadas: number;
+  hasData: boolean;
 }
 
 @Injectable({
@@ -158,7 +168,25 @@ export class AuthService {
   addCode(accessCode: AccessCode): Observable<AccessCode> { return this.http.post<AccessCode>(`${this.apiUrl}/codes`, accessCode); }
 
   deleteCode1(code: string): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/codes/${code}`); }
+  deleteCode(code: string): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/codes/${code}`).pipe(catchError(this.handleError1)); }
 
-  deleteCode(code: string): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/codes/${code}`) .pipe( catchError(this.handleError1) ); }
+  getUserDataSummary(code: string): Observable<UserDataSummary | null> {
+    return this.http.get<UserDataSummary>(`${this.apiUrl}/codes/${code}/summary`, { observe: 'response' }).pipe(
+      map(r => r.status === 204 ? null : r.body),
+      catchError(() => of(null))
+    );
+  }
+
+  deleteUserData(code: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/codes/${code}/full`).pipe(catchError(this.handleError1));
+  }
+
+  disableCode(code: string): Observable<{ code: string; disabled: boolean }> {
+    return this.http.patch<{ code: string; disabled: boolean }>(`${this.apiUrl}/codes/${code}/disable`, {}).pipe(catchError(this.handleError1));
+  }
+
+  enableCode(code: string): Observable<{ code: string; disabled: boolean }> {
+    return this.http.patch<{ code: string; disabled: boolean }>(`${this.apiUrl}/codes/${code}/enable`, {}).pipe(catchError(this.handleError1));
+  }
 }
 

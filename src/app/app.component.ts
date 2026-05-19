@@ -1,10 +1,14 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, DestroyRef, HostListener, inject, OnInit } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AdminService } from './servicios/admin.service';
 import { OfflineStatusService } from './servicios/offline-status.service';
 import { OfflineSyncService } from './servicios/offline-sync.service';
 import { AppToastService } from './servicios/app-toast.service';
+import { AuthService } from './servicios/auth.service';
+import { interval, of } from 'rxjs';
+import { catchError, filter, switchMap } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-root',
@@ -13,16 +17,38 @@ import { AppToastService } from './servicios/app-toast.service';
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'pruebaw';
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(
     private router: Router,
     private adminService: AdminService,
     private toast: AppToastService,
     readonly offlineStatus: OfflineStatusService,
-    readonly offlineSync: OfflineSyncService
+    readonly offlineSync: OfflineSyncService,
+    private authService: AuthService
   ) {}
+
+  ngOnInit(): void {
+    this.startSessionGuard();
+  }
+
+  private startSessionGuard(): void {
+    interval(20_000).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      filter(() => this.authService.isLoggedIn()),
+      switchMap(() => {
+        const code = localStorage.getItem('userCode')!;
+        return this.authService.getUserCode(code).pipe(catchError(() => of(null)));
+      }),
+      filter(ac => !!ac && ac.disabled === true)
+    ).subscribe(() => {
+      this.authService.logout();
+      this.toast.error('Tu acceso fue desactivado por el administrador. Contactá al soporte.', 'Sesión desactivada');
+      this.router.navigate(['/']);
+    });
+  }
 
   @HostListener('document:keydown.control.alt.m', ['$event'])
   onAdminShortcut(event: Event): void {

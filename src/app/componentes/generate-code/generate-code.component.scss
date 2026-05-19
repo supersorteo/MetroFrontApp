@@ -451,6 +451,8 @@
 
 .row--expired td { opacity: 0.6; }
 .row--pending { background: rgba(217,119,6,0.03); }
+.row--disabled td { opacity: 0.5; }
+.row--disabled .code-badge { background: rgba(107,114,128,0.15); border-color: rgba(107,114,128,0.3); color: #6b7280; }
 
 .code-badge {
   display: inline-block;
@@ -499,8 +501,10 @@
   &:hover { transform: scale(1.1); }
 }
 
-.ra-btn--copy  { background: rgba(37,99,200,0.1); color: #1a3a6b; &:hover { background: rgba(37,99,200,0.2); } }
-.ra-btn--delete { background: rgba(220,38,38,0.1); color: #dc2626; &:hover { background: rgba(220,38,38,0.2); } }
+.ra-btn--copy    { background: rgba(37,99,200,0.1);  color: #1a3a6b; &:hover { background: rgba(37,99,200,0.2); } }
+.ra-btn--delete  { background: rgba(220,38,38,0.1);  color: #dc2626; &:hover { background: rgba(220,38,38,0.2); } }
+.ra-btn--disable { background: rgba(217,119,6,0.1);  color: #b45309; &:hover { background: rgba(217,119,6,0.2); } }
+.ra-btn--enable  { background: rgba(22,163,74,0.1);  color: #15803d; &:hover { background: rgba(22,163,74,0.2); } }
 
 /* ── Pagination ───────────────────────────────── */
 .admin-pagination {
