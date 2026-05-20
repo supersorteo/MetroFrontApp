@@ -842,26 +842,60 @@
         Total: {{ calcularCostoTotal() | currency:'USD':'symbol':'1.2-2' }}
       </div>
       <div class="tareas-guardar mt-3 tareas-panel__footer">
-        <button class="tareas-panel__close" type="button" (click)="toggleTareasPanel()" aria-label="Cerrar panel">
-          cerrar
+        <button class="tareas-panel__action" type="button" (click)="toggleTareasPanel()" aria-label="Cerrar panel" title="Cerrar panel">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
         </button>
-        <button class="tareas-panel__close" (click)="toggleSavedBudgetsPanel()">
-          Guardar
+        <button class="tareas-panel__action" type="button" (click)="toggleSavedBudgetsPanel()" aria-label="Guardar presupuesto" title="Guardar presupuesto">
+          <i class="bi bi-save2" aria-hidden="true"></i>
         </button>
-        <button class="tareas-panel__close" type="button" (click)="limpiarPresupuestoCargado()">
-          Quitar carga
+        <button class="tareas-panel__action" type="button" (click)="limpiarPresupuestoCargado()" aria-label="Quitar carga" title="Quitar carga">
+          <i class="bi bi-eraser" aria-hidden="true"></i>
         </button>
         <button
           *ngIf="tareasAgregadas?.length"
-          class="tareas-panel__close tareas-panel__close--danger"
+          class="tareas-panel__action tareas-panel__action--danger"
           type="button"
           (click)="eliminarTodasLasTareas()"
+          aria-label="Eliminar todas las tareas"
           title="Eliminar todas las tareas">
-          <i class="fas fa-trash-alt"></i> Eliminar todo
+          <i class="bi bi-trash3" aria-hidden="true"></i>
+        </button>
+        <button
+          class="tareas-panel__action tareas-panel__action--info"
+          type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#tareasPanelHelpModal"
+          aria-label="Ayuda de botones"
+          title="Ayuda de botones">
+          <i class="bi bi-question-circle" aria-hidden="true"></i>
         </button>
       </div>
     </div>
   </aside>
+
+
+<div class="modal fade" id="tareasPanelHelpModal" tabindex="-1" aria-labelledby="tareasPanelHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content dash-modal">
+      <div class="modal-header">
+        <h5 class="modal-title" id="tareasPanelHelpModalLabel">Botones del panel</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="tareas-panel-help-list">
+          <li><i class="bi bi-x-lg" aria-hidden="true"></i><span><strong>Cerrar:</strong> cierra el panel de tareas agregadas.</span></li>
+          <li><i class="bi bi-save2" aria-hidden="true"></i><span><strong>Guardar:</strong> abre la vista para guardar el presupuesto actual.</span></li>
+          <li><i class="bi bi-eraser" aria-hidden="true"></i><span><strong>Quitar carga:</strong> limpia el presupuesto cargado actualmente.</span></li>
+          <li><i class="bi bi-trash3" aria-hidden="true"></i><span><strong>Eliminar todo:</strong> borra todas las tareas agregadas del panel.</span></li>
+          <li><i class="bi bi-question-circle" aria-hidden="true"></i><span><strong>Ayuda:</strong> muestra esta explicación rápida de botones.</span></li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="modal fade" id="confirmDeleteTareaModal" tabindex="-1" aria-labelledby="confirmDeleteTareaLabel" aria-hidden="true" (hidden.bs.modal)="limpiarConfirmacionEliminarTarea()">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content dash-modal">
@@ -881,6 +915,7 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <button type="button" class="btn btn-danger" (click)="confirmarEliminarTarea()">Eliminar</button>
       </div>
+      </div>
     </div>
   </div>
 </div>
@@ -888,8 +923,19 @@
 <div class="modal fade" id="miModal" tabindex="-1" aria-labelledby="exampleModalLabel1" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content modal-zona">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel1">Agregar Tarea</h5>
+          <div class="modal-header task-modal-header">
+            <div class="task-modal-header__main">
+              <h5 class="modal-title" id="exampleModalLabel1">Agregar Tarea</h5>
+              <div class="task-inline-notice task-inline-notice--modal" *ngIf="tareaPersonalizadaNotice" aria-live="polite">
+                <div class="task-inline-notice__icon" aria-hidden="true">
+                  <i class="bi bi-check2-circle"></i>
+                </div>
+                <div class="task-inline-notice__content">
+                  <strong class="task-inline-notice__title">{{ tareaPersonalizadaNotice.title }}</strong>
+                  <span *ngIf="tareaPersonalizadaNotice.text" class="task-inline-notice__text">{{ tareaPersonalizadaNotice.text }}</span>
+                </div>
+              </div>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -920,20 +966,26 @@
                 <label for="discount" class="text">Descuento (%):</label>
                 <input type="number" [(ngModel)]="tareaSeleccionada.descuento" name="descuento" class="form-control input" id="discount" value="0">
               </div>
-              <div class="modal-footer d-flex" style="gap: 8px;">
+              <div class="modal-footer d-flex flex-column" style="gap: 8px;">
                 <!--button-- type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</!button-->
-                <button type="button" class="btn btn-outline-primary" (click)="abrirHistorialDesdeModal()">
-                  <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>ÃšLTIMAS TAREAS
-                </button>
-                <button type="button" class="btn btn-outline-secondary tp-export-modal-btn"
-                        (click)="exportarTareaAPersonalizadas()"
-                        title="Guardar en Mis Tareas personalizadas">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
-                    <path d="M8 4a.5.5 0 0 1 .5.5V6H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V7H6a.5.5 0 0 1 0-1h1.5V4.5A.5.5 0 0 1 8 4"/>
-                  </svg>
-                </button>
-                <button type="button" (click)="agregarTarea()" class="btn btn-primary flex-grow-1" data-bs-dismiss="modal">Agregar</button>
+                <div class="w-100 d-flex">
+                  <button type="button" (click)="agregarTarea()" class="btn btn-primary w-100" data-bs-dismiss="modal">Agregar</button>
+                </div>
+                <div class="w-100 d-flex" style="gap: 8px;">
+                  <button type="button" class="btn btn-outline-primary flex-grow-1" (click)="abrirHistorialDesdeModal()">
+                    <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>Últimas tareas
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary tp-export-modal-btn flex-grow-1"
+                          (click)="exportarTareaAPersonalizadas()"
+                          title="Guardar en Mis Tareas personalizadas">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 6px;">
+                      <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+                      <path d="M8 4a.5.5 0 0 1 .5.5V6H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V7H6a.5.5 0 0 1 0-1h1.5V4.5A.5.5 0 0 1 8 4"/>
+                    </svg>
+                    Guardar tarea
+                  
+                  </button>
+                </div>
                 <!--button-- type="button" *ngIf="tareaSeleccionada.id" (click)="actualizarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Actualizar</!--button-->
               </div>
             </form>
@@ -1085,7 +1137,7 @@
 
 
 <div class="modal fade" id="listaClientesModal" aria-hidden="true" aria-labelledby="listaClientesLabel" tabindex="-1">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg lista-clientes-modal__dialog">
     <div class="modal-content modal-zona">
       <div class="modal-header">
         <div class="d-flex align-items-center gap-3 flex-grow-1">
@@ -1106,7 +1158,6 @@
           <div class="row mb-3">
             <div class="col-12 d-flex flex-wrap align-items-center gap-3">
               <div class="text-muted small">Selecciona un cliente tocando su tarjeta.</div>
-              <input type="text" class="form-control w-auto" placeholder="Filtrar cliente..." [(ngModel)]="filtroCliente" style="max-width: 250px;">
             </div>
           </div>
           <div class="row">
@@ -1173,11 +1224,16 @@
           </ul>
         </nav>
       </div>
-      <div class="modal-footer d-flex justify-content-between">
-        <!--button-- type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#clientModal">Crear nuevo cliente</!--button-->
-        <button type="button" class="btn btn-success" (click)="openClientModal()">Crear nuevo cliente</button>
-
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      <div class="modal-footer lista-clientes-modal__footer">
+        <button type="button" class="btn btn-success lista-clientes-modal__footer-btn" (click)="openClientModal()">Crear nuevo cliente</button>
+        <div class="lista-clientes-modal__filter">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Filtrar cliente..."
+            [(ngModel)]="filtroCliente">
+        </div>
+        <button type="button" class="btn btn-secondary lista-clientes-modal__footer-btn" data-bs-dismiss="modal">Cerrar</button>
       </div>
     </div>
   </div>
@@ -1337,88 +1393,60 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <!-- Vista nueva con filtro y ng-select -->
         <div class="container-fluid">
-          <div class="row mb-3">
-            <div class="col-12 d-flex flex-wrap align-items-center gap-3">
-              <ng-select
-                [items]="empresas"
-                bindLabel="name"
-                [(ngModel)]="selectedEmpresaId"
-                [compareWith]="compareEmpresaById"
-                (change)="onEmpresaSeleccionada($event)"
-                [ngClass]="{'is-invalid': !selectedEmpresaId}"
-                placeholder="Selecciona una empresa"
-                [clearable]="false"
-                style="height: 40px; font-weight: bold; font-size: 16px; border-radius: 15px; box-shadow: 0 2px 8px #0001; min-width: 220px;"
-              >
-                <ng-template ng-option-tmp let-item="item" let-selected="selected">
-                  <img *ngIf="getEmpresaDisplayLogo(item)" [src]="getEmpresaDisplayLogo(item)" width="24" class="me-2" style="object-fit:cover; border-radius:50%;">
-                  {{ item.name }}
-                  <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
-                </ng-template>
-              </ng-select>
-              <input type="text" class="form-control w-auto" placeholder="Filtrar empresa..." [(ngModel)]="filtroEmpresa" style="max-width: 250px;">
-            </div>
-          </div>
           <div class="row">
+            <div class="col-12" *ngFor="let empresa of paginatedEmpresas | filterEmpresa:filtroEmpresa">
+              <div
+                class="card mb-3 w-100 shadow-sm cliente-card empresa-card"
+                [class.cliente-card--selected]="selectedEmpresaId?.id === empresa.id"
+                (click)="onEmpresaSeleccionada(empresa)"
+                role="button"
+                tabindex="0"
+              >
+                <div class="card-body position-relative cliente-card__body">
+                  <div class="cliente-card__header">
+                    <h5 class="card-title cliente-card__title">
+                      <span class="cliente-card__icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50.22 38.28">
+                          <path fill="#5b748f" d="m43.78,0H6.43C2.89,0,0,2.89,0,6.43v25.42c0,3.55,2.89,6.43,6.43,6.43h38.94v-3.31h-7.87v-7.57c0-2.9-2.35-5.26-5.26-5.26h-14.27c-2.9,0-5.26,2.35-5.26,5.26v7.57h-6.28c-1.72,0-3.13-1.4-3.13-3.12V6.43c0-1.72,1.4-3.12,3.13-3.12h37.35c1.72,0,3.12,1.4,3.12,3.12v26.51h3.31V6.43c0-3.55-2.89-6.43-6.43-6.43Z"/>
+                          <path fill="#5b748f" d="m18.99,13.03c0,3.37,2.74,6.11,6.12,6.11s6.11-2.74,6.11-6.11-2.74-6.12-6.11-6.12-6.12,2.74-6.12,6.12Zm7.37-3.04c0,.56-.45,1-1,1-1.28,0-2.31,1.04-2.31,2.32,0,.55-.45,1-1,1s-1-.45-1-1c0-2.38,1.93-4.32,4.31-4.32.55,0,1,.45,1,1Z"/>
+                        </svg>
+                      </span>
+                      {{ empresa.name }}
+                      <img *ngIf="getEmpresaDisplayLogo(empresa)" [src]="getEmpresaDisplayLogo(empresa)" alt="Logo" class="cliente-card__logo">
+                    </h5>
+                    <label class="cliente-check">
+                      <input
+                        type="checkbox"
+                        [checked]="selectedEmpresaId?.id === empresa.id"
+                        (click)="$event.stopPropagation(); onEmpresaSeleccionada(empresa)"
+                      >
+                      <div class="checkmark"></div>
+                    </label>
+                  </div>
 
+                  <div *ngIf="selectedEmpresaId?.id === empresa.id" class="cliente-card__selected">
+                    Empresa seleccionada
+                  </div>
 
-<div class="col-12" *ngFor="let empresa of paginatedEmpresas | filterEmpresa:filtroEmpresa">
-  <div
-    class="card mb-3 w-100 shadow-sm cliente-card empresa-card"
-    [class.cliente-card--selected]="selectedEmpresaId?.id === empresa.id"
-    (click)="onEmpresaSeleccionada(empresa)"
-    role="button"
-    tabindex="0"
-  >
-    <div class="card-body position-relative cliente-card__body">
-      <div class="cliente-card__header">
-        <h5 class="card-title cliente-card__title">
-          <span class="cliente-card__icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50.22 38.28">
-              <path fill="#5b748f" d="m43.78,0H6.43C2.89,0,0,2.89,0,6.43v25.42c0,3.55,2.89,6.43,6.43,6.43h38.94v-3.31h-7.87v-7.57c0-2.9-2.35-5.26-5.26-5.26h-14.27c-2.9,0-5.26,2.35-5.26,5.26v7.57h-6.28c-1.72,0-3.13-1.4-3.13-3.12V6.43c0-1.72,1.4-3.12,3.13-3.12h37.35c1.72,0,3.12,1.4,3.12,3.12v26.51h3.31V6.43c0-3.55-2.89-6.43-6.43-6.43Z"/>
-              <path fill="#5b748f" d="m18.99,13.03c0,3.37,2.74,6.11,6.12,6.11s6.11-2.74,6.11-6.11-2.74-6.12-6.11-6.12-6.12,2.74-6.12,6.12Zm7.37-3.04c0,.56-.45,1-1,1-1.28,0-2.31,1.04-2.31,2.32,0,.55-.45,1-1,1s-1-.45-1-1c0-2.38,1.93-4.32,4.31-4.32.55,0,1,.45,1,1Z"/>
-            </svg>
-          </span>
-          {{ empresa.name }}
-          <img *ngIf="getEmpresaDisplayLogo(empresa)" [src]="getEmpresaDisplayLogo(empresa)" alt="Logo" class="cliente-card__logo">
-        </h5>
-        <label class="cliente-check">
-          <input
-            type="checkbox"
-            [checked]="selectedEmpresaId?.id === empresa.id"
-            (click)="$event.stopPropagation(); onEmpresaSeleccionada(empresa)"
-          >
-          <div class="checkmark"></div>
-        </label>
-      </div>
+                  <p class="card-text mb-1"><strong>Tel:</strong> {{ empresa.phone }}</p>
+                  <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
+                  <p class="card-text mb-1"><strong>Descripción:</strong> {{ empresa.description }}</p>
 
-      <div *ngIf="selectedEmpresaId?.id === empresa.id" class="cliente-card__selected">
-        Empresa seleccionada
-      </div>
-
-      <p class="card-text mb-1"><strong>Tel:</strong> {{ empresa.phone }}</p>
-      <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
-      <p class="card-text mb-1"><strong>DescripciÃ³n:</strong> {{ empresa.description }}</p>
-
-      <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
-        <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action"
-                (click)="empresa.id && solicitarConfirmacionEliminarEmpresa(empresa.id)">
-          Eliminar
-        </button>
-        <button class="btn btn-success btn-xs px-3 py-1 cliente-card__action"
-                *ngIf="empresa.id !== undefined"
-                (click)="editarEmpresa(empresa.id)">
-          Editar
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
+                  <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
+                    <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action"
+                            (click)="empresa.id && solicitarConfirmacionEliminarEmpresa(empresa.id)">
+                      Eliminar
+                    </button>
+                    <button class="btn btn-success btn-xs px-3 py-1 cliente-card__action"
+                            *ngIf="empresa.id !== undefined"
+                            (click)="editarEmpresa(empresa.id)">
+                      Editar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div *ngIf="paginatedEmpresas.length === 0" class="col-12 text-center text-muted py-3">
               No hay empresas asociadas a este usuario.
@@ -1481,8 +1509,9 @@
         </div>
         -->
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      <div class="modal-footer d-flex flex-nowrap align-items-center gap-2">
+        <input type="text" class="form-control flex-grow-1" placeholder="Filtrar empresa..." [(ngModel)]="filtroEmpresa">
+        <button type="button" class="btn btn-secondary flex-shrink-0" data-bs-dismiss="modal">Cerrar</button>
       </div>
     </div>
   </div>
@@ -2095,6 +2124,7 @@
     </div>
   </div>
 </div>
+
 
 
 
