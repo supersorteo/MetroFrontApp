@@ -3,5 +3,5 @@ export const environment = {
   apiBaseUrl: 'http://localhost:8080',
   requestTimeoutMs: 15000,
   retryGetRequests: true,
-  enableServiceWorker: false,
+  enableServiceWorker: true,
 };

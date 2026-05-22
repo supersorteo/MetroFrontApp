@@ -1,34 +1,40 @@
 
 <router-outlet />
 
-@if (!offlineStatus.isOnline()) {
-  <div class="offline-bar">
-    <div class="offline-bar__inner">
-      @if (offlineSync.isSyncing()) {
-        <span class="offline-bar__icon offline-bar__icon--syncing">
-          <i class="bi bi-arrow-repeat"></i>
-        </span>
-        <span>Sincronizando cambios...</span>
-      } @else {
-        <span class="offline-bar__icon">
-          <i class="bi bi-wifi-off"></i>
-        </span>
-        <span>Sin conexión · La app sigue funcionando</span>
-        @if (offlineSync.hasPendingOps()) {
-          <span class="offline-bar__badge">
-            <i class="bi bi-clock-history"></i> Cambios pendientes de sync
-          </span>
-        }
-      }
-    </div>
-  </div>
-}
+<div class="conn-pill"
+     [class.conn-pill--offline]="!offlineStatus.isOnline()"
+     [class.conn-pill--syncing]="offlineSync.isSyncing()"
+     [class.conn-pill--pending]="offlineStatus.isOnline() && offlineSync.hasPendingOps() && !offlineSync.isSyncing()">
 
-@if (offlineStatus.isOnline() && offlineSync.hasPendingOps() && !offlineSync.isSyncing()) {
-  <div class="offline-bar offline-bar--pending">
-    <div class="offline-bar__inner">
-      <span class="offline-bar__icon"><i class="bi bi-cloud-upload"></i></span>
-      <span>Tenés cambios guardados offline. Sincronizando...</span>
-    </div>
+  @if (offlineSync.isSyncing()) {
+    <i class="bi bi-arrow-repeat conn-pill__icon conn-pill__icon--spin"></i>
+  } @else if (!offlineStatus.isOnline()) {
+    <i class="bi bi-wifi-off conn-pill__icon"></i>
+  } @else if (offlineSync.hasPendingOps()) {
+    <i class="bi bi-cloud-upload conn-pill__icon"></i>
+  } @else {
+    <i class="bi bi-wifi conn-pill__icon"></i>
+  }
+
+  @if (offlineSync.hasPendingOps() && !offlineSync.isSyncing()) {
+    <span class="conn-pill__count">{{ offlineSync.pendingOpsCount() }}</span>
+  }
+
+  <div class="conn-pill__tooltip">
+    @if (offlineSync.isSyncing()) {
+      <span>Sincronizando {{ offlineSync.pendingOpsCount() }} cambio(s)...</span>
+    } @else if (!offlineStatus.isOnline()) {
+      <span>Sin conexión · La app sigue funcionando</span>
+      @if (offlineSync.hasPendingOps()) {
+        <span class="conn-pill__tooltip-sub">{{ offlineSync.pendingOpsCount() }} cambio(s) se sincronizarán al volver la conexión</span>
+      }
+    } @else if (offlineSync.hasPendingOps()) {
+      <span>{{ offlineSync.pendingOpsCount() }} cambio(s) sin sincronizar</span>
+      <button class="conn-pill__sync-btn" type="button" (click)="triggerManualSync()">
+        <i class="bi bi-arrow-repeat"></i> Sincronizar ahora
+      </button>
+    } @else {
+      <span>Conectado</span>
+    }
   </div>
-}
+</div>

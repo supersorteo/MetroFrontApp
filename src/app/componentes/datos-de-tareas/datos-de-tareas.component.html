@@ -1,201 +1,252 @@
-<!-- ================================================
-     DATOS-DE-TAREAS COMPONENT - Vista Previa del Presupuesto
-     Diseño y funcionalidades migradas fielmente desde METROFINALPUBLICADO.html
-     ================================================ -->
 <div class="presupuesto-page" id="export-presupuesto" [style.color]="colorScheme.textColor">
 
-  <!-- ============ CONTROLES FLOTANTES - no-print ============ -->
-  <div class="preview-controls no-print" *ngIf="!tareasAgregadas || tareasAgregadas.length > 0">
+  <!-- ============ TOOLBAR FLOTANTE — no-print ============ -->
+  <div class="preview-toolbar no-print" *ngIf="tareasAgregadas && tareasAgregadas.length > 0">
     <label class="preview-toggle">
-      <input
-        type="checkbox"
-        id="toggleHideCostPerM2"
-        [checked]="hideCostPerM2"
-        (change)="toggleHideCostPerM2()"
-      />
-      <span>Ocultar costo por m²</span>
+      <input type="checkbox" [checked]="hideCostPerM2" (change)="toggleHideCostPerM2()" />
+      <span>Ocultar costo/m²</span>
     </label>
     <label class="preview-toggle">
-      <input
-        type="checkbox"
-        id="toggleHideDescription"
-        [checked]="hideDescription"
-        (change)="toggleHideDescription()"
-      />
+      <input type="checkbox" [checked]="hideDescription" (change)="toggleHideDescription()" />
       <span>Ocultar descripción</span>
     </label>
   </div>
 
-  <!-- ============ BOTÓN DESCARGAR FLOTANTE - no-print ============ -->
-  <button
-    type="button"
-    class="no-print download-trigger button-82-front text"
-    (click)="showDownloadModal = true"
-  >
-    <i class="fas fa-download" style="margin-right: 6px;"></i>Descargar
+  <!-- BOTÓN DESCARGAR -->
+  <button type="button" class="fab-btn fab-btn--download no-print" (click)="showDownloadModal = true">
+    <i class="fas fa-download"></i><span>Descargar</span>
   </button>
 
-  <!-- ============ BOTÓN VOLVER - no-print ============ -->
-  <button
-    type="button"
-    class="no-print back-btn button-82-front text"
-    (click)="volverAlDashboard()"
-  >
-    <i class="fas fa-times"></i>
+  <!-- BOTÓN VOLVER -->
+  <button type="button" class="fab-btn fab-btn--back no-print" (click)="volverAlDashboard()">
+    <i class="fas fa-arrow-left"></i>
   </button>
 
-  <!-- ============ MODAL DE OPCIONES DE DESCARGA - no-print ============ -->
-  <div
-    class="download-options-overlay no-print"
-    [class.is-open]="showDownloadModal"
-    (click)="onOverlayClick($event)"
-  >
-    <div class="download-options-modal">
-      <h5 class="download-options-title">Opciones de descarga</h5>
-      <p class="download-options-subtitle">Elegí el formato en el que querés descargar el presupuesto.</p>
-      <div class="download-options-actions">
-        <button
-          type="button"
-          class="no-print download-option-btn--pdf button-82-front text"
-          (click)="descargarPDF(); showDownloadModal = false"
-        >
-          <i class="fas fa-file-pdf" style="margin-right: 6px;"></i>PDF
+  <!-- ============ MODAL DE DESCARGA ============ -->
+  <div class="download-overlay no-print" [class.is-open]="showDownloadModal" (click)="onOverlayClick($event)">
+    <div class="download-card">
+      <div class="download-card__icon"><i class="fas fa-file-export"></i></div>
+      <h5 class="download-card__title">Exportar presupuesto</h5>
+      <p class="download-card__sub">Elegí el formato de descarga</p>
+      <div class="download-card__actions">
+        <button type="button" class="dl-btn dl-btn--pdf" (click)="descargarPDF(); showDownloadModal = false">
+          <i class="fas fa-file-pdf"></i> PDF
         </button>
-        <button
-          type="button"
-          class="no-print download-option-btn--html button-82-front text"
-          (click)="descargarHTML(); showDownloadModal = false"
-        >
-          <i class="fas fa-code" style="margin-right: 6px;"></i>HTML
+        <button type="button" class="dl-btn dl-btn--html" (click)="descargarHTML(); showDownloadModal = false">
+          <i class="fas fa-code"></i> HTML
         </button>
-        <button
-          type="button"
-          class="no-print download-option-btn--cancel button-82-front text"
-          (click)="showDownloadModal = false"
-        >
-          Cancelar
+        <button type="button" class="dl-btn dl-btn--cancel" (click)="showDownloadModal = false">
+          <i class="fas fa-times"></i> Cancelar
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ============ CONTENIDO IMPRIMIBLE ============ -->
-  <div class="container">
-    <div class="row">
+  <!-- ============ MODAL DE EDICIÓN DE TAREA ============ -->
+  <div class="edit-overlay no-print" [class.is-open]="showEditModal" (click)="cerrarEditarTarea()">
+    <div class="edit-card" (click)="$event.stopPropagation()">
 
-      <!-- ENCABEZADO: empresa + cliente -->
-      <div class="col-lg-12 info-section" [style.color]="colorScheme.textColor" [style.background]="'linear-gradient(' + colorScheme.gradientAngle + ', ' + colorScheme.secondaryColor + ', ' + colorScheme.secondaryColor2 + ')'">
+      <div class="edit-card__header">
+        <div class="edit-card__header-icon"><i class="fas fa-pen-to-square"></i></div>
+        <div>
+          <h5 class="edit-card__title">Editar tarea</h5>
+          <p class="edit-card__sub">Modificá los valores para este ítem del presupuesto</p>
+        </div>
+        <button type="button" class="edit-card__close" (click)="cerrarEditarTarea()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
 
-        <!-- CONTENEDOR INFORMACIÓN EMPRESA -->
-        <div class="info-box enterprise-box" [style.background-color]="colorScheme.infoBoxColorRGBA">
-          <!-- Grid logo + nombre empresa -->
-          <div class="company-header-grid">
-            <div class="company-logo-cell">
-              <img
-                *ngIf="empresaSeleccionada?.logoUrl"
-                [src]="empresaSeleccionada!.logoUrl"
-                class="company-logo-img"
-                alt="Logo empresa"
-              />
+      <div class="edit-card__body">
+
+        <!-- Nombre -->
+        <div class="edit-field edit-field--full">
+          <label class="edit-label">Tipo de trabajo</label>
+          <input type="text" class="edit-input" [(ngModel)]="editForm.tarea" placeholder="Nombre del trabajo..." />
+        </div>
+
+        <!-- Descripción -->
+        <div class="edit-field edit-field--full">
+          <label class="edit-label">Descripción <span class="edit-label__hint">opcional</span></label>
+          <textarea class="edit-input edit-input--textarea" [(ngModel)]="editForm.descripcion" rows="2" placeholder="Detalle adicional para este ítem..."></textarea>
+        </div>
+
+        <!-- Área + Costo -->
+        <div class="edit-row-2">
+          <div class="edit-field">
+            <label class="edit-label">Área / Cantidad <span class="edit-label__unit">m² / m³</span></label>
+            <input type="number" class="edit-input" [(ngModel)]="editForm.area" min="0" step="0.01" />
+          </div>
+          <div class="edit-field">
+            <label class="edit-label">Costo unitario <span class="edit-label__unit">$</span></label>
+            <input type="number" class="edit-input" [(ngModel)]="editForm.costo" min="0" step="0.01" />
+          </div>
+        </div>
+
+        <!-- Total calculado -->
+        <div class="edit-field edit-field--full">
+          <label class="edit-label">Total calculado</label>
+          <div class="edit-total-display">
+            ${{ editTotalCost | number:'1.2-2' }}
+          </div>
+        </div>
+
+      </div>
+
+      <div class="edit-card__footer">
+        <button type="button" class="edit-btn edit-btn--cancel" (click)="cerrarEditarTarea()">
+          <i class="fas fa-times"></i> Cancelar
+        </button>
+        <button type="button" class="edit-btn edit-btn--save" (click)="guardarEditarTarea()">
+          <i class="fas fa-check"></i> Guardar cambios
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ DOCUMENTO ============ -->
+  <div class="doc-wrapper">
+
+    <!-- BANDA SUPERIOR DE COLOR -->
+    <div class="doc-top-band"
+      [style.background]="'linear-gradient(135deg, ' + colorScheme.primaryColor + ' 0%, ' + colorScheme.accentColor + ' 100%)'">
+    </div>
+
+    <div class="doc-body"
+      [style.background]="'linear-gradient(' + colorScheme.gradientAngle + ', ' + colorScheme.secondaryColor + ', ' + colorScheme.secondaryColor2 + ')'">
+
+      <!-- ===== ENCABEZADO: EMPRESA + CLIENTE ===== -->
+      <div class="doc-header">
+
+        <!-- EMPRESA -->
+        <div class="company-card" [style.background-color]="colorScheme.infoBoxColorRGBA">
+          <div class="company-card__top">
+            <div class="company-card__logo" *ngIf="empresaSeleccionada?.logoUrl">
+              <img [src]="empresaSeleccionada!.logoUrl" alt="Logo" />
             </div>
-            <div class="company-name-cell"></div>
-            <div class="company-third-cell"></div>
-          </div>
-
-          <!-- Nombre de la empresa -->
-          <div class="company-name-row">
-            <h2 class="font-weight-bold" [style.color]="colorScheme.primaryColor">{{ empresaSeleccionada?.name }}</h2>
-          </div>
-
-          <!-- Datos de la empresa -->
-          <div class="row">
-            <div class="col-lg-12">
-              <div>
-                <p *ngIf="empresaSeleccionada?.phone">Tel: {{ empresaSeleccionada?.phone }}</p>
-                <p *ngIf="empresaSeleccionada?.email">Email: {{ empresaSeleccionada?.email }}</p>
-                <p *ngIf="empresaSeleccionada?.description">{{ empresaSeleccionada?.description }}</p>
-                <p *ngIf="empresaSeleccionada?.cuilCuit">CUIL/CUIT: {{ empresaSeleccionada?.cuilCuit }}</p>
-                <p *ngIf="empresaSeleccionada?.website">Web: {{ empresaSeleccionada?.website }}</p>
+            <div class="company-card__identity">
+              <h2 class="company-card__name" [style.color]="colorScheme.primaryColor">
+                {{ empresaSeleccionada?.name || 'Sin empresa' }}
+              </h2>
+              <div class="company-card__meta">
+                <span *ngIf="empresaSeleccionada?.cuilCuit" class="meta-chip">
+                  <i class="fas fa-id-card"></i> {{ empresaSeleccionada?.cuilCuit }}
+                </span>
+                <span *ngIf="empresaSeleccionada?.website" class="meta-chip">
+                  <i class="fas fa-globe"></i> {{ empresaSeleccionada?.website }}
+                </span>
               </div>
             </div>
           </div>
-
-          <!-- Social -->
-          <div class="empresa-social-row" *ngIf="empresaSeleccionada?.tiktok || empresaSeleccionada?.instagram || empresaSeleccionada?.facebook">
-            <span *ngIf="empresaSeleccionada?.tiktok" class="empresa-social-item">
-              <i class="bi bi-tiktok"></i> {{ empresaSeleccionada?.tiktok }}
-            </span>
-            <span *ngIf="empresaSeleccionada?.instagram" class="empresa-social-item">
-              <i class="bi bi-instagram"></i> {{ empresaSeleccionada?.instagram }}
-            </span>
-            <span *ngIf="empresaSeleccionada?.facebook" class="empresa-social-item">
-              <i class="bi bi-facebook"></i> {{ empresaSeleccionada?.facebook }}
-            </span>
+          <div class="company-card__details" *ngIf="empresaSeleccionada?.phone || empresaSeleccionada?.email || empresaSeleccionada?.description">
+            <p *ngIf="empresaSeleccionada?.phone"><i class="fas fa-phone-alt detail-icon"></i>{{ empresaSeleccionada?.phone }}</p>
+            <p *ngIf="empresaSeleccionada?.email"><i class="fas fa-envelope detail-icon"></i>{{ empresaSeleccionada?.email }}</p>
+            <p *ngIf="empresaSeleccionada?.description" class="company-desc">{{ empresaSeleccionada?.description }}</p>
+          </div>
+          <div class="company-card__social" *ngIf="empresaSeleccionada?.tiktok || empresaSeleccionada?.instagram || empresaSeleccionada?.facebook">
+            <span *ngIf="empresaSeleccionada?.tiktok" class="social-pill"><i class="bi bi-tiktok"></i>{{ empresaSeleccionada?.tiktok }}</span>
+            <span *ngIf="empresaSeleccionada?.instagram" class="social-pill"><i class="bi bi-instagram"></i>{{ empresaSeleccionada?.instagram }}</span>
+            <span *ngIf="empresaSeleccionada?.facebook" class="social-pill"><i class="bi bi-facebook"></i>{{ empresaSeleccionada?.facebook }}</span>
           </div>
         </div>
 
-        <!-- CONTENEDOR INFORMACIÓN CLIENTE -->
-        <div class="info-box client-box" [style.backgroundColor]="colorScheme.infoBoxColorRGBA">
-          <h5 class="font-weight-bold" [style.color]="colorScheme.textColor">Cliente</h5>
-          <h4 class="font-weight-bold" [style.color]="colorScheme.textColor">{{ clienteSeleccionado?.name }}</h4>
-          <p *ngIf="clienteSeleccionado?.contact">Tel/cel.: {{ clienteSeleccionado?.contact }}</p>
-          <p *ngIf="clienteSeleccionado?.budgetDate">Fecha de este presupuesto: {{ clienteSeleccionado?.budgetDate }}</p>
-          <p *ngIf="presupuestoNombre">Presupuesto: {{ presupuestoNombre }}</p>
-          <p *ngIf="clienteSeleccionado?.additionalDetails">Detalles: {{ clienteSeleccionado?.additionalDetails }}</p>
+        <!-- CLIENTE -->
+        <div class="client-card" [style.background-color]="colorScheme.infoBoxColorRGBA">
+          <div class="client-card__label" [style.background]="colorScheme.primaryColor">
+            <i class="fas fa-user-tie"></i> CLIENTE
+          </div>
+          <h3 class="client-card__name" [style.color]="colorScheme.primaryColor">
+            {{ clienteSeleccionado?.name || 'Sin cliente' }}
+          </h3>
+          <div class="client-card__rows">
+            <div *ngIf="clienteSeleccionado?.contact" class="client-row">
+              <i class="fas fa-phone-alt"></i><span>{{ clienteSeleccionado?.contact }}</span>
+            </div>
+            <div *ngIf="clienteSeleccionado?.email" class="client-row">
+              <i class="fas fa-envelope"></i><span>{{ clienteSeleccionado?.email }}</span>
+            </div>
+            <div *ngIf="clienteSeleccionado?.clave" class="client-row">
+              <i class="fas fa-id-badge"></i><span>{{ clienteSeleccionado?.clave }}</span>
+            </div>
+            <div *ngIf="clienteSeleccionado?.direccion" class="client-row">
+              <i class="fas fa-map-marker-alt"></i><span>{{ clienteSeleccionado?.direccion }}</span>
+            </div>
+            <div *ngIf="clienteSeleccionado?.budgetDate" class="client-row">
+              <i class="fas fa-calendar-alt"></i><span>{{ clienteSeleccionado?.budgetDate }}</span>
+            </div>
+            <div *ngIf="presupuestoNombre" class="client-row">
+              <i class="fas fa-file-invoice"></i><span>{{ presupuestoNombre }}</span>
+            </div>
+            <div *ngIf="clienteSeleccionado?.additionalDetails" class="client-row client-row--note">
+              <i class="fas fa-sticky-note"></i><span>{{ clienteSeleccionado?.additionalDetails }}</span>
+            </div>
+          </div>
         </div>
 
-        <!-- ============ TABLA DE TAREAS (Movida adentro) ============ -->
-        <!-- Estado vacío -->
-        <div class="budget-empty-state" [class.is-visible]="!tareasAgregadas || tareasAgregadas.length === 0" style="margin-top: 20px;">
-          <h3>Presupuesto vacío</h3>
-          <p>Todavía no agregaste tareas al presupuesto. Para ver la vista previa completa, primero cargá al menos una.</p>
-          <ol>
-            <li>Buscá una tarea en la lista usando el buscador.</li>
-            <li>Seleccioná la tarea que querés agregar al presupuesto.</li>
-            <li>Completá la descripción, los metros o cantidad, y el valor si hace falta.</li>
-            <li>Guardá o agregá la tarea para que aparezca en la tabla del presupuesto.</li>
-            <li>Volvé a abrir esta vista previa para revisar el resultado final.</li>
-          </ol>
-        </div>
+      </div><!-- /doc-header -->
 
-        <!-- Tabla -->
-        <div class="table-responsive" *ngIf="tareasAgregadas && tareasAgregadas.length > 0" 
-             [style.backgroundColor]="colorScheme.tableBodyColor"
-             style="margin-top: 20px; border-radius: 8px;">
-          <table class="table table-bordered" id="budgetListPrint" 
-                 [style.backgroundColor]="colorScheme.tableBodyColor"
-                 style="margin-bottom: 0;">
-            <thead [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">
-              <tr [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">
-                <th [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Tipo de Trabajo</th>
-                <th [style.display]="hideDescription ? 'none' : ''" [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Descripción</th>
-                <th [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Área (m²/m³)</th>
-                <th [style.display]="hideCostPerM2 ? 'none' : ''" [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Costo por m²</th>
-                <th [style.background-color]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Total</th>
+      <!-- DIVISOR -->
+      <div class="doc-divider" [style.background-color]="colorScheme.primaryColor + '33'"></div>
+
+      <!-- ===== ESTADO VACÍO ===== -->
+      <div class="empty-state" [class.is-visible]="!tareasAgregadas || tareasAgregadas.length === 0">
+        <div class="empty-state__icon"><i class="fas fa-file-invoice"></i></div>
+        <h3>Presupuesto vacío</h3>
+        <p>Todavía no agregaste tareas. Volvé al panel y cargá al menos una para ver la vista previa.</p>
+      </div>
+
+      <!-- ===== TABLA DE TAREAS ===== -->
+      <div class="table-section" *ngIf="tareasAgregadas && tareasAgregadas.length > 0">
+        <div class="table-section__title" [style.color]="colorScheme.primaryColor">
+          <i class="fas fa-list-check"></i> Detalle de trabajos
+        </div>
+        <div class="table-scroll-wrapper">
+          <table class="budget-table" id="budgetListPrint" [style.backgroundColor]="colorScheme.tableBodyColor">
+            <thead>
+              <tr [style.background]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">
+                <th class="col-tarea"  [style.background]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">#</th>
+                <th class="col-name"   [style.background]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Tipo de trabajo</th>
+                <th class="col-desc"   [style.display]="hideDescription ? 'none' : ''" [style.background]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Descripción</th>
+                <th class="col-num"    [style.background]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Área m²/m³</th>
+                <th class="col-num"    [style.display]="hideCostPerM2 ? 'none' : ''" [style.background]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Costo/m²</th>
+                <th class="col-num col-total" [style.background]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Total</th>
+                <th class="col-action no-print" [style.background]="colorScheme.accentColor"></th>
               </tr>
             </thead>
-            <tbody [style.backgroundColor]="colorScheme.tableBodyColor">
-              <tr *ngFor="let tarea of tareasAgregadas" [style.backgroundColor]="colorScheme.tableBodyColor" [style.color]="colorScheme.textColor">
-                <td [style.backgroundColor]="colorScheme.tableBodyColor" style="text-align: left;">{{ tarea.tarea }}</td>
-                <td [style.backgroundColor]="colorScheme.tableBodyColor" [style.display]="hideDescription ? 'none' : ''">{{ tarea.descripcion }}</td>
-                <td [style.backgroundColor]="colorScheme.tableBodyColor">{{ tarea.area | number:'1.2-2' }}</td>
-                <td [style.backgroundColor]="colorScheme.tableBodyColor" [style.display]="hideCostPerM2 ? 'none' : ''">${{ tarea.costo | number:'1.2-2' }}</td>
-                <td [style.backgroundColor]="colorScheme.tableBodyColor">${{ tarea.totalCost | number:'1.2-2' }}</td>
+            <tbody>
+              <tr *ngFor="let tarea of tareasAgregadas; let i = index; let odd = odd"
+                  class="budget-row no-print-edit"
+                  [class.row-odd]="odd"
+                  [style.backgroundColor]="colorScheme.tableBodyColor"
+                  [style.color]="colorScheme.textColor"
+                  (click)="abrirEditarTarea(i)">
+                <td class="col-tarea" [style.backgroundColor]="colorScheme.tableBodyColor" [style.color]="colorScheme.textColor">{{ i + 1 }}</td>
+                <td class="col-name"  [style.backgroundColor]="colorScheme.tableBodyColor" [style.color]="colorScheme.textColor">{{ tarea.tarea }}</td>
+                <td class="col-desc"  [style.backgroundColor]="colorScheme.tableBodyColor" [style.display]="hideDescription ? 'none' : ''" [style.color]="colorScheme.textColor">{{ tarea.descripcion }}</td>
+                <td class="col-num"   [style.backgroundColor]="colorScheme.tableBodyColor" [style.color]="colorScheme.textColor">{{ tarea.area | number:'1.2-2' }}</td>
+                <td class="col-num"   [style.backgroundColor]="colorScheme.tableBodyColor" [style.display]="hideCostPerM2 ? 'none' : ''" [style.color]="colorScheme.textColor">${{ tarea.costo | number:'1.2-2' }}</td>
+                <td class="col-num col-total-val" [style.backgroundColor]="colorScheme.tableBodyColor" [style.color]="colorScheme.primaryColor">${{ tarea.totalCost | number:'1.2-2' }}</td>
+                <td class="col-action no-print" [style.backgroundColor]="colorScheme.tableBodyColor" (click)="$event.stopPropagation()">
+                  <button type="button" class="delete-row-btn" (click)="eliminarTarea(i)" title="Eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Total -->
-        <p class="total" *ngIf="tareasAgregadas && tareasAgregadas.length > 0" 
-           [style.color]="colorScheme.primaryColor" 
-           [style.background]="'linear-gradient(' + colorScheme.gradientAngle + ', ' + colorScheme.secondaryColor + ', ' + colorScheme.secondaryColor2 + ')'"
-           [style.border-color]="colorScheme.primaryColor + '33'"
-           style="margin-top: 20px; margin-bottom: 20px; border-radius: 8px;">
-          Total: ${{ formatCurrency(calcularCostoTotal()) }}
-        </p>
+        <!-- BARRA TOTAL -->
+        <div class="total-bar"
+          [style.background]="'linear-gradient(135deg, ' + colorScheme.primaryColor + ' 0%, ' + colorScheme.accentColor + ' 100%)'">
+          <span class="total-bar__label"><i class="fas fa-calculator"></i> TOTAL PRESUPUESTO</span>
+          <span class="total-bar__amount">${{ formatCurrency(calcularCostoTotal()) }}</span>
+        </div>
 
-      </div>
-    </div>
-  </div><!-- /container -->
+      </div><!-- /table-section -->
+
+    </div><!-- /doc-body -->
+  </div><!-- /doc-wrapper -->
+
 </div><!-- /presupuesto-page -->

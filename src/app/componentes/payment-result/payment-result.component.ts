@@ -34,6 +34,36 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
     private payPalPaymentService: PayPalPaymentService
   ) {}
 
+  private cacheKey(provider: 'mercadopago' | 'paypal', externalId: string): string {
+    return `paymentResult_${provider}_${externalId}`;
+  }
+
+  private cacheOrder(provider: 'mercadopago' | 'paypal', externalId: string, order: UnifiedOrder): void {
+    localStorage.setItem(this.cacheKey(provider, externalId), JSON.stringify(order));
+  }
+
+  private getCachedOrder(provider: 'mercadopago' | 'paypal', externalId: string): UnifiedOrder | null {
+    try {
+      const raw = localStorage.getItem(this.cacheKey(provider, externalId));
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private useCachedOrder(provider: 'mercadopago' | 'paypal', externalId: string, message: string): boolean {
+    const cached = this.getCachedOrder(provider, externalId);
+    if (!cached) {
+      return false;
+    }
+
+    this.provider = provider;
+    this.order = cached;
+    this.loading = false;
+    this.errorMessage = message;
+    return true;
+  }
+
   ngOnInit(): void {
     // Guard: evitar iniciar múltiples loops si ngOnInit se llama más de una vez
     if (this.pollingStarted) return;
@@ -72,17 +102,35 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
         next: (order) => {
           this.order   = order;
           this.loading = false;
+          this.cacheOrder('paypal', externalId, order);
           if (order.status === 'PAID') localStorage.removeItem('pendingPaymentId');
         },
         error: (err) => {
+          if (this.useCachedOrder('paypal', externalId, 'Mostrando el ultimo estado guardado del pago en PayPal.')) {
+            return;
+          }
           this.loading = false;
-          this.errorMessage = err?.error?.message || 'No se pudo capturar el pago con PayPal.';
+          this.errorMessage = !navigator.onLine
+            ? 'Sin conexion. No se pudo capturar el pago con PayPal.'
+            : err?.error?.message || 'No se pudo capturar el pago con PayPal.';
         }
       });
     } else if (externalId) {
       this.payPalPaymentService.getStatus(externalId).subscribe({
-        next:  (order) => { this.order = order; this.loading = false; },
-        error: (err)   => { this.loading = false; this.errorMessage = err?.message || 'Error consultando PayPal.'; }
+        next:  (order) => {
+          this.order = order;
+          this.loading = false;
+          this.cacheOrder('paypal', externalId, order);
+        },
+        error: (err)   => {
+          if (this.useCachedOrder('paypal', externalId, 'Mostrando el ultimo estado guardado del pago en PayPal.')) {
+            return;
+          }
+          this.loading = false;
+          this.errorMessage = !navigator.onLine
+            ? 'Sin conexion. No se pudo consultar PayPal.'
+            : err?.message || 'Error consultando PayPal.';
+        }
       });
     }
   }
@@ -113,6 +161,7 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
       next: (order) => {
         this.order   = order;
         this.loading = false;
+        this.cacheOrder('mercadopago', externalId, order);
 
         if (order.status === 'PAID') {
           localStorage.removeItem('pendingPaymentId');
@@ -122,8 +171,14 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
+        if (this.useCachedOrder('mercadopago', externalId, 'Mostrando el ultimo estado guardado del pago en Mercado Pago.')) {
+          this.stopPolling();
+          return;
+        }
         this.loading = false;
-        this.errorMessage = error?.message || 'No se pudo consultar el estado del pago.';
+        this.errorMessage = !navigator.onLine
+          ? 'Sin conexion. No se pudo consultar el estado del pago.'
+          : error?.message || 'No se pudo consultar el estado del pago.';
         this.stopPolling();
         console.error('[PaymentResult] Error:', error);
       }

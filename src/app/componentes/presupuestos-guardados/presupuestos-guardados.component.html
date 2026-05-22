@@ -1,8 +1,5 @@
-
-
 <div class="saved-budgets-card">
   <div class="saved-budgets-header">
-
     <div class="save-controls">
       <input
         class="form-control"
@@ -11,200 +8,215 @@
         placeholder="Nombre del presupuesto"
       />
       <button
+        type="button"
         class="btn btn-primary"
         (click)="guardarPresupuestoActual()"
-
-        [disabled]="!puedeGuardarr"
-
-        [title]="!puedeGuardarr ? getMensajeBotonDeshabilitado() : (presupuestoCargado ? 'Actualizar presupuesto' : 'Guardar presupuesto')"
-
-        >
-         {{ presupuestoCargado ? 'Actualizar' : 'Guardar' }}
+        [disabled]="!puedeEjecutarAccionPrincipal || isSavingBudget"
+        [title]="!puedeEjecutarAccionPrincipal ? getMensajeBotonDeshabilitado() : (presupuestoCargado ? 'Actualizar presupuesto cargado' : 'Guardar presupuesto')"
+      >
+        {{ isSavingBudget ? 'Procesando...' : (presupuestoCargado ? 'Actualizar' : 'Guardar') }}
       </button>
-       <div>
-      <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
-    </div>
+      <div>
+        <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
+      </div>
     </div>
 
     @if (nombreTemporal.trim() && nombreYaExiste(nombreTemporal)) {
-  <small class="text-danger">
-    Ya existe un presupuesto con este nombre. Elige otro.
-  </small>
-}
-
+      <small class="text-danger">Ya existe un presupuesto con este nombre. Elige otro.</small>
+    }
     @if (!tareasActuales.length) {
-      <small class="text-muted">
-        Agrega tareas para poder guardar este presupuesto.
+      <small class="text-muted">Agrega tareas para poder guardar este presupuesto.</small>
+    }
+    @if (presupuestoCargado) {
+      <small class="text-muted d-block">
+        Presupuesto cargado: <strong>{{ presupuestoCargado.name }}</strong>
       </small>
     }
-
+    @if (presupuestoCargado && !puedeActualizarPresupuestoCargado) {
+      <small class="text-warning d-block">Para actualizar desde este panel, primero carga el presupuesto desde la lista.</small>
+    }
+    @if (isOffline) {
+      <small class="text-muted">Sin conexión: los cambios se guardarán localmente y se sincronizarán luego.</small>
+    }
     @if (limiteAlcanzado) {
-      <small class="text-danger">
-        Has alcanzado el máximo de {{ maxItems }} presupuestos guardados. Elimina alguno para guardar uno nuevo.
-      </small>
+      <small class="text-danger">Has alcanzado el máximo de {{ maxItems }} presupuestos guardados. Elimina alguno para guardar uno nuevo.</small>
     }
   </div>
 
-
   @if (presupuestosFiltrados.length || filtro) {
     <div class="filter-wrapper">
-      <input
-        type="text"
-        class="form-control filter-input"
-        [(ngModel)]="filtro"
-        placeholder="Buscar por nombre o cliente"
-      />
+      <input type="text" class="form-control filter-input" [(ngModel)]="filtro" placeholder="Buscar por nombre o cliente" />
     </div>
   }
-
 
   @if (presupuestosFiltrados.length > 0) {
     <div class="saved-budgets-list">
       @for (presupuesto of presupuestosFiltrados; track presupuesto.id) {
         <div class="saved-budget-item">
           <div class="saved-budget-info">
-            <strong>{{ presupuesto.name }}</strong>
+            <strong>
+              {{ presupuesto.name }}
+              @if (esPresupuestoCargado(presupuesto)) {
+                <span class="badge text-bg-primary ms-2">Cargado</span>
+              }
+              @if (esPendienteDeSync(presupuesto)) {
+                <span class="badge text-bg-warning ms-2">Pendiente de sync</span>
+              }
+            </strong>
             <small>Creado {{ presupuesto.createdAt | date: 'short' }}</small>
-           <div class="text-muted small">
-          <span>Empresa: {{ empresaActual?.name || 'Sin empresa' }}</span> |
-          <span>Cliente: {{ presupuesto.cliente.name || 'Sin cliente' }}</span> |
-          <span>Tareas: {{ presupuesto.tareas.length || 0 }}</span>
-        </div>
+            <div class="text-muted small">
+              <span>Empresa: {{ presupuesto.empresa?.name || empresaActual?.name || 'Sin empresa' }}</span> |
+              <span>Cliente: {{ presupuesto.cliente?.name || clienteActual?.name || 'Sin cliente' }}</span> |
+              <span>Tareas: {{ presupuesto.tareas.length || 0 }}</span>
+            </div>
           </div>
+
           <div class="saved-budget-actions">
-            <button class="btn btn-outline-primary btn-sm" (click)="cargar(presupuesto)">
-              CARGAR
+            <button type="button" class="btn btn-outline-primary btn-sm" (click)="cargar(presupuesto)">CARGAR</button>
+            <button type="button" class="btn btn-warning" (click)="editarPresupuesto(presupuesto)"
+              [title]="esPresupuestoCargado(presupuesto) ? 'Editar presupuesto cargado' : 'Primero debes cargar este presupuesto'">
+              Editar
             </button>
-            <button (click)="editarPresupuesto(presupuesto)" class="btn btn-warning">
-             ✏️ Editar
-           </button>
-            <button class="btn btn-outline-danger btn-sm" (click)="eliminar(presupuesto)">
-              ELIMINAR
-            </button>
-            <!--button class="btn btn-outline-secondary btn-sm" (click)="descargarPDF(presupuesto)">
-              DESCARGAR PDF
-            </button-->
-
-            <button class="btn btn-outline-secondary btn-sm" (click)="verPresupuesto(presupuesto)">
-             VER / DESCARGAR
-           </button>
-
+            <button type="button" class="btn btn-outline-danger btn-sm" (click)="eliminar(presupuesto)">ELIMINAR</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="verPresupuesto(presupuesto)">VER / DESCARGAR</button>
           </div>
         </div>
       }
     </div>
   } @else {
-    <div class="empty-state">
-      Todavía no hay presupuestos guardados para este cliente.
-    </div>
+    <div class="empty-state">Todavía no hay presupuestos guardados para este cliente.</div>
   }
 </div>
 
-<!-- MODAL DE EDICIÓN -->
-<div class="modal fade" id="editarPresupuestoModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header bg-warning text-dark">
-        <h5 class="modal-title">Editar Presupuesto</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- ── Modal Editar Presupuesto ─────────────────────────── -->
+<div class="pg-overlay" *ngIf="showEditModal" (click)="cancelarEdicion()">
+  <div class="pg-modal" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="pg-modal__header">
+      <div class="pg-modal__header-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+        </svg>
+      </div>
+      <div class="pg-modal__header-text">
+        <h3 class="pg-modal__title">Editar presupuesto</h3>
+        <small class="pg-modal__subtitle">{{ presupuestoEditando?.name }}</small>
+      </div>
+      <button class="pg-modal__close" (click)="cancelarEdicion()" aria-label="Cerrar">&#x00D7;</button>
+    </div>
+
+    <!-- Body -->
+    <div class="pg-modal__body" *ngIf="presupuestoEditando">
+
+      <!-- Nombre -->
+      <div class="pg-field">
+        <label class="pg-label">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="pg-label__icon">
+            <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+          </svg>
+          Nombre del presupuesto <span class="pg-req">*</span>
+        </label>
+        <input class="pg-input" type="text" [(ngModel)]="presupuestoEditando.name" placeholder="Nombre del presupuesto" autofocus>
       </div>
 
-      @if (presupuestoEditando) {
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label fw-bold">Nombre del presupuesto</label>
-            <input
-              type="text"
-              class="form-control"
-              [(ngModel)]="presupuestoEditando.name"
-              placeholder="Nombre del presupuesto"
-            />
-          </div>
+      <!-- Cliente chip -->
+      <div class="pg-client-chip">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.029 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+        </svg>
+        <span>{{ presupuestoEditando.cliente.name || 'Sin cliente' }}</span>
+      </div>
 
-          <div class="mb-3">
-            <strong>Cliente:</strong> {{ presupuestoEditando.cliente.name || 'Sin cliente' }}
-          </div>
-
-          <!-- LISTA DE TAREAS EDITABLES -->
-          <div class="mb-3">
-            <strong>Tareas asociadas ({{ presupuestoEditando.tareas.length || 0 }})</strong>
-            @if (presupuestoEditando.tareas.length > 0) {
-              <div class="table-responsive mt-2">
-                <table class="table table-sm table-bordered">
-                  <thead class="table-light">
-                    <tr>
-                      <th>Tarea</th>
-                      <th>Costo</th>
-                      <th>Área</th>
-                      <th>Total</th>
-                      <th>Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (tarea of presupuestoEditando.tareas; track tarea.id; let i = $index) {
-                      <tr>
-                        <td>{{ tarea.tarea }}</td>
-                        <td>${{ tarea.costo | number:'1.2-2' }}</td>
-                        <td>{{ tarea.area }}</td>
-                        <td>${{ tarea.totalCost | number:'1.2-2' }}</td>
-                        <td>
-                          <button class="btn btn-sm btn-danger" (click)="quitarTareaEdicion(i)">
-                            Quitar
-                          </button>
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            } @else {
-              <p class="text-muted mt-2">No hay tareas asociadas</p>
-            }
-          </div>
-
-          <div class="mt-4 border-top pt-4">
-  <h6 class="fw-bold mb-3">Agregar tarea del cliente</h6>
-  <div class="input-group">
-    <select
-    class="form-select"
-    [(ngModel)]="tareaAAgregarId"
-    (change)="onTareaSeleccionadaChange()">
-      <option [ngValue]="null">Seleccionar tarea...</option>
-      @for (tarea of tareasDisponiblesParaAgregar; track tarea.id) {
-        <option [ngValue]="tarea.id">
-          {{ tarea.tarea }} - ${{ tarea.costo | number:'1.2-2' }} (Total: ${{ tarea.totalCost | number:'1.2-2' }})
-        </option>
-      }
-    </select>
-    <button
-      class="btn btn-success ms-2"
-      (click)="agregarTareaAlPresupuesto()"
-      [disabled]="!tareaAAgregarId"
-    >
-      Agregar
-    </button>
-  </div>
-</div>
+      <!-- Tareas -->
+      <div class="pg-section">
+        <div class="pg-section__header">
+          <span class="pg-section__title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M5.5 2A3.5 3.5 0 0 0 2 5.5v5A3.5 3.5 0 0 0 5.5 14h5a3.5 3.5 0 0 0 3.5-3.5V8a.5.5 0 0 1 1 0v2.5a4.5 4.5 0 0 1-4.5 4.5h-5A4.5 4.5 0 0 1 1 10.5v-5A4.5 4.5 0 0 1 5.5 1H8a.5.5 0 0 1 0 1z"/>
+              <path d="M16 3a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+            </svg>
+            Tareas del presupuesto
+          </span>
+          <span class="pg-count-badge">{{ presupuestoEditando.tareas.length }}</span>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button
-            type="button"
-            class="btn btn-warning"
-            (click)="confirmarEdicion()"
-            [disabled]="!presupuestoEditando.name.trim()"
-          >
-            Guardar cambios
+        <div class="pg-tareas-list" *ngIf="presupuestoEditando.tareas.length > 0">
+          <div class="pg-tarea-row" *ngFor="let tarea of presupuestoEditando.tareas; let i = index">
+            <div class="pg-tarea-info">
+              <span class="pg-tarea-name">{{ tarea.tarea }}</span>
+              <span class="pg-tarea-meta">
+                ${{ tarea.costo | number:'1.2-2' }} × {{ tarea.area }}
+                <span class="pg-tarea-total">= ${{ tarea.totalCost | number:'1.2-2' }}</span>
+              </span>
+            </div>
+            <button class="pg-remove-btn" (click)="confirmarQuitarTarea(i)" title="Quitar tarea">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <p class="pg-empty-tareas" *ngIf="presupuestoEditando.tareas.length === 0">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+          </svg>
+          Sin tareas asociadas
+        </p>
+      </div>
+
+      <!-- Agregar tarea -->
+      <div class="pg-section pg-section--add">
+        <div class="pg-section__header">
+          <span class="pg-section__title">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+            </svg>
+            Agregar tarea del cliente
+          </span>
+        </div>
+
+        <div class="pg-add-row" *ngIf="tareasDisponiblesParaAgregar.length > 0">
+          <select class="pg-select" [(ngModel)]="tareaAAgregarId" (change)="onTareaSeleccionadaChange()">
+            <option [ngValue]="null">Seleccionar tarea...</option>
+            <option *ngFor="let tarea of tareasDisponiblesParaAgregar" [ngValue]="tarea.id">
+              {{ tarea.tarea }} — ${{ tarea.totalCost | number:'1.2-2' }}
+            </option>
+          </select>
+          <button class="pg-add-btn" (click)="agregarTareaAlPresupuesto()" [disabled]="!tareaAAgregarId || isAddingBudgetTask">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+            </svg>
+            {{ isAddingBudgetTask ? 'Agregando...' : 'Agregar' }}
           </button>
         </div>
-      } @else {
-        <div class="modal-body text-center py-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
-          </div>
-        </div>
-      }
+
+        <p class="pg-no-available" *ngIf="tareasDisponiblesParaAgregar.length === 0">
+          No hay tareas disponibles para agregar a este presupuesto.
+        </p>
+      </div>
+
     </div>
+
+    <!-- Footer -->
+    <div class="pg-modal__footer">
+      <button class="pg-btn pg-btn--cancel" (click)="cancelarEdicion()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+        </svg>
+        Cancelar
+      </button>
+      <button class="pg-btn pg-btn--save" (click)="confirmarEdicion()"
+        [disabled]="!presupuestoEditando?.name?.trim() || isConfirmingBudgetEdit">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+        </svg>
+        {{ isConfirmingBudgetEdit ? 'Guardando...' : 'Guardar cambios' }}
+      </button>
+    </div>
+
   </div>
 </div>

@@ -5,7 +5,6 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
 import { AccessCodeService } from '../../servicios/access-code.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
 import { ProvinciaService } from '../../servicios/provincia.service';
 import { MembershipPaymentService } from '../../servicios/membership-payment.service';
 import { PayPalPaymentService } from '../../servicios/paypal-payment.service';
@@ -14,7 +13,8 @@ import { accessCodeCountryMismatchMessage } from '../../core/country/access-code
 import { phonePlaceholder, sanitizePhoneInput, validatePhoneByCountry } from '../../core/country/phone.util';
 import { buildMembershipCheckoutPayload, buildPayPalCheckoutPayload, mapMembershipCountryOption, MembershipCheckoutForm, MembershipCountryOption, validateMembershipCheckoutForm } from '../../core/membership/membership-checkout.util';
 import { extractApiErrorMessage } from '../../core/http/api-error.util';
-import Swal from 'sweetalert2';
+import { UiDialogService } from '../../core/services/ui-dialog.service';
+import { AppToastService } from '../../servicios/app-toast.service';
 import { AdminService, AdminCountry } from '../../servicios/admin.service';
 declare var bootstrap: any;
 
@@ -99,11 +99,53 @@ constructor(private authService: AuthService,
   private route:Router,
   private activatedRoute: ActivatedRoute,
   private renderer: Renderer2,
-  private toastr: ToastrService,
   private provinciaService: ProvinciaService,
   private membershipPaymentService: MembershipPaymentService,
   private payPalPaymentService: PayPalPaymentService,
-  private adminService: AdminService){}
+  private adminService: AdminService,
+  private uiDialog: UiDialogService,
+  private appToast: AppToastService){}
+
+  private provinciasCacheKey(pais: string): string {
+    return `loginProvincias_${pais.toLowerCase()}`;
+  }
+
+  private membershipCatalogCacheKey(): string {
+    return 'membershipCatalogCache';
+  }
+
+  private cacheProvincias(pais: string, provincias: Provincia[]): void {
+    if (!pais) {
+      return;
+    }
+    localStorage.setItem(this.provinciasCacheKey(pais), JSON.stringify(provincias));
+  }
+
+  private getCachedProvincias(pais: string | null | undefined): Provincia[] {
+    if (!pais) {
+      return [];
+    }
+
+    try {
+      const raw = localStorage.getItem(this.provinciasCacheKey(pais));
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private cacheMembershipCatalog(catalog: MembershipCountryOption[]): void {
+    localStorage.setItem(this.membershipCatalogCacheKey(), JSON.stringify(catalog));
+  }
+
+  private getCachedMembershipCatalog(): MembershipCountryOption[] {
+    try {
+      const raw = localStorage.getItem(this.membershipCatalogCacheKey());
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
 
   ngOnInit(): void {
     this.loadMembershipCatalog();
@@ -115,7 +157,7 @@ constructor(private authService: AuthService,
         this.code = code;
       }
       if (paid === '1') {
-        this.toastr.success('Tu codigo ya esta activado. Ingresa con el codigo recibido.', 'Pago confirmado');
+        this.appToast.success('Tu código ya está activado. Ingresa con el código recibido.', 'Pago confirmado');
       }
       if (adminShortcut === '1') {
         if (this.adminService.isLoggedIn()) {
@@ -130,31 +172,51 @@ constructor(private authService: AuthService,
 
 
 
-
-
 login(): void {
-  if (this.code.trim().length === 0) {
-    Swal.fire('Error', 'Debe ingresar su codigo', 'error');
+  const normalizedCode = this.accessCodeService.normalizeCode(this.code);
+
+  if (normalizedCode.length === 0) {
+    this.uiDialog.error({ title: 'Error', text: 'Debe ingresar su código' });
     return;
   }
+
+  this.code = normalizedCode;
+
   this.authService.login(this.code).subscribe(
     response => {
       if (response.email && response.email !== 'Codigo no encontrado' && response.email !== 'Codigo existe pero no asignado a un usuario') {
         this.isAuthenticated = true;
         this.email = response.email;
-        //localStorage.clear();
-        this.route.navigate(['dashboard']);
-        Swal.fire('Exito', 'Login exitoso', 'success');
         localStorage.setItem('userCode', this.code);
         localStorage.setItem('userEmail', this.email);
-        localStorage.setItem('userData', JSON.stringify(response)); // Guardar objeto completo
+        localStorage.setItem('userData', JSON.stringify(response));
+        this.route.navigate(['dashboard']);
+        this.uiDialog.success({ title: 'Éxito', text: 'Login exitoso' });
       } else {
-        Swal.fire('Error', response.email || 'Error al iniciar sesion', 'error');
+        this.uiDialog.error({ title: 'Error', text: response.email || 'Error al iniciar sesión' });
       }
     },
     error => {
-      const msg = error.error?.email || error.message || 'Error al iniciar sesion';
-      Swal.fire('Error', msg, 'error');
+      const storedCode = localStorage.getItem('userCode');
+      const cachedUserRaw = localStorage.getItem('userData');
+
+      if (!navigator.onLine && storedCode === this.code && cachedUserRaw) {
+        try {
+          const cachedUser = JSON.parse(cachedUserRaw);
+          this.isAuthenticated = true;
+          this.email = cachedUser?.email || localStorage.getItem('userEmail') || '';
+          if (this.email) {
+            localStorage.setItem('userEmail', this.email);
+          }
+          this.route.navigate(['dashboard']);
+          this.uiDialog.info({ title: 'Modo offline', text: 'Ingresaste con datos guardados localmente.' });
+          return;
+        } catch {
+        }
+      }
+
+      const msg = error.error?.email || error.message || 'Error al iniciar sesión';
+      this.uiDialog.error({ title: 'Error', text: msg });
     }
   );
 }
@@ -164,23 +226,36 @@ login(): void {
   register(): void {
     this.validateForm();
     if (!this.isFormValid) {
-      Swal.fire('Error', this.codeCountryErrorMessage || this.telefonoErrorMessage || 'Completa correctamente los datos del registro.', 'error');
+      this.uiDialog.error({ title: 'Error', text: this.codeCountryErrorMessage || this.telefonoErrorMessage || 'Completa correctamente los datos del registro.' });
+      return;
+    }
+
+    if (!navigator.onLine) {
+      this.uiDialog.info({ title: 'Sin conexión', text: 'El registro requiere internet para validar el código y asociar tus datos.' });
       return;
     }
 
     const normalizedCode = this.accessCodeService.normalizeCode(this.code);
 
     this.accessCodeService.getCodeCountry(normalizedCode).subscribe({
-      next: (detectedCountry) => {
+      next: async (detectedCountry) => {
         this.code = normalizedCode;
         this.codeCountry = detectedCountry;
         this.codeCountryErrorMessage = this.getCodeCountryMismatchMessage();
 
         if (this.codeCountryErrorMessage) {
           this.validateForm();
-          Swal.fire('Error', this.codeCountryErrorMessage, 'error');
+          this.uiDialog.error({ title: 'Error', text: this.codeCountryErrorMessage });
           return;
         }
+
+        const confirmed = await this.uiDialog.confirm({
+          title: 'Confirmar registro',
+          text: `¿Confirmas registrar el correo "${this.email}" con el código "${this.code}"?`,
+          confirmText: 'Registrar',
+          cancelText: 'Cancelar'
+        });
+        if (!confirmed) return;
 
         this.authService.assignEmail({
           code: this.code,
@@ -188,22 +263,19 @@ login(): void {
           telefono: this.telefono,
           pais: this.pais || '',
           provincia: this.provincia
-        }).subscribe(
-          response => {
-            if (response.message === 'Datos asignados con exito') {
-              Swal.fire('Exito', response.message, 'success');
-              this.clearForm();
-            } else {
-              Swal.fire('Error', response.message, 'error');
-            }
+        }).subscribe({
+          next: response => {
+            this.uiDialog.success({ title: '¡Éxito!', text: response.message });
+            this.clearForm();
           },
-          error => {
-            Swal.fire('Error', error.message, 'error');
+          error: err => {
+            const msg = err?.error?.message || err?.message || 'Error al registrar. Intentá de nuevo.';
+            this.uiDialog.error({ title: 'Error', text: msg });
           }
-        );
+        });
       },
       error: (error) => {
-        Swal.fire('Error', error.message || 'No se pudo validar el codigo.', 'error');
+        this.uiDialog.error({ title: 'Error', text: error.message || 'No se pudo validar el código.' });
       }
     });
   }
@@ -223,15 +295,18 @@ login(): void {
 
 
 
-
-
    getProvincias(): void {
     this.provinciaService.getAllProvincias().subscribe(
       response => {
         this.provincias = response;
       },
       error => {
-        Swal.fire('Error', 'Error al cargar las provincias', 'error');
+        const cached = this.getCachedProvincias(this.pais);
+        if (cached.length > 0) {
+          this.provincias = cached;
+          return;
+        }
+        this.uiDialog.error({ title: 'Error', text: 'Error al cargar las provincias' });
       }
     );
   }
@@ -245,9 +320,15 @@ login(): void {
       this.provinciaService.getProvinciasByPais(this.pais).subscribe(
         response => {
           this.provincias = response;
+          this.cacheProvincias(this.pais || '', response);
         },
         error => {
-          Swal.fire('Error', 'Error al cargar las provincias', 'error');
+          const cached = this.getCachedProvincias(this.pais);
+          if (cached.length > 0) {
+            this.provincias = cached;
+            return;
+          }
+          this.uiDialog.error({ title: 'Error', text: 'Error al cargar las provincias' });
         }
       );
     } else {
@@ -290,7 +371,11 @@ login(): void {
         this.codeCountryErrorMessage = '';
         this.validateForm();
         if (showErrors) {
-          this.toastr.error(error?.message || 'No se pudo validar el codigo.');
+          this.appToast.error(
+            !navigator.onLine
+              ? 'Sin conexión. No se pudo validar el código.'
+              : error?.message || 'No se pudo validar el código.'
+          );
         }
       }
     });
@@ -305,204 +390,18 @@ login(): void {
     window.open('https://metroapp.site/calculadora_materiales.html', '_blank');
     }
 
-  activarModoPrueba0(): void {
-    const trialUserData = {
-      pais: 'Argentina',
-      provincia: 'Buenos Aires',
-      fechaVencimiento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-    };
-    localStorage.setItem('trialMode', 'true');
-    localStorage.setItem('userCode', 'trial');
-    localStorage.setItem('userData', JSON.stringify(trialUserData));
-    this.route.navigate(['dashboard']);
-  }
+
 
   activarModoPrueba(): void {
-  const trialUserData = {
-    pais: 'Argentina',
-    provincia: 'Buenos Aires',
-    fechaVencimiento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-  };
-
-  const demoEmpresa = [
-    {
-      id: 1234,
-      name: 'Empresa Demo',
-      phone: '11 0000-0000',
-      email: 'demo@metroapp.site',
-      description: 'Empresa de prueba',
-      logoUrl: 'assets/demo-logo/demo-logo.jpg',
-      userCode: 'demo'
-    }
-  ];
-
-  const demoTareas1 = Array.from({ length: 10 }).map((_, i) => ({
-    id: i + 1,
-    tarea: `Tarea demo ${i + 1}`,
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  }));
-
-  const demoTareas = [
-  {
-    id: 1,
-    tarea: 'BASE ZAPATA ARMADO Y LLENADO H O (1,00X1,00X0,80)',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 2,
-    tarea: 'BASE ZAPATA ARMADO Y LLENADO H O X M3',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 3,
-    tarea: 'BASE ZAPATA SOLO CAVADO 0,80X0,80X1M',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 4,
-    tarea: 'BASE COAT',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 5,
-    tarea: 'BASE H O LIMPIEZA 5 CM DE ESPESOR H O 180 A200 KG/M3 + CENTRADO ARMADURA',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 6,
-    tarea: 'BASES ARMADO (GANDES OBRAS) X CANTIDAD 0,8X0,8 (PARRILLA Y ATADO PIE ARMADURA DE COLUMNA APLOMADA EN EXCAVACION)',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 7,
-    tarea: 'BASES ZAPATAS LLENADO M3 (GRANDES OBRAS)',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 8,
-    tarea: 'BIDE ARMADO GRIFERIA',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 9,
-    tarea: 'BOCA DE CALDERA',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  },
-  {
-    id: 10,
-    tarea: 'BOCA DE CIRCUITO',
-    costo: 1234,
-    rubro: 'Demo',
-    categoria: 'Demo',
-    pais: 'Argentina',
-    descripcion: '',
-    descuento: 0,
-    area: 1,
-    totalCost: 1234
-  }
-];
-
-const demoCliente = {
-    id: 5678,
-    name: 'Cliente Demo',
-    contact: '11 1111-1111',
-    budgetDate: new Date().toISOString().split('T')[0],
-    additionalDetails: 'Cliente de prueba',
-    userCode: 'demo',
-    email: 'cliente@metroapp.site',
-    clave: '20-00000000-0',
-    direccion: 'Direccion demo 123',
-    empresaId: 1234
-  };
-
+  ['demoEmpresas', 'demoTareas', 'selectedEmpresaId', 'selectedEmpresa',
+   'selectedClienteId', 'selectedCliente', 'tareasAgregadas', 'userData']
+    .forEach(k => localStorage.removeItem(k));
   Object.keys(localStorage)
-    .filter(key => key.startsWith('demoCliente_'))
-    .forEach(key => localStorage.removeItem(key));
-
-
+    .filter(k => k.startsWith('demoCliente_') || k.startsWith('demoTareasCliente_'))
+    .forEach(k => localStorage.removeItem(k));
 
   localStorage.setItem('trialMode', 'true');
   localStorage.setItem('userCode', 'demo');
-  localStorage.setItem('userData', JSON.stringify(trialUserData));
-  localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresa));
-  localStorage.setItem('demoTareas', JSON.stringify(demoTareas));
-  localStorage.setItem(`demoCliente_${demoCliente.id}`, JSON.stringify(demoCliente));
-  localStorage.removeItem('selectedEmpresaId');
-  localStorage.removeItem('selectedClienteId');
-  localStorage.removeItem('selectedCliente');
-  localStorage.setItem('selectedClienteId', String(demoCliente.id));
-  localStorage.setItem('selectedCliente', JSON.stringify(demoCliente));
-  localStorage.removeItem('tareasAgregadas');
   this.route.navigate(['dashboard']);
 }
 
@@ -573,11 +472,23 @@ openWebsite(): void {
           this.membershipCountries = Object.entries(catalog.countries)
             .map(([countryCode, country]) => mapMembershipCountryOption(countryCode, country, this.countries))
             .sort((left, right) => left.nombre.localeCompare(right.nombre));
+          this.cacheMembershipCatalog(this.membershipCountries);
           this.isLoadingCatalog = false;
         },
         error: () => {
+          const cachedCatalog = this.getCachedMembershipCatalog();
+          if (cachedCatalog.length > 0) {
+            this.membershipCountries = cachedCatalog;
+            this.isLoadingCatalog = false;
+            this.appToast.info('Mostrando el catálogo guardado localmente.');
+            return;
+          }
           this.isLoadingCatalog = false;
-          this.toastr.error('No se pudo cargar el catalogo de membresias.');
+          this.appToast.error(
+            navigator.onLine
+              ? 'No se pudo cargar el catálogo de membresías.'
+              : 'Sin conexión. El catálogo de membresías no está disponible todavía en este dispositivo.'
+          );
         }
       });
     }
@@ -595,10 +506,17 @@ openWebsite(): void {
       this.provinciaService.getProvinciasByPais(this.selectedMembershipCountry?.nombre || this.purchaseCountryCode).subscribe({
         next: (provincias) => {
           this.purchaseProvincias = provincias;
+          this.cacheProvincias(this.selectedMembershipCountry?.nombre || this.purchaseCountryCode || '', provincias);
         },
         error: () => {
+          const cacheKey = this.selectedMembershipCountry?.nombre || this.purchaseCountryCode || null;
+          const cached = this.getCachedProvincias(cacheKey);
+          if (cached.length > 0) {
+            this.purchaseProvincias = cached;
+            return;
+          }
           this.purchaseProvincias = [];
-          this.toastr.error('No se pudieron cargar las provincias para la compra.');
+          this.appToast.error('No se pudieron cargar las provincias para la compra.');
         }
       });
     }
@@ -611,7 +529,12 @@ openWebsite(): void {
       this.purchasePhoneErrorMessage = validation.phoneMessage;
 
       if (!validation.valid || !this.purchaseCountryCode || !this.purchasePlanMonths) {
-        Swal.fire('Faltan datos', this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.', 'warning');
+        this.uiDialog.warning({ title: 'Faltan datos', text: this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.' });
+        return;
+      }
+
+      if (!navigator.onLine) {
+        this.uiDialog.info({ title: 'Sin conexión', text: 'El checkout requiere internet para conectarse con la pasarela de pago.' });
         return;
       }
 
@@ -622,7 +545,7 @@ openWebsite(): void {
         next: (order) => {
           this.isStartingCheckout = false;
           if (!order.redirectUrl) {
-            this.toastr.error('La pasarela no devolvio una URL de pago.');
+            this.appToast.error('La pasarela no devolvió una URL de pago.');
             return;
           }
           localStorage.setItem('pendingPaymentId', order.externalId);
@@ -630,7 +553,7 @@ openWebsite(): void {
         },
         error: (error) => {
           this.isStartingCheckout = false;
-          Swal.fire('Error', this.getCheckoutErrorMessage(error, 'No se pudo iniciar el checkout.'), 'error');
+          this.uiDialog.error({ title: 'Error', text: this.getCheckoutErrorMessage(error, 'No se pudo iniciar el checkout.') });
         }
       });
     }
@@ -643,7 +566,12 @@ openWebsite(): void {
       this.purchasePhoneErrorMessage = validation.phoneMessage;
 
       if (!validation.valid || !this.purchaseCountryCode || !this.purchasePlanMonths) {
-        Swal.fire('Faltan datos', this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.', 'warning');
+        this.uiDialog.warning({ title: 'Faltan datos', text: this.purchasePhoneErrorMessage || 'Completa los datos para iniciar el pago.' });
+        return;
+      }
+
+      if (!navigator.onLine) {
+        this.uiDialog.info({ title: 'Sin conexión', text: 'El checkout con PayPal requiere internet para conectarse con la pasarela de pago.' });
         return;
       }
 
@@ -654,7 +582,7 @@ openWebsite(): void {
         next: (order) => {
           this.isStartingPayPal = false;
           if (!order.approvalUrl) {
-            this.toastr.error('PayPal no devolvio una URL de pago.');
+            this.appToast.error('PayPal no devolvió una URL de pago.');
             return;
           }
           localStorage.setItem('pendingPaymentId', order.externalId);
@@ -662,7 +590,7 @@ openWebsite(): void {
         },
         error: (error) => {
           this.isStartingPayPal = false;
-          Swal.fire('Error', this.getCheckoutErrorMessage(error, 'No se pudo iniciar el checkout con PayPal.'), 'error');
+          this.uiDialog.error({ title: 'Error', text: this.getCheckoutErrorMessage(error, 'No se pudo iniciar el checkout con PayPal.') });
         }
       });
     }
@@ -699,6 +627,7 @@ openWebsite(): void {
   selectAdminCountry(pais: AdminCountry): void {
     const current = this.adminService.getCurrentAdmin();
     if (current && current.pais === pais) {
+      this.adminService.setReturnUrl(this.route.url);
       this.route.navigate(['/admin-generate-code']);
       return;
     }
@@ -709,6 +638,40 @@ openWebsite(): void {
     this.loginStep = 'adminLogin';
   }
 
+  volverDesdeAdminLogin(): void {
+    this.adminPassword = '';
+    this.adminLoginError = '';
+    this.showAdminPassword = false;
+    this.loginStep = 'adminCountry';
+  }
+
+  volverDesdeAdminCountry(): void {
+    this.selectedAdminPais = null;
+    this.adminUsername = '';
+    this.adminPassword = '';
+    this.adminLoginError = '';
+    this.showAdminPassword = false;
+    this.loginStep = 'home';
+
+    const returnUrl = this.adminService.consumeReturnUrl();
+    if (returnUrl && returnUrl !== '/admin-generate-code') {
+      this.route.navigateByUrl(returnUrl);
+      return;
+    }
+
+    this.route.navigate(['/'], { replaceUrl: true });
+  }
+
+  salirModoAdmin(): void {
+    this.selectedAdminPais = null;
+    this.adminUsername = '';
+    this.adminPassword = '';
+    this.adminLoginError = '';
+    this.showAdminPassword = false;
+    this.loginStep = 'home';
+    this.route.navigate(['/'], { replaceUrl: true });
+  }
+
   adminLogin(): void {
     this.adminLoginError = '';
     this.adminService.loginForCountry(this.adminUsername, this.adminPassword, this.selectedAdminPais).subscribe(result => {
@@ -716,6 +679,7 @@ openWebsite(): void {
         this.adminLoginError = result.error;
         return;
       }
+      this.adminService.setReturnUrl(this.route.url);
       this.route.navigate(['/admin-generate-code']);
     });
   }

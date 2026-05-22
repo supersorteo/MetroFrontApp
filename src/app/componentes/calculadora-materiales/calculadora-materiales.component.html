@@ -103,8 +103,8 @@
           <p class="calc-modal__empty">Todavía no hay cálculos guardados.</p>
         } @else {
           <ul class="calc-modal__list">
-            @for (calculo of historialCalculos(); track trackHistorial($index, calculo)) {
-              <li>
+            @for (calculo of historialPaginado(); track trackHistorial($index, calculo)) {
+              <li class="calc-modal__history-item">
                 <button class="calc-modal__item" (click)="restaurarHistorial(calculo)">
                   <span class="calc-modal__item-num">#{{ calculo.tareaId }}</span>
                   <span class="calc-modal__item-title">
@@ -118,9 +118,43 @@
                   </span>
                   <i class="bi bi-arrow-repeat"></i>
                 </button>
+                @if (!isTrialMode) {
+                  <button
+                    class="calc-modal__pin-btn"
+                    [class.calc-modal__pin-btn--active]="isPinned(calculo.id)"
+                    (click)="$event.stopPropagation(); togglePin(calculo)"
+                    [title]="isPinned(calculo.id) ? 'Desfijar cálculo' : 'Fijar cálculo para no perderlo'">
+                    <i [class]="isPinned(calculo.id) ? 'bi bi-pin-fill' : 'bi bi-pin'"></i>
+                  </button>
+                }
               </li>
             }
           </ul>
+          @if (historialTotalPages() > 1) {
+            <div class="calc-modal__pagination">
+              <button
+                class="calc-modal__pag-btn"
+                [class.calc-modal__pag-btn--disabled]="historialPage() === 1"
+                [disabled]="historialPage() === 1"
+                (click)="historialPrevPage()"
+                aria-label="Página anterior">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <div class="calc-modal__pag-info">
+                <span class="calc-modal__pag-current">{{ historialPage() }}</span>
+                <span class="calc-modal__pag-sep">/</span>
+                <span class="calc-modal__pag-total">{{ historialTotalPages() }}</span>
+              </div>
+              <button
+                class="calc-modal__pag-btn"
+                [class.calc-modal__pag-btn--disabled]="historialPage() === historialTotalPages()"
+                [disabled]="historialPage() === historialTotalPages()"
+                (click)="historialNextPage()"
+                aria-label="Página siguiente">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          }
         }
       </div>
     </div>
@@ -134,12 +168,17 @@
       <div>
         <h1 class="calc-header__title">Calculadora de Materiales</h1>
         @if (isTrialMode) {
-          <p class="calc-header__sub">{{ getDemoDailyUsageLabel() }}</p>
+          <p class="calc-header__badge">
+            <i class="bi bi-info-circle"></i>
+            <span class="calc-header__badge-full">{{ getDemoDailyUsageLabel() }} · 3 tareas aleatorias · historial local</span>
+            <span class="calc-header__badge-short">{{ demoDailyCalculationsUsed() }}/3 hoy · 3 tareas</span>
+          </p>
+        } @else {
+          <p class="calc-header__sub">
+            <span class="calc-header__vip-usage">{{ getVipStorageLabel() }}</span>
+          </p>
+          <p class="calc-header__sub calc-header__sub--hint">Ingresá el área o volumen para obtener las cantidades exactas</p>
         }
-        @if (isTrialMode) {
-          <p class="calc-header__sub">Modo de prueba: se muestran 3 tareas aleatorias y el historial local guarda solo los últimos 3 cálculos.</p>
-        }
-        <p class="calc-header__sub">Ingresá el área o volumen para obtener las cantidades exactas</p>
       </div>
     </div>
   </div>

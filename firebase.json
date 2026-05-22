@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "metroapp-1c409",
     "public": "dist/pruebaw/browser",
     "ignore": [
       "firebase.json",

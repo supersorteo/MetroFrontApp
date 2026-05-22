@@ -28,17 +28,19 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.webmanifest",
               "src/manifest.webmanifest"
             ],
             "styles": [
               "src/styles.scss",
-              "node_modules/bootstrap/dist/css/bootstrap.min.css"
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/bootstrap-icons/font/bootstrap-icons.css",
+              "node_modules/@fortawesome/fontawesome-free/css/all.min.css"
             ],
             "scripts": [
               "node_modules/bootstrap/dist/js/bootstrap.min.js",
               "node_modules/html2pdf.js/dist/html2pdf.bundle.min.js",
-              "node_modules/@popperjs/core/dist/umd/popper.min.js"
+              "node_modules/@popperjs/core/dist/umd/popper.min.js",
+              "node_modules/qr-code-styling/lib/qr-code-styling.js"
             ]
           },
           "configurations": {
@@ -68,6 +70,29 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "pwa-development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "serviceWorker": "ngsw-config.json",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.pwa-dev.ts"
+                }
+              ]
+            },
+            "remote-test": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.remote-test.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -75,7 +100,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "proxyConfig": "proxy.conf.json"
+            "proxyConfig": "proxy.conf.json",
+            "port": 4200
           },
           "configurations": {
             "production": {
@@ -83,6 +109,13 @@
             },
             "development": {
               "buildTarget": "pruebaw:build:development"
+            },
+            "pwa-development": {
+              "buildTarget": "pruebaw:build:pwa-development"
+            },
+            "remote-test": {
+              "buildTarget": "pruebaw:build:remote-test",
+              "port": 8888
             }
           },
           "defaultConfiguration": "development"
@@ -105,7 +138,6 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.webmanifest",
               "src/manifest.webmanifest"
             ],
             "styles": [

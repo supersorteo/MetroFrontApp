@@ -1,6 +1,11 @@
-  <div class="fixed-image-container">
-    <img id="fixedImageIcon" class="fixed-image" src="#" alt="Logo Empresa" style="display: none;">
-  </div>
+  <!--div-- class="fixed-image-container">
+    <img
+      id="fixedImageIcon"
+      class="fixed-image"
+      [src]="currentEmpresaLogoUrl || '#'"
+      alt="Logo Empresa"
+      [style.display]="currentEmpresaLogoUrl ? 'block' : 'none'">
+  </div-->
 
 <div class="menu-panel-overlay" *ngIf="showMenuPanel" (click)="toggleMenuPanel()"></div>
 
@@ -13,6 +18,36 @@
   </div>
 
   <div class="menu-panel__body">
+    <div
+      class="sync-status-card"
+      *ngIf="!trialMode && (pendingSyncSummary.total > 0 || offlineSync.isSyncing())">
+      <div class="sync-status-card__header">
+        <div class="sync-status-card__title">
+          <i class="bi" [ngClass]="offlineSync.isSyncing() ? 'bi-arrow-repeat sync-rotating' : 'bi-cloud-arrow-up'"></i>
+          Sincronizacion
+        </div>
+        <span class="sync-status-card__count">
+          {{ pendingSyncSummary.total }}
+        </span>
+      </div>
+
+      <div class="sync-status-card__message" *ngIf="offlineSync.isSyncing()">
+        Sincronizando cambios pendientes...
+      </div>
+      <div class="sync-status-card__message" *ngIf="!offlineSync.isSyncing()">
+        Estos cambios siguen guardados localmente hasta que se sincronicen.
+      </div>
+
+      <div class="sync-status-card__chips">
+        <span class="sync-chip" *ngIf="pendingSyncSummary.empresa > 0">Empresas: {{ pendingSyncSummary.empresa }}</span>
+        <span class="sync-chip" *ngIf="pendingSyncSummary.empresaLogo > 0">Logos: {{ pendingSyncSummary.empresaLogo }}</span>
+        <span class="sync-chip" *ngIf="pendingSyncSummary.cliente > 0">Clientes: {{ pendingSyncSummary.cliente }}</span>
+        <span class="sync-chip" *ngIf="pendingSyncSummary.userTarea > 0">Tareas: {{ pendingSyncSummary.userTarea }}</span>
+        <span class="sync-chip" *ngIf="pendingSyncSummary.presupuesto > 0">Presupuestos: {{ pendingSyncSummary.presupuesto }}</span>
+        <span class="sync-chip" *ngIf="pendingSyncSummary.calculoMaterial > 0">Calculos: {{ pendingSyncSummary.calculoMaterial }}</span>
+      </div>
+    </div>
+
     <div class="weather-widget mb-3 w-100 text-center">
       <h6 class="mb-2">Clima actual</h6>
       <div *ngIf="weatherLoading" class="text-muted">Cargando...</div>
@@ -55,6 +90,260 @@
     </ul>
   </div>
 </aside>
+
+<div class="tp-import-backdrop" *ngIf="tpMostrarImportar" (click)="tpMostrarImportar = false"></div>
+<aside class="tp-import-aside" *ngIf="tpMostrarImportar" [class.open]="tpMostrarImportar" aria-label="Importar desde catálogo">
+  <div class="tp-import-aside__header">
+    <div class="tp-import-aside__title">
+      <span class="tp-import-aside__badge" aria-hidden="true">
+        <i class="bi bi-journal-richtext"></i>
+      </span>
+      <div class="tp-import-aside__title-copy">
+        <small>Panel lateral</small>
+        <span>Importar desde catálogo</span>
+      </div>
+    </div>
+    <button type="button" class="btn-close" (click)="tpMostrarImportar = false" aria-label="Cerrar"></button>
+  </div>
+  <p class="tp-import-aside__hint">Tomá una tarea base del catálogo y guardala como personalizada para adaptarla a tu forma de cotizar.</p>
+  <div class="tp-import-aside__toolbar">
+    <div class="input-group">
+      <span class="input-group-text tp-input-addon"><i class="bi bi-search"></i></span>
+      <input class="form-control tp-input" placeholder="Buscar en el catálogo..." [(ngModel)]="tpFiltroCatalogo" />
+    </div>
+  </div>
+  <div class="tp-catalog-list tp-catalog-list--aside">
+    <div *ngFor="let t of tpCatalogoFiltrado" class="tp-catalog-item">
+      <div class="tp-catalog-item__info">
+        <span class="tp-catalog-item__name">{{ t.tarea }}</span>
+        <span class="tp-catalog-item__cost">{{ t.costo | currency:'USD':'symbol':'1.2-2' }}</span>
+      </div>
+      <button class="tp-catalog-item__btn" title="Importar a Mis Tareas" (click)="tpImportarDelCatalogo(t)">
+        <i class="bi bi-bookmark-plus-fill"></i>
+      </button>
+    </div>
+    <div *ngIf="tpCatalogoFiltrado.length === 0" class="tp-empty">
+      <i class="bi bi-inbox me-1"></i>Sin resultados
+    </div>
+  </div>
+</aside>
+
+<div class="tp-editor-backdrop" *ngIf="showTpEditorModal" (click)="cerrarTpEditor()"></div>
+<div class="tp-editor-modal" *ngIf="showTpEditorModal" role="dialog" aria-modal="true">
+  <div class="tp-editor-modal__dialog">
+    <div class="tp-editor-modal__content">
+      <div class="tp-editor-modal__header">
+        <div class="tp-editor-modal__icon">
+          <i class="bi" [ngClass]="tpEditingId != null ? 'bi-pencil-square' : 'bi-journal-plus'"></i>
+        </div>
+        <div class="tp-editor-modal__copy">
+          <span class="tp-editor-modal__eyebrow">{{ tpEditingId != null ? 'Edicion rápida' : 'Nueva tarea personalizada' }}</span>
+          <h4 class="tp-editor-modal__title">{{ tpEditingId != null ? 'Actualizar tarea guardada' : 'Crear una tarea profesional' }}</h4>
+          <p class="tp-editor-modal__subtitle">Define nombre, descripción y costo para guardar una tarea clara, prolija y lista para cotizar.</p>
+        </div>
+        <button type="button" class="btn-close ms-auto" (click)="cerrarTpEditor()" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="tp-editor-modal__body">
+        <div class="row g-4">
+          <div class="col-12">
+            <div class="tp-editor-shell">
+              <div class="tp-editor-shell__section">
+                <div class="tp-editor-shell__title">
+                  <i class="bi bi-card-text"></i>
+                  <span>Datos principales</span>
+                </div>
+
+                <div class="mb-3">
+                  <label class="tp-label">Nombre <span class="text-danger">*</span></label>
+                  <input class="form-control tp-input"
+                         [ngClass]="{'is-invalid': tpSubmitted && !tpForm.tarea.trim()}"
+                         placeholder="Ej: Instalación eléctrica"
+                         [(ngModel)]="tpForm.tarea" />
+                  <div *ngIf="tpSubmitted && !tpForm.tarea.trim()" class="tp-field-error">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>El nombre es obligatorio
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="tp-label">Descripción <span class="tp-optional">(opcional)</span></label>
+                  <textarea class="form-control tp-input" placeholder="Contá brevemente qué incluye esta tarea..." [(ngModel)]="tpForm.descripcion" rows="4"></textarea>
+                </div>
+
+                <div class="mb-0">
+                  <label class="tp-label">Costo unitario ($) <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text tp-input-addon"><i class="bi bi-cash-stack"></i></span>
+                    <input type="number" class="form-control tp-input"
+                           [ngClass]="{'is-invalid': tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)}"
+                           placeholder="0.00" [(ngModel)]="tpForm.costo" min="0.01" step="0.01" />
+                  </div>
+                  <div *ngIf="tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)" class="tp-field-error">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>El costo debe ser mayor a 0
+                  </div>
+                </div>
+              </div>
+
+              <div class="tp-editor-shell__actions">
+                <button class="btn btn-success tp-btn-action tp-btn-action--primary" (click)="tpGuardar()">
+                  <i class="bi bi-{{ tpEditingId != null ? 'check2-circle' : 'save2-fill' }} me-2"></i>
+                  {{ tpEditingId != null ? 'Guardar cambios' : 'Crear tarea' }}
+                </button>
+                <button class="btn btn-outline-light tp-btn-action tp-btn-action--ghost" type="button" (click)="cerrarTpEditor()">
+                  <i class="bi bi-x-circle me-2"></i>Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tareas Personalizadas Modal -->
+
+<div class="tp-backdrop" *ngIf="showTareasPersonalizadasPanel" (click)="toggleTareasPersonalizadasPanel()"></div>
+
+<div class="tp-modal" [class.tp-modal--open]="showTareasPersonalizadasPanel" role="dialog" aria-modal="true" *ngIf="showTareasPersonalizadasPanel">
+  <div class="tp-modal__dialog">
+    <div class="tp-modal__content">
+
+      <!-- Header -->
+      <div class="tp-modal__header">
+        <div class="tp-modal__header-icon">
+          <i class="bi bi-bookmarks-fill"></i>
+        </div>
+        <div class="tp-modal__header-text">
+          <h5 class="tp-modal__title">Mis Tareas Personalizadas</h5>
+          <small class="tp-modal__subtitle">{{ tareasPersonalizadas.length }} tarea{{ tareasPersonalizadas.length !== 1 ? 's' : '' }} guardada{{ tareasPersonalizadas.length !== 1 ? 's' : '' }}</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white ms-auto" (click)="toggleTareasPersonalizadasPanel()" aria-label="Cerrar"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="tp-modal__body">
+        <div class="row g-3">
+
+          <!-- Columna izquierda: Formulario + Importar -->
+          <div class="col-12 col-md-5">
+
+            <div class="tp-form-card">
+              <div class="tp-form-card__header">
+                <i class="bi bi-{{ tpEditingId != null ? 'pencil-square' : 'plus-circle-fill' }} me-2"></i>
+                {{ tpEditingId != null ? 'Editar tarea' : 'Nueva tarea' }}
+              </div>
+              <div class="tp-form-card__body">
+                <div class="mb-3">
+                  <label class="tp-label">Nombre <span class="text-danger">*</span></label>
+                  <input class="form-control tp-input"
+                         [ngClass]="{'is-invalid': tpSubmitted && !tpForm.tarea.trim()}"
+                         placeholder="Ej: Instalación eléctrica"
+                         [(ngModel)]="tpForm.tarea" />
+                  <div *ngIf="tpSubmitted && !tpForm.tarea.trim()" class="tp-field-error">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>El nombre es obligatorio
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="tp-label">Descripción <span class="tp-optional">(opcional)</span></label>
+                  <textarea class="form-control tp-input" placeholder="Detalle opcional..." [(ngModel)]="tpForm.descripcion" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                  <label class="tp-label">Costo unitario ($) <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text tp-input-addon"><i class="bi bi-currency-dollar"></i></span>
+                    <input type="number" class="form-control tp-input"
+                           [ngClass]="{'is-invalid': tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)}"
+                           placeholder="0.00" [(ngModel)]="tpForm.costo" min="0.01" step="0.01" />
+                  </div>
+                  <div *ngIf="tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)" class="tp-field-error">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i>El costo debe ser mayor a 0
+                  </div>
+                </div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-success flex-grow-1 tp-btn-action" (click)="tpGuardar()">
+                    <i class="bi bi-{{ tpEditingId != null ? 'check2-all' : 'plus-lg' }} me-1"></i>
+                    {{ tpEditingId != null ? 'Actualizar' : 'Guardar tarea' }}
+                  </button>
+                  <button *ngIf="tpEditingId != null" class="btn btn-outline-secondary tp-btn-action" (click)="tpCancelarEdicion()" title="Cancelar edición">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="tp-import-card mt-3">
+              <button class="tp-import-card__toggle" (click)="tpMostrarImportar = !tpMostrarImportar" type="button">
+                <span class="tp-import-card__icon"><i class="bi bi-{{ tpMostrarImportar ? 'chevron-up' : 'arrow-down-circle' }}"></i></span>
+                <span>{{ tpMostrarImportar ? 'Ocultar catálogo' : 'Importar del catálogo' }}</span>
+                <span class="ms-auto badge bg-secondary rounded-pill">{{ tpCatalogoFiltrado.length }}</span>
+              </button>
+              <div *ngIf="tpMostrarImportar" class="tp-import-card__body">
+                <div class="input-group mb-2">
+                  <span class="input-group-text tp-input-addon"><i class="bi bi-search"></i></span>
+                  <input class="form-control tp-input" placeholder="Buscar tarea..." [(ngModel)]="tpFiltroCatalogo" />
+                </div>
+                <div class="tp-catalog-list">
+                  <div *ngFor="let t of tpCatalogoFiltrado" class="tp-catalog-item">
+                    <div class="tp-catalog-item__info">
+                      <span class="tp-catalog-item__name">{{ t.tarea }}</span>
+                      <span class="tp-catalog-item__cost">{{ t.costo | currency:'USD':'symbol':'1.2-2' }}</span>
+                    </div>
+                    <button class="tp-catalog-item__btn" title="Importar a Mis Tareas" (click)="tpImportarDelCatalogo(t)">
+                      <i class="bi bi-bookmark-plus-fill"></i>
+                    </button>
+                  </div>
+                  <div *ngIf="tpCatalogoFiltrado.length === 0" class="tp-empty">
+                    <i class="bi bi-inbox me-1"></i>Sin resultados
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Columna derecha: Lista -->
+          <div class="col-12 col-md-7">
+            <div class="tp-list-header">
+              <span class="tp-list-header__title"><i class="bi bi-list-check me-2"></i>Tareas guardadas</span>
+              <span class="badge tp-list-header__badge">{{ tareasPersonalizadas.length }} / {{ tpLimitActual }}</span>
+            </div>
+
+            <div *ngIf="tareasPersonalizadas.length === 0" class="tp-empty-state">
+              <i class="bi bi-bookmark-heart tp-empty-state__icon"></i>
+              <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea en el formulario.</p>
+            </div>
+
+            <div class="tp-cards-list">
+              <div *ngFor="let tp of tareasPersonalizadas" class="tp-card" [class.tp-card--editing]="tpEditingId === tp.id">
+                <div class="tp-card__accent"></div>
+                <div class="tp-card__content">
+                  <div class="tp-card__top">
+                    <span class="tp-card__name">{{ tp.tarea }}</span>
+                    <span class="tp-card__cost">{{ tp.costo | currency:'USD':'symbol':'1.2-2' }}</span>
+                  </div>
+                  <p *ngIf="tp.descripcion" class="tp-card__desc">{{ tp.descripcion }}</p>
+                  <div class="tp-card__actions">
+                    <button class="tp-card__action tp-card__action--add" title="Agregar al presupuesto" (click)="tpAgregarAlPresupuesto(tp)">
+                      <i class="bi bi-plus-circle-fill"></i><span>Agregar</span>
+                    </button>
+                    <button class="tp-card__action tp-card__action--edit" title="Editar" (click)="tpEditar(tp)">
+                      <i class="bi bi-pencil-fill"></i><span>Editar</span>
+                    </button>
+                    <button class="tp-card__action tp-card__action--delete" title="Eliminar" (click)="tpEliminar(tp)">
+                      <i class="bi bi-trash3-fill"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="modal fade qr-modal" id="qrModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -250,38 +539,170 @@
 <div class="card table-card mt-2 mb-3">
   <div class="card-body">
     <div class="containerbuscar">
-      <div class="d-flex align-items-center justify-content-end mb-2" style="margin-top: 8px;">
-        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="Cómo usar el buscador" style="width: auto; min-height: 34px; padding: 5px 10px 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #cfe0ff; color: #1d68ff; box-shadow: 0 2px 6px rgba(29, 104, 255, 0.12); border-radius: 10px;">
-          <i class="fas fa-info"></i>cómo buscar
-        </button>
+
+      <div class="task-brand-row mb-2" *ngIf="currentEmpresaLogoUrl">
+        <div class="fixed-image-container">
+          <img
+            id="fixedImageIcon"
+            class="fixed-image"
+            [src]="currentEmpresaLogoUrl || '#'"
+            alt="Logo Empresa"
+            style="cursor:pointer"
+            (click)="openListaEmpresasModal()">
+        </div>
       </div>
-      <div class="inputGroup">
-      <input type="text" id="busqueda" required="" autocomplete="off" (input)="buscar($event)">
-      <label for="busqueda">Buscar tarea</label>
-      <span class="inputGroup__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="18" height="18" focusable="false" aria-hidden="true">
-          <path fill="#6c757d" d="M10.5 3a7.5 7.5 0 0 1 5.97 12.05l4.24 4.24-1.42 1.42-4.24-4.24A7.5 7.5 0 1 1 10.5 3zm0 2a5.5 5.5 0 1 0 0 11a5.5 5.5 0 0 0 0-11z"/>
-        </svg>
-      </span>
-    </div>
-    </div>
-    <p style="text-align: center;">Si no encuentras una tarea, selecciona TAREA GENERICA y edita su precio y descripción</p>
-    <div class="table-responsive">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th style="width:85%; min-width:120px;">Tarea</th>
-            <th style="width:15%; min-width:70px; text-align:right;">Costo/$</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let tarea of tareasFiltradas; let i = index" (click)="seleccionar(tarea)" class="hoverable-row" [ngClass]="{'lista-tareas-odd-row': i % 2 === 0, 'lista-tareas-even-row': i % 2 !== 0}">
-            <td style="width:85%; word-break:break-word; white-space:normal;">{{ tarea.tarea }}</td>
-            <td style="width:15%; text-align:right; word-break:break-word; white-space:normal;">{{ tarea.costo | currency:'USD':'symbol':'1.2-2' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <div class="task-tabs-toolbar mb-3">
+        <ul class="nav nav-tabs task-tabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
+              href="#"
+              [class.active]="activeTaskTab === 'catalogo'"
+              [attr.aria-current]="activeTaskTab === 'catalogo' ? 'page' : null"
+              (click)="$event.preventDefault(); activeTaskTab = 'catalogo'">
+              <i class="bi bi-list-ul me-1"></i> Lista de tareas
+            </a>
+          </li>
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
+              href="#"
+              [class.active]="activeTaskTab === 'personalizadas'"
+              [attr.aria-current]="activeTaskTab === 'personalizadas' ? 'page' : null"
+              (click)="$event.preventDefault(); activeTaskTab = 'personalizadas'">
+              <i class="bi bi-bookmarks me-1"></i> Tareas personalizadas
+              <span class="badge rounded-pill ms-2 task-tabs__badge">{{ tareasPersonalizadas.length }}</span>
+            </a>
+          </li>
+        </ul>
+        <div class="task-tabs-toolbar__action">
+          <button type="button" class="task-help-btn" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="Cómo usar el buscador">
+            <i class="fas fa-info-circle" aria-hidden="true"></i>
+            <span>Cómo buscar</span>
+          </button>
+        </div>
+      </div>
+      <div class="tab-content task-tabs__content">
+        <div class="tab-pane fade" [class.show]="activeTaskTab === 'catalogo'" [class.active]="activeTaskTab === 'catalogo'">
+          <div class="inputGroup">
+            <input type="text" id="busqueda" required="" autocomplete="off" (input)="buscar($event)">
+            <label for="busqueda">Buscar tarea</label>
+            <span class="inputGroup__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" focusable="false" aria-hidden="true">
+                <path fill="#6c757d" d="M10.5 3a7.5 7.5 0 0 1 5.97 12.05l4.24 4.24-1.42 1.42-4.24-4.24A7.5 7.5 0 1 1 10.5 3zm0 2a5.5 5.5 0 1 0 0 11a5.5 5.5 0 0 0 0-11z"/>
+              </svg>
+            </span>
+          </div>
+          <p style="text-align: center;">Si no encuentras una tarea, selecciona TAREA GENERICA y edita su precio y descripción</p>
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th style="width:85%; min-width:120px;">Tarea</th>
+                  <th style="width:15%; min-width:70px; text-align:right;">Costo/$</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let tarea of tareasFiltradas; let i = index" (click)="seleccionar(tarea)" class="hoverable-row" [ngClass]="{'lista-tareas-odd-row': i % 2 === 0, 'lista-tareas-even-row': i % 2 !== 0}">
+                  <td style="width:85%; word-break:break-word; white-space:normal;">{{ tarea.tarea }}</td>
+                  <td style="width:15%; text-align:right; word-break:break-word; white-space:normal;">{{ tarea.costo | currency:'USD':'symbol':'1.2-2' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tab-pane fade" [class.show]="activeTaskTab === 'personalizadas'" [class.active]="activeTaskTab === 'personalizadas'">
+          <div class="tp-inline-panel">
+            <div class="tp-hero">
+              <div class="tp-hero__copy">
+                <span class="tp-hero__eyebrow"><i class="bi bi-stars me-2"></i>Gestión personalizada</span>
+                <h3 class="tp-hero__title">Tus tareas, listas para cotizar</h3>
+                <p class="tp-hero__text">Organizá tus tareas frecuentes, editá valores rápido y agrégalas al presupuesto con un toque.</p>
+              </div>
+              <button class="tp-hero__cta" type="button" (click)="abrirTpEditor()">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Nueva tarea</span>
+              </button>
+            </div>
+
+            <div class="tp-toolbar">
+              <div class="inputGroup tp-toolbar__search">
+                <input type="text" id="busquedaPersonalizada" required="" autocomplete="off" [(ngModel)]="tpBusquedaPersonalizada">
+                <label for="busquedaPersonalizada">Buscar tarea personalizada</label>
+                <span class="inputGroup__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18" focusable="false" aria-hidden="true">
+                    <path fill="#6c757d" d="M10.5 3a7.5 7.5 0 0 1 5.97 12.05l4.24 4.24-1.42 1.42-4.24-4.24A7.5 7.5 0 1 1 10.5 3zm0 2a5.5 5.5 0 1 0 0 11a5.5 5.5 0 0 0 0-11z"/>
+                  </svg>
+                </span>
+              </div>
+
+              <div class="tp-capacity-chip"
+                [class.tp-capacity-chip--warning]="tareasPersonalizadas.length / tpLimitActual >= 0.8 && tareasPersonalizadas.length < tpLimitActual"
+                [class.tp-capacity-chip--full]="tareasPersonalizadas.length >= tpLimitActual">
+                <i class="bi bi-list-ol"></i>
+                <strong>{{ tareasPersonalizadas.length }}</strong>
+                <span class="tp-capacity-chip__sep">/</span>
+                <span class="tp-capacity-chip__max">{{ tpLimitActual }}</span>
+              </div>
+
+              <div class="tp-toolbar__actions">
+                <button type="button" class="tp-toolbar__toggle" (click)="tpMostrarImportar = !tpMostrarImportar">
+                  <span class="tp-toolbar__toggle-icon" aria-hidden="true">
+                    <i class="bi bi-collection"></i>
+                  </span>
+                  <span class="tp-toolbar__toggle-text">
+                    <!--small>Acción rápida</small-->
+                    <strong>Importar del catálogo</strong>
+                  </span>
+                  <span class="tp-toolbar__toggle-arrow" aria-hidden="true">
+                    <i class="bi" [ngClass]="tpMostrarImportar ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="tareasPersonalizadas.length === 0" class="tp-empty-state tp-empty-state--hero">
+              <i class="bi bi-bookmark-heart tp-empty-state__icon"></i>
+              <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea desde el botón superior.</p>
+            </div>
+
+            <div *ngIf="tareasPersonalizadas.length > 0 && tareasPersonalizadasFiltradas.length === 0" class="tp-empty-state tp-empty-state--compact">
+              <i class="bi bi-search tp-empty-state__icon"></i>
+              <p class="tp-empty-state__text">No hay tareas personalizadas que coincidan con tu búsqueda.</p>
+            </div>
+
+            <div class="tp-list-shell" *ngIf="tareasPersonalizadasFiltradas.length > 0">
+            <div class="tp-card-grid">
+              <div *ngFor="let tp of tareasPersonalizadasFiltradas" class="tp-card tp-card--wide" [class.tp-card--editing]="tpEditingId === tp.id">
+                <div class="tp-card__accent"></div>
+                <div class="tp-card__content">
+                  <div class="tp-card__top">
+                    <div class="tp-card__heading">
+                      <span class="tp-card__name">{{ tp.tarea }}</span>
+                      <!--span-- class="tp-card__tag"><i class="bi bi-bookmark-check-fill me-1"></i>Personalizada</span-->
+                    </div>
+                    <span class="tp-card__cost">{{ tp.costo | currency:'USD':'symbol':'1.2-2' }}</span>
+                  </div>
+                  <p *ngIf="tp.descripcion" class="tp-card__desc">{{ tp.descripcion }}</p>
+                  <p *ngIf="!tp.descripcion" class="tp-card__desc tp-card__desc--muted">Sin descripción adicional.</p>
+                  <div class="tp-card__actions">
+                    <button class="tp-card__action tp-card__action--add" title="Agregar al presupuesto" (click)="tpAgregarAlPresupuesto(tp)">
+                      <i class="bi bi-plus-circle-fill"></i><span>Agregar</span>
+                    </button>
+                    <button class="tp-card__action tp-card__action--edit" title="Editar" (click)="tpEditar(tp)">
+                      <i class="bi bi-pencil-square"></i><span>Editar</span>
+                    </button>
+                    <button class="tp-card__action tp-card__action--delete" title="Eliminar" (click)="tpEliminar(tp)">
+                      <i class="bi bi-trash3-fill"></i><span>Eliminar</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
     <div class="row mt-4">
       <div class="w-100 d-flex justify-content-center align-items-center mb-2" style="gap: 8px;">
@@ -303,7 +724,7 @@
           </svg>
           EMPRESA
         </button>
-        <button class="btn btn-success animate flex-grow-1" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" data-bs-toggle="modal" data-bs-target="#listaClientesModal">
+        <button class="btn btn-success animate flex-grow-1" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" (click)="abrirModalClientes()">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42.97 48.65" width="18" height="18" aria-hidden="true" focusable="false" style="margin-right: 6px;">
             <path fill="#ffffff" d="m36.34,0H6.63C2.98,0,0,2.98,0,6.63v35.38c0,3.66,2.98,6.63,6.63,6.63h31.39v-3.24h-8.43v-5.96h.43c1.99,0,3.6-1.61,3.6-3.6v-10.89c0-1.99-1.61-3.6-3.6-3.6H12.95c-1.99,0-3.6,1.61-3.6,3.6v10.89c0,1.99,1.61,3.6,3.6,3.6h.43v5.96h-6.74c-1.87,0-3.39-1.52-3.39-3.39V6.63c0-1.87,1.52-3.39,3.39-3.39h29.71c1.87,0,3.39,1.52,3.39,3.39v36.8h3.24V6.63c0-3.66-2.98-6.63-6.63-6.63Z"/>
             <path fill="#ffffff" d="m15.79,13.65c0,3.15,2.55,5.7,5.7,5.7s5.7-2.55,5.7-5.7-2.55-5.7-5.7-5.7-5.7,2.55-5.7,5.7Zm7.18-2.83c0,.55-.45,1-1,1-1.23,0-2.24,1-2.24,2.24,0,.55-.45,1-1,1s-1-.45-1-1c0-2.34,1.9-4.24,4.24-4.24.55,0,1,.44,1,1Z"/>
@@ -327,16 +748,27 @@
   <aside class="tareas-panel" *ngIf="showTareasPanel" [class.open]="showTareasPanel">
     <div class="container mt-4 tareas-agregadas">
       <div class="tareas-agregadas__header">
-        <div>
+        <div style="display:flex;align-items:center;gap:8px;">
           <div class="tareas-agregadas__title">
             <img
-              *ngIf="selectedEmpresaId?.logoUrl"
-              [src]="selectedEmpresaId.logoUrl"
+              *ngIf="currentEmpresaLogoUrl"
+              [src]="currentEmpresaLogoUrl"
               alt="Logo empresa"
               class="tareas-agregadas__logo"
+              style="cursor:pointer"
+              (click)="openListaEmpresasModal()"
             >
           </div>
-          <div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-secondary"
+            style="border-radius:50%;width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;"
+            title="Seleccionar cliente"
+            (click)="$event.stopPropagation(); openListaClientesModal()">
+            <i class="fas fa-user-tie" style="font-size:13px;"></i>
+          </button>
         </div>
         <div class="tareas-agregadas__cliente" *ngIf="clienteSeleccionado">
           <!--span class="tareas-agregadas__cliente-nombre">{{ presupuestoSeleccionado?.name }}</!--span-->
@@ -356,19 +788,19 @@
         <table class="table table-striped table-hover tareas-table">
           <thead class="thead-light">
             <tr>
-              <th class="text-center">Acciones</th>
+              <th class="text-center"></th>
               <th class="text-center">Tarea</th>
               <!--th-- class="text-center">Rubro</!--th-->
-              <!--th-- class="text-center">Categorï¿½ï¿½a</!--th-->
-              <!--th class="text-center">Descripciï¿½ï¿½n</!--th-->
-              <!--th-- class="text-center">ï¿½?rea (mï¿½ï¿½/mï¿½ï¿½)</!--th-->
+              <!--th class="text-center">Categoría</th-->
+              <!--th class="text-center">Descripción</th-->
+              <!--th class="text-center">Área (m²/m³)</th-->
               <th class="text-center">Área (m²/m³)</th>
               <th class="text-center">Costo</th>
               <th class="text-center">Total</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let tarea of tareasAgregadas; let i = index">
+            <tr *ngFor="let tarea of tareasAgregadasPaginadas; let i = index">
               <td class="text-center">
                 <button *ngIf="tarea.id" (click)="solicitarConfirmacionEliminarTarea(tarea)" class="btn btn-outline-danger btn-sm rounded-circle" aria-label="Eliminar tarea">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 43.15 46.9" width="18" height="18" aria-hidden="true" focusable="false">
@@ -392,24 +824,78 @@
       </div>
     </div>
 
+      <div *ngIf="tareasTotalPages > 1" class="tareas-panel__pagination">
+        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === 1" (click)="tareasPrevPage()" aria-label="Página anterior">
+          &#8249;
+        </button>
+        <span class="tareas-panel__pag-info">
+          <span class="tareas-panel__pag-current">{{ tareasCurrentPage }}</span>
+          <span class="tareas-panel__pag-sep">/</span>
+          <span class="tareas-panel__pag-total">{{ tareasTotalPages }}</span>
+        </span>
+        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === tareasTotalPages" (click)="tareasNextPage()" aria-label="Página siguiente">
+          &#8250;
+        </button>
+      </div>
+
       <div class="tareas-total mt-3">
         Total: {{ calcularCostoTotal() | currency:'USD':'symbol':'1.2-2' }}
       </div>
       <div class="tareas-guardar mt-3 tareas-panel__footer">
-        <button class="tareas-panel__close" type="button" (click)="toggleTareasPanel()" aria-label="Cerrar panel">
-          cerrar
+        <button class="tareas-panel__action" type="button" (click)="toggleTareasPanel()" aria-label="Cerrar panel" title="Cerrar panel">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
         </button>
-        <button class="tareas-panel__close " (click)="toggleSavedBudgetsPanel()">
-          Guardar
+        <button class="tareas-panel__action" type="button" (click)="toggleSavedBudgetsPanel()" aria-label="Guardar presupuesto" title="Guardar presupuesto">
+          <i class="bi bi-save2" aria-hidden="true"></i>
         </button>
-
-        <button class="tareas-panel__close" type="button" (click)="limpiarPresupuestoCargado()">
-  Quitar carga
-</button>
-
+        <button class="tareas-panel__action" type="button" (click)="limpiarPresupuestoCargado()" aria-label="Quitar carga" title="Quitar carga">
+          <i class="bi bi-eraser" aria-hidden="true"></i>
+        </button>
+        <button
+          *ngIf="tareasAgregadas?.length"
+          class="tareas-panel__action tareas-panel__action--danger"
+          type="button"
+          (click)="eliminarTodasLasTareas()"
+          aria-label="Eliminar todas las tareas"
+          title="Eliminar todas las tareas">
+          <i class="bi bi-trash3" aria-hidden="true"></i>
+        </button>
+        <button
+          class="tareas-panel__action tareas-panel__action--info"
+          type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#tareasPanelHelpModal"
+          aria-label="Ayuda de botones"
+          title="Ayuda de botones">
+          <i class="bi bi-question-circle" aria-hidden="true"></i>
+        </button>
       </div>
     </div>
   </aside>
+
+
+<div class="modal fade" id="tareasPanelHelpModal" tabindex="-1" aria-labelledby="tareasPanelHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content dash-modal">
+      <div class="modal-header">
+        <h5 class="modal-title" id="tareasPanelHelpModalLabel">Botones del panel</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <ul class="tareas-panel-help-list">
+          <li><i class="bi bi-x-lg" aria-hidden="true"></i><span><strong>Cerrar:</strong> cierra el panel de tareas agregadas.</span></li>
+          <li><i class="bi bi-save2" aria-hidden="true"></i><span><strong>Guardar:</strong> abre la vista para guardar el presupuesto actual.</span></li>
+          <li><i class="bi bi-eraser" aria-hidden="true"></i><span><strong>Quitar carga:</strong> limpia el presupuesto cargado actualmente.</span></li>
+          <li><i class="bi bi-trash3" aria-hidden="true"></i><span><strong>Eliminar todo:</strong> borra todas las tareas agregadas del panel.</span></li>
+          <li><i class="bi bi-question-circle" aria-hidden="true"></i><span><strong>Ayuda:</strong> muestra esta explicación rápida de botones.</span></li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="modal fade" id="confirmDeleteTareaModal" tabindex="-1" aria-labelledby="confirmDeleteTareaLabel" aria-hidden="true" (hidden.bs.modal)="limpiarConfirmacionEliminarTarea()">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content dash-modal">
@@ -429,6 +915,7 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <button type="button" class="btn btn-danger" (click)="confirmarEliminarTarea()">Eliminar</button>
       </div>
+      </div>
     </div>
   </div>
 </div>
@@ -436,8 +923,19 @@
 <div class="modal fade" id="miModal" tabindex="-1" aria-labelledby="exampleModalLabel1" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content modal-zona">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel1">Agregar Tarea</h5>
+          <div class="modal-header task-modal-header">
+            <div class="task-modal-header__main">
+              <h5 class="modal-title" id="exampleModalLabel1">Agregar Tarea</h5>
+              <div class="task-inline-notice task-inline-notice--modal" *ngIf="tareaPersonalizadaNotice" aria-live="polite">
+                <div class="task-inline-notice__icon" aria-hidden="true">
+                  <i class="bi bi-check2-circle"></i>
+                </div>
+                <div class="task-inline-notice__content">
+                  <strong class="task-inline-notice__title">{{ tareaPersonalizadaNotice.title }}</strong>
+                  <span *ngIf="tareaPersonalizadaNotice.text" class="task-inline-notice__text">{{ tareaPersonalizadaNotice.text }}</span>
+                </div>
+              </div>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -448,14 +946,7 @@
                   style="margin-bottom: 20px; font-size: 14px; white-space: pre-wrap; overflow-wrap: break-word; background-image: linear-gradient(to top, #c7d0e9, #d7dbee, #e5e7f4, #f3f3f9, #ffffff); color: #092865; padding: 10px; resize: none; font-weight: bold;"></textarea>
 
               </div>
-              <!--div class="mb-3">
-                <label for="rubro" class="col-form-label">Rubro:</label>
-                <input type="text" [(ngModel)]="tareaSeleccionada.rubro" name="rubro" class="form-control" id="rubro" readonly>
-              </div-->
-              <!--div-- class="mb-3">
-                <label for="categoria" class="col-form-label">Categoría:</label>
-                <input type="text" [(ngModel)]="tareaSeleccionada.categoria" name="categoria" class="form-control" id="categoria" readonly>
-              </!div-->
+
               <div class="row mb-3">
                 <div class="col-6 coolinput">
                   <label for="area" class="text">Area (m2/m3):</label>
@@ -475,12 +966,26 @@
                 <label for="discount" class="text">Descuento (%):</label>
                 <input type="number" [(ngModel)]="tareaSeleccionada.descuento" name="descuento" class="form-control input" id="discount" value="0">
               </div>
-              <div class="modal-footer d-flex" style="gap: 8px;">
+              <div class="modal-footer d-flex flex-column" style="gap: 8px;">
                 <!--button-- type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</!button-->
-                <button type="button" class="btn btn-outline-primary" (click)="abrirHistorialDesdeModal()">
-                  <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>ÚLTIMAS TAREAS
-                </button>
-                <button type="button" (click)="agregarTarea()" class="btn btn-primary flex-grow-1" data-bs-dismiss="modal">Agregar</button>
+                <div class="w-100 d-flex">
+                  <button type="button" (click)="agregarTarea()" class="btn btn-primary w-100" data-bs-dismiss="modal">Agregar</button>
+                </div>
+                <div class="w-100 d-flex" style="gap: 8px;">
+                  <button type="button" class="btn btn-outline-primary flex-grow-1" (click)="abrirHistorialDesdeModal()">
+                    <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>Ultimas tareas
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary tp-export-modal-btn flex-grow-1"
+                          (click)="exportarTareaAPersonalizadas()"
+                          title="Guardar en Mis Tareas personalizadas">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 6px;">
+                      <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+                      <path d="M8 4a.5.5 0 0 1 .5.5V6H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V7H6a.5.5 0 0 1 0-1h1.5V4.5A.5.5 0 0 1 8 4"/>
+                    </svg>
+                    Guardar tarea
+
+                  </button>
+                </div>
                 <!--button-- type="button" *ngIf="tareaSeleccionada.id" (click)="actualizarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Actualizar</!--button-->
               </div>
             </form>
@@ -490,80 +995,133 @@
     </div>
 
 
-<div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true"  >
-  <div class="modal-dialog">
+<div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content modal-zona">
       <div class="modal-header">
-        <h5 class="modal-title" id="clientModalLabel">Formulario de Datos del Cliente</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="d-flex align-items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#2563eb" viewBox="0 0 16 16">
+            <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.029 10 8 10c-2.029 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+          </svg>
+          <h5 class="modal-title mb-0" id="clientModalLabel">Datos del Cliente</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
-        <h2 id="confirmationMessage" style="display: none; color: green; text-align: center;">Datos guardados</h2>
         <form #clientForm="ngForm" (ngSubmit)="saveClientData(clientForm)">
-          <div class="form-group mb-3 coolinput">
-            <label for="clientName" class="text">Nombre:</label>
-            <input type="text" class="form-control input" id="clientName" name="clientName" [(ngModel)]="clientName" required minlength="2" placeholder="Nombre del cliente" #name="ngModel">
-            @if (name.touched && name.errors?.['required']) {
-              <div class="text-danger">El nombre es obligatorio.</div>
+
+          <div class="mb-3 coolinput">
+            <label for="clientName" class="text">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+                <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+              </svg>
+              Nombre <span style="color:#e85555;font-size:0.75rem;">*</span>
+            </label>
+            <input type="text" class="form-control input" id="clientName" name="clientName"
+                   [(ngModel)]="clientName" required minlength="2"
+                   placeholder="Nombre del cliente" #cliName="ngModel">
+            @if (cliName.touched && cliName.errors?.['required']) {
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El nombre es obligatorio.</div>
             }
-            @if (name.touched && name.errors?.['minlength']) {
-              <div class="text-danger">El nombre debe tener al menos 2 caracteres.</div>
+            @if (cliName.touched && cliName.errors?.['minlength']) {
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Mínimo 2 caracteres.</div>
             }
           </div>
-          <div class="form-group mb-3 coolinput">
-            <label for="contact" class="text">Contacto:</label>
-            <input type="text" class="form-control input" id="contact" name="clientContact" [(ngModel)]="clientContact" required pattern="\+?\d{7,15}" placeholder="Teléfono" #contact="ngModel">
+
+          <div class="mb-3 coolinput">
+            <label for="contact" class="text">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+                <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58z"/>
+              </svg>
+              Contacto <span style="color:#e85555;font-size:0.75rem;">*</span>
+            </label>
+            <input type="text" class="form-control input" id="contact" name="clientContact"
+                   [(ngModel)]="clientContact" required pattern="\+?\d{7,15}"
+                   placeholder="Teléfono" #contact="ngModel">
             @if (contact.touched && contact.errors?.['required']) {
-              <div class="text-danger">El contacto es obligatorio.</div>
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El contacto es obligatorio.</div>
             }
             @if (contact.touched && contact.errors?.['pattern']) {
-              <div class="text-danger">El contacto debe ser un número de teléfono válido (7-15 dígitos, puede incluir +).</div>
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Número válido (7-15 dígitos, puede incluir +).</div>
             }
           </div>
-          <div class="form-group mb-3 coolinput">
-            <label for="email" class="text">Email:</label>
-            <input type="email" class="form-control input" id="email" name="clientEmail" [(ngModel)]="clientEmail" required email placeholder="Email" #email="ngModel">
-            @if (email.touched && email.errors?.['required']) {
-              <div class="text-danger">El email es obligatorio.</div>
-            }
-            @if (email.touched && email.errors?.['email']) {
-              <div class="text-danger">El email debe tener un formato válido.</div>
-            }
-          </div>
-          <div class="form-group mb-3 coolinput">
-            <label for="clave" class="text">CUIT/Clave:</label>
-            <input type="text" class="form-control input" id="clave" name="clientClave" [(ngModel)]="clientClave"  pattern="\d{2}-\d{8}-\d{1}" placeholder="CUIT/Clave" #clave="ngModel">
 
+          <div class="mb-3 coolinput">
+            <label for="clientEmail" class="text">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
+              </svg>
+              Email <span style="color:#e85555;font-size:0.75rem;">*</span>
+            </label>
+            <input type="email" class="form-control input" id="clientEmail" name="clientEmail"
+                   [(ngModel)]="clientEmail" required email
+                   placeholder="correo@ejemplo.com" #cliEmail="ngModel">
+            @if (cliEmail.touched && cliEmail.errors?.['required']) {
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El email es obligatorio.</div>
+            }
+            @if (cliEmail.touched && cliEmail.errors?.['email']) {
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no válido.</div>
+            }
+          </div>
+
+          <div class="mb-3 coolinput">
+            <label for="clave" class="text">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+                <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
+                <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1z"/>
+              </svg>
+              CUIT/Clave <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span>
+            </label>
+            <input type="text" class="form-control input" id="clave" name="clientClave"
+                   [(ngModel)]="clientClave" pattern="\d{2}-\d{8}-\d{1}"
+                   placeholder="XX-XXXXXXXX-X" #clave="ngModel">
             @if (clave.touched && clave.errors?.['pattern']) {
-              <div class="text-danger">El CUIT debe tener el formato XX-XXXXXXXX-X.</div>
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato: XX-XXXXXXXX-X</div>
             }
           </div>
-          <div class="form-group mb-3 coolinput">
-            <label for="direccion" class="text">Direccion:</label>
-            <input type="text" class="form-control input" id="direccion" name="clientDireccion" [(ngModel)]="clientDireccion" required minlength="5" placeholder="Dirección" #direccion="ngModel">
-            @if (direccion.touched && direccion.errors?.['required']) {
-              <div class="text-danger">La dirección es obligatoria.</div>
-            }
-            @if (direccion.touched && direccion.errors?.['minlength']) {
-              <div class="text-danger">La dirección debe tener al menos 5 caracteres.</div>
+
+          <div class="mb-3 coolinput">
+            <label for="direccion" class="text">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+                <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/>
+                <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+              </svg>
+              Dirección <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span>
+            </label>
+            <input type="text" class="form-control input" id="direccion" name="clientDireccion"
+                   [(ngModel)]="clientDireccion" placeholder="Dirección del cliente">
+          </div>
+
+          <div class="mb-3 coolinput">
+            <label for="budgetDate" class="text">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+              </svg>
+              Fecha del Presupuesto <span style="color:#e85555;font-size:0.75rem;">*</span>
+            </label>
+            <input type="date" class="form-control input" id="budgetDate" name="budgetDate"
+                   [(ngModel)]="budgetDate" required #budgetDateCtrl="ngModel"
+                   (change)="onDateChange($event)">
+            @if (budgetDateCtrl.touched && budgetDateCtrl.errors?.['required']) {
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">La fecha es obligatoria.</div>
             }
           </div>
-          <div class="form-group mb-3 coolinput">
-            <label for="budgetDate" class="text">Fecha del Presupuesto:</label>
-            <input type="date" class="form-control input" id="budgetDate" name="budgetDate" [(ngModel)]="budgetDate" required #budgetDateCtrl="ngModel"  (change)="onDateChange($event)">
-            @if (budgetDate.touched && budgetDate.errors?.['required']) {
-              <div class="text-danger">La fecha del presupuesto es obligatoria.</div>
-            }
+
+          <div class="mb-3 coolinput">
+            <label for="additionalDetails" class="text">Detalles adicionales <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+            <textarea class="form-control input" id="additionalDetails" name="additionalDetailsClient"
+                      [(ngModel)]="additionalDetailsClient" rows="2" placeholder="Información extra del cliente"></textarea>
           </div>
-          <div class="form-group mb-3 coolinput">
-            <label for="additionalDetails" class="text">Detalles adicionales:</label>
-            <textarea class="form-control input" id="additionalDetails" name="additionalDetailsClient" [(ngModel)]="additionalDetailsClient" rows="3" placeholder="Detalles opcionales"></textarea>
-          </div>
-          <div class="modal-footer d-flex justify-content-between">
-            <!--button-- type="button" class="btn btn-secondary" data-bs-target="#listaClientesModal" data-bs-toggle="modal">Lista</!--button-->
-            <button type="submit" class="btn btn-primary" data-bs-dismiss="modal" [disabled]="!clientForm.valid || isSavingClient">
-              <span *ngIf="!isSavingClient">Guardar</span>
-              <span *ngIf="isSavingClient"><span class="spinner-border spinner-border-sm"></span> Guardando...</span>
+
+          <div class="modal-footer px-0 pb-0">
+            <button type="submit" class="btn btn-primary" [disabled]="clientForm.invalid || isSavingClient">
+              <span *ngIf="!isSavingClient">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
+                  <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                </svg>
+                Guardar
+              </span>
+              <span *ngIf="isSavingClient"><span class="spinner-border spinner-border-sm me-1"></span> Guardando...</span>
             </button>
           </div>
         </form>
@@ -575,83 +1133,24 @@
 
 
 
-<!--div-- class="modal fade" id="listaClientesModal" aria-hidden="true" aria-labelledby="listaClientesLabel" tabindex="-1" (shown.bs.modal)="getClientesByUserCode()">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content dash-modal">
-      <div class="modal-header">
-        <h5 class="modal-title" id="listaClientesLabel">Lista de Clientes Asociados</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="table-responsive">
-          <table class="table table-striped table-bordered table-hover table-sm">
-            <thead class="table-light">
-              <tr>
-                <th scope="col">Nombre</th>
-                <th scope="col">Contacto</th>
-                <th scope="col">Email</th>
-                <th scope="col">CUIT/Clave</th>
-                <th scope="col">Dirección</th>
-                <th scope="col">Fecha</th>
-                <th scope="col">Detalles</th>
-                <th scope="col">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let cliente of paginatedClientes">
-                <td>{{ cliente.name }}</td>
-                <td>{{ cliente.contact }}</td>
-                <td>{{ cliente.email }}</td>
-                <td>{{ cliente.clave }}</td>
-                <td>{{ cliente.direccion }}</td>
-                <td>{{ cliente.budgetDate }}</td>
-                <td>{{ cliente.additionalDetails }}</td>
-                <td>
-                  <div class="d-flex gap-2">
-                    <button class="btn btn-danger btn-sm" (click)="cliente.id && solicitarConfirmacionEliminar(cliente.id)">Eliminar</button>
-                    <button class="btn btn-success btn-sm" *ngIf="cliente.id !== undefined" (click)="editarCliente(cliente.id)">Editar</button>
-                  </div>
-                </td>
-              </tr>
-              <tr *ngIf="paginatedClientes.length === 0">
-                <td colspan="8" class="text-center">No hay clientes asociados a este userCode.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <nav aria-label="Paginación de clientes" *ngIf="clientes.length > itemsPerPage">
-          <ul class="pagination justify-content-center flex-wrap">
-            <li class="page-item" [class.disabled]="currentPage === 1">
-              <a class="page-link" (click)="previousPage()" aria-label="Anterior">
-                <span aria-hidden="true">&laquo;</span>
-              </a>
-            </li>
-            <li class="page-item" *ngFor="let page of getPages()" [class.active]="currentPage === page">
-              <a class="page-link" (click)="setPage(page)">{{ page }}</a>
-            </li>
-            <li class="page-item" [class.disabled]="currentPage === totalPages">
-              <a class="page-link" (click)="nextPage()" aria-label="Siguiente">
-                <span aria-hidden="true">&raquo;</span>
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</!--div-->
 
 
 
-<div class="modal fade" id="listaClientesModal" aria-hidden="true" aria-labelledby="listaClientesLabel" tabindex="-1" (shown.bs.modal)="onEmpresaSeleccionada(selectedEmpresaId)">
-  <div class="modal-dialog modal-lg">
+<div class="modal fade" id="listaClientesModal" aria-hidden="true" aria-labelledby="listaClientesLabel" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg lista-clientes-modal__dialog">
     <div class="modal-content modal-zona">
       <div class="modal-header">
-        <h5 class="modal-title" id="listaClientesLabel">Lista de Clientes</h5>
+        <div class="d-flex align-items-center gap-3 flex-grow-1">
+          <h5 class="modal-title mb-0" id="listaClientesLabel">Lista de Clientes</h5>
+          <span
+            class="badge rounded-pill fs-6 px-3 py-2"
+            [ngClass]="{
+              'bg-success':  totalClientesUsuario < currentClienteLimit * 0.8,
+              'bg-warning text-dark': totalClientesUsuario >= currentClienteLimit * 0.8 && totalClientesUsuario < currentClienteLimit,
+              'bg-danger':   totalClientesUsuario >= currentClienteLimit
+            }"
+          >{{ totalClientesUsuario }} / {{ currentClienteLimit }}</span>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -659,7 +1158,6 @@
           <div class="row mb-3">
             <div class="col-12 d-flex flex-wrap align-items-center gap-3">
               <div class="text-muted small">Selecciona un cliente tocando su tarjeta.</div>
-              <input type="text" class="form-control w-auto" placeholder="Filtrar cliente..." [(ngModel)]="filtroCliente" style="max-width: 250px;">
             </div>
           </div>
           <div class="row">
@@ -667,7 +1165,7 @@
               <div
                 class="card mb-3 w-100 shadow-sm cliente-card"
                 [class.cliente-card--selected]="clienteSeleccionado?.id === cliente.id"
-                (click)="seleccionarCliente(cliente); loadTareasAgregadas()"
+                (click)="seleccionarCliente(cliente)"
                 role="button"
                 tabindex="0"
               >
@@ -681,7 +1179,7 @@
                       <input
                         type="checkbox"
                         [checked]="clienteSeleccionado?.id === cliente.id"
-                        (click)="$event.stopPropagation(); seleccionarCliente(cliente); loadTareasAgregadas()"
+                        (click)="$event.stopPropagation(); seleccionarCliente(cliente)"
                       >
                       <div class="checkmark"></div>
                     </label>
@@ -726,87 +1224,150 @@
           </ul>
         </nav>
       </div>
-      <div class="modal-footer d-flex justify-content-between">
-        <!--button-- type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#clientModal">Crear nuevo cliente</!--button-->
-        <button type="button" class="btn btn-success" (click)="openClientModal()">Crear nuevo cliente</button>
-
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      <div class="modal-footer lista-clientes-modal__footer">
+        <button type="button" class="btn btn-success lista-clientes-modal__footer-btn" (click)="openClientModal()">Crear nuevo cliente</button>
+        <div class="lista-clientes-modal__filter">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Filtrar cliente..."
+            [(ngModel)]="filtroCliente">
+        </div>
+        <button type="button" class="btn btn-secondary lista-clientes-modal__footer-btn" data-bs-dismiss="modal">Cerrar</button>
       </div>
     </div>
   </div>
 </div>
 
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" >
-  <div class="modal-dialog">
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content modal-zona">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Agregar datos de tu Empresa</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="d-flex align-items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#2563eb" viewBox="0 0 16 16">
+            <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2zm3.564 1.426L5.596 5 8 5.961 14.154 3.5zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464z"/>
+          </svg>
+          <h5 class="modal-title mb-0" id="exampleModalLabel">Datos de tu Empresa</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
-        <p style="text-align: center; font-size: 12px;">
-          Podés editar estos datos las veces que quieras.
-        </p>
-        <div class="row g-2 align-items-end mb-3">
-          <div class="col coolinput">
-            <label for="empresaName" class="text">Tu Empresa/nombre personal</label>
-            <input type="text" class="form-control input" id="empresaName" [(ngModel)]="empresaName" placeholder="¿Cómo se llama?">
+        <p style="text-align: center; font-size: 12px; opacity: 0.8;">Podés editar estos datos las veces que quieras.</p>
+        <form #empresaForm="ngForm" (ngSubmit)="saveFormData()">
+
+          <div class="mb-3 coolinput">
+            <label for="empresaName" class="text">
+              Empresa / Nombre personal <span style="color:#e85555;font-size:0.75rem;">*</span>
+            </label>
+            <input type="text" class="form-control input" id="empresaName" name="empresaName"
+                   [(ngModel)]="empresaName" required
+                   placeholder="¿Cómo se llama?" #eName="ngModel">
+            @if (eName.touched && eName.errors?.['required']) {
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El nombre es obligatorio.</div>
+            }
           </div>
 
-        </div>
-        <div class="form-group mb-3 coolinput">
-          <label for="empresaPhone" class="text">Tel:</label>
-          <input type="text" class="form-control input" id="empresaPhone" [(ngModel)]="empresaPhone" placeholder="Teléfono de tu empresa">
-        </div>
-        <div class="form-group mb-3 coolinput">
-          <label for="empresaEmail" class="text">Email:</label>
-          <input type="email" class="form-control input" id="empresaEmail" [(ngModel)]="empresaEmail" placeholder="Email de tu empresa">
-        </div>
-        <div class="form-group mb-3 coolinput">
-          <label for="additionalDetailsempresa" class="text">Descripcion:</label>
-          <textarea class="form-control input" id="additionalDetailsempresa" [(ngModel)]="additionalDetailsEmpresa" rows="3" placeholder="Cuenta a tus clientes de qué se trata tu empresa"></textarea>
-        </div>
-        <div class="form-group mb-3 coolinput">
-          <label for="empresaCuilCuit" class="text">CUIL/CUIT (opcional)</label>
-          <input type="text" class="form-control input" id="empresaCuilCuit" [(ngModel)]="empresaCuilCuit" placeholder="00-00000000-0" />
-        </div>
-        <hr>
-       <div>
-         <button type="button" class="btn btn-outline-primary mb-3" (click)="toggleSocialFields()">
-          {{ showSocialFields ? 'Ocultar redes' : 'Redes' }}
-        </button>
-         <div class="col-auto d-flex align-items-end">
-            <button class="btn btn-primary w-100" type="button" (click)="abrirModalImagen()">Subir imagen</button>
+          <div class="mb-3 coolinput">
+            <label for="empresaPhone" class="text">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+                <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58z"/>
+              </svg>
+              Teléfono <span style="color:#e85555;font-size:0.75rem;">*</span>
+            </label>
+            <input type="text" class="form-control input" id="empresaPhone" name="empresaPhone"
+                   [(ngModel)]="empresaPhone" required
+                   placeholder="Teléfono de tu empresa" #ePhone="ngModel">
+            @if (ePhone.touched && ePhone.errors?.['required']) {
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El teléfono es obligatorio.</div>
+            }
           </div>
-       </div>
-        <div *ngIf="showSocialFields">
-          <div class="form-group mb-3 coolinput">
-            <label for="empresaWebsite" class="text">Sitio web (opcional)</label>
-            <input type="url" class="form-control input" id="empresaWebsite" [(ngModel)]="empresaWebsite" placeholder="https://..." />
-          </div>
-          <div class="form-group mb-3 coolinput">
-            <label for="empresaTikTok" class="text">TikTok (opcional)</label>
-            <input type="text" class="form-control input" id="empresaTikTok" [(ngModel)]="empresaTikTok" placeholder="@tuusuario o enlace" />
-          </div>
-          <div class="form-group mb-3 coolinput">
-            <label for="empresaInstagram" class="text">Instagram (opcional)</label>
-            <input type="text" class="form-control input" id="empresaInstagram" [(ngModel)]="empresaInstagram" placeholder="@tuusuario o enlace" />
-          </div>
-          <div class="form-group mb-3 coolinput">
-            <label for="empresaFacebook" class="text">Facebook (opcional)</label>
-            <input type="text" class="form-control input" id="empresaFacebook" [(ngModel)]="empresaFacebook" placeholder="URL de tu pagina" />
-          </div>
-        </div>
 
-        <button class="btn btn-outline-secondary w-100 mt-2" type="button" (click)="abrirModalPaleta()">
-          <i class="fas fa-palette" aria-hidden="true" style="margin-right: 6px;"></i>PALETA DEL PRESPUESTO
-        </button>
+          <div class="mb-3 coolinput">
+            <label for="empresaEmail" class="text">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
+              </svg>
+              Email <span style="color:#e85555;font-size:0.75rem;">*</span>
+            </label>
+            <input type="email" class="form-control input" id="empresaEmail" name="empresaEmail"
+                   [(ngModel)]="empresaEmail" required email
+                   placeholder="Email de tu empresa" #eEmail="ngModel">
+            @if (eEmail.touched && eEmail.errors?.['required']) {
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El email es obligatorio.</div>
+            }
+            @if (eEmail.touched && eEmail.errors?.['email']) {
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no válido.</div>
+            }
+          </div>
 
+          <div class="mb-3 coolinput">
+            <label for="additionalDetailsempresa" class="text">Descripción <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+            <textarea class="form-control input" id="additionalDetailsempresa" name="additionalDetailsEmpresa"
+                      [(ngModel)]="additionalDetailsEmpresa" rows="2"
+                      placeholder="Contale a tus clientes de qué se trata tu empresa"></textarea>
+          </div>
 
-      </div>
-      <div class="modal-footer d-flex justify-content-between">
-        <button type="button" class="btn btn-secondary" (click)="openListaEmpresasModal()">Seleccionar empresa</button>
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="saveFormData()">Guardar</button>
+          <div class="mb-3 coolinput">
+            <label for="empresaCuilCuit" class="text">CUIL/CUIT <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+            <input type="text" class="form-control input" id="empresaCuilCuit" name="empresaCuilCuit"
+                   [(ngModel)]="empresaCuilCuit" placeholder="00-00000000-0" />
+          </div>
+
+          <hr>
+          <div class="d-flex gap-2 mb-3">
+            <button type="button" class="btn btn-outline-primary flex-grow-1" (click)="toggleSocialFields()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
+                <path d="M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5"/>
+              </svg>
+              {{ showSocialFields ? 'Ocultar redes' : 'Redes sociales' }}
+            </button>
+            <button class="btn btn-primary flex-grow-1" type="button" (click)="abrirModalImagen()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
+                <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
+                <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/>
+              </svg>
+              Subir imagen
+            </button>
+          </div>
+
+          <div *ngIf="showSocialFields">
+            <div class="mb-3 coolinput">
+              <label for="empresaWebsite" class="text">Sitio web <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+              <input type="url" class="form-control input" id="empresaWebsite" name="empresaWebsite"
+                     [(ngModel)]="empresaWebsite" placeholder="https://..." />
+            </div>
+            <div class="mb-3 coolinput">
+              <label for="empresaTikTok" class="text">TikTok <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+              <input type="text" class="form-control input" id="empresaTikTok" name="empresaTikTok"
+                     [(ngModel)]="empresaTikTok" placeholder="@tuusuario o enlace" />
+            </div>
+            <div class="mb-3 coolinput">
+              <label for="empresaInstagram" class="text">Instagram <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+              <input type="text" class="form-control input" id="empresaInstagram" name="empresaInstagram"
+                     [(ngModel)]="empresaInstagram" placeholder="@tuusuario o enlace" />
+            </div>
+            <div class="mb-3 coolinput">
+              <label for="empresaFacebook" class="text">Facebook <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+              <input type="text" class="form-control input" id="empresaFacebook" name="empresaFacebook"
+                     [(ngModel)]="empresaFacebook" placeholder="URL de tu página" />
+            </div>
+          </div>
+
+          <button class="btn btn-outline-secondary w-100 mt-1" type="button" (click)="abrirModalPaleta()">
+            <i class="fas fa-palette" aria-hidden="true" style="margin-right: 6px;"></i>PALETA DEL PRESUPUESTO
+          </button>
+
+          <div class="modal-footer d-flex justify-content-between px-0 pb-0 mt-3">
+            <button type="button" class="btn btn-secondary" (click)="openListaEmpresasModal()">Seleccionar empresa</button>
+            <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Límite alcanzado para tu plan' : null">
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
+                <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+              </svg>
+              Guardar
+            </button>
+          </div>
+
+        </form>
       </div>
     </div>
   </div>
@@ -818,111 +1379,74 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content modal-zona">
       <div class="modal-header">
-        <h5 class="modal-title" id="listaEmpresasLabel">Lista de Empresas</h5>
+        <div class="d-flex align-items-center gap-3 flex-grow-1">
+          <h5 class="modal-title mb-0" id="listaEmpresasLabel">Lista de Empresas</h5>
+          <span
+            class="badge rounded-pill fs-6 px-3 py-2"
+            [ngClass]="{
+              'bg-success':  empresas.length < currentEmpresaLimit * 0.8,
+              'bg-warning text-dark': empresas.length >= currentEmpresaLimit * 0.8 && empresas.length < currentEmpresaLimit,
+              'bg-danger':   empresas.length >= currentEmpresaLimit
+            }"
+          >{{ empresas.length }} / {{ currentEmpresaLimit }}</span>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <!-- Vista nueva con filtro y ng-select -->
         <div class="container-fluid">
-          <div class="row mb-3">
-            <div class="col-12 d-flex flex-wrap align-items-center gap-3">
-              <ng-select
-                [items]="empresas"
-                bindLabel="name"
-                bindValue="id"
-                [(ngModel)]="selectedEmpresaId"
-                (change)="onEmpresaSeleccionada($event)"
-                [ngClass]="{'is-invalid': !selectedEmpresaId}"
-                placeholder="Selecciona una empresa"
-                [clearable]="false"
-                style="height: 40px; font-weight: bold; font-size: 16px; border-radius: 15px; box-shadow: 0 2px 8px #0001; min-width: 220px;"
-              >
-                <ng-template ng-option-tmp let-item="item" let-selected="selected">
-                  <img *ngIf="item.logoUrl" [src]="item.logoUrl" width="24" class="me-2" style="object-fit:cover; border-radius:50%;">
-                  {{ item.name }}
-                  <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
-                </ng-template>
-              </ng-select>
-              <input type="text" class="form-control w-auto" placeholder="Filtrar empresa..." [(ngModel)]="filtroEmpresa" style="max-width: 250px;">
-            </div>
-          </div>
           <div class="row">
-            <!--div-- class="col-12" *ngFor="let empresa of paginatedEmpresas | filterEmpresa:filtroEmpresa">
-              <div class="card mb-3 w-100 shadow-sm"
-                style="width: 100%; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.25), 0 1.5px 8px rgba(50,50,105,0.25); border: 2.5px solid #4b5154;"
+            <div class="col-12" *ngFor="let empresa of paginatedEmpresas | filterEmpresa:filtroEmpresa">
+              <div
+                class="card mb-3 w-100 shadow-sm cliente-card empresa-card"
+                [class.cliente-card--selected]="selectedEmpresaId?.id === empresa.id"
+                (click)="onEmpresaSeleccionada(empresa)"
+                role="button"
+                tabindex="0"
               >
-                <div class="card-body position-relative">
-                  <h5 class="card-title" style="font-size: 1.2rem; font-weight: bold;">
-                    {{ empresa.name }}
-                    <img *ngIf="empresa.logoUrl" [src]="empresa.logoUrl" alt="Logo" style="width:32px;height:32px;object-fit:cover;float:right;border-radius:50%;margin-left:10px;">
-                  </h5>
+                <div class="card-body position-relative cliente-card__body">
+                  <div class="cliente-card__header">
+                    <h5 class="card-title cliente-card__title">
+                      <span class="cliente-card__icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50.22 38.28">
+                          <path fill="#5b748f" d="m43.78,0H6.43C2.89,0,0,2.89,0,6.43v25.42c0,3.55,2.89,6.43,6.43,6.43h38.94v-3.31h-7.87v-7.57c0-2.9-2.35-5.26-5.26-5.26h-14.27c-2.9,0-5.26,2.35-5.26,5.26v7.57h-6.28c-1.72,0-3.13-1.4-3.13-3.12V6.43c0-1.72,1.4-3.12,3.13-3.12h37.35c1.72,0,3.12,1.4,3.12,3.12v26.51h3.31V6.43c0-3.55-2.89-6.43-6.43-6.43Z"/>
+                          <path fill="#5b748f" d="m18.99,13.03c0,3.37,2.74,6.11,6.12,6.11s6.11-2.74,6.11-6.11-2.74-6.12-6.11-6.12-6.12,2.74-6.12,6.12Zm7.37-3.04c0,.56-.45,1-1,1-1.28,0-2.31,1.04-2.31,2.32,0,.55-.45,1-1,1s-1-.45-1-1c0-2.38,1.93-4.32,4.31-4.32.55,0,1,.45,1,1Z"/>
+                        </svg>
+                      </span>
+                      {{ empresa.name }}
+                      <img *ngIf="getEmpresaDisplayLogo(empresa)" [src]="getEmpresaDisplayLogo(empresa)" alt="Logo" class="cliente-card__logo">
+                    </h5>
+                    <label class="cliente-check">
+                      <input
+                        type="checkbox"
+                        [checked]="selectedEmpresaId?.id === empresa.id"
+                        (click)="$event.stopPropagation(); onEmpresaSeleccionada(empresa)"
+                      >
+                      <div class="checkmark"></div>
+                    </label>
+                  </div>
+
+                  <div *ngIf="selectedEmpresaId?.id === empresa.id" class="cliente-card__selected">
+                    Empresa seleccionada
+                  </div>
+
                   <p class="card-text mb-1"><strong>Tel:</strong> {{ empresa.phone }}</p>
                   <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
                   <p class="card-text mb-1"><strong>Descripción:</strong> {{ empresa.description }}</p>
-                  <div class="d-flex justify-content-end gap-1 mt-2">
-                    <button class="btn btn-danger btn-xs px-3 py-1" style="font-size: 0.85rem; min-width: 80px;" (click)="empresa.id && solicitarConfirmacionEliminarEmpresa(empresa.id)">Eliminar</button>
-                    <span style="width: 10px;"></span>
-                    <button class="btn btn-success btn-xs px-3 py-1" style="font-size: 0.85rem; min-width: 80px;" *ngIf="empresa.id !== undefined" (click)="editarEmpresa(empresa.id)">Editar</button>
+
+                  <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
+                    <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action"
+                            (click)="empresa.id && solicitarConfirmacionEliminarEmpresa(empresa.id)">
+                      Eliminar
+                    </button>
+                    <button class="btn btn-success btn-xs px-3 py-1 cliente-card__action"
+                            *ngIf="empresa.id !== undefined"
+                            (click)="editarEmpresa(empresa.id)">
+                      Editar
+                    </button>
                   </div>
                 </div>
               </div>
-            </!--div-->
-
-<div class="col-12" *ngFor="let empresa of paginatedEmpresas | filterEmpresa:filtroEmpresa">
-  <div
-    class="card mb-3 w-100 shadow-sm cliente-card empresa-card"
-    [class.cliente-card--selected]="selectedEmpresaId?.id === empresa.id"
-    (click)="onEmpresaSeleccionada(empresa)"
-    role="button"
-    tabindex="0"
-  >
-    <div class="card-body position-relative cliente-card__body">
-      <div class="cliente-card__header">
-        <h5 class="card-title cliente-card__title">
-          <span class="cliente-card__icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50.22 38.28">
-              <path fill="#5b748f" d="m43.78,0H6.43C2.89,0,0,2.89,0,6.43v25.42c0,3.55,2.89,6.43,6.43,6.43h38.94v-3.31h-7.87v-7.57c0-2.9-2.35-5.26-5.26-5.26h-14.27c-2.9,0-5.26,2.35-5.26,5.26v7.57h-6.28c-1.72,0-3.13-1.4-3.13-3.12V6.43c0-1.72,1.4-3.12,3.13-3.12h37.35c1.72,0,3.12,1.4,3.12,3.12v26.51h3.31V6.43c0-3.55-2.89-6.43-6.43-6.43Z"/>
-              <path fill="#5b748f" d="m18.99,13.03c0,3.37,2.74,6.11,6.12,6.11s6.11-2.74,6.11-6.11-2.74-6.12-6.11-6.12-6.12,2.74-6.12,6.12Zm7.37-3.04c0,.56-.45,1-1,1-1.28,0-2.31,1.04-2.31,2.32,0,.55-.45,1-1,1s-1-.45-1-1c0-2.38,1.93-4.32,4.31-4.32.55,0,1,.45,1,1Z"/>
-            </svg>
-          </span>
-          {{ empresa.name }}
-          <img *ngIf="empresa.logoUrl" [src]="empresa.logoUrl" alt="Logo" class="cliente-card__logo">
-        </h5>
-        <label class="cliente-check">
-          <input
-            type="checkbox"
-            [checked]="selectedEmpresaId?.id === empresa.id"
-            (click)="$event.stopPropagation(); onEmpresaSeleccionada(empresa)"
-          >
-          <div class="checkmark"></div>
-        </label>
-      </div>
-
-      <div *ngIf="selectedEmpresaId?.id === empresa.id" class="cliente-card__selected">
-        Empresa seleccionada
-      </div>
-
-      <p class="card-text mb-1"><strong>Tel:</strong> {{ empresa.phone }}</p>
-      <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
-      <p class="card-text mb-1"><strong>Descripción:</strong> {{ empresa.description }}</p>
-
-      <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
-        <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action"
-                (click)="empresa.id && solicitarConfirmacionEliminarEmpresa(empresa.id)">
-          Eliminar
-        </button>
-        <button class="btn btn-success btn-xs px-3 py-1 cliente-card__action"
-                *ngIf="empresa.id !== undefined"
-                (click)="editarEmpresa(empresa.id)">
-          Editar
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
+            </div>
 
             <div *ngIf="paginatedEmpresas.length === 0" class="col-12 text-center text-muted py-3">
               No hay empresas asociadas a este usuario.
@@ -985,8 +1509,9 @@
         </div>
         -->
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      <div class="modal-footer d-flex flex-nowrap align-items-center gap-2">
+        <input type="text" class="form-control flex-grow-1" placeholder="Filtrar empresa..." [(ngModel)]="filtroEmpresa">
+        <button type="button" class="btn btn-secondary flex-shrink-0" data-bs-dismiss="modal">Cerrar</button>
       </div>
     </div>
   </div>
@@ -1052,11 +1577,11 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
-        Seguro que deseas cerrar sesion?
+        Seguro que deseas cerrar sesión?
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger" (click)="logout()" data-bs-dismiss="modal">Cerrar sesion</button>
+        <button type="button" class="btn btn-danger" (click)="logout()" data-bs-dismiss="modal">Cerrar sesión</button>
 
 
       </div>
@@ -1079,7 +1604,7 @@
     [presupuestoCargado]="presupuestoSeleccionado"
     (presupuestoActualizado)="onPresupuestoActualizado($event)"
     (presupuestoEliminado)="onPresupuestoEliminado($event)"
-    (cargarPresupuesto)="onCargarPresupuestoGuardado($event)">
+    (cargarPresupuesto)="cargarPresupuestoDesdeLista($event)">
   </app-presupuestos-guardados>
 </div>
 
@@ -1285,7 +1810,7 @@
           <div id="ajustesListaCodigoAcceso" style="font-size: 20px; color:#1f2937; word-break: break-all;">No disponible</div>
         </div>
         <p style="font-size: 11px; color: #6b7280; margin-top: -5px; margin-bottom: 15px; padding-left: 5px;">
-          <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 4px;"></i> recibirás un whatapps para renovar tu acceso el día de vencimiento
+          <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 4px;"></i> recibirás un WhatsApp para renovar tu acceso el día de vencimiento
         </p>
         <button type="button" class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#faqModalAjustes" data-bs-dismiss="modal">
           PREGUNTAS FRECUENTES
@@ -1599,3 +2124,8 @@
     </div>
   </div>
 </div>
+
+
+
+
+

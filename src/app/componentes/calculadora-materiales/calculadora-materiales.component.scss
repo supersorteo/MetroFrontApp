@@ -906,6 +906,110 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  &__history-item {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid $gray-100;
+
+    .calc-modal__item {
+      border-bottom: none;
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  &__pin-btn {
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: $gray-400;
+    font-size: 1rem;
+    margin-right: .5rem;
+    transition: color .15s, background .15s;
+
+    &:hover { color: $primary; background: rgba($primary, .08); }
+
+    &--active {
+      color: $primary;
+      i { font-size: .95rem; }
+    }
+  }
+}
+
+// ── Modal pagination ──────────────────────────────────────────────────────────
+.calc-modal__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .75rem 1.25rem;
+  background: linear-gradient(135deg, #2c3e50 0%, #3d5a74 100%);
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.calc-modal__pag-btn {
+  width: 2.4rem;
+  height: 2.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba($primary, .92), rgba($primary-dk, .9));
+  color: $white;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba($primary-dk, .35);
+  transition: transform .15s ease, filter .15s ease, box-shadow .15s ease, opacity .15s;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+    box-shadow: 0 6px 16px rgba($primary-dk, .45);
+  }
+
+  &:active:not(:disabled) { transform: scale(.95); }
+
+  &--disabled,
+  &:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.calc-modal__pag-info {
+  display: flex;
+  align-items: baseline;
+  gap: .3rem;
+  font-weight: 700;
+}
+
+.calc-modal__pag-current {
+  font-size: 1.15rem;
+  color: $white;
+  min-width: 1.4rem;
+  text-align: center;
+}
+
+.calc-modal__pag-sep {
+  font-size: .85rem;
+  color: rgba($white, .45);
+}
+
+.calc-modal__pag-total {
+  font-size: .9rem;
+  color: rgba($white, .65);
+  min-width: 1.1rem;
+  text-align: center;
 }
 
 // ── Responsive ────────────────────────────────────────────────────────────────

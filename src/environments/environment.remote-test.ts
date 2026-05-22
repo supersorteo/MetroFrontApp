@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:8080',
+  apiBaseUrl: 'https://adequate-education-production.up.railway.app',
   requestTimeoutMs: 15000,
   retryGetRequests: true,
   enableServiceWorker: false,

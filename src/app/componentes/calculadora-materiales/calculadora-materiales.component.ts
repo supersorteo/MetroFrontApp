@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
@@ -561,6 +561,7 @@ const DEMO_HISTORY_LIMIT = 3;
 const DEMO_DAILY_CALC_LIMIT = 3;
 const USER_HISTORY_LIMIT = 10;
 const USER_LATEST_TASKS_LIMIT = 5;
+const VIP_PINS_STORAGE_KEY = 'vipCalculadoraPins';
 
 function cargarHistorialDemoDesdeStorage(): CalculoMaterialGuardado[] {
   try {
@@ -576,7 +577,9 @@ function cargarHistorialDemoDesdeStorage(): CalculoMaterialGuardado[] {
 function guardarHistorialDemoEnStorage(historial: CalculoMaterialGuardado[]): void {
   try {
     localStorage.setItem(DEMO_HISTORY_STORAGE_KEY, JSON.stringify(historial.slice(0, DEMO_HISTORY_LIMIT)));
-  } catch {}
+  } catch (e) {
+    console.warn('[Calculadora] No se pudo guardar el historial demo en localStorage:', e);
+  }
 }
 
 function getCurrentDayKey(date = new Date()): string {
@@ -597,7 +600,28 @@ function cargarUsoDiarioDemoDesdeStorage(): Record<string, number> {
 function guardarUsoDiarioDemoEnStorage(usage: Record<string, number>): void {
   try {
     localStorage.setItem(DEMO_DAILY_USAGE_STORAGE_KEY, JSON.stringify(usage));
-  } catch {}
+  } catch (e) {
+    console.warn('[Calculadora] No se pudo guardar el uso diario demo en localStorage:', e);
+  }
+}
+
+function cargarPinIdsDesdeStorage(): Set<number> {
+  try {
+    const raw = localStorage.getItem(VIP_PINS_STORAGE_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? new Set(parsed.filter((x: unknown) => typeof x === 'number')) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function guardarPinIdsEnStorage(ids: Set<number>): void {
+  try {
+    localStorage.setItem(VIP_PINS_STORAGE_KEY, JSON.stringify([...ids]));
+  } catch (e) {
+    console.warn('[Calculadora] No se pudo guardar los pins en localStorage:', e);
+  }
 }
 
 function seleccionarTareasAleatorias(limit: number): Tarea[] {
@@ -660,6 +684,17 @@ export class CalculadoraMaterialesComponent implements OnInit {
   saveStatus = signal<Record<number, SaveStatus | undefined>>({});
   savedCalculosByTask = signal<Record<number, CalculoMaterialGuardado | undefined>>({});
   demoDailyCalculationsUsed = signal(this.isTrialMode ? this.getDemoDailyUsageCount() : 0);
+  pinnedIds = signal<Set<number>>(this.isTrialMode ? new Set<number>() : cargarPinIdsDesdeStorage());
+
+  private readonly HISTORIAL_PAGE_SIZE = 5;
+  historialPage = signal(1);
+  historialTotalPages = computed(() =>
+    Math.max(1, Math.ceil(this.historialCalculos().length / this.HISTORIAL_PAGE_SIZE))
+  );
+  historialPaginado = computed(() => {
+    const start = (this.historialPage() - 1) * this.HISTORIAL_PAGE_SIZE;
+    return this.historialCalculos().slice(start, start + this.HISTORIAL_PAGE_SIZE);
+  });
 
   filteredTasks = computed(() => {
     const term = this.normalizar(this.searchTerm());
@@ -675,12 +710,19 @@ export class CalculadoraMaterialesComponent implements OnInit {
   constructor(
     private calculadoraMaterialesService: CalculadoraMaterialesService,
     private toast: AppToastService,
-    private router: Router,
-    private location: Location
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    if (this.isTrialMode) {
+    // Always clear stale data from any previous session first
+    this.historialCalculos.set([]);
+    this.ultimasTareas.set([]);
+    this.savedCalculosByTask.set({});
+
+    // Re-read trialMode from localStorage at init time to guard against stale readonly field
+    const currentlyTrialMode = this.isTrialMode || localStorage.getItem('trialMode') === 'true';
+
+    if (currentlyTrialMode) {
       const historialDemo = cargarHistorialDemoDesdeStorage().slice(0, DEMO_HISTORY_LIMIT);
       this.historialCalculos.set(historialDemo);
       this.ultimasTareas.set(construirResumenesDesdeHistorial(historialDemo, DEMO_HISTORY_LIMIT));
@@ -722,7 +764,7 @@ export class CalculadoraMaterialesComponent implements OnInit {
     this.inputValues.update(v => ({ ...v, [id]: value }));
   }
 
-  async calcular(tarea: Tarea): Promise<void> {
+  calcular(tarea: Tarea): void {
     const val = this.getInputValue(tarea.id);
     if (val === null || isNaN(val) || val <= 0) return;
     if (this.isTrialMode && this.isTrialCalculationLimitReached()) {
@@ -762,10 +804,8 @@ export class CalculadoraMaterialesComponent implements OnInit {
       this.registerDemoCalculationUsage();
     }
 
-    const guardar = await this.toast.confirm('¿Querés guardar este cálculo en el historial?');
-    if (guardar) {
-      this.persistirCalculo(tarea, val, resultados);
-    }
+    // Auto-guardar sin confirmación
+    this.persistirCalculo(tarea, val, resultados);
   }
 
   async confirmarBorrado(id: number): Promise<void> {
@@ -823,7 +863,8 @@ export class CalculadoraMaterialesComponent implements OnInit {
 
     const usados = this.demoDailyCalculationsUsed();
     const restantes = Math.max(DEMO_DAILY_CALC_LIMIT - usados, 0);
-    return `Modo de prueba: ${usados}/${DEMO_DAILY_CALC_LIMIT} cálculos usados hoy. Te quedan ${restantes}.`;
+    //return `Modo de prueba: ${usados}/${DEMO_DAILY_CALC_LIMIT} cálculos usados hoy. Te quedan ${restantes}.`;
+    return `Modo de prueba: ${usados}/${DEMO_DAILY_CALC_LIMIT} cálculos usados hoy.`;
   }
 
   isTrialCalculationLimitReached(): boolean {
@@ -847,11 +888,23 @@ export class CalculadoraMaterialesComponent implements OnInit {
   cerrarSidebar(): void { this.sidebarOpen.set(false); }
   abrirUltimasTareas(): void { this.cerrarSidebar(); this.ultimasTareasOpen.set(true); }
   cerrarUltimasTareas(): void { this.ultimasTareasOpen.set(false); }
-  abrirHistorial(): void { this.cerrarSidebar(); this.historialOpen.set(true); }
+  abrirHistorial(): void { this.cerrarSidebar(); this.historialPage.set(1); this.historialOpen.set(true); }
   cerrarHistorial(): void { this.historialOpen.set(false); }
+
+  historialNextPage(): void {
+    if (this.historialPage() < this.historialTotalPages()) {
+      this.historialPage.update(p => p + 1);
+    }
+  }
+
+  historialPrevPage(): void {
+    if (this.historialPage() > 1) {
+      this.historialPage.update(p => p - 1);
+    }
+  }
   goBack(): void {
     this.cerrarSidebar();
-    this.location.back();
+    this.router.navigate(['/dashboard']);
   }
   irAlDashboard(): void {
     this.cerrarSidebar();
@@ -898,7 +951,7 @@ export class CalculadoraMaterialesComponent implements OnInit {
     }, 100);
   }
 
-  async confirmarGuardado(tarea: Tarea): Promise<void> {
+  confirmarGuardado(tarea: Tarea): void {
     const valorIngresado = this.getInputValue(tarea.id);
     const resultados = this.getResultados(tarea.id);
 
@@ -909,11 +962,6 @@ export class CalculadoraMaterialesComponent implements OnInit {
 
     if (!this.canGuardar(tarea.id)) {
       this.toast.info('Ese cálculo ya está guardado o todavía no cambió.', 'Sin cambios');
-      return;
-    }
-
-    const confirmed = await this.toast.confirm('Este cálculo se agregará al historial y a últimas tareas.');
-    if (!confirmed) {
       return;
     }
 
@@ -955,7 +1003,6 @@ export class CalculadoraMaterialesComponent implements OnInit {
       guardarHistorialDemoEnStorage(historial);
       this.saveStatus.update(status => ({ ...status, [tarea.id]: 'saved' }));
       this.savedCalculosByTask.update(state => ({ ...state, [tarea.id]: historial[0] }));
-      this.toast.success('El cálculo se guardó en el historial local del modo de prueba.', 'Guardado');
       return;
     }
 
@@ -964,35 +1011,91 @@ export class CalculadoraMaterialesComponent implements OnInit {
       return;
     }
 
+    const historialActual = this.historialCalculos();
+    if (historialActual.length >= USER_HISTORY_LIMIT) {
+      const sinPin = historialActual
+        .filter(c => !this.isPinned(c.id))
+        .sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+
+      if (sinPin.length === 0) {
+        this.toast.error(
+          'Todos los cálculos están fijados 📌. Desfijá al menos uno para poder guardar un nuevo cálculo.',
+          'Historial lleno'
+        );
+        return;
+      }
+
+      const masAntiguo = sinPin[0];
+      if (!masAntiguo.id || masAntiguo.id < 0) {
+        this.removeCalculoFromState(masAntiguo);
+        this.guardarCalculoVip(tarea, calculo);
+        return;
+      }
+
+      this.calculadoraMaterialesService.eliminarCalculo(masAntiguo.id, this.userCode).subscribe({
+        next: () => {
+          this.removeCalculoFromState(masAntiguo);
+          this.guardarCalculoVip(tarea, calculo);
+        },
+        error: () => this.toast.error('No se pudo liberar espacio para guardar el nuevo cálculo.')
+      });
+      return;
+    }
+
+    this.guardarCalculoVip(tarea, calculo);
+  }
+
+  private guardarCalculoVip(tarea: Tarea, calculo: CalculoMaterialGuardado): void {
     this.calculadoraMaterialesService.guardarCalculo({
       ...calculo,
       userCode: this.userCode
     }).subscribe({
       next: saved => {
-        const historial = [saved, ...this.historialCalculos()]
+        const nuevoHistorial = [saved, ...this.historialCalculos()]
           .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
           .slice(0, USER_HISTORY_LIMIT);
-        this.historialCalculos.set(historial);
+        this.historialCalculos.set(nuevoHistorial);
+        this.historialPage.set(1);
         this.saveStatus.update(status => ({ ...status, [tarea.id]: 'saved' }));
         this.savedCalculosByTask.update(state => ({ ...state, [tarea.id]: saved }));
-        this.cargarUltimasTareasBackend();
-        this.toast.success('El cálculo se guardó correctamente en tu historial.', 'Guardado');
+
+        if (nuevoHistorial.length >= USER_HISTORY_LIMIT) {
+          this.toast.info(
+            'Ya guardaste 10 cálculos. Fijá los que no querés perder con 📌. Al guardar otro se eliminará el más antiguo no fijado.',
+            'Historial lleno'
+          );
+        }
+
+        const isOfflineSave = (saved.id ?? 0) < 0;
+        if (isOfflineSave) {
+          this.agregarTareaAUltimasLocal(saved);
+        } else {
+          this.cargarUltimasTareasBackend();
+        }
       },
-      error: () => { this.toast.error('No se pudo guardar el cálculo. Intenta nuevamente.');
-        // La UI ya muestra el cálculo localmente; si falla la persistencia se reintenta en el próximo cálculo.
-      }
+      error: () => this.toast.error('No se pudo guardar el cálculo. Intenta nuevamente.')
     });
+  }
+
+  private removeCalculoFromState(calculo: CalculoMaterialGuardado): void {
+    const historial = this.historialCalculos().filter(c => !this.isSameCalculo(c, calculo));
+    this.historialCalculos.set(historial);
+    this.syncSavedCalculosByTask(historial);
+    if (calculo.tareaId) this.borrar(calculo.tareaId);
   }
 
   private cargarHistorialBackend(): void {
     this.calculadoraMaterialesService.obtenerHistorial(this.userCode, USER_HISTORY_LIMIT).subscribe({
       next: historial => {
-        this.historialCalculos.set(historial);
-        this.syncSavedCalculosByTask(historial);
+        const resultado = historial.slice(0, USER_HISTORY_LIMIT);
+        this.historialCalculos.set(resultado);
+        this.historialPage.set(1);
+        this.syncSavedCalculosByTask(resultado);
       },
       error: () => {
-        this.historialCalculos.set([]);
-        this.savedCalculosByTask.set({});
+        if (this.historialCalculos().length === 0) {
+          this.toast.warning('No se pudo cargar el historial. Revisá tu conexión.', 'Historial');
+        }
       }
     });
   }
@@ -1000,7 +1103,11 @@ export class CalculadoraMaterialesComponent implements OnInit {
   private cargarUltimasTareasBackend(): void {
     this.calculadoraMaterialesService.obtenerUltimasTareas(this.userCode, USER_LATEST_TASKS_LIMIT).subscribe({
       next: tareas => this.ultimasTareas.set(this.mapearResumenes(tareas)),
-      error: () => this.ultimasTareas.set([])
+      error: () => {
+        if (this.ultimasTareas().length === 0) {
+          this.toast.warning('No se pudieron cargar las últimas tareas.', 'Calculadora');
+        }
+      }
     });
   }
 
@@ -1012,6 +1119,18 @@ export class CalculadoraMaterialesComponent implements OnInit {
       unidad: t.unidad,
       createdAt: t.lastCalculatedAt
     }));
+  }
+
+  private agregarTareaAUltimasLocal(calculo: CalculoMaterialGuardado): void {
+    const nuevaEntrada: TareaResumen = {
+      id: calculo.tareaId,
+      titulo: calculo.tareaTitulo,
+      categoria: calculo.categoria,
+      unidad: calculo.unidad,
+      createdAt: calculo.createdAt ?? new Date().toISOString()
+    };
+    const actuales = this.ultimasTareas().filter(t => t.id !== calculo.tareaId);
+    this.ultimasTareas.set([nuevaEntrada, ...actuales].slice(0, USER_LATEST_TASKS_LIMIT));
   }
 
   private ensureTaskVisible(taskId: number): void {
@@ -1175,5 +1294,27 @@ export class CalculadoraMaterialesComponent implements OnInit {
     const dias = Math.ceil(horas / 8);
     if (dias <= 0) return undefined;
     return `(${dias} ${dias === 1 ? 'día' : 'días'})`;
+  }
+
+  isPinned(calculoId: number | undefined): boolean {
+    if (!calculoId || calculoId < 0) return false;
+    return this.pinnedIds().has(calculoId);
+  }
+
+  togglePin(calculo: CalculoMaterialGuardado): void {
+    const id = calculo.id;
+    if (!id || id < 0) return;
+    const ids = new Set<number>(this.pinnedIds());
+    ids.has(id) ? ids.delete(id) : ids.add(id);
+    this.pinnedIds.set(ids);
+    guardarPinIdsEnStorage(ids);
+  }
+
+  getVipStorageLabel(): string {
+    if (this.isTrialMode) return '';
+    const total = this.historialCalculos().length;
+    const pinned = this.historialCalculos().filter(c => this.isPinned(c.id)).length;
+    if (total < USER_HISTORY_LIMIT) return `${total}/${USER_HISTORY_LIMIT} guardados`;
+    return `Historial lleno · ${pinned} fijados`;
   }
 }

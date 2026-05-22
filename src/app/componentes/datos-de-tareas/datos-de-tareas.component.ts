@@ -4,9 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { PresupuestoService, Tarea } from '../../servicios/presupuesto.service';
 import { Cliente, ClienteService } from '../../servicios/cliente.service';
 import { Empresa, EmpresaService } from '../../servicios/empresa.service';
-import { ToastrService } from 'ngx-toastr';
+import { AppToastService } from '../../servicios/app-toast.service';
+import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { AccessCode, AuthService } from '../../servicios/auth.service';
 import { Router, RouterModule } from '@angular/router';
+import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
 declare var html2pdf: any;
 
 interface ColorScheme {
@@ -41,6 +43,18 @@ export class DatosDeTareasComponent implements OnInit {
   showDownloadModal: boolean = false;
   readonly PREVIEW_OPTIONS_KEY = 'metroBudgetPreviewVisibility';
 
+  // Modal de edición de tarea
+  showEditModal = false;
+  editingIndex = -1;
+  editForm: { tarea: string; descripcion: string; area: number; costo: number; descuento: number } = {
+    tarea: '', descripcion: '', area: 0, costo: 0, descuento: 0
+  };
+
+  get editTotalCost(): number {
+    const base = (this.editForm.costo || 0) * (this.editForm.area || 0);
+    return base * (1 - (this.editForm.descuento || 0) / 100);
+  }
+
   // Color scheme
   colorSchemeMessageVisible = false;
   readonly defaultColorScheme: ColorScheme = {
@@ -62,8 +76,10 @@ export class DatosDeTareasComponent implements OnInit {
     private authService: AuthService,
     private clienteService: ClienteService,
     private empresaService: EmpresaService,
-    private toastr: ToastrService,
-    private route: Router
+    private appToast: AppToastService,
+    private uiDialog: UiDialogService,
+    private route: Router,
+    private localStore: OfflineLocalStoreService
   ) {}
 
   private getBackgroundColorRgba(hex: string, alpha: number): string {
@@ -77,8 +93,18 @@ export class DatosDeTareasComponent implements OnInit {
     return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.colorScheme = this.loadColorScheme();
+
+    const activePreview = await this.localStore.getState<any>('budget:active-preview');
+    if (activePreview) {
+      this.empresaSeleccionada = activePreview.empresa || activePreview.presupuesto?.empresa || null;
+      this.clienteSeleccionado = activePreview.cliente || activePreview.presupuesto?.cliente || null;
+      this.tareasAgregadas = activePreview.tareas || activePreview.presupuesto?.tareas || [];
+      this.presupuestoNombre = activePreview.name || activePreview.presupuesto?.name || '';
+      this.loadPreviewOptions();
+      return;
+    }
 
     // Recuperar empresa para datos descriptivos (nombre, logo, etc)
     const storedEmpresa = localStorage.getItem('selectedEmpresa');
@@ -125,6 +151,60 @@ export class DatosDeTareasComponent implements OnInit {
     this.route.navigate(['/dashboard']);
   }
 
+  // ============ EDITAR TAREA ============
+  abrirEditarTarea(index: number): void {
+    const t = this.tareasAgregadas[index];
+    if (!t) return;
+    this.editingIndex = index;
+    this.editForm = {
+      tarea:       t.tarea,
+      descripcion: t.descripcion || '',
+      area:        t.area || 0,
+      costo:       t.costo || 0,
+      descuento:   t.descuento || 0
+    };
+    this.showEditModal = true;
+  }
+
+  cerrarEditarTarea(): void {
+    this.showEditModal = false;
+    this.editingIndex = -1;
+  }
+
+  async guardarEditarTarea(): Promise<void> {
+    if (this.editingIndex < 0) return;
+    const totalCost = this.editTotalCost;
+    this.tareasAgregadas = this.tareasAgregadas.map((t, i) =>
+      i === this.editingIndex ? { ...t, ...this.editForm, totalCost } : t
+    );
+    localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas));
+    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+    const activePreview = await this.localStore.getState<any>('budget:active-preview');
+    if (activePreview) {
+      await this.localStore.setState('budget:active-preview', { ...activePreview, tareas: this.tareasAgregadas });
+    }
+    this.cerrarEditarTarea();
+  }
+
+  // ============ ELIMINAR TAREA ============
+  async eliminarTarea(index: number): Promise<void> {
+    const tarea = this.tareasAgregadas[index];
+    if (!tarea) return;
+
+    const confirmed = await this.uiDialog.confirmDelete(tarea.tarea);
+    if (!confirmed) return;
+
+    this.tareasAgregadas = this.tareasAgregadas.filter((_, i) => i !== index);
+
+    localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas));
+    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+
+    const activePreview = await this.localStore.getState<any>('budget:active-preview');
+    if (activePreview) {
+      await this.localStore.setState('budget:active-preview', { ...activePreview, tareas: this.tareasAgregadas });
+    }
+  }
+
   // ============ TOGGLES DE VISIBILIDAD ============
   loadPreviewOptions(): void {
     try {
@@ -165,7 +245,7 @@ export class DatosDeTareasComponent implements OnInit {
   descargarPDF(): void {
     const exportElement = document.getElementById('export-presupuesto');
     if (!exportElement) {
-      this.toastr.error('No se encontró el contenido del presupuesto para exportar.', 'Error');
+      this.appToast.error('No se encontró el contenido del presupuesto para exportar.', 'Error');
       return;
     }
 
@@ -215,12 +295,12 @@ export class DatosDeTareasComponent implements OnInit {
           .from(exportElement)
           .save()
           .then(() => {
-            this.toastr.success('Presupuesto descargado correctamente', 'PDF generado');
+            this.appToast.success('Presupuesto descargado correctamente', 'PDF generado');
             document.head.removeChild(inlineStyle);
           })
           .catch((error: any) => {
             console.error('Error al generar el PDF', error);
-            this.toastr.error('No se pudo generar el PDF. Inténtalo nuevamente.', 'Error');
+            this.appToast.error('No se pudo generar el PDF. Inténtalo nuevamente.', 'Error');
             document.head.removeChild(inlineStyle);
           });
       } else {
@@ -230,7 +310,7 @@ export class DatosDeTareasComponent implements OnInit {
       }
     } catch (error) {
       console.error('Error al generar el PDF', error);
-      this.toastr.error('No se pudo generar el PDF.', 'Error');
+      this.appToast.error('No se pudo generar el PDF.', 'Error');
       if (document.getElementById('pdf-export-style')) {
         document.head.removeChild(inlineStyle);
       }
@@ -285,7 +365,7 @@ export class DatosDeTareasComponent implements OnInit {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    this.toastr.success('Presupuesto descargado como HTML', 'Descargado');
+    this.appToast.success('Presupuesto descargado como HTML', 'Descargado');
   }
 
   // ============ COLOR SCHEME ============

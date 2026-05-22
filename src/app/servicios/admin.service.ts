@@ -21,7 +21,19 @@ export interface AdminLoginResult {
   error: string;
 }
 
+export interface AdminMembershipLimits {
+  id: string | null;
+  pais: string;
+  demoMaxEmpresas: number;
+  vip3MaxEmpresas: number;
+  vip6MaxEmpresas: number;
+  demoMaxClientes: number;
+  vip3MaxClientes: number;
+  vip6MaxClientes: number;
+}
+
 const SESSION_KEY = 'metro_admin_session';
+const RETURN_URL_KEY = 'metro_admin_return_url';
 const API_URL = `${API_BASE_URL}/admin-panel`;
 
 @Injectable({ providedIn: 'root' })
@@ -48,8 +60,32 @@ export class AdminService {
     return this.getCurrentAdmin() !== null;
   }
 
+  setReturnUrl(url: string | null | undefined): void {
+    const normalized = (url || '').trim();
+    if (!normalized || normalized.startsWith('/admin-generate-code')) {
+      return;
+    }
+    localStorage.setItem(RETURN_URL_KEY, normalized);
+  }
+
+  getReturnUrl(): string | null {
+    const stored = localStorage.getItem(RETURN_URL_KEY);
+    return stored?.trim() || null;
+  }
+
+  consumeReturnUrl(): string | null {
+    const stored = this.getReturnUrl();
+    localStorage.removeItem(RETURN_URL_KEY);
+    return stored;
+  }
+
+  clearReturnUrl(): void {
+    localStorage.removeItem(RETURN_URL_KEY);
+  }
+
   logout(): void {
     localStorage.removeItem(SESSION_KEY);
+    this.clearReturnUrl();
   }
 
   login(username: string, password: string): Observable<Admin | null> {
@@ -119,6 +155,18 @@ export class AdminService {
           }
         }
       }),
+      catchError(() => of(null))
+    );
+  }
+
+  getLimitsByPais(pais: string): Observable<AdminMembershipLimits | null> {
+    return this.http.get<AdminMembershipLimits>(`${API_URL}/limits/pais/${pais}`).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  updateLimits(id: string, limits: AdminMembershipLimits): Observable<AdminMembershipLimits | null> {
+    return this.http.put<AdminMembershipLimits>(`${API_URL}/${id}/limits`, limits).pipe(
       catchError(() => of(null))
     );
   }
