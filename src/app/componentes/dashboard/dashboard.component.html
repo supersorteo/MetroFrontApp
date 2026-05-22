@@ -245,7 +245,7 @@
                   </div>
                 </div>
                 <div class="mb-3">
-                  <label class="tp-label">Descripci�n <span class="tp-optional">(opcional)</span></label>
+                  <label class="tp-label">Descripción <span class="tp-optional">(opcional)</span></label>
                   <textarea class="form-control tp-input" placeholder="Detalle opcional..." [(ngModel)]="tpForm.descripcion" rows="3"></textarea>
                 </div>
                 <div class="mb-3">
@@ -576,7 +576,7 @@
           </li>
         </ul>
         <div class="task-tabs-toolbar__action">
-          <button type="button" class="task-help-btn" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="C�mo usar el buscador">
+          <button type="button" class="task-help-btn" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="Cómo usar el buscador">
             <i class="fas fa-info-circle" aria-hidden="true"></i>
             <span>Cómo buscar</span>
           </button>
@@ -792,7 +792,7 @@
               <th class="text-center">Tarea</th>
               <!--th-- class="text-center">Rubro</!--th-->
               <!--th class="text-center">Categoría</th-->
-              <!--th class="text-center">Descripci�n</th-->
+              <!--th class="text-center">Descripción</th-->
               <!--th class="text-center">Área (m²/m³)</th-->
               <th class="text-center">Área (m²/m³)</th>
               <th class="text-center">Costo</th>
@@ -887,7 +887,7 @@
           <li><i class="bi bi-save2" aria-hidden="true"></i><span><strong>Guardar:</strong> abre la vista para guardar el presupuesto actual.</span></li>
           <li><i class="bi bi-eraser" aria-hidden="true"></i><span><strong>Quitar carga:</strong> limpia el presupuesto cargado actualmente.</span></li>
           <li><i class="bi bi-trash3" aria-hidden="true"></i><span><strong>Eliminar todo:</strong> borra todas las tareas agregadas del panel.</span></li>
-          <li><i class="bi bi-question-circle" aria-hidden="true"></i><span><strong>Ayuda:</strong> muestra esta explicaci�n r�pida de botones.</span></li>
+          <li><i class="bi bi-question-circle" aria-hidden="true"></i><span><strong>Ayuda:</strong> muestra esta explicación rápida de botones.</span></li>
         </ul>
       </div>
       <div class="modal-footer">
@@ -973,7 +973,7 @@
                 </div>
                 <div class="w-100 d-flex" style="gap: 8px;">
                   <button type="button" class="btn btn-outline-primary flex-grow-1" (click)="abrirHistorialDesdeModal()">
-                    <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>�ltimas tareas
+                    <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>Ultimas tareas
                   </button>
                   <button type="button" class="btn btn-outline-secondary tp-export-modal-btn flex-grow-1"
                           (click)="exportarTareaAPersonalizadas()"
@@ -983,7 +983,7 @@
                       <path d="M8 4a.5.5 0 0 1 .5.5V6H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V7H6a.5.5 0 0 1 0-1h1.5V4.5A.5.5 0 0 1 8 4"/>
                     </svg>
                     Guardar tarea
-                  
+
                   </button>
                 </div>
                 <!--button-- type="button" *ngIf="tareaSeleccionada.id" (click)="actualizarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Actualizar</!--button-->
@@ -1359,7 +1359,7 @@
 
           <div class="modal-footer d-flex justify-content-between px-0 pb-0 mt-3">
             <button type="button" class="btn btn-secondary" (click)="openListaEmpresasModal()">Seleccionar empresa</button>
-            <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'L�mite alcanzado para tu plan' : null">
+            <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Límite alcanzado para tu plan' : null">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
                 <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
               </svg>
@@ -1431,7 +1431,7 @@
 
                   <p class="card-text mb-1"><strong>Tel:</strong> {{ empresa.phone }}</p>
                   <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
-                  <p class="card-text mb-1"><strong>Descripci�n:</strong> {{ empresa.description }}</p>
+                  <p class="card-text mb-1"><strong>Descripción:</strong> {{ empresa.description }}</p>
 
                   <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
                     <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action"
@@ -1480,7 +1480,7 @@
                 <th scope="col">Nombre</th>
                 <th scope="col">Teléfono</th>
                 <th scope="col">Email</th>
-                <th scope="col">Descripci�n</th>
+                <th scope="col">Descripción</th>
                 <th scope="col">Logo</th>
                 <th scope="col">Acciones</th>
               </tr>
@@ -1775,7 +1775,7 @@
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content" style="border-radius: 14px; border: 1px solid rgba(64,158,255,.2);">
       <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6);">
-        <h5 class="modal-title" id="buscadorInfoModalLabel">C�mo usar el buscador</h5>
+        <h5 class="modal-title" id="buscadorInfoModalLabel">Cómo usar el buscador</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body" style="background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); font-size: 12px;">
