@@ -1,6 +1,7 @@
 
 <router-outlet />
 
+@if (showConnectionIndicator) {
 <div class="conn-pill"
      [class.conn-pill--offline]="!offlineStatus.isOnline()"
      [class.conn-pill--syncing]="offlineSync.isSyncing()"
@@ -38,3 +39,4 @@
     }
   </div>
 </div>
+}
