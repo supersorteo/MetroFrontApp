@@ -678,6 +678,7 @@ export class CalculadoraMaterialesComponent implements OnInit {
   sidebarOpen = signal(false);
   ultimasTareasOpen = signal(false);
   historialOpen = signal(false);
+  welcomeModalOpen = signal(true);
   tareasVisibles = signal<Tarea[]>(this.isTrialMode ? seleccionarTareasAleatorias(DEMO_TASK_LIMIT) : TAREAS);
   ultimasTareas = signal<TareaResumen[]>([]);
   historialCalculos = signal<CalculoMaterialGuardado[]>([]);
@@ -890,6 +891,7 @@ export class CalculadoraMaterialesComponent implements OnInit {
   cerrarUltimasTareas(): void { this.ultimasTareasOpen.set(false); }
   abrirHistorial(): void { this.cerrarSidebar(); this.historialPage.set(1); this.historialOpen.set(true); }
   cerrarHistorial(): void { this.historialOpen.set(false); }
+  cerrarBienvenida(): void { this.welcomeModalOpen.set(false); }
 
   historialNextPage(): void {
     if (this.historialPage() < this.historialTotalPages()) {

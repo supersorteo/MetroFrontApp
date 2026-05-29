@@ -2,14 +2,18 @@
 
   <!-- ============ TOOLBAR FLOTANTE — no-print ============ -->
   <div class="preview-toolbar no-print" *ngIf="tareasAgregadas && tareasAgregadas.length > 0">
-    <label class="preview-toggle">
-      <input type="checkbox" [checked]="hideCostPerM2" (change)="toggleHideCostPerM2()" />
-      <span>Ocultar costo/m²</span>
-    </label>
-    <label class="preview-toggle">
-      <input type="checkbox" [checked]="hideDescription" (change)="toggleHideDescription()" />
-      <span>Ocultar descripción</span>
-    </label>
+    <button type="button" class="preview-toggle" [class.preview-toggle--active]="hideCostPerM2" [attr.aria-pressed]="hideCostPerM2" (click)="toggleHideCostPerM2()">
+      <span class="preview-toggle__icon" aria-hidden="true">
+        <i class="bi" [ngClass]="hideCostPerM2 ? 'bi-eye-slash-fill' : 'bi-eye-fill'"></i>
+      </span>
+      <span>M2</span>
+    </button>
+    <button type="button" class="preview-toggle" [class.preview-toggle--active]="hideDescription" [attr.aria-pressed]="hideDescription" (click)="toggleHideDescription()">
+      <span class="preview-toggle__icon" aria-hidden="true">
+        <i class="bi" [ngClass]="hideDescription ? 'bi-eye-slash-fill' : 'bi-eye-fill'"></i>
+      </span>
+      <span>Descripción</span>
+    </button>
   </div>
 
   <!-- BOTÓN DESCARGAR -->

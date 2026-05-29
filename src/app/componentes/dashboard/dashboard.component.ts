@@ -1,5 +1,5 @@
 ﻿import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit, HostListener, effect, inject } from '@angular/core';
 import { interval, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -68,7 +68,6 @@ function cleanupBootstrapModals(): void {
   standalone: true,
   imports: [
     CommonModule,
-    HttpClientModule,
     FormsModule,
     RouterModule,
     FilterClientePipe,
@@ -210,6 +209,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   activeTaskTab: 'catalogo' | 'personalizadas' = 'catalogo';
   showTareasPersonalizadasPanel: boolean = false;
   showTpEditorModal: boolean = false;
+  showTpHero: boolean = localStorage.getItem('tpHeroDismissed') !== 'true';
   tareasPersonalizadas: TareaPersonalizada[] = [];
   tareaPersonalizadaNotice: { title: string; text?: string } | null = null;
   tpEditingId: number | null = null;
@@ -1043,6 +1043,27 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     }
     const listaEmpresasModalInstance = bootstrap.Modal.getInstance(listaEmpresasModalEl) || new bootstrap.Modal(listaEmpresasModalEl);
     listaEmpresasModalInstance.show();
+  }
+
+  abrirFormularioNuevaEmpresa(): void {
+    this.limpiarEmpresaForm();
+
+    const listaEmpresasModalEl = document.getElementById('listaEmpresasModal');
+    if (listaEmpresasModalEl) {
+      const listaEmpresasModalInstance = bootstrap.Modal.getInstance(listaEmpresasModalEl);
+      listaEmpresasModalInstance?.hide();
+    }
+
+    setTimeout(() => {
+      const empresaModalEl = document.getElementById('exampleModal');
+      if (!empresaModalEl) {
+        this.appToast.error('Error al abrir el formulario de empresa');
+        return;
+      }
+
+      const empresaModalInstance = bootstrap.Modal.getInstance(empresaModalEl) || new bootstrap.Modal(empresaModalEl);
+      empresaModalInstance.show();
+    }, 450);
   }
 
   updatePaginatedEmpresas(): void {
@@ -2548,6 +2569,7 @@ onImageChange(event: Event): void {
     this.empresaInstagram = '';
     this.empresaFacebook = '';
     this.empresaCuilCuit = '';
+    this.showSocialFields = false;
     this.logoUrl = '';
     if (this.modalImagePreview) {
       this.modalImagePreview.nativeElement.style.display = 'none';
@@ -3398,6 +3420,11 @@ fetchUserData(): void {
   abrirTpEditor(): void {
     this.tpCancelarEdicion();
     this.showTpEditorModal = true;
+  }
+
+  cerrarTpHero(): void {
+    this.showTpHero = false;
+    localStorage.setItem('tpHeroDismissed', 'true');
   }
 
   cerrarTpEditor(): void {

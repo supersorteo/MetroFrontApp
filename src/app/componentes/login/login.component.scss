@@ -3,14 +3,32 @@
 ═══════════════════════════════════════════════ */
 
 .login-page {
+  position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   padding: 32px 16px 48px;
-  background: transparent;
+  background:
+    linear-gradient(180deg, rgba(248, 251, 255, 0.82) 0%, rgba(236, 244, 255, 0.9) 100%),
+    url('https://images.pexels.com/photos/6285148/pexels-photo-6285148.jpeg?cs=srgb&dl=pexels-gustavo-fring-6285148.jpg&fm=jpg') center/cover no-repeat;
   overflow-x: hidden;
+}
+
+.login-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(37, 99, 235, 0.12), transparent 28%);
+  pointer-events: none;
+}
+
+.login-page > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Brand ── */
@@ -19,8 +37,8 @@
   margin-bottom: 32px;
 
   &__logo {
-    width: 90px;
-    height: 90px;
+    width: 117px;
+    height: 117px;
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid rgba(37, 99, 200, 0.3);
@@ -184,12 +202,12 @@
   text-align: left;
   gap: 0;
   padding: 22px 28px;
-  background: linear-gradient(135deg, rgba(255,193,7,0.15) 0%, rgba(255,87,34,0.1) 100%);
-  border-color: rgba(255, 193, 7, 0.45);
-  box-shadow: 0 4px 20px rgba(255,193,7,0.12);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.14) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border-color: rgba(37, 99, 235, 0.36);
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.14);
 
   .login-card__glow {
-    background: radial-gradient(ellipse at 0% 50%, rgba(255,193,7,0.2), transparent 60%);
+    background: radial-gradient(ellipse at 0% 50%, rgba(37, 99, 235, 0.22), transparent 60%);
   }
 
   .login-card__trial-left {
@@ -208,14 +226,14 @@
     flex: 1;
   }
 
-  .login-card__icon  { font-size: 2.6rem; color: #d97706; margin-bottom: 0; }
-  .login-card__title { font-size: 1.15rem; color: #92400e; }
-  .login-card__desc  { font-size: 0.83rem; color: rgba(92,40,14,0.7); }
-  .login-card__cta   { color: #d97706; font-size: 0.85rem; }
+  .login-card__icon  { font-size: 2.6rem; color: #1d4ed8; margin-bottom: 0; }
+  .login-card__title { font-size: 1.15rem; color: #0f1c3f; }
+  .login-card__desc  { font-size: 0.83rem; color: rgba(15, 28, 63, 0.7); }
+  .login-card__cta   { color: #2563eb; font-size: 0.85rem; }
 
   &:hover {
-    border-color: rgba(255,193,7,0.7);
-    box-shadow: 0 16px 40px rgba(255,193,7,0.2);
+    border-color: rgba(37, 99, 235, 0.58);
+    box-shadow: 0 16px 40px rgba(37, 99, 235, 0.2);
   }
 
   @media (max-width: 480px) {
@@ -226,8 +244,8 @@
 }
 
 .login-card__badge-new {
-  background: linear-gradient(135deg, #ffc107, #ff7043);
-  color: #000;
+  background: linear-gradient(135deg, #2563eb, #38bdf8);
+  color: #fff;
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.5px;
@@ -248,8 +266,8 @@
   border-color: rgba(37,117,252,0.25);
 
   .login-card__glow { background: radial-gradient(circle at 50% 0%, rgba(37,117,252,0.2), transparent 70%); }
-  .login-card__icon { color: #d97706; }
-  .login-card__cta  { color: #d97706; }
+  .login-card__icon { color: #1d4ed8; }
+  .login-card__cta  { color: #2563eb; }
 }
 
 .login-card--online {
