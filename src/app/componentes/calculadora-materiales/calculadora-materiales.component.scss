@@ -428,15 +428,30 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
       min-width: 0;
     }
 
+    &-aside {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: .35rem;
+      flex: 0 0 auto;
+      min-width: 140px;
+    }
+
     &-right {
       display: flex;
       align-items: center;
+      justify-content: flex-end;
       gap: .5rem;
       flex-shrink: 0;
+      width: 100%;
     }
   }
 
   &__num {
+    display: inline-flex;
+    justify-content: center;
+    width: 45%;
+    align-self: flex-end;
     font-size: .72rem;
     font-weight: 700;
     color: $white;
@@ -570,6 +585,15 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
   gap: .5rem;
   flex-shrink: 0;
   align-items: center;
+}
+
+.calc-secondary-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .85rem;
+  flex-wrap: wrap;
 }
 
 .btn-calc {
