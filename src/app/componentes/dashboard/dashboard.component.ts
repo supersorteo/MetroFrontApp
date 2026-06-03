@@ -1196,11 +1196,21 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     this.clienteAEliminar = null;
   }
 
+  onFiltroClienteChange(): void {
+    this.currentPage = 1;
+    this.updatePaginatedClientes();
+  }
+
   updatePaginatedClientes(): void {
-    this.totalPages = Math.ceil(this.clientes.length / this.itemsPerPage) || 1;
+    const base = this.filtroCliente
+      ? this.clientes.filter(c =>
+          Object.values(c).some(v => v && v.toString().toLowerCase().includes(this.filtroCliente.toLowerCase()))
+        )
+      : this.clientes;
+    this.totalPages = Math.ceil(base.length / this.itemsPerPage) || 1;
     if (this.currentPage > this.totalPages) this.currentPage = 1;
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    this.paginatedClientes = this.clientes.slice(startIndex, startIndex + this.itemsPerPage);
+    this.paginatedClientes = base.slice(startIndex, startIndex + this.itemsPerPage);
   }
 
   setPage(page: number): void {
