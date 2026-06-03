@@ -2726,60 +2726,43 @@ onImageChange(event: Event): void {
 
 
 
-    disminuirPrecios(): void {
+  disminuirPrecios(): void {
     const porcentaje = parseFloat(this.porcentajeBajar);
-    if (isNaN(porcentaje) || porcentaje <= 0) {
-      this.appToast.error('Por favor, ingrese un porcentaje válido para bajar', 'Error');
+    if (isNaN(porcentaje) || porcentaje <= 0 || porcentaje > 100) {
+      this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 1 y 100.' });
       return;
     }
-    this.tareasAgregadas = this.tareasAgregadas.map(tarea => ({
-      ...tarea,
-      costo: tarea.costo * (1 - porcentaje / 100),
-      totalCost: this.calcularTotalCosto({ ...tarea, costo: tarea.costo * (1 - porcentaje / 100) })
-    }));
-    this.appToast.success(`Lista reducida en ${porcentaje}%`, 'Éxito');
+    if (!this.tareas.length) {
+      this.uiDialog.warning({ title: 'Sin tareas', text: 'No hay tareas en el catálogo para ajustar.' });
+      return;
+    }
+    const factor = 1 - porcentaje / 100;
+    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * factor }));
+    this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * factor }));
     this.porcentajeBajar = null;
-    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios del catálogo reducidos en ${porcentaje}%.` });
   }
 
   ajustarPrecios(): void {
     const porcentaje = parseFloat(this.porcentajeSubir);
-    if (isNaN(porcentaje) || porcentaje <= 0) {
-      this.appToast.error('Por favor, ingrese un porcentaje válido para subir', 'Error');
+    if (isNaN(porcentaje) || porcentaje <= 0 || porcentaje > 500) {
+      this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 1 y 500.' });
       return;
     }
-    this.tareasAgregadas = this.tareasAgregadas.map(tarea => ({
-      ...tarea,
-      costo: tarea.costo * (1 + porcentaje / 100),
-      totalCost: this.calcularTotalCosto({ ...tarea, costo: tarea.costo * (1 + porcentaje / 100) })
-    }));
-    this.appToast.success(`Lista incrementada en ${porcentaje}%`, 'Éxito');
+    if (!this.tareas.length) {
+      this.uiDialog.warning({ title: 'Sin tareas', text: 'No hay tareas en el catálogo para ajustar.' });
+      return;
+    }
+    const factor = 1 + porcentaje / 100;
+    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * factor }));
+    this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * factor }));
     this.porcentajeSubir = null;
-    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios del catálogo incrementados en ${porcentaje}%.` });
   }
 
   reestablecerPreciosOriginalesLista(): void {
-    if (!this.clienteSeleccionado?.id && !this.trialMode) {
-      this.appToast.warning('No hay un cliente seleccionado para restablecer los precios.', 'Atención');
-      return;
-    }
-
-    if (this.trialMode) {
-       this.appToast.info('Función limitada en modo de prueba', 'Aviso');
-       return;
-    }
-
-    this.userTareaService.getTareasByClienteId(this.clienteSeleccionado!.id as number).subscribe({
-      next: (tareasOriginales) => {
-        this.tareasAgregadas = tareasOriginales;
-        this.mostrarTabla = this.tareasAgregadas.length > 0;
-        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-        this.appToast.success('Precios restablecidos a los valores originales', 'Éxito');
-      },
-      error: () => {
-        this.appToast.error('Error al restablecer los precios originales', 'Error');
-      }
-    });
+    this.obtenerTareas();
+    this.uiDialog.success({ title: 'Precios restablecidos', text: 'Se restauraron los precios originales del catálogo.' });
   }
 
   cambiarTamanoFuenteLista(accion: 'increase' | 'decrease'): void {
