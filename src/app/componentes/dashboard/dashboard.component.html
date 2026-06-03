@@ -1,7634 +1,1192 @@
 ﻿  <!--div-- class="fixed-image-container">
 
-
-
-
-
-
-
-
-
-
-
     <img
-
-
-
-
-
-
-
-
-
-
 
       id="fixedImageIcon"
 
-
-
-
-
-
-
-
-
-
-
       class="fixed-image"
-
-
-
-
-
-
-
-
-
-
 
       [src]="currentEmpresaLogoUrl || '#'"
 
-
-
-
-
-
-
-
-
-
-
       alt="Logo Empresa"
-
-
-
-
-
-
-
-
-
-
 
       [style.display]="currentEmpresaLogoUrl ? 'block' : 'none'">
 
-
-
-
-
-
-
-
-
-
-
   </div-->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="menu-panel-overlay" *ngIf="showMenuPanel" (click)="toggleMenuPanel()"></div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <aside class="menu-panel" *ngIf="showMenuPanel" [class.open]="showMenuPanel">
-
-
-
-
-
-
-
-
-
-
 
   <div class="menu-panel__header">
 
-
-
-
-
-
-
-
-
-
-
     <div class="program-title" *ngIf="!isContentVisible">
-
-
-
-
-
-
-
-
-
-
 
       <h6>Orbita software</h6>
 
-
-
-
-
-
-
-
-
-
-
     </div>
 
-
-
-
-
-
-
-
-
-
-
-    <button type="button" class="btn-close ms-auto" (click)="toggleMenuPanel()" aria-label="Cerrar menÃƒÂº"></button>
-
-
-
-
-
-
-
-
-
-
+    <button type="button" class="btn-close ms-auto" (click)="toggleMenuPanel()" aria-label="Cerrar menú"></button>
 
   </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   <div class="menu-panel__body">
 
-
-
-
-
-
-
-
-
-
-
     <div
-
-
-
-
-
-
-
-
-
-
 
       class="sync-status-card"
 
-
-
-
-
-
-
-
-
-
-
       *ngIf="!trialMode && (pendingSyncSummary.total > 0 || offlineSync.isSyncing())">
-
-
-
-
-
-
-
-
-
-
 
       <div class="sync-status-card__header">
 
-
-
-
-
-
-
-
-
-
-
         <div class="sync-status-card__title">
-
-
-
-
-
-
-
-
-
-
 
           <i class="bi" [ngClass]="offlineSync.isSyncing() ? 'bi-arrow-repeat sync-rotating' : 'bi-cloud-arrow-up'"></i>
 
-
-
-
-
-
-
-
-
-
-
           Sincronizacion
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <span class="sync-status-card__count">
 
-
-
-
-
-
-
-
-
-
-
           {{ pendingSyncSummary.total }}
-
-
-
-
-
-
-
-
-
-
 
         </span>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       <div class="sync-status-card__message" *ngIf="offlineSync.isSyncing()">
 
-
-
-
-
-
-
-
-
-
-
         Sincronizando cambios pendientes...
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="sync-status-card__message" *ngIf="!offlineSync.isSyncing()">
 
-
-
-
-
-
-
-
-
-
-
         Estos cambios siguen guardados localmente hasta que se sincronicen.
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       <div class="sync-status-card__chips">
 
-
-
-
-
-
-
-
-
-
-
         <span class="sync-chip" *ngIf="pendingSyncSummary.empresa > 0">Empresas: {{ pendingSyncSummary.empresa }}</span>
-
-
-
-
-
-
-
-
-
-
 
         <span class="sync-chip" *ngIf="pendingSyncSummary.empresaLogo > 0">Logos: {{ pendingSyncSummary.empresaLogo }}</span>
 
-
-
-
-
-
-
-
-
-
-
         <span class="sync-chip" *ngIf="pendingSyncSummary.cliente > 0">Clientes: {{ pendingSyncSummary.cliente }}</span>
-
-
-
-
-
-
-
-
-
-
 
         <span class="sync-chip" *ngIf="pendingSyncSummary.userTarea > 0">Tareas: {{ pendingSyncSummary.userTarea }}</span>
 
-
-
-
-
-
-
-
-
-
-
         <span class="sync-chip" *ngIf="pendingSyncSummary.presupuesto > 0">Presupuestos: {{ pendingSyncSummary.presupuesto }}</span>
-
-
-
-
-
-
-
-
-
-
 
         <span class="sync-chip" *ngIf="pendingSyncSummary.calculoMaterial > 0">Calculos: {{ pendingSyncSummary.calculoMaterial }}</span>
 
-
-
-
-
-
-
-
-
-
-
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     <div class="weather-widget mb-3 w-100 text-center">
 
-
-
-
-
-
-
-
-
-
-
       <h6 class="mb-2">Clima actual</h6>
-
-
-
-
-
-
-
-
-
-
 
       <div *ngIf="weatherLoading" class="text-muted">Cargando...</div>
 
-
-
-
-
-
-
-
-
-
-
       <div *ngIf="weatherError && !weatherLoading" class="text-danger small">{{ weatherError }}</div>
-
-
-
-
-
-
-
-
-
-
 
       <div *ngIf="currentWeather && !weatherLoading">
 
-
-
-
-
-
-
-
-
-
-
-        <div class="weather-temp">{{ currentWeather.temperature | number:'1.0-0' }}Ã‚Â°C</div>
-
-
-
-
-
-
-
-
-
-
+        <div class="weather-temp">{{ currentWeather.temperature | number:'1.0-0' }}°C</div>
 
         <div class="weather-desc">{{ weatherDescription(currentWeather.weathercode) }}</div>
 
-
-
-
-
-
-
-
-
-
-
         <small class="text-muted d-block">{{ currentWeather.location }}</small>
-
-
-
-
-
-
-
-
-
-
 
         <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#weatherModal" (click)="loadWeather()">
 
-
-
-
-
-
-
-
-
-
-
-          Ver pronÃƒÂ³stico
-
-
-
-
-
-
-
-
-
-
+          Ver pronóstico
 
         </button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     <ul class="list-unstyled d-flex flex-column align-items-center">
 
-
-
-
-
-
-
-
-
-
-
       <li class="w-100 mb-3 text-center timer-info">
-
-
-
-
-
-
-
-
-
-
 
         {{ remainingTime }}
 
-
-
-
-
-
-
-
-
-
-
       </li>
-
-
-
-
-
-
-
-
-
-
 
       <li class="w-100 mt-3">
 
-
-
-
-
-
-
-
-
-
-
         <button (click)="abrirGoogleSheets2()" class="btn btn-primary btn-block animate w-100">PDF valor vivienda JULIO/2025</button>
 
-
-
-
-
-
-
-
-
-
-
       </li>
-
-
-
-
-
-
-
-
-
-
 
       <li class="w-100 d-flex flex-column gap-2 mt-2">
 
-
-
-
-
-
-
-
-
-
-
         <button class="btn btn-primary btn-block w-100 animate">BIBLIOTECA</button>
 
-
-
-
-
-
-
-
-
-
-
       </li>
-
-
-
-
-
-
-
-
-
-
 
       <li class="w-100 mt-2 text-center">
 
-
-
-
-
-
-
-
-
-
-
         <button class="btn btn-primary btn-block w-100 animate" (click)="abrirGeneradorQR(); toggleMenuPanel()">
-
-
-
-
-
-
-
-
-
-
 
           <i class="fas fa-qrcode" aria-hidden="true" style="margin-right: 6px;"></i>GENERADOR QR
 
-
-
-
-
-
-
-
-
-
-
         </button>
 
-
-
-
-
-
-
-
-
-
-
       </li>
-
-
-
-
-
-
-
-
-
-
 
       <li class="w-100 mt-2 text-center" *ngIf="deferredPrompt">
 
-
-
-
-
-
-
-
-
-
-
         <button class="btn btn-warning btn-block w-100 animate" (click)="installPwa()" style="font-weight: bold; background-color: #ffc107; border-color: #ffc107; color: #000;">
-
-
-
-
-
-
-
-
-
-
 
           <i class="fas fa-download" aria-hidden="true" style="margin-right: 6px;"></i>INSTALAR APP
 
-
-
-
-
-
-
-
-
-
-
         </button>
 
-
-
-
-
-
-
-
-
-
-
       </li>
-
-
-
-
-
-
-
-
-
-
 
       <li class="w-100 text-center mt-2">
 
-
-
-
-
-
-
-
-
-
-
         <button class="btn btn-secondary logout-button1 w-100" (click)="logout()">
 
-
-
-
-
-
-
-
-
-
-
-          cerrar session
-
-
-
-
-
-
-
-
-
-
+          Cerrar sesión
 
         </button>
 
-
-
-
-
-
-
-
-
-
-
       </li>
-
-
-
-
-
-
-
-
-
-
 
     </ul>
 
-
-
-
-
-
-
-
-
-
-
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </aside>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="tp-import-backdrop" *ngIf="tpMostrarImportar" (click)="tpMostrarImportar = false"></div>
 
-
-
-
-
-
-
-
-
-
-
-<aside class="tp-import-aside" *ngIf="tpMostrarImportar" [class.open]="tpMostrarImportar" aria-label="Importar desde catÃƒÂ¡logo">
-
-
-
-
-
-
-
-
-
-
+<aside class="tp-import-aside" *ngIf="tpMostrarImportar" [class.open]="tpMostrarImportar" aria-label="Importar desde catálogo">
 
   <div class="tp-import-aside__header">
 
-
-
-
-
-
-
-
-
-
-
     <div class="tp-import-aside__title">
-
-
-
-
-
-
-
-
-
-
 
       <span class="tp-import-aside__badge" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
         <i class="bi bi-journal-richtext"></i>
-
-
-
-
-
-
-
-
-
-
 
       </span>
 
-
-
-
-
-
-
-
-
-
-
       <div class="tp-import-aside__title-copy">
-
-
-
-
-
-
-
-
-
-
 
         <small>Panel lateral</small>
 
-
-
-
-
-
-
-
-
-
-
-        <span>Importar desde catÃƒÂ¡logo</span>
-
-
-
-
-
-
-
-
-
-
+        <span>Importar desde catálogo</span>
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
 
     <button type="button" class="btn-close" (click)="tpMostrarImportar = false" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
   </div>
 
-
-
-
-
-
-
-
-
-
-
-  <p class="tp-import-aside__hint">TomÃƒÂ¡ una tarea base del catÃƒÂ¡logo y guardala como personalizada para adaptarla a tu forma de cotizar.</p>
-
-
-
-
-
-
-
-
-
-
+  <p class="tp-import-aside__hint">Tomá una tarea base del catálogo y guardala como personalizada para adaptarla a tu forma de cotizar.</p>
 
   <div class="tp-import-aside__toolbar">
 
-
-
-
-
-
-
-
-
-
-
     <div class="input-group">
-
-
-
-
-
-
-
-
-
-
 
       <span class="input-group-text tp-input-addon"><i class="bi bi-search"></i></span>
 
-
-
-
-
-
-
-
-
-
-
-      <input class="form-control tp-input" placeholder="Buscar en el catÃƒÂ¡logo..." [(ngModel)]="tpFiltroCatalogo" />
-
-
-
-
-
-
-
-
-
-
+      <input class="form-control tp-input" placeholder="Buscar en el catálogo..." [(ngModel)]="tpFiltroCatalogo" />
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
   </div>
-
-
-
-
-
-
-
-
-
-
 
   <div class="tp-catalog-list tp-catalog-list--aside">
 
-
-
-
-
-
-
-
-
-
-
     <div *ngFor="let t of tpCatalogoFiltrado" class="tp-catalog-item">
-
-
-
-
-
-
-
-
-
-
 
       <div class="tp-catalog-item__info">
 
-
-
-
-
-
-
-
-
-
-
         <span class="tp-catalog-item__name">{{ t.tarea }}</span>
-
-
-
-
-
-
-
-
-
-
 
         <span class="tp-catalog-item__cost">{{ t.costo | currency:'USD':'symbol':'1.2-2' }}</span>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <button class="tp-catalog-item__btn" title="Importar a Mis Tareas" (click)="tpImportarDelCatalogo(t)">
 
-
-
-
-
-
-
-
-
-
-
         <i class="bi bi-bookmark-plus-fill"></i>
-
-
-
-
-
-
-
-
-
-
 
       </button>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
 
     <div *ngIf="tpCatalogoFiltrado.length === 0" class="tp-empty">
 
-
-
-
-
-
-
-
-
-
-
       <i class="bi bi-inbox me-1"></i>Sin resultados
-
-
-
-
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
   </div>
-
-
-
-
-
-
-
-
-
-
 
 </aside>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <div class="tp-editor-backdrop" *ngIf="showTpEditorModal" (click)="cerrarTpEditor()"></div>
-
-
-
-
-
-
-
-
-
-
 
 <div class="tp-editor-modal" *ngIf="showTpEditorModal" role="dialog" aria-modal="true">
 
-
-
-
-
-
-
-
-
-
-
   <div class="tp-editor-modal__dialog">
-
-
-
-
-
-
-
-
-
-
 
     <div class="tp-editor-modal__content">
 
-
-
-
-
-
-
-
-
-
-
       <div class="tp-editor-modal__header">
-
-
-
-
-
-
-
-
-
-
 
         <div class="tp-editor-modal__icon">
 
-
-
-
-
-
-
-
-
-
-
           <i class="bi" [ngClass]="tpEditingId != null ? 'bi-pencil-square' : 'bi-journal-plus'"></i>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <div class="tp-editor-modal__copy">
 
-
-
-
-
-
-
-
-
-
-
-          <span class="tp-editor-modal__eyebrow">{{ tpEditingId != null ? 'Edicion rÃƒÂ¡pida' : 'Nueva tarea personalizada' }}</span>
-
-
-
-
-
-
-
-
-
-
+          <span class="tp-editor-modal__eyebrow">{{ tpEditingId != null ? 'Edicion rápida' : 'Nueva tarea personalizada' }}</span>
 
           <h4 class="tp-editor-modal__title">{{ tpEditingId != null ? 'Actualizar tarea guardada' : 'Crear una tarea profesional' }}</h4>
 
-
-
-
-
-
-
-
-
-
-
-          <p class="tp-editor-modal__subtitle">Define nombre, descripciÃƒÂ³n y costo para guardar una tarea clara, prolija y lista para cotizar.</p>
-
-
-
-
-
-
-
-
-
-
+          <p class="tp-editor-modal__subtitle">Define nombre, descripción y costo para guardar una tarea clara, prolija y lista para cotizar.</p>
 
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn-close ms-auto" (click)="cerrarTpEditor()" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       <div class="tp-editor-modal__body">
 
-
-
-
-
-
-
-
-
-
-
         <div class="row g-4">
-
-
-
-
-
-
-
-
-
-
 
           <div class="col-12">
 
-
-
-
-
-
-
-
-
-
-
             <div class="tp-editor-shell">
-
-
-
-
-
-
-
-
-
-
 
               <div class="tp-editor-shell__section">
 
-
-
-
-
-
-
-
-
-
-
                 <div class="tp-editor-shell__title">
-
-
-
-
-
-
-
-
-
-
 
                   <i class="bi bi-card-text"></i>
 
-
-
-
-
-
-
-
-
-
-
                   <span>Datos principales</span>
-
-
-
-
-
-
-
-
-
-
 
                 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 <div class="mb-3">
-
-
-
-
-
-
-
-
-
-
 
                   <label class="tp-label">Nombre <span class="text-danger">*</span></label>
 
-
-
-
-
-
-
-
-
-
-
                   <input class="form-control tp-input"
-
-
-
-
-
-
-
-
-
-
 
                          [ngClass]="{'is-invalid': tpSubmitted && !tpForm.tarea.trim()}"
 
-
-
-
-
-
-
-
-
-
-
-                         placeholder="Ej: InstalaciÃƒÂ³n elÃƒÂ©ctrica"
-
-
-
-
-
-
-
-
-
-
+                         placeholder="Ej: Instalación eléctrica"
 
                          [(ngModel)]="tpForm.tarea" />
 
-
-
-
-
-
-
-
-
-
-
                   <div *ngIf="tpSubmitted && !tpForm.tarea.trim()" class="tp-field-error">
-
-
-
-
-
-
-
-
-
-
 
                     <i class="bi bi-exclamation-circle-fill me-1"></i>El nombre es obligatorio
 
-
-
-
-
-
-
-
-
-
-
                   </div>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                 <div class="mb-3">
 
+                  <label class="tp-label">Descripción <span class="tp-optional">(opcional)</span></label>
 
-
-
-
-
-
-
-
-
-
-                  <label class="tp-label">DescripciÃƒÂ³n <span class="tp-optional">(opcional)</span></label>
-
-
-
-
-
-
-
-
-
-
-
-                  <textarea class="form-control tp-input" placeholder="ContÃƒÂ¡ brevemente quÃƒÂ© incluye esta tarea..." [(ngModel)]="tpForm.descripcion" rows="4"></textarea>
-
-
-
-
-
-
-
-
-
-
+                  <textarea class="form-control tp-input" placeholder="Contá brevemente qué incluye esta tarea..." [(ngModel)]="tpForm.descripcion" rows="4"></textarea>
 
                 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                 <div class="mb-0">
 
-
-
-
-
-
-
-
-
-
-
                   <label class="tp-label">Costo unitario ($) <span class="text-danger">*</span></label>
 
-
-
-
-
-
-
-
-
-
-
                   <div class="input-group">
-
-
-
-
-
-
-
-
-
-
 
                     <span class="input-group-text tp-input-addon"><i class="bi bi-cash-stack"></i></span>
 
-
-
-
-
-
-
-
-
-
-
                     <input type="number" class="form-control tp-input"
-
-
-
-
-
-
-
-
-
-
 
                            [ngClass]="{'is-invalid': tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)}"
 
-
-
-
-
-
-
-
-
-
-
                            placeholder="0.00" [(ngModel)]="tpForm.costo" min="0.01" step="0.01" />
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
 
                   <div *ngIf="tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)" class="tp-field-error">
 
-
-
-
-
-
-
-
-
-
-
                     <i class="bi bi-exclamation-circle-fill me-1"></i>El costo debe ser mayor a 0
-
-
-
-
-
-
-
-
-
-
 
                   </div>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
               <div class="tp-editor-shell__actions">
 
-
-
-
-
-
-
-
-
-
-
                 <button class="btn btn-success tp-btn-action tp-btn-action--primary" (click)="tpGuardar()">
-
-
-
-
-
-
-
-
-
-
 
                   <i class="bi bi-{{ tpEditingId != null ? 'check2-circle' : 'save2-fill' }} me-2"></i>
 
-
-
-
-
-
-
-
-
-
-
                   {{ tpEditingId != null ? 'Guardar cambios' : 'Crear tarea' }}
 
-
-
-
-
-
-
-
-
-
-
                 </button>
-
-
-
-
-
-
-
-
-
-
 
                 <button class="btn btn-outline-light tp-btn-action tp-btn-action--ghost" type="button" (click)="cerrarTpEditor()">
 
-
-
-
-
-
-
-
-
-
-
                   <i class="bi bi-x-circle me-2"></i>Cancelar
-
-
-
-
-
-
-
-
-
-
 
                 </button>
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <!-- Tareas Personalizadas Modal -->
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <div class="tp-backdrop" *ngIf="showTareasPersonalizadasPanel" (click)="toggleTareasPersonalizadasPanel()"></div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="tp-modal" [class.tp-modal--open]="showTareasPersonalizadasPanel" role="dialog" aria-modal="true" *ngIf="showTareasPersonalizadasPanel">
 
-
-
-
-
-
-
-
-
-
-
   <div class="tp-modal__dialog">
-
-
-
-
-
-
-
-
-
-
 
     <div class="tp-modal__content">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       <!-- Header -->
-
-
-
-
-
-
-
-
-
-
 
       <div class="tp-modal__header">
 
-
-
-
-
-
-
-
-
-
-
         <div class="tp-modal__header-icon">
-
-
-
-
-
-
-
-
-
-
 
           <i class="bi bi-bookmarks-fill"></i>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <div class="tp-modal__header-text">
 
-
-
-
-
-
-
-
-
-
-
           <h5 class="tp-modal__title">Mis Tareas Personalizadas</h5>
-
-
-
-
-
-
-
-
-
-
 
           <small class="tp-modal__subtitle">{{ tareasPersonalizadas.length }} tarea{{ tareasPersonalizadas.length !== 1 ? 's' : '' }} guardada{{ tareasPersonalizadas.length !== 1 ? 's' : '' }}</small>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn-close btn-close-white ms-auto" (click)="toggleTareasPersonalizadasPanel()" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       <!-- Body -->
 
-
-
-
-
-
-
-
-
-
-
       <div class="tp-modal__body">
-
-
-
-
-
-
-
-
-
-
 
         <div class="row g-3">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <!-- Columna izquierda: Formulario + Importar -->
-
-
-
-
-
-
-
-
-
-
 
           <div class="col-12 col-md-5">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             <div class="tp-form-card">
-
-
-
-
-
-
-
-
-
-
 
               <div class="tp-form-card__header">
 
-
-
-
-
-
-
-
-
-
-
                 <i class="bi bi-{{ tpEditingId != null ? 'pencil-square' : 'plus-circle-fill' }} me-2"></i>
-
-
-
-
-
-
-
-
-
-
 
                 {{ tpEditingId != null ? 'Editar tarea' : 'Nueva tarea' }}
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
               <div class="tp-form-card__body">
 
-
-
-
-
-
-
-
-
-
-
                 <div class="mb-3">
-
-
-
-
-
-
-
-
-
-
 
                   <label class="tp-label">Nombre <span class="text-danger">*</span></label>
 
-
-
-
-
-
-
-
-
-
-
                   <input class="form-control tp-input"
-
-
-
-
-
-
-
-
-
-
 
                          [ngClass]="{'is-invalid': tpSubmitted && !tpForm.tarea.trim()}"
 
-
-
-
-
-
-
-
-
-
-
-                         placeholder="Ej: InstalaciÃƒÂ³n elÃƒÂ©ctrica"
-
-
-
-
-
-
-
-
-
-
+                         placeholder="Ej: Instalación eléctrica"
 
                          [(ngModel)]="tpForm.tarea" />
 
-
-
-
-
-
-
-
-
-
-
                   <div *ngIf="tpSubmitted && !tpForm.tarea.trim()" class="tp-field-error">
-
-
-
-
-
-
-
-
-
-
 
                     <i class="bi bi-exclamation-circle-fill me-1"></i>El nombre es obligatorio
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
 
                 </div>
 
-
-
-
-
-
-
-
-
-
-
                 <div class="mb-3">
 
-
-
-
-
-
-
-
-
-
-
-                  <label class="tp-label">DescripciÃ¯Â¿Â½n <span class="tp-optional">(opcional)</span></label>
-
-
-
-
-
-
-
-
-
-
+                  <label class="tp-label">Descripción <span class="tp-optional">(opcional)</span></label>
 
                   <textarea class="form-control tp-input" placeholder="Detalle opcional..." [(ngModel)]="tpForm.descripcion" rows="3"></textarea>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
                 <div class="mb-3">
 
-
-
-
-
-
-
-
-
-
-
                   <label class="tp-label">Costo unitario ($) <span class="text-danger">*</span></label>
-
-
-
-
-
-
-
-
-
-
 
                   <div class="input-group">
 
-
-
-
-
-
-
-
-
-
-
                     <span class="input-group-text tp-input-addon"><i class="bi bi-currency-dollar"></i></span>
-
-
-
-
-
-
-
-
-
-
 
                     <input type="number" class="form-control tp-input"
 
-
-
-
-
-
-
-
-
-
-
                            [ngClass]="{'is-invalid': tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)}"
-
-
-
-
-
-
-
-
-
-
 
                            placeholder="0.00" [(ngModel)]="tpForm.costo" min="0.01" step="0.01" />
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
 
                   <div *ngIf="tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)" class="tp-field-error">
 
-
-
-
-
-
-
-
-
-
-
                     <i class="bi bi-exclamation-circle-fill me-1"></i>El costo debe ser mayor a 0
-
-
-
-
-
-
-
-
-
-
 
                   </div>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
                 <div class="d-flex gap-2">
 
-
-
-
-
-
-
-
-
-
-
                   <button class="btn btn-success flex-grow-1 tp-btn-action" (click)="tpGuardar()">
-
-
-
-
-
-
-
-
-
-
 
                     <i class="bi bi-{{ tpEditingId != null ? 'check2-all' : 'plus-lg' }} me-1"></i>
 
-
-
-
-
-
-
-
-
-
-
                     {{ tpEditingId != null ? 'Actualizar' : 'Guardar tarea' }}
-
-
-
-
-
-
-
-
-
-
 
                   </button>
 
-
-
-
-
-
-
-
-
-
-
-                  <button *ngIf="tpEditingId != null" class="btn btn-outline-secondary tp-btn-action" (click)="tpCancelarEdicion()" title="Cancelar ediciÃƒÂ³n">
-
-
-
-
-
-
-
-
-
-
+                  <button *ngIf="tpEditingId != null" class="btn btn-outline-secondary tp-btn-action" (click)="tpCancelarEdicion()" title="Cancelar edición">
 
                     <i class="bi bi-x-lg"></i>
 
-
-
-
-
-
-
-
-
-
-
                   </button>
-
-
-
-
-
-
-
-
-
-
 
                 </div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             <div class="tp-import-card mt-3">
 
-
-
-
-
-
-
-
-
-
-
               <button class="tp-import-card__toggle" (click)="tpMostrarImportar = !tpMostrarImportar" type="button">
-
-
-
-
-
-
-
-
-
-
 
                 <span class="tp-import-card__icon"><i class="bi bi-{{ tpMostrarImportar ? 'chevron-up' : 'arrow-down-circle' }}"></i></span>
 
-
-
-
-
-
-
-
-
-
-
-                <span>{{ tpMostrarImportar ? 'Ocultar catÃƒÂ¡logo' : 'Importar del catÃƒÂ¡logo' }}</span>
-
-
-
-
-
-
-
-
-
-
+                <span>{{ tpMostrarImportar ? 'Ocultar catálogo' : 'Importar del catálogo' }}</span>
 
                 <span class="ms-auto badge bg-secondary rounded-pill">{{ tpCatalogoFiltrado.length }}</span>
 
-
-
-
-
-
-
-
-
-
-
               </button>
-
-
-
-
-
-
-
-
-
-
 
               <div *ngIf="tpMostrarImportar" class="tp-import-card__body">
 
-
-
-
-
-
-
-
-
-
-
                 <div class="input-group mb-2">
-
-
-
-
-
-
-
-
-
-
 
                   <span class="input-group-text tp-input-addon"><i class="bi bi-search"></i></span>
 
-
-
-
-
-
-
-
-
-
-
                   <input class="form-control tp-input" placeholder="Buscar tarea..." [(ngModel)]="tpFiltroCatalogo" />
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
                 <div class="tp-catalog-list">
 
-
-
-
-
-
-
-
-
-
-
                   <div *ngFor="let t of tpCatalogoFiltrado" class="tp-catalog-item">
-
-
-
-
-
-
-
-
-
-
 
                     <div class="tp-catalog-item__info">
 
-
-
-
-
-
-
-
-
-
-
                       <span class="tp-catalog-item__name">{{ t.tarea }}</span>
-
-
-
-
-
-
-
-
-
-
 
                       <span class="tp-catalog-item__cost">{{ t.costo | currency:'USD':'symbol':'1.2-2' }}</span>
 
-
-
-
-
-
-
-
-
-
-
                     </div>
-
-
-
-
-
-
-
-
-
-
 
                     <button class="tp-catalog-item__btn" title="Importar a Mis Tareas" (click)="tpImportarDelCatalogo(t)">
 
-
-
-
-
-
-
-
-
-
-
                       <i class="bi bi-bookmark-plus-fill"></i>
-
-
-
-
-
-
-
-
-
-
 
                     </button>
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
 
                   <div *ngIf="tpCatalogoFiltrado.length === 0" class="tp-empty">
 
-
-
-
-
-
-
-
-
-
-
                     <i class="bi bi-inbox me-1"></i>Sin resultados
-
-
-
-
-
-
-
-
-
-
 
                   </div>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <!-- Columna derecha: Lista -->
 
-
-
-
-
-
-
-
-
-
-
           <div class="col-12 col-md-7">
-
-
-
-
-
-
-
-
-
-
 
             <div class="tp-list-header">
 
-
-
-
-
-
-
-
-
-
-
               <span class="tp-list-header__title"><i class="bi bi-list-check me-2"></i>Tareas guardadas</span>
-
-
-
-
-
-
-
-
-
-
 
               <span class="badge tp-list-header__badge">{{ tareasPersonalizadas.length }} / {{ tpLimitActual }}</span>
 
-
-
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             <div *ngIf="tareasPersonalizadas.length === 0" class="tp-empty-state">
 
-
-
-
-
-
-
-
-
-
-
               <i class="bi bi-bookmark-heart tp-empty-state__icon"></i>
 
-
-
-
-
-
-
-
-
-
-
-              <p class="tp-empty-state__text">TodavÃƒÂ­a no tenÃƒÂ©s tareas guardadas.<br>CreÃƒÂ¡ tu primera tarea en el formulario.</p>
-
-
-
-
-
-
-
-
-
-
+              <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea en el formulario.</p>
 
             </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             <div class="tp-cards-list">
 
-
-
-
-
-
-
-
-
-
-
               <div *ngFor="let tp of tareasPersonalizadas" class="tp-card" [class.tp-card--editing]="tpEditingId === tp.id">
-
-
-
-
-
-
-
-
-
-
 
                 <div class="tp-card__accent"></div>
 
-
-
-
-
-
-
-
-
-
-
                 <div class="tp-card__content">
-
-
-
-
-
-
-
-
-
-
 
                   <div class="tp-card__top">
 
-
-
-
-
-
-
-
-
-
-
                     <span class="tp-card__name">{{ tp.tarea }}</span>
-
-
-
-
-
-
-
-
-
-
 
                     <span class="tp-card__cost">{{ tp.costo | currency:'USD':'symbol':'1.2-2' }}</span>
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
 
                   <p *ngIf="tp.descripcion" class="tp-card__desc">{{ tp.descripcion }}</p>
 
-
-
-
-
-
-
-
-
-
-
                   <div class="tp-card__actions">
-
-
-
-
-
-
-
-
-
-
 
                     <button class="tp-card__action tp-card__action--add" title="Agregar al presupuesto" (click)="tpAgregarAlPresupuesto(tp)">
 
-
-
-
-
-
-
-
-
-
-
                       <i class="bi bi-plus-circle-fill"></i><span>Agregar</span>
 
-
-
-
-
-
-
-
-
-
-
                     </button>
-
-
-
-
-
-
-
-
-
-
 
                     <button class="tp-card__action tp-card__action--edit" title="Editar" (click)="tpEditar(tp)">
 
-
-
-
-
-
-
-
-
-
-
                       <i class="bi bi-pencil-fill"></i>
 
-
-
-
-
-
-
-
-
-
-
                     </button>
-
-
-
-
-
-
-
-
-
-
 
                     <button class="tp-card__action tp-card__action--delete" title="Eliminar" (click)="tpEliminar(tp)">
 
-
-
-
-
-
-
-
-
-
-
                       <i class="bi bi-trash3-fill"></i>
-
-
-
-
-
-
-
-
-
-
 
                     </button>
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
 
                 </div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="modal fade qr-modal" id="qrModal" tabindex="-1" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered modal-lg">
-
-
-
-
-
-
-
-
-
-
 
     <div class="modal-content">
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-header">
-
-
-
-
-
-
-
-
-
-
 
         <h5 class="modal-title">GENERADOR QR</h5>
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-body">
 
-
-
-
-
-
-
-
-
-
-
         <div class="qr-grid row">
-
-
-
-
-
-
-
-
-
-
 
           <div class="card col-md-5">
 
-
-
-
-
-
-
-
-
-
-
             <div class="card-header fw-bold mb-2">Vista previa</div>
 
-
-
-
-
-
-
-
-
-
-
             <div class="card-body">
-
-
-
-
-
-
-
-
-
-
 
               <p class="text-center text-secondary mb-3" style="font-size: 0.85rem">UN CODIGO QR PUEDE AYUDARTE A CONECTAR MAS FACIL CON NUEVOS CLIENTES.</p>
 
-
-
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
 
             <div class="card-body qr-preview-wrap text-center" id="qrPreviewWrap">
 
-
-
-
-
-
-
-
-
-
-
               <div id="qrContainer" style="display:inline-block"></div>
-
-
-
-
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <div class="card col-md-7">
 
-
-
-
-
-
-
-
-
-
-
             <div class="card-header fw-bold mb-2">Opciones del QR</div>
-
-
-
-
-
-
-
-
-
-
 
             <div class="card-body">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               <div class="btn-toolbar mb-3 d-flex gap-2" role="toolbar">
-
-
-
-
-
-
-
-
-
-
 
                 <div class="btn-group gap-1 flex-wrap" role="group">
 
-
-
-
-
-
-
-
-
-
-
                   <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#qrSectionData" aria-expanded="true">
-
-
-
-
-
-
-
-
-
-
 
                     <i class="fas fa-link"></i> Texto/URL
 
-
-
-
-
-
-
-
-
-
-
                   </button>
-
-
-
-
-
-
-
-
-
-
 
                   <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#qrSectionShape" aria-expanded="false">
 
-
-
-
-
-
-
-
-
-
-
                     <i class="fas fa-th"></i> Puntos
 
-
-
-
-
-
-
-
-
-
-
                   </button>
-
-
-
-
-
-
-
-
-
-
 
                   <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#qrSectionBg" aria-expanded="false">
 
-
-
-
-
-
-
-
-
-
-
                     <i class="fas fa-fill-drip"></i> Fondo
 
-
-
-
-
-
-
-
-
-
-
                   </button>
-
-
-
-
-
-
-
-
-
-
 
                   <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#qrSectionLogo" aria-expanded="false">
 
-
-
-
-
-
-
-
-
-
-
                     <i class="fas fa-image"></i> Logo
-
-
-
-
-
-
-
-
-
-
 
                   </button>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
                 <div class="btn-group" role="group">
 
-
-
-
-
-
-
-
-
-
-
                   <button id="qrBtnActualizar" class="btn btn-primary btn-sm" type="button" (click)="actualizarQR()">
-
-
-
-
-
-
-
-
-
-
 
                     <i class="fas fa-sync-alt"></i> Actualizar
 
-
-
-
-
-
-
-
-
-
-
                   </button>
-
-
-
-
-
-
-
-
-
-
 
                 </div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
               <div id="qrOptionsAccordion">
 
-
-
-
-
-
-
-
-
-
-
                 <div id="qrSectionData" class="collapse show" data-bs-parent="#qrOptionsAccordion">
-
-
-
-
-
-
-
-
-
-
 
                   <div class="mb-3">
 
-
-
-
-
-
-
-
-
-
-
                     <label class="form-label">Texto / URL</label>
-
-
-
-
-
-
-
-
-
-
 
                     <input id="qrDataInput" type="text" class="form-control" placeholder="https://tu-dominio.com" value="https://orbitasoftware.com.ar" (input)="actualizarQR()" />
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
 
                   <div class="row g-3">
 
-
-
-
-
-
-
-
-
-
-
                     <div class="col-6">
 
-
-
-
-
-
-
-
-
-
-
-                      <label class="form-label">TamaÃƒÂ±o (px)</label>
-
-
-
-
-
-
-
-
-
-
+                      <label class="form-label">Tamaño (px)</label>
 
                       <input id="qrSizeRange" type="range" class="form-range" min="180" max="600" step="10" value="280" (input)="updateSizeLabel($event); actualizarQR()">
 
-
-
-
-
-
-
-
-
-
-
                       <div><small class="text-secondary">Actual: <span id="qrSizeOut">280</span> px</small></div>
-
-
-
-
-
-
-
-
-
-
 
                     </div>
 
-
-
-
-
-
-
-
-
-
-
                     <div class="col-6">
 
-
-
-
-
-
-
-
-
-
-
-                      <label class="form-label">Nivel de correcciÃƒÂ³n</label>
-
-
-
-
-
-
-
-
-
-
+                      <label class="form-label">Nivel de corrección</label>
 
                       <select id="qrEcLevel" class="form-select" (change)="actualizarQR()">
 
-
-
-
-
-
-
-
-
-
-
                         <option value="L">L (7%)</option>
-
-
-
-
-
-
-
-
-
-
 
                         <option value="M" selected>M (15%)</option>
 
-
-
-
-
-
-
-
-
-
-
                         <option value="Q">Q (25%)</option>
-
-
-
-
-
-
-
-
-
-
 
                         <option value="H">H (30%)</option>
 
-
-
-
-
-
-
-
-
-
-
                       </select>
-
-
-
-
-
-
-
-
-
-
 
                     </div>
 
-
-
-
-
-
-
-
-
-
-
                   </div>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                 <div id="qrSectionShape" class="collapse" data-bs-parent="#qrOptionsAccordion">
 
-
-
-
-
-
-
-
-
-
-
                   <div class="row g-3 mt-2">
 
-
-
-
-
-
-
-
-
-
-
                     <div class="col-6">
-
-
-
-
-
-
-
-
-
-
 
                       <label class="form-label">Forma de puntos</label>
 
-
-
-
-
-
-
-
-
-
-
                       <select id="qrDotsType" class="form-select" (change)="actualizarQR()">
-
-
-
-
-
-
-
-
-
-
 
                         <option value="square">Cuadrados</option>
 
-
-
-
-
-
-
-
-
-
-
                         <option value="dots" selected>Puntos</option>
-
-
-
-
-
-
-
-
-
-
 
                         <option value="rounded">Redondeado</option>
 
-
-
-
-
-
-
-
-
-
-
                         <option value="classy">Classy</option>
-
-
-
-
-
-
-
-
-
-
 
                         <option value="classy-rounded">Classy redondeado</option>
 
-
-
-
-
-
-
-
-
-
-
                         <option value="extra-rounded">Extra redondeado</option>
-
-
-
-
-
-
-
-
-
-
 
                       </select>
 
-
-
-
-
-
-
-
-
-
-
                     </div>
 
-
-
-
-
-
-
-
-
-
-
                     <div class="col-6">
-
-
-
-
-
-
-
-
-
-
 
                       <label class="form-label">Color de puntos</label>
 
-
-
-
-
-
-
-
-
-
-
                       <input id="qrDotsColor" type="color" class="form-control form-control-color w-100" value="#111827" title="Elige color" (input)="actualizarQR()">
-
-
-
-
-
-
-
-
-
-
 
                     </div>
 
-
-
-
-
-
-
-
-
-
-
                     <div class="col-6">
-
-
-
-
-
-
-
-
-
-
 
                       <label class="form-label">Esquinas (cuadros)</label>
 
-
-
-
-
-
-
-
-
-
-
                       <select id="qrCornersSquare" class="form-select" (change)="actualizarQR()">
-
-
-
-
-
-
-
-
-
-
 
                         <option value="square">Cuadradas</option>
 
-
-
-
-
-
-
-
-
-
-
                         <option value="extra-rounded">Extra redondeadas</option>
-
-
-
-
-
-
-
-
-
-
 
                         <option value="dot" selected>Puntos</option>
 
-
-
-
-
-
-
-
-
-
-
                       </select>
-
-
-
-
-
-
-
-
-
-
 
                     </div>
 
-
-
-
-
-
-
-
-
-
-
                     <div class="col-6">
-
-
-
-
-
-
-
-
-
-
 
                       <label class="form-label">Esquinas (puntos)</label>
 
-
-
-
-
-
-
-
-
-
-
                       <select id="qrCornersDot" class="form-select" (change)="actualizarQR()">
-
-
-
-
-
-
-
-
-
-
 
                         <option value="square">Cuadradas</option>
 
-
-
-
-
-
-
-
-
-
-
                         <option value="dot" selected>Puntos</option>
-
-
-
-
-
-
-
-
-
-
 
                         <option value="extra-rounded">Extra redondeadas</option>
 
-
-
-
-
-
-
-
-
-
-
                       </select>
-
-
-
-
-
-
-
-
-
-
 
                     </div>
 
-
-
-
-
-
-
-
-
-
-
                   </div>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                 <div id="qrSectionBg" class="collapse" data-bs-parent="#qrOptionsAccordion">
 
-
-
-
-
-
-
-
-
-
-
                   <div class="row g-3 mt-2">
 
-
-
-
-
-
-
-
-
-
-
                     <div class="col-12">
-
-
-
-
-
-
-
-
-
-
 
                       <label class="form-label">Tipo de fondo</label>
 
-
-
-
-
-
-
-
-
-
-
                       <div class="d-flex flex-wrap gap-3">
 
-
-
-
-
-
-
-
-
-
-
                         <div class="form-check">
-
-
-
-
-
-
-
-
-
-
 
                           <input class="form-check-input" type="radio" name="qrBgMode" id="qrBgModeSolid" value="solid" checked (change)="actualizarQR()">
 
-
-
-
-
-
-
-
-
-
-
                           <label class="form-check-label" for="qrBgModeSolid">Color</label>
-
-
-
-
-
-
-
-
-
-
 
                         </div>
 
-
-
-
-
-
-
-
-
-
-
                         <div class="form-check">
-
-
-
-
-
-
-
-
-
-
 
                           <input class="form-check-input" type="radio" name="qrBgMode" id="qrBgModeTransparent" value="transparent" (change)="actualizarQR()">
 
-
-
-
-
-
-
-
-
-
-
                           <label class="form-check-label" for="qrBgModeTransparent">Transparente</label>
 
-
-
-
-
-
-
-
-
-
-
                         </div>
-
-
-
-
-
-
-
-
-
-
 
                         <div class="form-check">
 
-
-
-
-
-
-
-
-
-
-
                           <input class="form-check-input" type="radio" name="qrBgMode" id="qrBgModeGradient" value="gradient" (change)="actualizarQR()">
-
-
-
-
-
-
-
-
-
-
 
                           <label class="form-check-label" for="qrBgModeGradient">Gradiente</label>
 
-
-
-
-
-
-
-
-
-
-
                         </div>
-
-
-
-
-
-
-
-
-
-
 
                       </div>
 
-
-
-
-
-
-
-
-
-
-
                     </div>
 
-
-
-
-
-
-
-
-
-
-
                     <div class="col-6">
-
-
-
-
-
-
-
-
-
-
 
                       <label class="form-label">Color 1</label>
 
-
-
-
-
-
-
-
-
-
-
                       <input id="qrBgColor" type="color" class="form-control form-control-color w-100" value="#ffffff" (input)="actualizarQR()">
 
-
-
-
-
-
-
-
-
-
-
                     </div>
-
-
-
-
-
-
-
-
-
-
 
                     <div class="col-6">
 
-
-
-
-
-
-
-
-
-
-
                       <label class="form-label">Color 2</label>
-
-
-
-
-
-
-
-
-
-
 
                       <input id="qrBgColor2" type="color" class="form-control form-control-color w-100" value="#dbeafe" (input)="actualizarQR()">
 
-
-
-
-
-
-
-
-
-
-
                     </div>
-
-
-
-
-
-
-
-
-
-
 
                     <div class="col-12">
 
-
-
-
-
-
-
-
-
-
-
                       <label class="form-label">Orientacion del gradiente</label>
-
-
-
-
-
-
-
-
-
-
 
                       <select id="qrBgGradientDirection" class="form-select" (change)="actualizarQR()">
 
-
-
-
-
-
-
-
-
-
-
                         <option value="to bottom" selected>Abajo</option>
-
-
-
-
-
-
-
-
-
-
 
                         <option value="to top">Arriba</option>
 
-
-
-
-
-
-
-
-
-
-
                         <option value="to right">Derecha</option>
-
-
-
-
-
-
-
-
-
-
 
                         <option value="to left">Izquierda</option>
 
-
-
-
-
-
-
-
-
-
-
                       </select>
-
-
-
-
-
-
-
-
-
-
 
                     </div>
 
-
-
-
-
-
-
-
-
-
-
                   </div>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                 <div id="qrSectionLogo" class="collapse" data-bs-parent="#qrOptionsAccordion">
 
-
-
-
-
-
-
-
-
-
-
                    <div class="row g-3 align-items-center mt-2">
-
-
-
-
-
-
-
-
-
-
 
                      <div class="col-12">
 
-
-
-
-
-
-
-
-
-
-
                        <label class="form-label">Logo central (opcional)</label>
-
-
-
-
-
-
-
-
-
-
 
                        <input id="qrLogoFile" class="form-control" type="file" accept="image/*" (change)="onQrLogoFileChange($event); actualizarQR()">
 
-
-
-
-
-
-
-
-
-
-
                      </div>
-
-
-
-
-
-
-
-
-
-
 
                      <div class="col-8">
 
-
-
-
-
-
-
-
-
-
-
                        <input id="qrLogoUrl" type="url" class="form-control" placeholder="URL del logo" [(ngModel)]="qrLogoUrlValue">
 
-
-
-
-
-
-
-
-
-
-
                      </div>
-
-
-
-
-
-
-
-
-
-
 
                      <div class="col-4">
 
-
-
-
-
-
-
-
-
-
-
                        <button id="qrBtnSetLogo" class="btn btn-outline-secondary w-100" type="button" (click)="setQrLogoUrl()">Usar</button>
 
-
-
-
-
-
-
-
-
-
-
                      </div>
-
-
-
-
-
-
-
-
-
-
 
                      <div class="col-12 d-flex gap-3 align-items-center">
 
-
-
-
-
-
-
-
-
-
-
                        <img id="qrLogoPreview" class="qr-logo-preview d-none" alt="logo" style="width: 40px; height: 40px; object-fit: contain;">
-
-
-
-
-
-
-
-
-
-
 
                        <div class="flex-grow-1">
 
-
-
-
-
-
-
-
-
-
-
-                         <label class="form-label mb-1">TamaÃƒÂ±o del logo (%)</label>
-
-
-
-
-
-
-
-
-
-
+                         <label class="form-label mb-1">Tamaño del logo (%)</label>
 
                          <input id="qrLogoSize" type="range" class="form-range" min="5" max="40" step="1" value="18" (input)="actualizarQR()">
 
-
-
-
-
-
-
-
-
-
-
                        </div>
-
-
-
-
-
-
-
-
-
-
 
                      </div>
 
-
-
-
-
-
-
-
-
-
-
                    </div>
-
-
-
-
-
-
-
-
-
-
 
                 </div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-footer d-flex justify-content-between">
 
-
-
-
-
-
-
-
-
-
-
          <div class="d-flex gap-2">
-
-
-
-
-
-
-
-
-
-
 
            <button id="qrBtnDescargarPng" class="btn btn-success" type="button" (click)="descargarQRPng()">
 
-
-
-
-
-
-
-
-
-
-
              <i class="fas fa-file-image"></i> Descargar PNG
 
-
-
-
-
-
-
-
-
-
-
            </button>
-
-
-
-
-
-
-
-
-
-
 
            <button id="qrBtnDescargarSvg" class="btn btn-outline-success" type="button" (click)="descargarQRSvg()">
 
-
-
-
-
-
-
-
-
-
-
              <i class="fas fa-file-code"></i> Descargar SVG
-
-
-
-
-
-
-
-
-
-
 
            </button>
 
-
-
-
-
-
-
-
-
-
-
          </div>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
   </div>
-
-
-
-
-
-
-
-
-
-
 
 </div>
 
-
-
-
-
-
-
-
-
-
-
 <div class="dashboard-container">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   <div id="successAlert" style="display: none;" class="alert alert-success">Datos guardados</div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   <div class="card dashboard-card">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="card table-card mt-2 mb-3">
 
-
-
-
-
-
-
-
-
-
-
   <div class="card-body">
-
-
-
-
-
-
-
-
-
-
 
     <div class="containerbuscar">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       <div class="task-brand-row mb-2" *ngIf="currentEmpresaLogoUrl">
-
-
-
-
-
-
-
-
-
-
 
         <div class="fixed-image-container">
 
-
-
-
-
-
-
-
-
-
-
           <img
-
-
-
-
-
-
-
-
-
-
 
             id="fixedImageIcon"
 
-
-
-
-
-
-
-
-
-
-
             class="fixed-image"
-
-
-
-
-
-
-
-
-
-
 
             [src]="currentEmpresaLogoUrl || '#'"
 
-
-
-
-
-
-
-
-
-
-
             alt="Logo Empresa"
-
-
-
-
-
-
-
-
-
-
 
             style="cursor:pointer"
 
-
-
-
-
-
-
-
-
-
-
             (click)="openListaEmpresasModal()">
-
-
-
-
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="task-tabs-toolbar mb-3">
 
-
-
-
-
-
-
-
-
-
-
         <ul class="nav nav-tabs task-tabs" role="tablist">
-
-
-
-
-
-
-
-
-
-
 
           <li class="nav-item" role="presentation">
 
-
-
-
-
-
-
-
-
-
-
             <a
-
-
-
-
-
-
-
-
-
-
 
               class="nav-link"
 
-
-
-
-
-
-
-
-
-
-
               href="#"
-
-
-
-
-
-
-
-
-
-
 
               [class.active]="activeTaskTab === 'catalogo'"
 
-
-
-
-
-
-
-
-
-
-
               [attr.aria-current]="activeTaskTab === 'catalogo' ? 'page' : null"
-
-
-
-
-
-
-
-
-
-
 
               (click)="$event.preventDefault(); activeTaskTab = 'catalogo'">
 
-
-
-
-
-
-
-
-
-
-
               <i class="bi bi-list-ul me-1"></i> Lista de tareas
-
-
-
-
-
-
-
-
-
-
 
             </a>
 
-
-
-
-
-
-
-
-
-
-
           </li>
-
-
-
-
-
-
-
-
-
-
 
           <li class="nav-item" role="presentation">
 
-
-
-
-
-
-
-
-
-
-
             <a
-
-
-
-
-
-
-
-
-
-
 
               class="nav-link"
 
-
-
-
-
-
-
-
-
-
-
               href="#"
-
-
-
-
-
-
-
-
-
-
 
               [class.active]="activeTaskTab === 'personalizadas'"
 
-
-
-
-
-
-
-
-
-
-
               [attr.aria-current]="activeTaskTab === 'personalizadas' ? 'page' : null"
-
-
-
-
-
-
-
-
-
-
 
               (click)="$event.preventDefault(); activeTaskTab = 'personalizadas'">
 
-
-
-
-
-
-
-
-
-
-
                     <i class="bi bi-bookmarks me-1"></i> Tus tareas
-
-
-
-
-
-
-
-
-
-
 
               <span class="badge rounded-pill ms-2 task-tabs__badge">{{ tareasPersonalizadas.length }}</span>
 
-
-
-
-
-
-
-
-
-
-
             </a>
-
-
-
-
-
-
-
-
-
-
 
           </li>
 
-
-
-
-
-
-
-
-
-
-
         </ul>
-
-
-
-
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
       <div class="tab-content task-tabs__content">
-
-
-
-
-
-
-
-
-
-
 
         <div class="tab-pane fade" [class.show]="activeTaskTab === 'catalogo'" [class.active]="activeTaskTab === 'catalogo'">
 
-
-
-
-
-
-
-
-
-
-
           <div class="inputGroup task-search-input-group">
-
-
-
-
-
-
-
-
-
-
 
             <input type="text" id="busqueda" required="" autocomplete="off" (input)="buscar($event)">
 
-
-
-
-
-
-
-
-
-
-
             <label for="busqueda">Buscar tarea</label>
-
-
-
-
-
-
-
-
-
-
 
             <span class="inputGroup__icon" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
               <svg viewBox="0 0 24 24" width="18" height="18" focusable="false" aria-hidden="true">
-
-
-
-
-
-
-
-
-
-
 
                 <path fill="#6c757d" d="M10.5 3a7.5 7.5 0 0 1 5.97 12.05l4.24 4.24-1.42 1.42-4.24-4.24A7.5 7.5 0 1 1 10.5 3zm0 2a5.5 5.5 0 1 0 0 11a5.5 5.5 0 0 0 0-11z"/>
 
-
-
-
-
-
-
-
-
-
-
               </svg>
-
-
-
-
-
-
-
-
-
-
 
             </span>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
 
           <div class="task-help-row">
 
-
-
-
-
-
-
-
-
-
-
             <button type="button" class="task-help-btn task-help-btn--compact" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="C???mo usar el buscador">
-
-
-
-
-
-
-
-
-
-
 
               <i class="fas fa-info-circle" aria-hidden="true"></i>
 
-
-
-
-
-
-
-
-
-
-
               <span>C??mo buscar</span>
-
-
-
-
-
-
-
-
-
-
 
             </button>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
 
           <div class="table-responsive">
 
-
-
-
-
-
-
-
-
-
-
             <table class="table table-striped">
-
-
-
-
-
-
-
-
-
-
 
               <thead>
 
-
-
-
-
-
-
-
-
-
-
                 <tr>
-
-
-
-
-
-
-
-
-
-
 
                   <th style="width:85%; min-width:120px;">Tarea</th>
 
-
-
-
-
-
-
-
-
-
-
                   <th style="width:15%; min-width:70px; text-align:right;">Costo/$</th>
 
-
-
-
-
-
-
-
-
-
-
                 </tr>
-
-
-
-
-
-
-
-
-
-
 
               </thead>
 
-
-
-
-
-
-
-
-
-
-
               <tbody>
-
-
-
-
-
-
-
-
-
-
 
                 <tr *ngFor="let tarea of tareasFiltradas; let i = index" (click)="seleccionar(tarea)" class="hoverable-row" [ngClass]="{'lista-tareas-odd-row': i % 2 === 0, 'lista-tareas-even-row': i % 2 !== 0}">
 
-
-
-
-
-
-
-
-
-
-
                   <td style="width:85%; word-break:break-word; white-space:normal;">{{ tarea.tarea }}</td>
-
-
-
-
-
-
-
-
-
-
 
                   <td style="width:15%; text-align:right; word-break:break-word; white-space:normal;">{{ tarea.costo | currency:'USD':'symbol':'1.2-2' }}</td>
 
-
-
-
-
-
-
-
-
-
-
                 </tr>
-
-
-
-
-
-
-
-
-
-
 
               </tbody>
 
-
-
-
-
-
-
-
-
-
-
             </table>
-
-
-
-
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <div class="tab-pane fade" [class.show]="activeTaskTab === 'personalizadas'" [class.active]="activeTaskTab === 'personalizadas'">
 
-
-
-
-
-
-
-
-
-
-
           <div class="tp-inline-panel">
-
-
-
-
-
-
-
-
-
-
 
             <div class="tp-hero" *ngIf="showTpHero">
 
-
               <button class="tp-hero__close" type="button" (click)="cerrarTpHero()" aria-label="Cerrar aviso de tareas personalizadas">
-
-
-
-
 
                 <i class="bi bi-x-lg"></i>
 
-
-
-
-
               </button>
-
-
-
-
-
-
-
-
-
-
-
-
-
 
               <div class="tp-hero__copy">
 
-
-
-
-
-
-
-
-
-
-
-                <span class="tp-hero__eyebrow"><i class="bi bi-stars me-2"></i>GestiÃƒÂ³n personalizada</span>
-
-
-
-
-
-
-
-
-
-
+                <span class="tp-hero__eyebrow"><i class="bi bi-stars me-2"></i>Gestión personalizada</span>
 
                 <h3 class="tp-hero__title">Tus tareas, listas para cotizar</h3>
 
-
-
-
-
-
-
-
-
-
-
-                <p class="tp-hero__text">OrganizÃƒÂ¡ tus tareas frecuentes, editÃƒÂ¡ valores rÃƒÂ¡pido y agrÃƒÂ©galas al presupuesto con un toque.</p>
-
-
-
-
-
-
-
-
-
-
+                <p class="tp-hero__text">Organizá tus tareas frecuentes, editá valores rápido y agrégalas al presupuesto con un toque.</p>
 
               </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             <div class="tp-toolbar">
-
-
-
-
-
-
-
-
-
-
 
               <div class="inputGroup tp-toolbar__search">
 
-
-
-
-
-
-
-
-
-
-
                 <input type="text" id="busquedaPersonalizada" required="" autocomplete="off" [(ngModel)]="tpBusquedaPersonalizada">
-
-
-
-
-
-
-
-
-
-
 
                 <label for="busquedaPersonalizada">Buscar tarea personalizada</label>
 
-
-
-
-
-
-
-
-
-
-
                 <span class="inputGroup__icon" aria-hidden="true">
-
-
-
-
-
-
-
-
-
-
 
                   <svg viewBox="0 0 24 24" width="18" height="18" focusable="false" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
                     <path fill="#6c757d" d="M10.5 3a7.5 7.5 0 0 1 5.97 12.05l4.24 4.24-1.42 1.42-4.24-4.24A7.5 7.5 0 1 1 10.5 3zm0 2a5.5 5.5 0 1 0 0 11a5.5 5.5 0 0 0 0-11z"/>
-
-
-
-
-
-
-
-
-
-
 
                   </svg>
 
-
-
-
-
-
-
-
-
-
-
                 </span>
-
-
-
-
-
-
-
-
-
-
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               <div class="tp-toolbar__actions">
-
-
-
-
-
-
-
-
-
-
 
                 <button class="tp-toolbar__create" type="button" (click)="abrirTpEditor()">
                   <span class="tp-toolbar__create-main">
@@ -7645,9649 +1203,1502 @@
                   </div>
                 </button>
 
-
-
-
-
-
-
-
-
-
-
                 <button type="button" class="tp-toolbar__toggle" (click)="tpMostrarImportar = !tpMostrarImportar">
-
-
-
-
-
-
-
-
-
-
 
                   <span class="tp-toolbar__toggle-icon" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
                     <i class="bi bi-collection"></i>
 
-
-
-
-
-
-
-
-
-
-
                   </span>
-
-
-
-
-
-
-
-
-
-
 
                   <span class="tp-toolbar__toggle-text">
 
+                    <!--small>Acción rápida</small-->
 
-
-
-
-
-
-
-
-
-
-                    <!--small>AcciÃƒÂ³n rÃƒÂ¡pida</small-->
-
-
-
-
-
-
-
-
-
-
-
-                    <strong>Importar del catÃƒÂ¡logo</strong>
-
-
-
-
-
-
-
-
-
-
+                    <strong>Importar del catálogo</strong>
 
                   </span>
-
-
-
-
-
-
-
-
-
-
 
                   <span class="tp-toolbar__toggle-arrow" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
                     <i class="bi" [ngClass]="tpMostrarImportar ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
-
-
-
-
-
-
-
-
-
-
 
                   </span>
 
-
-
-
-
-
-
-
-
-
-
                 </button>
-
-
-
-
-
-
-
-
-
-
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             <div *ngIf="tareasPersonalizadas.length === 0" class="tp-empty-state tp-empty-state--hero">
 
-
-
-
-
-
-
-
-
-
-
               <i class="bi bi-bookmark-heart tp-empty-state__icon"></i>
 
-
-
-
-
-
-
-
-
-
-
-              <p class="tp-empty-state__text">TodavÃƒÂ­a no tenÃƒÂ©s tareas guardadas.<br>CreÃƒÂ¡ tu primera tarea desde el botÃƒÂ³n superior.</p>
-
-
-
-
-
-
-
-
-
-
+              <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea desde el botón superior.</p>
 
             </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             <div *ngIf="tareasPersonalizadas.length > 0 && tareasPersonalizadasFiltradas.length === 0" class="tp-empty-state tp-empty-state--compact">
 
-
-
-
-
-
-
-
-
-
-
               <i class="bi bi-search tp-empty-state__icon"></i>
 
-
-
-
-
-
-
-
-
-
-
-              <p class="tp-empty-state__text">No hay tareas personalizadas que coincidan con tu bÃƒÂºsqueda.</p>
-
-
-
-
-
-
-
-
-
-
+              <p class="tp-empty-state__text">No hay tareas personalizadas que coincidan con tu búsqueda.</p>
 
             </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             <div class="tp-list-shell" *ngIf="tareasPersonalizadasFiltradas.length > 0">
 
-
-
-
-
-
-
-
-
-
-
             <div class="tp-card-grid">
-
-
-
-
-
-
-
-
-
-
 
               <div *ngFor="let tp of tareasPersonalizadasFiltradas" class="tp-card tp-card--wide" [class.tp-card--editing]="tpEditingId === tp.id">
 
-
-
-
-
-
-
-
-
-
-
                 <div class="tp-card__accent"></div>
-
-
-
-
-
-
-
-
-
-
 
                 <div class="tp-card__content">
 
-
-
-
-
-
-
-
-
-
-
                   <div class="tp-card__top">
-
-
-
-
-
-
-
-
-
-
 
                     <div class="tp-card__heading">
 
-
-
-
-
-
-
-
-
-
-
                       <span class="tp-card__name">{{ tp.tarea }}</span>
-
-
-
-
-
-
-
-
-
-
 
                       <!--span-- class="tp-card__tag"><i class="bi bi-bookmark-check-fill me-1"></i>Personalizada</span-->
 
-
-
-
-
-
-
-
-
-
-
                     </div>
-
-
-
-
-
-
-
-
-
-
 
                     <span class="tp-card__cost">{{ tp.costo | currency:'USD':'symbol':'1.2-2' }}</span>
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
 
                   <p *ngIf="tp.descripcion" class="tp-card__desc">{{ tp.descripcion }}</p>
 
-
-
-
-
-
-
-
-
-
-
-                  <p *ngIf="!tp.descripcion" class="tp-card__desc tp-card__desc--muted">Sin descripciÃƒÂ³n adicional.</p>
-
-
-
-
-
-
-
-
-
-
+                  <p *ngIf="!tp.descripcion" class="tp-card__desc tp-card__desc--muted">Sin descripción adicional.</p>
 
                   <div class="tp-card__actions">
 
-
-
-
-
-
-
-
-
-
-
                     <button class="tp-card__action tp-card__action--add" title="Agregar al presupuesto" (click)="tpAgregarAlPresupuesto(tp)">
-
-
-
-
-
-
-
-
-
-
 
                       <i class="bi bi-plus-circle-fill"></i><span>Agregar</span>
 
-
-
-
-
-
-
-
-
-
-
                     </button>
-
-
-
-
-
-
-
-
-
-
 
                     <button class="tp-card__action tp-card__action--edit" title="Editar" (click)="tpEditar(tp)">
 
-
-
-
-
-
-
-
-
-
-
                       <i class="bi bi-pencil-square"></i>
 
-
-
-
-
-
-
-
-
-
-
                     </button>
-
-
-
-
-
-
-
-
-
-
 
                     <button class="tp-card__action tp-card__action--delete" title="Eliminar" (click)="tpEliminar(tp)">
 
-
-
-
-
-
-
-
-
-
-
                       <i class="bi bi-trash3-fill"></i>
-
-
-
-
-
-
-
-
-
-
 
                     </button>
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
 
                 </div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
         </div>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     <div class="row mt-4" *ngIf="activeTaskTab === 'catalogo'">
 
-
-
-
-
-
-
-
-
-
-
       <div class="w-100 d-flex justify-content-center align-items-center mb-1" style="gap: 8px;">
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn btn-success animate flex-grow-1" style="font-weight:bold; height: 42px; border-radius: 10px; box-shadow: 0 2px 8px #0001;" data-bs-toggle="modal" data-bs-target="#provinciaModal">
 
-
-
-
-
-
-
-
-
-
-
           <i class="bi bi-geo-alt"></i> Seleccionar provincia
 
-
-
-
-
-
-
-
-
-
-
         </button>
-
-
-
-
-
-
-
-
-
-
 
         <button id="recentTasksOpenButton" class="btn btn-success animate flex-grow-0 flex-shrink-0" type="button" data-bs-toggle="modal" data-bs-target="#recentTasksModal" aria-label="Ultimas tareas cotizadas" title="Ultimas tareas cotizadas" style="width: 42px; min-width: 42px; height: 42px; padding: 0; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px #0001;">
 
-
-
-
-
-
-
-
-
-
-
           <i class="fas fa-history" aria-hidden="true"></i>
 
-
-
-
-
-
-
-
-
-
-
         </button>
-
-
-
-
-
-
-
-
-
-
 
         <button id="ajustesListaOpenButton" class="btn btn-success animate flex-grow-0 flex-shrink-0" type="button" data-bs-toggle="modal" data-bs-target="#ajustesListaModal" aria-label="Ajustes de la lista" title="Ajustes de la lista" style="width: 42px; min-width: 42px; height: 42px; padding: 0; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px #0001;">
 
-
-
-
-
-
-
-
-
-
-
           <i class="fas fa-cog" aria-hidden="true"></i>
-
-
-
-
-
-
-
-
-
-
 
         </button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       <div class="w-100 d-flex justify-content-center align-items-center mb-2" style="gap: 8px;">
 
-
-
-
-
-
-
-
-
-
-
         <button class="btn btn-success animate flex-grow-1" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" type="button" (click)="openListaEmpresasModal()">
-
-
-
-
-
-
-
-
-
-
 
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52.29 52.35" width="18" height="18" aria-hidden="true" focusable="false" style="margin-right: 6px;">
 
-
-
-
-
-
-
-
-
-
-
             <path fill="#ffffff" d="m51.18,8.07c-.24-.54-.73-.93-1.32-1.07-.63-.1-1.22.1-1.66.54l-5.89,5.89-3.02-.39-.44-3.07,5.94-5.89c.39-.44.58-1.02.49-1.66-.15-.58-.54-1.07-1.07-1.32-5.11-2.19-10.91-1.07-14.81,2.83-3.36,3.36-4.63,8.18-3.51,12.76l-6.19,6.24-3.02,3.02c-4.53-1.17-9.45.15-12.76,3.51C.04,33.31-1.08,39.3,1.11,44.27c.24.54.78.93,1.36,1.07.58.1,1.22-.1,1.61-.54l5.89-5.89,3.07.39.39,3.07-5.89,5.89c-.44.44-.63,1.02-.49,1.66.1.58.49,1.07,1.07,1.32,1.7.73,3.51,1.12,5.31,1.12,3.46,0,6.87-1.36,9.45-3.95,2.44-2.44,3.8-5.65,3.95-8.96l-3.7-.78c.1,2.68-.88,5.26-2.82,7.16-2.14,2.14-5.07,3.12-7.94,2.78l4.29-4.29c.39-.39.58-.97.54-1.51l-.73-5.36c-.1-.83-.73-1.51-1.56-1.61l-5.31-.63c-.58-.1-1.12.1-1.56.49l-4.29,4.34c-.34-2.87.63-5.89,2.78-7.99,2.63-2.68,6.53-3.56,10.13-2.29.63.2,1.36.05,1.9-.44l3.75-3.8c.1-.05.15-.15.19-.24l6.77-6.72c.49-.54.68-1.27.44-1.9-1.22-3.6-.34-7.5,2.29-10.13,2.14-2.14,5.07-3.12,7.99-2.78l-4.34,4.29c-.39.39-.58.97-.49,1.51l.68,5.36c.1.83.78,1.51,1.56,1.61l5.36.63c.54.1,1.12-.1,1.51-.49l4.34-4.34c.34,2.87-.68,5.89-2.78,7.99-2.68,2.68-6.53,3.56-10.13,2.29-.68-.2-1.41-.05-1.9.44l-3.8,3.8s-.15.15-.2.24l-6.77,6.72c-.24.29-.44.63-.44.97l3.8.88,6.19-6.24c.1-.05.15-.15.2-.19l2.82-2.83c4.58,1.17,9.5-.15,12.81-3.51,3.85-3.85,4.97-9.84,2.78-14.81Z"/>
 
-
-
-
-
-
-
-
-
-
-
           </svg>
-
-
-
-
-
-
-
-
-
-
 
           EMPRESA
 
-
-
-
-
-
-
-
-
-
-
         </button>
-
-
-
-
-
-
-
-
-
-
 
         <button class="btn btn-success animate flex-grow-1" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" (click)="abrirModalClientes()">
 
-
-
-
-
-
-
-
-
-
-
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42.97 48.65" width="18" height="18" aria-hidden="true" focusable="false" style="margin-right: 6px;">
-
-
-
-
-
-
-
-
-
-
 
             <path fill="#ffffff" d="m36.34,0H6.63C2.98,0,0,2.98,0,6.63v35.38c0,3.66,2.98,6.63,6.63,6.63h31.39v-3.24h-8.43v-5.96h.43c1.99,0,3.6-1.61,3.6-3.6v-10.89c0-1.99-1.61-3.6-3.6-3.6H12.95c-1.99,0-3.6,1.61-3.6,3.6v10.89c0,1.99,1.61,3.6,3.6,3.6h.43v5.96h-6.74c-1.87,0-3.39-1.52-3.39-3.39V6.63c0-1.87,1.52-3.39,3.39-3.39h29.71c1.87,0,3.39,1.52,3.39,3.39v36.8h3.24V6.63c0-3.66-2.98-6.63-6.63-6.63Z"/>
 
-
-
-
-
-
-
-
-
-
-
             <path fill="#ffffff" d="m15.79,13.65c0,3.15,2.55,5.7,5.7,5.7s5.7-2.55,5.7-5.7-2.55-5.7-5.7-5.7-5.7,2.55-5.7,5.7Zm7.18-2.83c0,.55-.45,1-1,1-1.23,0-2.24,1-2.24,2.24,0,.55-.45,1-1,1s-1-.45-1-1c0-2.34,1.9-4.24,4.24-4.24.55,0,1,.44,1,1Z"/>
 
-
-
-
-
-
-
-
-
-
-
           </svg>
-
-
-
-
-
-
-
-
-
-
 
           CLIENTES
 
-
-
-
-
-
-
-
-
-
-
         </button>
-
-
-
-
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     <!-- Segunda tarjeta: Botones Empresa y Cliente -->
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   <div class="tareas-panel-overlay" *ngIf="showTareasPanel " (click)="toggleTareasPanel()"></div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   <aside class="tareas-panel" *ngIf="showTareasPanel" [class.open]="showTareasPanel">
-
-
-
-
-
-
-
-
-
-
 
     <div class="container mt-4 tareas-agregadas">
 
-
-
-
-
-
-
-
-
-
-
       <div class="tareas-agregadas__header">
-
-
-
-
-
-
-
-
-
-
 
         <div style="display:flex;align-items:center;gap:8px;">
 
-
-
-
-
-
-
-
-
-
-
           <div class="tareas-agregadas__title">
-
-
-
-
-
-
-
-
-
-
 
             <img
 
-
-
-
-
-
-
-
-
-
-
               *ngIf="currentEmpresaLogoUrl"
-
-
-
-
-
-
-
-
-
-
 
               [src]="currentEmpresaLogoUrl"
 
-
-
-
-
-
-
-
-
-
-
               alt="Logo empresa"
-
-
-
-
-
-
-
-
-
-
 
               class="tareas-agregadas__logo"
 
-
-
-
-
-
-
-
-
-
-
               style="cursor:pointer"
-
-
-
-
-
-
-
-
-
-
 
               (click)="openListaEmpresasModal()"
 
-
-
-
-
-
-
-
-
-
-
             >
-
-
-
-
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
 
-
-
-
-
-
-
-
-
-
-
           <button
-
-
-
-
-
-
-
-
-
-
 
             type="button"
 
-
-
-
-
-
-
-
-
-
-
             class="btn btn-sm btn-outline-secondary"
-
-
-
-
-
-
-
-
-
-
 
             style="border-radius:50%;width:32px;height:32px;padding:0;display:flex;align-items:center;justify-content:center;"
 
-
-
-
-
-
-
-
-
-
-
             title="Seleccionar cliente"
-
-
-
-
-
-
-
-
-
-
 
             (click)="$event.stopPropagation(); openListaClientesModal()">
 
-
-
-
-
-
-
-
-
-
-
             <i class="fas fa-user-tie" style="font-size:13px;"></i>
-
-
-
-
-
-
-
-
-
-
 
           </button>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <div class="tareas-agregadas__cliente" *ngIf="clienteSeleccionado">
 
-
-
-
-
-
-
-
-
-
-
           <!--span class="tareas-agregadas__cliente-nombre">{{ presupuestoSeleccionado?.name }}</!--span-->
-
-
-
-
-
-
-
-
-
-
 
           <span class="tareas-agregadas__cliente-nombre"> {{ presupuestoSeleccionado?.name || clienteSeleccionado.name }}</span>
 
-
-
-
-
-
-
-
-
-
-
           <small class="tareas-agregadas__cliente-fecha" *ngIf="budgetDate">
-
-
-
-
-
-
-
-
-
-
 
             Presupuesto: {{ budgetDate | date:'dd/MM/yyyy' }}
 
-
-
-
-
-
-
-
-
-
-
           </small>
-
-
-
-
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       <div *ngIf="!tareasAgregadas?.length" class="p-4 text-center text-muted">
 
-
-
-
-
-
-
-
-
-
-
       No hay tareas para mostrar.
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
        <div *ngIf="tareasAgregadas?.length" class="table-responsive tareas-table-wrapper">
 
-
-
-
-
-
-
-
-
-
-
         <div class="table-responsive tareas-table-wrapper">
-
-
-
-
-
-
-
-
-
-
 
         <table class="table table-striped table-hover tareas-table">
 
-
-
-
-
-
-
-
-
-
-
           <thead class="thead-light">
-
-
-
-
-
-
-
-
-
-
 
             <tr>
 
-
-
-
-
-
-
-
-
-
-
               <th class="text-center"></th>
-
-
-
-
-
-
-
-
-
-
 
               <th class="text-center">Tarea</th>
 
-
-
-
-
-
-
-
-
-
-
               <!--th-- class="text-center">Rubro</!--th-->
 
+              <!--th class="text-center">Categoría</th-->
 
+              <!--th class="text-center">Descripción</th-->
 
+              <!--th class="text-center">ÁƒÂrea (mÁ‚Â²/mÁ‚Â³)</th-->
 
-
-
-
-
-
-
-
-              <!--th class="text-center">CategorÃƒÂ­a</th-->
-
-
-
-
-
-
-
-
-
-
-
-              <!--th class="text-center">DescripciÃ¯Â¿Â½n</th-->
-
-
-
-
-
-
-
-
-
-
-
-              <!--th class="text-center">ÃƒÂrea (mÃ‚Â²/mÃ‚Â³)</th-->
-
-
-
-
-
-
-
-
-
-
-
-              <th class="text-center">ÃƒÂrea (mÃ‚Â²/mÃ‚Â³)</th>
-
-
-
-
-
-
-
-
-
-
+              <th class="text-center">ÁƒÂrea (mÁ‚Â²/mÁ‚Â³)</th>
 
               <th class="text-center">Costo</th>
 
-
-
-
-
-
-
-
-
-
-
               <th class="text-center">Total</th>
 
-
-
-
-
-
-
-
-
-
-
             </tr>
-
-
-
-
-
-
-
-
-
-
 
           </thead>
 
-
-
-
-
-
-
-
-
-
-
           <tbody>
-
-
-
-
-
-
-
-
-
-
 
             <tr *ngFor="let tarea of tareasAgregadasPaginadas; let i = index">
 
-
-
-
-
-
-
-
-
-
-
               <td class="text-center">
-
-
-
-
-
-
-
-
-
-
 
                 <button *ngIf="tarea.id" (click)="solicitarConfirmacionEliminarTarea(tarea)" class="btn btn-outline-danger btn-sm rounded-circle" aria-label="Eliminar tarea">
 
-
-
-
-
-
-
-
-
-
-
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 43.15 46.9" width="18" height="18" aria-hidden="true" focusable="false">
-
-
-
-
-
-
-
-
-
-
 
                     <path fill="#c73838" d="m41.53,8.31h-10.95v-2.17c0-3.39-2.75-6.14-6.14-6.14h-5.73c-3.39,0-6.14,2.75-6.14,6.14v2.17H1.62c-.89,0-1.62.73-1.62,1.62s.73,1.62,1.62,1.62h2.43v29.38c0,3.29,2.67,5.96,5.96,5.96h24.04v-3.24H10.02c-1.5,0-2.72-1.22-2.72-2.72V11.55h28.56v30.12h3.24V11.55h2.43c.89,0,1.62-.73,1.62-1.62s-.73-1.62-1.62-1.62Zm-25.72,0v-2.17c0-1.6,1.3-2.9,2.9-2.9h5.73c1.6,0,2.9,1.3,2.9,2.9v2.17h-11.53Z"/>
 
-
-
-
-
-
-
-
-
-
-
                     <path fill="#c73838" d="m11.97,17.42v20.37c0,.89.73,1.62,1.62,1.62s1.62-.73,1.62-1.62v-20.37c0-.89-.73-1.62-1.62-1.62s-1.62.73-1.62,1.62Z"/>
-
-
-
-
-
-
-
-
-
-
 
                     <path fill="#c73838" d="m19.96,17.42v20.37c0,.89.73,1.62,1.62,1.62s1.62-.73,1.62-1.62v-20.37c0-.89-.73-1.62-1.62-1.62s-1.62.73-1.62,1.62Z"/>
 
-
-
-
-
-
-
-
-
-
-
                     <path fill="#c73838" d="m27.94,17.42v20.37c0,.89.73,1.62,1.62,1.62s1.62-.73,1.62-1.62v-20.37c0-.89-.73-1.62-1.62-1.62s-1.62.73-1.62,1.62Z"/>
-
-
-
-
-
-
-
-
-
-
 
                   </svg>
 
-
-
-
-
-
-
-
-
-
-
                 </button>
-
-
-
-
-
-
-
-
-
-
 
               </td>
 
-
-
-
-
-
-
-
-
-
-
               <td>{{ tarea.tarea }}</td>
-
-
-
-
-
-
-
-
-
-
 
               <!--td>{{ tarea.rubro }}</td-->
 
-
-
-
-
-
-
-
-
-
-
               <!--td>{{ tarea.categoria }}</!--td-->
-
-
-
-
-
-
-
-
-
-
 
               <!--td>{{ tarea.descripcion }}</td-->
 
-
-
-
-
-
-
-
-
-
-
               <td>{{ tarea.area | number:'1.2-2' }}</td>
-
-
-
-
-
-
-
-
-
-
 
               <td>{{ tarea.costo | currency:'USD':'symbol':'1.2-2' }}</td>
 
-
-
-
-
-
-
-
-
-
-
               <td>{{ tarea.totalCost | currency:'USD':'symbol':'1.2-2' }}</td>
-
-
-
-
-
-
-
-
-
-
 
             </tr>
 
-
-
-
-
-
-
-
-
-
-
           </tbody>
-
-
-
-
-
-
-
-
-
-
 
         </table>
 
-
-
-
-
-
-
-
-
-
-
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       <div *ngIf="tareasTotalPages > 1" class="tareas-panel__pagination">
 
-
-
-
-
-
-
-
-
-
-
-        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === 1" (click)="tareasPrevPage()" aria-label="PÃƒÂ¡gina anterior">
-
-
-
-
-
-
-
-
-
-
+        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === 1" (click)="tareasPrevPage()" aria-label="Página anterior">
 
           &#8249;
 
-
-
-
-
-
-
-
-
-
-
         </button>
-
-
-
-
-
-
-
-
-
-
 
         <span class="tareas-panel__pag-info">
 
-
-
-
-
-
-
-
-
-
-
           <span class="tareas-panel__pag-current">{{ tareasCurrentPage }}</span>
-
-
-
-
-
-
-
-
-
-
 
           <span class="tareas-panel__pag-sep">/</span>
 
-
-
-
-
-
-
-
-
-
-
           <span class="tareas-panel__pag-total">{{ tareasTotalPages }}</span>
-
-
-
-
-
-
-
-
-
-
 
         </span>
 
-
-
-
-
-
-
-
-
-
-
-        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === tareasTotalPages" (click)="tareasNextPage()" aria-label="PÃƒÂ¡gina siguiente">
-
-
-
-
-
-
-
-
-
-
+        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === tareasTotalPages" (click)="tareasNextPage()" aria-label="Página siguiente">
 
           &#8250;
 
-
-
-
-
-
-
-
-
-
-
         </button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       <div class="tareas-total mt-3">
 
-
-
-
-
-
-
-
-
-
-
         Total: {{ calcularCostoTotal() | currency:'USD':'symbol':'1.2-2' }}
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="tareas-guardar mt-3 tareas-panel__footer">
 
-
-
-
-
-
-
-
-
-
-
         <button class="tareas-panel__action" type="button" (click)="toggleTareasPanel()" aria-label="Cerrar panel" title="Cerrar panel">
-
-
-
-
-
-
-
-
-
-
 
           <i class="bi bi-x-lg" aria-hidden="true"></i>
 
-
-
-
-
-
-
-
-
-
-
         </button>
-
-
-
-
-
-
-
-
-
-
 
         <button class="tareas-panel__action" type="button" (click)="toggleSavedBudgetsPanel()" aria-label="Guardar presupuesto" title="Guardar presupuesto">
 
-
-
-
-
-
-
-
-
-
-
           <i class="bi bi-save2" aria-hidden="true"></i>
 
-
-
-
-
-
-
-
-
-
-
         </button>
-
-
-
-
-
-
-
-
-
-
 
         <button class="tareas-panel__action" type="button" (click)="limpiarPresupuestoCargado()" aria-label="Quitar carga" title="Quitar carga">
 
-
-
-
-
-
-
-
-
-
-
           <i class="bi bi-eraser" aria-hidden="true"></i>
-
-
-
-
-
-
-
-
-
-
 
         </button>
 
-
-
-
-
-
-
-
-
-
-
         <button
-
-
-
-
-
-
-
-
-
-
 
           *ngIf="tareasAgregadas?.length"
 
-
-
-
-
-
-
-
-
-
-
           class="tareas-panel__action tareas-panel__action--danger"
 
-
-
-
-
-
-
-
-
-
-
           type="button"
-
-
-
-
-
-
-
-
-
-
 
           (click)="eliminarTodasLasTareas()"
 
-
-
-
-
-
-
-
-
-
-
           aria-label="Eliminar todas las tareas"
-
-
-
-
-
-
-
-
-
-
 
           title="Eliminar todas las tareas">
 
-
-
-
-
-
-
-
-
-
-
           <i class="bi bi-trash3" aria-hidden="true"></i>
 
-
-
-
-
-
-
-
-
-
-
         </button>
-
-
-
-
-
-
-
-
-
-
 
         <button
 
-
-
-
-
-
-
-
-
-
-
           class="tareas-panel__action tareas-panel__action--info"
-
-
-
-
-
-
-
-
-
-
 
           type="button"
 
-
-
-
-
-
-
-
-
-
-
           data-bs-toggle="modal"
-
-
-
-
-
-
-
-
-
-
 
           data-bs-target="#tareasPanelHelpModal"
 
-
-
-
-
-
-
-
-
-
-
           aria-label="Ayuda de botones"
-
-
-
-
-
-
-
-
-
-
 
           title="Ayuda de botones">
 
-
-
-
-
-
-
-
-
-
-
           <i class="bi bi-question-circle" aria-hidden="true"></i>
-
-
-
-
-
-
-
-
-
-
 
         </button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
 
   </aside>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <div class="modal fade" id="tareasPanelHelpModal" tabindex="-1" aria-labelledby="tareasPanelHelpModalLabel" aria-hidden="true">
-
-
-
-
-
-
-
-
-
-
 
   <div class="modal-dialog modal-dialog-centered">
 
-
-
-
-
-
-
-
-
-
-
     <div class="modal-content dash-modal">
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-header">
-
-
-
-
-
-
-
-
-
-
 
         <h5 class="modal-title" id="tareasPanelHelpModalLabel">Botones del panel</h5>
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-
-
-
-
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-body">
-
-
-
-
-
-
-
-
-
-
 
         <ul class="tareas-panel-help-list">
 
-
-
-
-
-
-
-
-
-
-
           <li><i class="bi bi-x-lg" aria-hidden="true"></i><span><strong>Cerrar:</strong> cierra el panel de tareas agregadas.</span></li>
-
-
-
-
-
-
-
-
-
-
 
           <li><i class="bi bi-save2" aria-hidden="true"></i><span><strong>Guardar:</strong> abre la vista para guardar el presupuesto actual.</span></li>
 
-
-
-
-
-
-
-
-
-
-
           <li><i class="bi bi-eraser" aria-hidden="true"></i><span><strong>Quitar carga:</strong> limpia el presupuesto cargado actualmente.</span></li>
-
-
-
-
-
-
-
-
-
-
 
           <li><i class="bi bi-trash3" aria-hidden="true"></i><span><strong>Eliminar todo:</strong> borra todas las tareas agregadas del panel.</span></li>
 
-
-
-
-
-
-
-
-
-
-
-          <li><i class="bi bi-question-circle" aria-hidden="true"></i><span><strong>Ayuda:</strong> muestra esta explicaciÃ³n rÃ¡pida de botones.</span></li>
-
-
-
-
-
-
-
-
-
-
+          <li><i class="bi bi-question-circle" aria-hidden="true"></i><span><strong>Ayuda:</strong> muestra esta explicación rápida de botones.</span></li>
 
         </ul>
 
-
-
-
-
-
-
-
-
-
-
       </div>
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-footer">
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
 
 <div class="modal fade" id="confirmDeleteTareaModal" tabindex="-1" aria-labelledby="confirmDeleteTareaLabel" aria-hidden="true" (hidden.bs.modal)="limpiarConfirmacionEliminarTarea()">
 
-
-
-
-
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered">
-
-
-
-
-
-
-
-
-
-
 
     <div class="modal-content dash-modal">
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-header">
-
-
-
-
-
-
-
-
-
-
 
         <h5 class="modal-title" id="confirmDeleteTareaLabel">Eliminar tarea</h5>
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-
-
-
-
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-body">
-
-
-
-
-
-
-
-
-
-
 
         <p class="mb-0">
 
-
-
-
-
-
-
-
-
-
-
           Estas seguro de eliminar la tarea
-
-
-
-
-
-
-
-
-
-
 
           <span *ngIf="tareaDescripcionAEliminar; else tareaGenerica" class="text-primary fw-bold">{{ tareaDescripcionAEliminar }}</span>
 
-
-
-
-
-
-
-
-
-
-
           <ng-template #tareaGenerica>esta tarea</ng-template>
-
-
-
-
-
-
-
-
-
-
 
           ? Esta accion no se puede deshacer.
 
-
-
-
-
-
-
-
-
-
-
         </p>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-footer">
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn btn-danger" (click)="confirmarEliminarTarea()">Eliminar</button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="modal fade" id="miModal" tabindex="-1" aria-labelledby="exampleModalLabel1" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-dialog">
-
-
-
-
-
-
-
-
-
-
 
         <div class="modal-content modal-zona">
 
-
-
-
-
-
-
-
-
-
-
           <div class="modal-header task-modal-header">
-
-
-
-
-
-
-
-
-
-
 
             <div class="task-modal-header__main">
 
-
-
-
-
-
-
-
-
-
-
               <h5 class="modal-title" id="exampleModalLabel1">Agregar Tarea</h5>
-
-
-
-
-
-
-
-
-
-
 
               <div class="task-inline-notice task-inline-notice--modal" *ngIf="tareaPersonalizadaNotice" aria-live="polite">
 
-
-
-
-
-
-
-
-
-
-
                 <div class="task-inline-notice__icon" aria-hidden="true">
-
-
-
-
-
-
-
-
-
-
 
                   <i class="bi bi-check2-circle"></i>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
                 <div class="task-inline-notice__content">
 
-
-
-
-
-
-
-
-
-
-
                   <strong class="task-inline-notice__title">{{ tareaPersonalizadaNotice.title }}</strong>
-
-
-
-
-
-
-
-
-
-
 
                   <span *ngIf="tareaPersonalizadaNotice.text" class="task-inline-notice__text">{{ tareaPersonalizadaNotice.text }}</span>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
 
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
 
           <div class="modal-body">
 
-
-
-
-
-
-
-
-
-
-
             <form>
-
-
-
-
-
-
-
-
-
-
 
               <div class="mb-3 coolinput tarea-textarea-wrap">
 
-
-
-
-
-
-
-
-
-
-
                 <label for="tarea" class="text">Tarea:</label>
-
-
-
-
-
-
-
-
-
-
 
                 <textarea [(ngModel)]="tareaSeleccionada.tarea" name="tarea" class="form-control input" rows="3"
 
-
-
-
-
-
-
-
-
-
-
                   style="margin-bottom: 20px; font-size: 14px; white-space: pre-wrap; overflow-wrap: break-word; background-image: linear-gradient(to top, #c7d0e9, #d7dbee, #e5e7f4, #f3f3f9, #ffffff); color: #092865; padding: 10px; resize: none; font-weight: bold;"></textarea>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
               <div class="row mb-3">
 
-
-
-
-
-
-
-
-
-
-
                 <div class="col-6 coolinput">
-
-
-
-
-
-
-
-
-
-
 
                   <label for="area" class="text">Area (m2/m3):</label>
 
-
-
-
-
-
-
-
-
-
-
                   <input type="number" [(ngModel)]="tareaSeleccionada.area" name="area" class="form-control input" id="area" placeholder="Ingresa el area" required>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
                 <div class="col-6 coolinput">
 
-
-
-
-
-
-
-
-
-
-
                   <label for="modal-cost" class="text">Costo por m2/m3/ml:</label>
-
-
-
-
-
-
-
-
-
-
 
                   <input type="number" [(ngModel)]="tareaSeleccionada.costo" name="costo" class="form-control input" id="cost"
 
-
-
-
-
-
-
-
-
-
-
                     [readonly]="trialMode" style="color: #ab1444; font-weight: bold; text-align: center;" placeholder="Ingresa el costo" step="0.01" required>
-
-
-
-
-
-
-
-
-
-
 
                 </div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
 
-
-
-
-
-
-
-
-
-
-
               <div class="mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
                 <label for="description" class="text">Descripcion:</label>
 
-
-
-
-
-
-
-
-
-
-
                 <input type="textarea" [(ngModel)]="tareaSeleccionada.descripcion" name="descripcion" class="form-control input" id="description" placeholder="Es opcional">
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
               <div class="mb-3 coolinput">
 
-
-
-
-
-
-
-
-
-
-
                 <label for="discount" class="text">Descuento (%):</label>
-
-
-
-
-
-
-
-
-
-
 
                 <input type="number" [(ngModel)]="tareaSeleccionada.descuento" name="descuento" class="form-control input" id="discount" value="0">
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
               <div class="modal-footer d-flex flex-column" style="gap: 8px;">
 
-
-
-
-
-
-
-
-
-
-
                 <!--button-- type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</!button-->
-
-
-
-
-
-
-
-
-
-
 
                 <div class="w-100 d-flex">
 
-
-
-
-
-
-
-
-
-
-
                   <button type="button" (click)="agregarTarea()" class="btn btn-primary w-100" data-bs-dismiss="modal">Agregar</button>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
                 <div class="w-100 d-flex tp-export-actions" style="gap: 8px;">
 
-
-
-
-
-
-
-
-
-
-
                   <button type="button" class="btn btn-outline-primary flex-grow-1" (click)="abrirHistorialDesdeModal()">
 
-
-
-
-
-
-
-
-
-
-
-                    <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>Ãšltimas tareas
-
-
-
-
-
-
-
-
-
-
+                    <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>Últimas tareas
 
                   </button>
-
-
-
-
-
-
-
-
-
-
 
                   <button type="button" class="btn btn-outline-secondary tp-export-modal-btn flex-grow-1"
 
-
-
-
-
-
-
-
-
-
-
                           (click)="exportarTareaAPersonalizadas()"
-
-
-
-
-
-
-
-
-
-
 
                           title="Guardar en Mis Tareas personalizadas">
 
-
-
-
-
-
-
-
-
-
-
                     <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 6px;">
-
-
-
-
-
-
-
-
-
-
 
                       <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
 
-
-
-
-
-
-
-
-
-
-
                       <path d="M8 4a.5.5 0 0 1 .5.5V6H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V7H6a.5.5 0 0 1 0-1h1.5V4.5A.5.5 0 0 1 8 4"/>
-
-
-
-
-
-
-
-
-
-
 
                     </svg>
 
-
-
-
-
-
-
-
-
-
-
                     Guardar tarea
-
-
-
-
-
-
-
-
-
-
 
                   
 
-
-
-
-
-
-
-
-
-
-
                   </button>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
                 <!--button-- type="button" *ngIf="tareaSeleccionada.id" (click)="actualizarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Actualizar</!--button-->
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
             </form>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
-
-
-
-
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-
-
-
-
-
-
-
-
-
-
 
     <div class="modal-content modal-zona">
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-header">
-
-
-
-
-
-
-
-
-
-
 
         <div class="d-flex align-items-center gap-2">
 
-
-
-
-
-
-
-
-
-
-
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#2563eb" viewBox="0 0 16 16">
-
-
-
-
-
-
-
-
-
-
 
             <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.029 10 8 10c-2.029 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
 
-
-
-
-
-
-
-
-
-
-
           </svg>
-
-
-
-
-
-
-
-
-
-
 
           <h5 class="modal-title mb-0" id="clientModalLabel">Datos del Cliente</h5>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-body">
-
-
-
-
-
-
-
-
-
-
 
         <form #clientForm="ngForm" (ngSubmit)="saveClientData(clientForm)">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
             <label for="clientName" class="text">
 
-
-
-
-
-
-
-
-
-
-
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
-
-
-
-
-
-
-
-
-
-
 
                 <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
 
-
-
-
-
-
-
-
-
-
-
               </svg>
-
-
-
-
-
-
-
-
-
-
 
               Nombre <span style="color:#e85555;font-size:0.75rem;">*</span>
 
-
-
-
-
-
-
-
-
-
-
             </label>
-
-
-
-
-
-
-
-
-
-
 
             <input type="text" class="form-control input" id="clientName" name="clientName"
 
-
-
-
-
-
-
-
-
-
-
                    [(ngModel)]="clientName" required minlength="2"
-
-
-
-
-
-
-
-
-
-
 
                    placeholder="Nombre del cliente" #cliName="ngModel">
 
-
-
-
-
-
-
-
-
-
-
             @if (cliName.touched && cliName.errors?.['required']) {
-
-
-
-
-
-
-
-
-
-
 
               <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El nombre es obligatorio.</div>
 
-
-
-
-
-
-
-
-
-
-
             }
-
-
-
-
-
-
-
-
-
-
 
             @if (cliName.touched && cliName.errors?.['minlength']) {
 
-
-
-
-
-
-
-
-
-
-
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">MÃƒÂ­nimo 2 caracteres.</div>
-
-
-
-
-
-
-
-
-
-
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Mínimo 2 caracteres.</div>
 
             }
 
-
-
-
-
-
-
-
-
-
-
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
             <label for="contact" class="text">
 
-
-
-
-
-
-
-
-
-
-
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
-
-
-
-
-
-
-
-
-
-
 
                 <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58z"/>
 
-
-
-
-
-
-
-
-
-
-
               </svg>
-
-
-
-
-
-
-
-
-
-
 
               Contacto <span style="color:#e85555;font-size:0.75rem;">*</span>
 
-
-
-
-
-
-
-
-
-
-
             </label>
-
-
-
-
-
-
-
-
-
-
 
             <input type="text" class="form-control input" id="contact" name="clientContact"
 
-
-
-
-
-
-
-
-
-
-
                    [(ngModel)]="clientContact" required pattern="\+?\d{7,15}"
 
-
-
-
-
-
-
-
-
-
-
-                   placeholder="TelÃƒÂ©fono" #contact="ngModel">
-
-
-
-
-
-
-
-
-
-
+                   placeholder="Teléfono" #contact="ngModel">
 
             @if (contact.touched && contact.errors?.['required']) {
 
-
-
-
-
-
-
-
-
-
-
               <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El contacto es obligatorio.</div>
 
-
-
-
-
-
-
-
-
-
-
             }
-
-
-
-
-
-
-
-
-
-
 
             @if (contact.touched && contact.errors?.['pattern']) {
 
-
-
-
-
-
-
-
-
-
-
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">NÃƒÂºmero vÃƒÂ¡lido (7-15 dÃƒÂ­gitos, puede incluir +).</div>
-
-
-
-
-
-
-
-
-
-
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Número válido (7-15 dígitos, puede incluir +).</div>
 
             }
 
-
-
-
-
-
-
-
-
-
-
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
             <label for="clientEmail" class="text">
 
-
-
-
-
-
-
-
-
-
-
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
-
-
-
-
-
-
-
-
-
-
 
                 <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
 
-
-
-
-
-
-
-
-
-
-
               </svg>
-
-
-
-
-
-
-
-
-
-
 
               Email <span style="color:#e85555;font-size:0.75rem;">*</span>
 
-
-
-
-
-
-
-
-
-
-
             </label>
-
-
-
-
-
-
-
-
-
-
 
             <input type="email" class="form-control input" id="clientEmail" name="clientEmail"
 
-
-
-
-
-
-
-
-
-
-
                    [(ngModel)]="clientEmail" required email
-
-
-
-
-
-
-
-
-
-
 
                    placeholder="correo@ejemplo.com" #cliEmail="ngModel">
 
-
-
-
-
-
-
-
-
-
-
             @if (cliEmail.touched && cliEmail.errors?.['required']) {
-
-
-
-
-
-
-
-
-
-
 
               <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El email es obligatorio.</div>
 
-
-
-
-
-
-
-
-
-
-
             }
-
-
-
-
-
-
-
-
-
-
 
             @if (cliEmail.touched && cliEmail.errors?.['email']) {
 
-
-
-
-
-
-
-
-
-
-
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no vÃƒÂ¡lido.</div>
-
-
-
-
-
-
-
-
-
-
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no válido.</div>
 
             }
 
-
-
-
-
-
-
-
-
-
-
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
             <label for="clave" class="text">
 
-
-
-
-
-
-
-
-
-
-
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
-
-
-
-
-
-
-
-
-
-
 
                 <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"/>
 
-
-
-
-
-
-
-
-
-
-
                 <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1z"/>
 
-
-
-
-
-
-
-
-
-
-
               </svg>
-
-
-
-
-
-
-
-
-
-
 
               CUIT/Clave <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span>
 
-
-
-
-
-
-
-
-
-
-
             </label>
-
-
-
-
-
-
-
-
-
-
 
             <input type="text" class="form-control input" id="clave" name="clientClave"
 
-
-
-
-
-
-
-
-
-
-
                    [(ngModel)]="clientClave" pattern="\d{2}-\d{8}-\d{1}"
-
-
-
-
-
-
-
-
-
-
 
                    placeholder="XX-XXXXXXXX-X" #clave="ngModel">
 
-
-
-
-
-
-
-
-
-
-
             @if (clave.touched && clave.errors?.['pattern']) {
-
-
-
-
-
-
-
-
-
-
 
               <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato: XX-XXXXXXXX-X</div>
 
-
-
-
-
-
-
-
-
-
-
             }
-
-
-
-
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
             <label for="direccion" class="text">
 
-
-
-
-
-
-
-
-
-
-
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
-
-
-
-
-
-
-
-
-
-
 
                 <path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/>
 
-
-
-
-
-
-
-
-
-
-
                 <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-
-
-
-
-
-
-
-
-
-
 
               </svg>
 
-
-
-
-
-
-
-
-
-
-
-              DirecciÃƒÂ³n <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span>
-
-
-
-
-
-
-
-
-
-
+              Dirección <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span>
 
             </label>
-
-
-
-
-
-
-
-
-
-
 
             <input type="text" class="form-control input" id="direccion" name="clientDireccion"
 
-
-
-
-
-
-
-
-
-
-
-                   [(ngModel)]="clientDireccion" placeholder="DirecciÃƒÂ³n del cliente">
-
-
-
-
-
-
-
-
-
-
+                   [(ngModel)]="clientDireccion" placeholder="Dirección del cliente">
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
             <label for="budgetDate" class="text">
 
-
-
-
-
-
-
-
-
-
-
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
-
-
-
-
-
-
-
-
-
-
 
                 <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
 
-
-
-
-
-
-
-
-
-
-
               </svg>
-
-
-
-
-
-
-
-
-
-
 
               Fecha del Presupuesto <span style="color:#e85555;font-size:0.75rem;">*</span>
 
-
-
-
-
-
-
-
-
-
-
             </label>
-
-
-
-
-
-
-
-
-
-
 
             <input type="date" class="form-control input" id="budgetDate" name="budgetDate"
 
-
-
-
-
-
-
-
-
-
-
                    [(ngModel)]="budgetDate" required #budgetDateCtrl="ngModel"
-
-
-
-
-
-
-
-
-
-
 
                    (change)="onDateChange($event)">
 
-
-
-
-
-
-
-
-
-
-
             @if (budgetDateCtrl.touched && budgetDateCtrl.errors?.['required']) {
-
-
-
-
-
-
-
-
-
-
 
               <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">La fecha es obligatoria.</div>
 
-
-
-
-
-
-
-
-
-
-
             }
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <div class="mb-3 coolinput">
 
-
-
-
-
-
-
-
-
-
-
             <label for="additionalDetails" class="text">Detalles adicionales <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
-
-
-
-
-
-
-
-
-
-
 
             <textarea class="form-control input" id="additionalDetails" name="additionalDetailsClient"
 
-
-
-
-
-
-
-
-
-
-
-                      [(ngModel)]="additionalDetailsClient" rows="2" placeholder="InformaciÃƒÂ³n extra del cliente"></textarea>
-
-
-
-
-
-
-
-
-
-
+                      [(ngModel)]="additionalDetailsClient" rows="2" placeholder="Información extra del cliente"></textarea>
 
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <div class="modal-footer d-flex justify-content-end px-0 pb-0">
 
-
-
-
-
-
-
-
-
-
-
             <button type="submit" class="btn btn-primary" [disabled]="clientForm.invalid || isSavingClient">
-
-
-
-
-
-
-
-
-
-
 
               <span *ngIf="!isSavingClient">
 
-
-
-
-
-
-
-
-
-
-
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
-
-
-
-
-
-
-
-
-
-
 
                   <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
 
-
-
-
-
-
-
-
-
-
-
                 </svg>
-
-
-
-
-
-
-
-
-
-
 
                 Guardar
 
-
-
-
-
-
-
-
-
-
-
               </span>
-
-
-
-
-
-
-
-
-
-
 
               <span *ngIf="isSavingClient"><span class="spinner-border spinner-border-sm me-1"></span> Guardando...</span>
 
-
-
-
-
-
-
-
-
-
-
             </button>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
 
         </form>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
   </div>
-
-
-
-
-
-
-
-
-
-
 
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <div class="modal fade" id="listaClientesModal" aria-hidden="true" aria-labelledby="listaClientesLabel" tabindex="-1">
-
-
-
-
-
-
-
-
-
-
 
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg lista-clientes-modal__dialog">
 
-
-
-
-
-
-
-
-
-
-
     <div class="modal-content modal-zona">
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-header">
 
-
-
-
-
-
-
-
-
-
-
         <div class="d-flex align-items-center gap-3 flex-grow-1">
-
-
-
-
-
-
-
-
-
-
 
           <h5 class="modal-title mb-0" id="listaClientesLabel">Lista de Clientes</h5>
 
-
-
-
-
-
-
-
-
-
-
           <span
-
-
-
-
-
-
-
-
-
-
 
             class="badge rounded-pill fs-6 px-3 py-2"
 
-
-
-
-
-
-
-
-
-
-
             [ngClass]="{
-
-
-
-
-
-
-
-
-
-
 
               'bg-success':  totalClientesUsuario < currentClienteLimit * 0.8,
 
-
-
-
-
-
-
-
-
-
-
               'bg-warning text-dark': totalClientesUsuario >= currentClienteLimit * 0.8 && totalClientesUsuario < currentClienteLimit,
-
-
-
-
-
-
-
-
-
-
 
               'bg-danger':   totalClientesUsuario >= currentClienteLimit
 
-
-
-
-
-
-
-
-
-
-
             }"
-
-
-
-
-
-
-
-
-
-
 
           >{{ totalClientesUsuario }} / {{ currentClienteLimit }}</span>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-body">
 
-
-
-
-
-
-
-
-
-
-
         <div class="container-fluid">
-
-
-
-
-
-
-
-
-
-
 
           <div class="row mb-3">
 
-
-
-
-
-
-
-
-
-
-
             <div class="col-12 d-flex flex-wrap align-items-center gap-3">
-
-
-
-
-
-
-
-
-
-
 
               <div class="text-muted small">Selecciona un cliente tocando su tarjeta.</div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
 
           <div class="row">
 
-
-
-
-
-
-
-
-
-
-
             <div class="col-12" *ngFor="let cliente of paginatedClientes">
-
-
-
-
-
-
-
-
-
-
 
               <div
 
-
-
-
-
-
-
-
-
-
-
                 class="card mb-3 w-100 shadow-sm cliente-card"
-
-
-
-
-
-
-
-
-
-
 
                 [class.cliente-card--selected]="clienteSeleccionado?.id === cliente.id"
 
-
-
-
-
-
-
-
-
-
-
                 (click)="seleccionarCliente(cliente)"
-
-
-
-
-
-
-
-
-
-
 
                 role="button"
 
-
-
-
-
-
-
-
-
-
-
                 tabindex="0"
-
-
-
-
-
-
-
-
-
-
 
               >
 
-
-
-
-
-
-
-
-
-
-
                 <div class="card-body position-relative cliente-card__body">
-
-
-
-
-
-
-
-
-
-
 
                   <div class="cliente-card__header">
 
-
-
-
-
-
-
-
-
-
-
                     <h5 class="card-title cliente-card__title">
-
-
-
-
-
-
-
-
-
-
 
                       <span *ngIf="trialMode" style="color: #ff6b6b; font-weight: bold; font-size: 0.85rem;">CLIENTE DEMO: </span>
 
-
-
-
-
-
-
-
-
-
-
                       {{ cliente.name }}
-
-
-
-
-
-
-
-
-
-
 
                     </h5>
 
-
-
-
-
-
-
-
-
-
-
                     <label class="cliente-check">
-
-
-
-
-
-
-
-
-
-
 
                       <input
 
-
-
-
-
-
-
-
-
-
-
                         type="checkbox"
-
-
-
-
-
-
-
-
-
-
 
                         [checked]="clienteSeleccionado?.id === cliente.id"
 
-
-
-
-
-
-
-
-
-
-
                         (click)="$event.stopPropagation(); seleccionarCliente(cliente)"
-
-
-
-
-
-
-
-
-
-
 
                       >
 
-
-
-
-
-
-
-
-
-
-
                       <div class="checkmark"></div>
-
-
-
-
-
-
-
-
-
-
 
                     </label>
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
 
                   <div *ngIf="clienteSeleccionado?.id === cliente.id" class="cliente-card__selected">
 
-
-
-
-
-
-
-
-
-
-
                     Cliente seleccionado
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
 
                   <p class="card-text mb-1"><strong>Tel:</strong> {{ cliente.contact }}</p>
 
-
-
-
-
-
-
-
-
-
-
                   <p class="card-text mb-1"><strong>Email:</strong> {{ cliente.email }}</p>
-
-
-
-
-
-
-
-
-
-
 
                   <p class="card-text mb-1"><strong>CUIT/Clave:</strong> {{ cliente.clave }}</p>
 
-
-
-
-
-
-
-
-
-
-
-                  <p class="card-text mb-1"><strong>DirecciÃƒÂ³n:</strong> {{ cliente.direccion }}</p>
-
-
-
-
-
-
-
-
-
-
+                  <p class="card-text mb-1"><strong>Dirección:</strong> {{ cliente.direccion }}</p>
 
                   <p class="card-text mb-1"><strong>Fecha:</strong> {{ cliente.budgetDate }}</p>
 
-
-
-
-
-
-
-
-
-
-
                   <p class="card-text mb-2"><strong>Detalles:</strong> {{ cliente.additionalDetails }}</p>
-
-
-
-
-
-
-
-
-
-
 
                   <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
 
-
-
-
-
-
-
-
-
-
-
                     <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action" title="Eliminar" aria-label="Eliminar" (click)="cliente.id && solicitarConfirmacionEliminar(cliente.id)"><i class="bi bi-trash3-fill"></i></button>
-
-
-
-
-
-
-
-
-
-
 
                     <button class="btn btn-success btn-xs px-3 py-1 cliente-card__action" title="Editar" aria-label="Editar" *ngIf="cliente.id !== undefined" (click)="editarCliente(cliente.id)"><i class="bi bi-pencil-square"></i></button>
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
 
                 </div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
 
             <div *ngIf="paginatedClientes.length === 0" class="col-12 text-center text-muted py-3">
 
-
-
-
-
-
-
-
-
-
-
               No hay clientes asociados a este userCode.
-
-
-
-
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
 
         </div>
 
+        <!-- Controles de paginación -->
 
-
-
-
-
-
-
-
-
-
-        <!-- Controles de paginaciÃƒÂ³n -->
-
-
-
-
-
-
-
-
-
-
-
-        <nav aria-label="PaginaciÃƒÂ³n de clientes" *ngIf="clientes.length > itemsPerPage">
-
-
-
-
-
-
-
-
-
-
+        <nav aria-label="Paginación de clientes" *ngIf="clientes.length > itemsPerPage">
 
           <ul class="pagination justify-content-center flex-wrap">
 
-
-
-
-
-
-
-
-
-
-
             <li class="page-item" [class.disabled]="currentPage === 1">
-
-
-
-
-
-
-
-
-
-
 
               <a class="page-link" (click)="previousPage()" aria-label="Anterior">
 
-
-
-
-
-
-
-
-
-
-
                 <span aria-hidden="true">&laquo;</span>
-
-
-
-
-
-
-
-
-
-
 
               </a>
 
-
-
-
-
-
-
-
-
-
-
             </li>
-
-
-
-
-
-
-
-
-
-
 
             <li class="page-item" *ngFor="let page of getPages()" [class.active]="currentPage === page">
 
-
-
-
-
-
-
-
-
-
-
               <a class="page-link" (click)="setPage(page)">{{ page }}</a>
 
-
-
-
-
-
-
-
-
-
-
             </li>
-
-
-
-
-
-
-
-
-
-
 
             <li class="page-item" [class.disabled]="currentPage === totalPages">
 
-
-
-
-
-
-
-
-
-
-
               <a class="page-link" (click)="nextPage()" aria-label="Siguiente">
-
-
-
-
-
-
-
-
-
-
 
                 <span aria-hidden="true">&raquo;</span>
 
-
-
-
-
-
-
-
-
-
-
               </a>
-
-
-
-
-
-
-
-
-
-
 
             </li>
 
-
-
-
-
-
-
-
-
-
-
           </ul>
-
-
-
-
-
-
-
-
-
-
 
         </nav>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-footer lista-clientes-modal__footer">
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn btn-success lista-clientes-modal__footer-btn" (click)="openClientModal()">Crear nuevo cliente</button>
-
-
-
-
-
-
-
-
-
-
 
         <div class="lista-clientes-modal__filter">
 
-
-
-
-
-
-
-
-
-
-
           <input
-
-
-
-
-
-
-
-
-
-
 
             type="text"
 
-
-
-
-
-
-
-
-
-
-
             class="form-control"
 
-
-
-
-
-
-
-
-
-
-
             placeholder="Filtrar cliente..."
-
-
-
-
-
-
-
-
-
-
 
             [(ngModel)]="filtroCliente"
               (ngModelChange)="onFiltroClienteChange()">
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn btn-secondary lista-clientes-modal__footer-btn" data-bs-dismiss="modal">Cerrar</button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel">
 
-
-
-
-
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-
-
-
-
-
-
-
-
-
-
 
     <div class="modal-content modal-zona">
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-header">
-
-
-
-
-
-
-
-
-
-
 
         <div class="d-flex align-items-center gap-2">
 
-
-
-
-
-
-
-
-
-
-
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#2563eb" viewBox="0 0 16 16">
-
-
-
-
-
-
-
-
-
-
 
             <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2zm3.564 1.426L5.596 5 8 5.961 14.154 3.5zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464z"/>
 
-
-
-
-
-
-
-
-
-
-
           </svg>
-
-
-
-
-
-
-
-
-
-
 
           <h5 class="modal-title mb-0" id="exampleModalLabel">Datos de tu Empresa</h5>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-body">
 
-
-
-
-
-
-
-
-
-
-
-        <p style="text-align: center; font-size: 12px; opacity: 0.8;">PodÃƒÂ©s editar estos datos las veces que quieras.</p>
-
-
-
-
-
-
-
-
-
-
+        <p style="text-align: center; font-size: 12px; opacity: 0.8;">Podés editar estos datos las veces que quieras.</p>
 
         <form #empresaForm="ngForm" (ngSubmit)="saveFormData()">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
             <label for="empresaName" class="text">
 
-
-
-
-
-
-
-
-
-
-
               Empresa / Nombre personal <span style="color:#e85555;font-size:0.75rem;">*</span>
 
-
-
-
-
-
-
-
-
-
-
             </label>
-
-
-
-
-
-
-
-
-
-
 
             <input type="text" class="form-control input" id="empresaName" name="empresaName"
 
-
-
-
-
-
-
-
-
-
-
                    [(ngModel)]="empresaName" required
 
-
-
-
-
-
-
-
-
-
-
-                   placeholder="Ã‚Â¿CÃƒÂ³mo se llama?" #eName="ngModel">
-
-
-
-
-
-
-
-
-
-
+                   placeholder="¿Cómo se llama?" #eName="ngModel">
 
             @if (eName.touched && eName.errors?.['required']) {
 
-
-
-
-
-
-
-
-
-
-
               <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El nombre es obligatorio.</div>
-
-
-
-
-
-
-
-
-
-
 
             }
 
-
-
-
-
-
-
-
-
-
-
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
             <label for="empresaPhone" class="text">
 
-
-
-
-
-
-
-
-
-
-
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
-
-
-
-
-
-
-
-
-
-
 
                 <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58z"/>
 
-
-
-
-
-
-
-
-
-
-
               </svg>
 
-
-
-
-
-
-
-
-
-
-
-              TelÃƒÂ©fono <span style="color:#e85555;font-size:0.75rem;">*</span>
-
-
-
-
-
-
-
-
-
-
+              Teléfono <span style="color:#e85555;font-size:0.75rem;">*</span>
 
             </label>
-
-
-
-
-
-
-
-
-
-
 
             <input type="text" class="form-control input" id="empresaPhone" name="empresaPhone"
 
-
-
-
-
-
-
-
-
-
-
                    [(ngModel)]="empresaPhone" required
 
-
-
-
-
-
-
-
-
-
-
-                   placeholder="TelÃƒÂ©fono de tu empresa" #ePhone="ngModel">
-
-
-
-
-
-
-
-
-
-
+                   placeholder="Teléfono de tu empresa" #ePhone="ngModel">
 
             @if (ePhone.touched && ePhone.errors?.['required']) {
 
-
-
-
-
-
-
-
-
-
-
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El telÃƒÂ©fono es obligatorio.</div>
-
-
-
-
-
-
-
-
-
-
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El teléfono es obligatorio.</div>
 
             }
 
-
-
-
-
-
-
-
-
-
-
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
             <label for="empresaEmail" class="text">
 
-
-
-
-
-
-
-
-
-
-
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
-
-
-
-
-
-
-
-
-
-
 
                 <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
 
-
-
-
-
-
-
-
-
-
-
               </svg>
-
-
-
-
-
-
-
-
-
-
 
               Email <span style="color:#e85555;font-size:0.75rem;">*</span>
 
-
-
-
-
-
-
-
-
-
-
             </label>
-
-
-
-
-
-
-
-
-
-
 
             <input type="email" class="form-control input" id="empresaEmail" name="empresaEmail"
 
-
-
-
-
-
-
-
-
-
-
                    [(ngModel)]="empresaEmail" required email
-
-
-
-
-
-
-
-
-
-
 
                    placeholder="Email de tu empresa" #eEmail="ngModel">
 
-
-
-
-
-
-
-
-
-
-
             @if (eEmail.touched && eEmail.errors?.['required']) {
-
-
-
-
-
-
-
-
-
-
 
               <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El email es obligatorio.</div>
 
-
-
-
-
-
-
-
-
-
-
             }
-
-
-
-
-
-
-
-
-
-
 
             @if (eEmail.touched && eEmail.errors?.['email']) {
 
-
-
-
-
-
-
-
-
-
-
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no vÃƒÂ¡lido.</div>
-
-
-
-
-
-
-
-
-
-
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no válido.</div>
 
             }
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <div class="mb-3 coolinput">
 
-
-
-
-
-
-
-
-
-
-
-            <label for="additionalDetailsempresa" class="text">DescripciÃƒÂ³n <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
-
-
-
-
-
-
-
-
-
-
+            <label for="additionalDetailsempresa" class="text">Descripción <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
 
             <textarea class="form-control input" id="additionalDetailsempresa" name="additionalDetailsEmpresa"
 
-
-
-
-
-
-
-
-
-
-
                       [(ngModel)]="additionalDetailsEmpresa" rows="2"
 
-
-
-
-
-
-
-
-
-
-
-                      placeholder="Contale a tus clientes de quÃƒÂ© se trata tu empresa"></textarea>
-
-
-
-
-
-
-
-
-
-
+                      placeholder="Contale a tus clientes de qué se trata tu empresa"></textarea>
 
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <div class="mb-3 coolinput">
 
-
-
-
-
-
-
-
-
-
-
             <label for="empresaCuilCuit" class="text">CUIL/CUIT <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
-
-
-
-
-
-
-
-
-
-
 
             <input type="text" class="form-control input" id="empresaCuilCuit" name="empresaCuilCuit"
 
-
-
-
-
-
-
-
-
-
-
                    [(ngModel)]="empresaCuilCuit" placeholder="00-00000000-0" />
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <hr>
 
-
-
-
-
-
-
-
-
-
-
           <div class="d-flex gap-2 mb-3">
-
-
-
-
-
-
-
-
-
-
 
             <button type="button" class="btn btn-outline-primary flex-grow-1" (click)="toggleSocialFields()">
 
-
-
-
-
-
-
-
-
-
-
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
-
-
-
-
-
-
-
-
-
-
 
                 <path d="M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5"/>
 
-
-
-
-
-
-
-
-
-
-
               </svg>
-
-
-
-
-
-
-
-
-
-
 
               {{ showSocialFields ? 'Ocultar redes' : 'Redes sociales' }}
 
-
-
-
-
-
-
-
-
-
-
             </button>
-
-
-
-
-
-
-
-
-
-
 
             <button class="btn btn-primary flex-grow-1" type="button" (click)="abrirModalImagen()">
 
-
-
-
-
-
-
-
-
-
-
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
-
-
-
-
-
-
-
-
-
-
 
                 <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
 
-
-
-
-
-
-
-
-
-
-
                 <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/>
 
-
-
-
-
-
-
-
-
-
-
               </svg>
-
-
-
-
-
-
-
-
-
-
 
               Subir imagen
 
-
-
-
-
-
-
-
-
-
-
             </button>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <div *ngIf="showSocialFields">
 
-
-
-
-
-
-
-
-
-
-
             <div class="mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
               <label for="empresaWebsite" class="text">Sitio web <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
 
-
-
-
-
-
-
-
-
-
-
               <input type="url" class="form-control input" id="empresaWebsite" name="empresaWebsite"
-
-
-
-
-
-
-
-
-
-
 
                      [(ngModel)]="empresaWebsite" placeholder="https://..." />
 
-
-
-
-
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
-
-
-
-
             <div class="mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
               <label for="empresaTikTok" class="text">TikTok <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
 
-
-
-
-
-
-
-
-
-
-
               <input type="text" class="form-control input" id="empresaTikTok" name="empresaTikTok"
-
-
-
-
-
-
-
-
-
-
 
                      [(ngModel)]="empresaTikTok" placeholder="@tuusuario o enlace" />
 
-
-
-
-
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
-
-
-
-
             <div class="mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
               <label for="empresaInstagram" class="text">Instagram <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
 
-
-
-
-
-
-
-
-
-
-
               <input type="text" class="form-control input" id="empresaInstagram" name="empresaInstagram"
-
-
-
-
-
-
-
-
-
-
 
                      [(ngModel)]="empresaInstagram" placeholder="@tuusuario o enlace" />
 
-
-
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
 
             <div class="mb-3 coolinput">
 
-
-
-
-
-
-
-
-
-
-
               <label for="empresaFacebook" class="text">Facebook <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
-
-
-
-
-
-
-
-
-
-
 
               <input type="text" class="form-control input" id="empresaFacebook" name="empresaFacebook"
 
-
-
-
-
-
-
-
-
-
-
-                     [(ngModel)]="empresaFacebook" placeholder="URL de tu pÃƒÂ¡gina" />
-
-
-
-
-
-
-
-
-
-
+                     [(ngModel)]="empresaFacebook" placeholder="URL de tu página" />
 
             </div>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <button class="btn btn-outline-secondary w-100 mt-1" type="button" (click)="abrirModalPaleta()">
 
-
-
-
-
-
-
-
-
-
-
             <i class="fas fa-palette" aria-hidden="true" style="margin-right: 6px;"></i>PALETA DEL PRESUPUESTO
-
-
-
-
-
-
-
-
-
-
 
           </button>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="modal-footer d-flex justify-content-between px-0 pb-0 mt-3">
-
-
-
-
-
-
-
-
-
-
 
             
 
-
-
-
-
-
-
-
-
-
-
-            <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'LÃ¯Â¿Â½mite alcanzado para tu plan' : null">
-
-
-
-
-
-
-
-
-
-
+            <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Lómite alcanzado para tu plan' : null">
 
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
 
-
-
-
-
-
-
-
-
-
-
                 <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
-
-
-
-
-
-
-
-
-
-
 
               </svg>
 
-
-
-
-
-
-
-
-
-
-
               Guardar
-
-
-
-
-
-
-
-
-
-
 
             </button>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         </form>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
   </div>
-
-
-
-
-
-
-
-
-
-
 
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <div class="modal fade" id="listaEmpresasModal" aria-hidden="true" aria-labelledby="listaEmpresasLabel" tabindex="-1">
-
-
-
-
-
-
-
-
-
-
 
   <div class="modal-dialog modal-lg">
 
-
-
-
-
-
-
-
-
-
-
     <div class="modal-content modal-zona">
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-header">
 
-
-
-
-
-
-
-
-
-
-
         <div class="d-flex align-items-center gap-3 flex-grow-1">
-
-
-
-
-
-
-
-
-
-
 
           <h5 class="modal-title mb-0" id="listaEmpresasLabel">tu empresa</h5>
 
-
-
-
-
-
-
-
-
-
-
           <span
-
-
-
-
-
-
-
-
-
-
 
             class="badge rounded-pill fs-6 px-3 py-2"
 
-
-
-
-
-
-
-
-
-
-
             [ngClass]="{
-
-
-
-
-
-
-
-
-
-
 
               'bg-success':  empresas.length < currentEmpresaLimit * 0.8,
 
-
-
-
-
-
-
-
-
-
-
               'bg-warning text-dark': empresas.length >= currentEmpresaLimit * 0.8 && empresas.length < currentEmpresaLimit,
-
-
-
-
-
-
-
-
-
-
 
               'bg-danger':   empresas.length >= currentEmpresaLimit
 
-
-
-
-
-
-
-
-
-
-
             }"
-
-
-
-
-
-
-
-
-
-
 
           >{{ empresas.length }} / {{ currentEmpresaLimit }}</span>
 
-
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-body">
 
-
-
-
-
-
-
-
-
-
-
         <div class="container-fluid">
-
-
-
-
-
-
-
-
-
-
 
           <div class="row">
 
-
-
-
-
-
-
-
-
-
-
             <div class="col-12" *ngFor="let empresa of paginatedEmpresas | filterEmpresa:filtroEmpresa">
-
-
-
-
-
-
-
-
-
-
 
               <div
 
-
-
-
-
-
-
-
-
-
-
                 class="card mb-3 w-100 shadow-sm cliente-card empresa-card"
-
-
-
-
-
-
-
-
-
-
 
                 [class.cliente-card--selected]="selectedEmpresaId?.id === empresa.id"
 
-
-
-
-
-
-
-
-
-
-
                 (click)="onEmpresaSeleccionada(empresa)"
-
-
-
-
-
-
-
-
-
-
 
                 role="button"
 
-
-
-
-
-
-
-
-
-
-
                 tabindex="0"
-
-
-
-
-
-
-
-
-
-
 
               >
 
-
-
-
-
-
-
-
-
-
-
                 <div class="card-body position-relative cliente-card__body">
-
-
-
-
-
-
-
-
-
-
 
                   <div class="cliente-card__header">
 
-
-
-
-
-
-
-
-
-
-
                     <h5 class="card-title cliente-card__title">
-
-
-
-
-
-
-
-
-
-
 
                       <span class="cliente-card__icon" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50.22 38.28">
-
-
-
-
-
-
-
-
-
-
 
                           <path fill="#5b748f" d="m43.78,0H6.43C2.89,0,0,2.89,0,6.43v25.42c0,3.55,2.89,6.43,6.43,6.43h38.94v-3.31h-7.87v-7.57c0-2.9-2.35-5.26-5.26-5.26h-14.27c-2.9,0-5.26,2.35-5.26,5.26v7.57h-6.28c-1.72,0-3.13-1.4-3.13-3.12V6.43c0-1.72,1.4-3.12,3.13-3.12h37.35c1.72,0,3.12,1.4,3.12,3.12v26.51h3.31V6.43c0-3.55-2.89-6.43-6.43-6.43Z"/>
 
-
-
-
-
-
-
-
-
-
-
                           <path fill="#5b748f" d="m18.99,13.03c0,3.37,2.74,6.11,6.12,6.11s6.11-2.74,6.11-6.11-2.74-6.12-6.11-6.12-6.12,2.74-6.12,6.12Zm7.37-3.04c0,.56-.45,1-1,1-1.28,0-2.31,1.04-2.31,2.32,0,.55-.45,1-1,1s-1-.45-1-1c0-2.38,1.93-4.32,4.31-4.32.55,0,1,.45,1,1Z"/>
-
-
-
-
-
-
-
-
-
-
 
                         </svg>
 
-
-
-
-
-
-
-
-
-
-
                       </span>
-
-
-
-
-
-
-
-
-
-
 
                       {{ empresa.name }}
 
-
-
-
-
-
-
-
-
-
-
                       <img *ngIf="getEmpresaDisplayLogo(empresa)" [src]="getEmpresaDisplayLogo(empresa)" alt="Logo" class="cliente-card__logo">
-
-
-
-
-
-
-
-
-
-
 
                     </h5>
 
-
-
-
-
-
-
-
-
-
-
                     <label class="cliente-check">
-
-
-
-
-
-
-
-
-
-
 
                       <input
 
-
-
-
-
-
-
-
-
-
-
                         type="checkbox"
-
-
-
-
-
-
-
-
-
-
 
                         [checked]="selectedEmpresaId?.id === empresa.id"
 
-
-
-
-
-
-
-
-
-
-
                         (click)="$event.stopPropagation(); onEmpresaSeleccionada(empresa)"
-
-
-
-
-
-
-
-
-
-
 
                       >
 
-
-
-
-
-
-
-
-
-
-
                       <div class="checkmark"></div>
-
-
-
-
-
-
-
-
-
-
 
                     </label>
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                   <div *ngIf="selectedEmpresaId?.id === empresa.id" class="cliente-card__selected">
 
-
-
-
-
-
-
-
-
-
-
                     Empresa seleccionada
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                   <p class="card-text mb-1"><strong>Tel:</strong> {{ empresa.phone }}</p>
 
-
-
-
-
-
-
-
-
-
-
                   <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
 
-
-
-
-
-
-
-
-
-
-
-                  <p class="card-text mb-1"><strong>DescripciÃ³n:</strong> {{ empresa.description }}</p>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                  <p class="card-text mb-1"><strong>Descripción:</strong> {{ empresa.description }}</p>
 
                   <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
 
-
-
-
-
-
-
-
-
-
-
                     <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action"
-
-
-
-
-
-
-
-
-
-
 
                             (click)="empresa.id && solicitarConfirmacionEliminarEmpresa(empresa.id)">
 
-
-
-
-
-
-
-
-
-
-
                       Eliminar
 
-
-
-
-
-
-
-
-
-
-
                     </button>
-
-
-
-
-
-
-
-
-
-
 
                     <button class="btn btn-success btn-xs px-3 py-1 cliente-card__action"
 
-
-
-
-
-
-
-
-
-
-
                             *ngIf="empresa.id !== undefined"
-
-
-
-
-
-
-
-
-
-
 
                             (click)="editarEmpresa(empresa.id)">
 
-
-
-
-
-
-
-
-
-
-
                       Editar
-
-
-
-
-
-
-
-
-
-
 
                     </button>
 
-
-
-
-
-
-
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
 
                 </div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             <div *ngIf="paginatedEmpresas.length === 0" class="col-12 empresa-empty-state">
-
-
-
-
-
-
 
               <div class="empresa-empty-state__icon" aria-hidden="true">
 
@@ -17295,15 +2706,9 @@
 
               </div>
 
-
-
               <h6 class="empresa-empty-state__title">Todavia no tenes empresas cargadas.</h6>
 
-
-
               <p class="empresa-empty-state__text">Crea tu primera empresa para usarla en tus presupuestos.</p>
-
-
 
               <button
 
@@ -17323,8155 +2728,1253 @@
 
               </button>
 
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
         </div>
 
+        <!-- Controles de paginación -->
 
-
-
-
-
-
-
-
-
-
-        <!-- Controles de paginaciÃƒÂ³n -->
-
-
-
-
-
-
-
-
-
-
-
-        <nav aria-label="PaginaciÃƒÂ³n de empresas" *ngIf="empresas.length > itemsPerPageEmpresas">
-
-
-
-
-
-
-
-
-
-
+        <nav aria-label="Paginación de empresas" *ngIf="empresas.length > itemsPerPageEmpresas">
 
           <ul class="pagination justify-content-center flex-wrap">
 
-
-
-
-
-
-
-
-
-
-
             <li class="page-item" [class.disabled]="currentEmpresaPage === 1">
-
-
-
-
-
-
-
-
-
-
 
               <a class="page-link" (click)="previousEmpresaPage()" aria-label="Anterior">
 
-
-
-
-
-
-
-
-
-
-
                 <span aria-hidden="true">&laquo;</span>
-
-
-
-
-
-
-
-
-
-
 
               </a>
 
-
-
-
-
-
-
-
-
-
-
             </li>
-
-
-
-
-
-
-
-
-
-
 
             <li class="page-item" *ngFor="let page of getEmpresaPages()" [class.active]="currentEmpresaPage === page">
 
-
-
-
-
-
-
-
-
-
-
               <a class="page-link" (click)="setEmpresaPage(page)">{{ page }}</a>
 
-
-
-
-
-
-
-
-
-
-
             </li>
-
-
-
-
-
-
-
-
-
-
 
             <li class="page-item" [class.disabled]="currentEmpresaPage === totalEmpresaPages">
 
-
-
-
-
-
-
-
-
-
-
               <a class="page-link" (click)="nextEmpresaPage()" aria-label="Siguiente">
-
-
-
-
-
-
-
-
-
-
 
                 <span aria-hidden="true">&raquo;</span>
 
-
-
-
-
-
-
-
-
-
-
               </a>
-
-
-
-
-
-
-
-
-
-
 
             </li>
 
-
-
-
-
-
-
-
-
-
-
           </ul>
-
-
-
-
-
-
-
-
-
-
 
         </nav>
 
-
-
-
-
-
-
-
-
-
-
         <!-- Tabla original comentada -->
-
-
-
-
-
-
-
-
-
-
 
         <!--
 
-
-
-
-
-
-
-
-
-
-
         <div class="table-responsive">
-
-
-
-
-
-
-
-
-
-
 
           <table class="table table-striped table-bordered table-hover table-sm">
 
-
-
-
-
-
-
-
-
-
-
             <thead class="table-light">
-
-
-
-
-
-
-
-
-
-
 
               <tr>
 
-
-
-
-
-
-
-
-
-
-
                 <th scope="col">Nombre</th>
 
-
-
-
-
-
-
-
-
-
-
-                <th scope="col">TelÃƒÂ©fono</th>
-
-
-
-
-
-
-
-
-
-
+                <th scope="col">Teléfono</th>
 
                 <th scope="col">Email</th>
 
-
-
-
-
-
-
-
-
-
-
-                <th scope="col">DescripciÃ¯Â¿Â½n</th>
-
-
-
-
-
-
-
-
-
-
+                <th scope="col">Descripción</th>
 
                 <th scope="col">Logo</th>
 
-
-
-
-
-
-
-
-
-
-
                 <th scope="col">Acciones</th>
 
-
-
-
-
-
-
-
-
-
-
               </tr>
-
-
-
-
-
-
-
-
-
-
 
             </thead>
 
-
-
-
-
-
-
-
-
-
-
             <tbody>
-
-
-
-
-
-
-
-
-
-
 
               <tr *ngFor="let empresa of paginatedEmpresas">
 
-
-
-
-
-
-
-
-
-
-
                 <td>{{ empresa.name }}</td>
-
-
-
-
-
-
-
-
-
-
 
                 <td>{{ empresa.phone }}</td>
 
-
-
-
-
-
-
-
-
-
-
                 <td>{{ empresa.email }}</td>
-
-
-
-
-
-
-
-
-
-
 
                 <td>{{ empresa.description }}</td>
 
-
-
-
-
-
-
-
-
-
-
                 <td>
-
-
-
-
-
-
-
-
-
-
 
                   <img *ngIf="empresa.logoUrl" [src]="empresa.logoUrl" alt="Logo" style="width:40px;height:40px;object-fit:cover;">
 
-
-
-
-
-
-
-
-
-
-
                 </td>
-
-
-
-
-
-
-
-
-
-
 
                 <td>
 
-
-
-
-
-
-
-
-
-
-
                   <div class="d-flex gap-2">
-
-
-
-
-
-
-
-
-
-
 
                     <button class="btn btn-danger btn-sm" (click)="empresa.id && solicitarConfirmacionEliminarEmpresa(empresa.id)">Eliminar</button>
 
-
-
-
-
-
-
-
-
-
-
                     <button class="btn btn-success btn-sm" *ngIf="empresa.id !== undefined" (click)="editarEmpresa(empresa.id)">Editar</button>
-
-
-
-
-
-
-
-
-
-
 
                   </div>
 
-
-
-
-
-
-
-
-
-
-
                 </td>
 
-
-
-
-
-
-
-
-
-
-
               </tr>
-
-
-
-
-
-
-
-
-
-
 
               <tr *ngIf="paginatedEmpresas.length === 0">
 
-
-
-
-
-
-
-
-
-
-
                 <td colspan="6" class="text-center">No hay empresas asociadas a este usuario.</td>
-
-
-
-
-
-
-
-
-
-
 
               </tr>
 
-
-
-
-
-
-
-
-
-
-
             </tbody>
-
-
-
-
-
-
-
-
-
-
 
           </table>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         -->
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-footer d-flex flex-nowrap align-items-center gap-2">
 
-
-
-
-
-
-
-
-
-
-
         <input type="text" class="form-control flex-grow-1" placeholder="Filtrar empresa..." [(ngModel)]="filtroEmpresa">
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn btn-primary btn-sm empresa-list__create flex-shrink-0" (click)="abrirFormularioNuevaEmpresa()" [disabled]="isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Limite alcanzado para tu plan' : null"><i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Nueva empresa</button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="floating-toolbar-container">
 
-
-
-
-
-
-
-
-
-
-
   <div class="floating-toolbar">
-
-
-
-
-
-
-
-
-
-
 
     <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" (click)="verPresupuesto()" type="button" aria-label="Ver presupuesto">
 
-
-
-
-
-
-
-
-
-
-
       <span class="toolbar-item__icon" aria-hidden="true">
-
-
-
-
-
-
-
-
-
-
 
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 41.88 47.94">
 
-
-
-
-
-
-
-
-
-
-
           <path fill="#5b748f" d="m37.1.07L3.32,6.25c-1.93.35-3.32,2.03-3.32,3.99v33.64c0,2.53,2.29,4.45,4.78,3.99l33.78-6.19c1.92-.35,3.32-2.03,3.32-3.98V4.05c0-2.53-2.29-4.44-4.78-3.98ZM12.05,11.89l-5.17,1.11s-.05.03-.06.03c0,0-.03.08-.03.26v6.24c0,.83-.67,1.5-1.5,1.5s-1.5-.67-1.5-1.5v-6.24c0-1.56.85-2.75,2.27-3.18.04-.01.08-.02.12-.03l5.24-1.12c.81-.17,1.61.34,1.78,1.15.17.81-.34,1.61-1.15,1.78Z"/>
-
-
-
-
-
-
-
-
-
-
 
         </svg>
 
-
-
-
-
-
-
-
-
-
-
       </span>
-
-
-
-
-
-
-
-
-
-
 
       <span class="toolbar-item__label">Presupuesto</span>
 
-
-
-
-
-
-
-
-
-
-
     </button>
-
-
-
-
-
-
-
-
-
-
 
     <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" (click)="toggleTareasPanel()" type="button" aria-label="Abrir tareas agregadas">
 
-
-
-
-
-
-
-
-
-
-
       <span class="toolbar-item__icon" aria-hidden="true">
-
-
-
-
-
-
-
-
-
-
 
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 45.53 26.06">
 
-
-
-
-
-
-
-
-
-
-
           <path fill="#5b748f" d="m12.67,3.97h30.87c1.1,0,1.99-.89,1.99-1.99s-.89-1.99-1.99-1.99H12.67c-1.1,0-1.99.89-1.99,1.99s.89,1.99,1.99,1.99Z"/>
-
-
-
-
-
-
-
-
-
-
 
           <path fill="#5b748f" d="m.58.58c-.37.37-.58.88-.58,1.41s.21,1.02.58,1.4c.09.09.2.18.3.25.11.07.23.13.35.18.11.05.24.09.37.11.12.03.25.04.39.04.13,0,.26,0,.39-.04.12-.02.25-.06.37-.11.11-.05.23-.11.34-.18.1-.07.21-.16.3-.25.09-.09.18-.2.25-.3.07-.11.13-.23.18-.34.05-.12.09-.25.11-.37.03-.13.04-.26.04-.39,0-.53-.21-1.04-.58-1.41C2.65-.16,1.32-.16.58.58Z"/>
 
-
-
-
-
-
-
-
-
-
-
           <path fill="#5b748f" d="m43.54,11.04H12.67c-1.1,0-1.99.89-1.99,1.99s.89,1.99,1.99,1.99h30.87c1.1,0,1.99-.89,1.99-1.99s-.89-1.99-1.99-1.99Z"/>
-
-
-
-
-
-
-
-
-
-
 
           <path fill="#5b748f" d="m3.82,12.27c-.05-.12-.11-.24-.18-.35-.07-.1-.16-.21-.25-.3-.74-.74-2.07-.74-2.81,0-.37.37-.58.88-.58,1.41s.2,1.03.58,1.4c.19.19.4.33.64.43.24.1.5.15.77.15.53,0,1.03-.2,1.4-.58.38-.37.58-.87.58-1.4,0-.13-.01-.26-.04-.39-.02-.13-.06-.25-.11-.37Z"/>
 
-
-
-
-
-
-
-
-
-
-
           <path fill="#5b748f" d="m43.54,22.09H12.67c-1.1,0-1.99.89-1.99,1.99s.89,1.99,1.99,1.99h30.87c1.1,0,1.99-.89,1.99-1.99s-.89-1.99-1.99-1.99Z"/>
-
-
-
-
-
-
-
-
-
-
 
           <path fill="#5b748f" d="m3.82,23.31c-.05-.12-.11-.23-.18-.34-.07-.11-.16-.21-.25-.3-.09-.09-.19-.18-.3-.25-.11-.07-.22-.13-.34-.18s-.25-.09-.38-.12c-.64-.12-1.33.09-1.79.55-.09.09-.17.19-.25.3-.07.11-.13.22-.18.34-.05.12-.09.25-.11.37-.03.13-.04.26-.04.39,0,.27.05.52.15.76.1.24.24.46.43.65.09.09.2.17.3.25.11.07.23.13.34.18.12.05.25.09.37.11.13.03.26.04.4.04.26,0,.52-.05.76-.15.24-.1.45-.25.64-.43.19-.19.33-.41.43-.65s.15-.49.15-.76c0-.13-.01-.26-.04-.39-.02-.12-.06-.25-.11-.37Z"/>
 
-
-
-
-
-
-
-
-
-
-
         </svg>
 
-
-
-
-
-
-
-
-
-
-
       </span>
-
-
-
-
-
-
-
-
-
-
 
       <span class="toolbar-item__label">Tareas</span>
 
-
-
-
-
-
-
-
-
-
-
     </button>
-
-
-
-
-
-
-
-
-
-
 
     <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" (click)="toggleSavedBudgetsPanel()" type="button" aria-label="Gestor de presupuestos">
 
-
-
-
-
-
-
-
-
-
-
       <span class="toolbar-item__icon" aria-hidden="true">
-
-
-
-
-
-
-
-
-
-
 
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 57.25 44.7">
 
-
-
-
-
-
-
-
-
-
-
           <path fill="#5b748f" d="m56.96,20.05c-.34-.54-.93-.83-1.56-.83h-7.74v-9.16c0-1.02-.83-1.85-1.85-1.85h-18.13L20.72.6c-.35-.38-.84-.6-1.35-.6H6.02c-.68,0-1.31.39-1.63,1L.19,9.23c-.17.32-.22.68-.18,1.03v32.48c-.03.36.04.74.24,1.09.34.54.93.88,1.56.88h43.99c.73,0,1.41-.44,1.7-1.12l1.12-2.58h-3.99v.05H4.84l9.55-18.17h38.24l-6.38,14.47h3.99l6.87-15.59c.24-.54.2-1.22-.15-1.71ZM7.13,3.65h11.43l4.16,4.56H4.81l2.33-4.56Zm6.18,15.57c-.68,0-1.31.34-1.66.97l-7.99,15.23V11.89h23.21s.07-.01.1-.01h17.02v7.36H13.31Z"/>
-
-
-
-
-
-
-
-
-
-
 
         </svg>
 
-
-
-
-
-
-
-
-
-
-
       </span>
-
-
-
-
-
-
-
-
-
-
 
       <span class="toolbar-item__label">Gestor</span>
 
-
-
-
-
-
-
-
-
-
-
     </button>
-
-
-
-
-
-
-
-
-
-
 
     <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" type="button" aria-label="Calculadora" [routerLink]="['/calculadora']">
 
-
-
-
-
-
-
-
-
-
-
       <span class="toolbar-item__icon" aria-hidden="true">
-
-
-
-
-
-
-
-
-
-
 
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 51.84 47.66">
 
-
-
-
-
-
-
-
-
-
-
           <path fill="#5b748f" d="m51.83,33.62v-6.52s0-.1,0-.15v-1.13c0-.78-.44-1.46-1.17-1.7l-10.87-4.36V6.62c0-.75-.46-1.42-1.15-1.7L26.6.13c-.44-.17-.91-.17-1.35,0l-12.04,4.8c-.69.28-1.15.95-1.15,1.7v13.15L1.15,24.11C.46,24.39,0,25.06,0,25.81v1.22s0,.02,0,.03v13.34c0,.72.42,1.37,1.08,1.66l12.05,5.44c.24.11.49.16.75.16s.51-.05.75-.16l11.31-5.11,11.28,5.12c.24.1.49.15.73.15.29,0,.54-.05.78-.15l12.03-5.46c.68-.29,1.07-.93,1.07-1.66v-2.78l-3.65,1.61-10.23,4.58-10.21-4.57v-9.51l9.54,3.87c.22.09.45.13.68.13s.47-.05.68-.13l9.53-3.86v5.5l3.65-1.61ZM25.22,14.54c.23.09.47.14.7.14s.48-.05.7-.14l9.52-3.97v9.19l-10.21,4.09-10.23-4.07v-9.21l9.51,3.97Zm-11.57,8.54l8.82,3.37-8.59,3.48-8.65-3.5,8.42-3.35ZM25.92,3.79l8.68,3.46-8.68,3.62-8.68-3.62,8.68-3.46Zm-12.04,40.03l-10.22-4.61v-9.49l9.54,3.87c.22.09.45.13.69.13s.47-.05.69-.13l9.51-3.86v9.49l-10.19,4.6Zm24.09-13.9l-8.6-3.48,8.79-3.36,8.45,3.34-8.64,3.5Z"/>
-
-
-
-
-
-
-
-
-
-
 
         </svg>
 
-
-
-
-
-
-
-
-
-
-
       </span>
-
-
-
-
-
-
-
-
-
-
 
       <span class="toolbar-item__label">Calculadora</span>
 
-
-
-
-
-
-
-
-
-
-
     </button>
-
-
-
-
-
-
-
-
-
-
 
     <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" type="button" (click)="toggleMenuPanel()" aria-label="Abrir menu">
 
-
-
-
-
-
-
-
-
-
-
       <span class="toolbar-item__icon" aria-hidden="true">
-
-
-
-
-
-
-
-
-
-
 
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48.61 42.53">
 
-
-
-
-
-
-
-
-
-
-
           <path fill="#5b748f" d="m41.27,0H7.34C3.29,0,0,3.29,0,7.34v27.85c0,4.05,3.29,7.34,7.34,7.34h33.93v-3H7.34c-2.39,0-4.34-1.95-4.34-4.34V7.34c0-2.39,1.95-4.34,4.34-4.34h33.93c2.39,0,4.34,1.95,4.34,4.34v27.85h3V7.34c0-4.05-3.29-7.34-7.34-7.34Z"/>
-
-
-
-
-
-
-
-
-
-
 
           <path fill="#5b748f" d="m11.2,8.15c-1.76,0-3.18,1.43-3.18,3.18v6.63c0,.83.67,1.5,1.5,1.5s1.5-.67,1.5-1.5v-6.63c0-.1.08-.18.18-.18h7.45c.83,0,1.5-.67,1.5-1.5s-.67-1.5-1.5-1.5h-7.45Z"/>
 
-
-
-
-
-
-
-
-
-
-
         </svg>
-
-
-
-
-
-
-
-
-
-
 
       </span>
 
-
-
-
-
-
-
-
-
-
-
       <span class="toolbar-item__label">Menu</span>
-
-
-
-
-
-
-
-
-
-
 
     </button>
 
-
-
-
-
-
-
-
-
-
-
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="modal fade" id="confirmLogoutModal" tabindex="-1" aria-labelledby="confirmLogoutLabel" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered">
-
-
-
-
-
-
-
-
-
-
 
     <div class="modal-content dash-modal">
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-header">
-
-
-
-
-
-
-
-
-
-
 
         <h5 class="modal-title" id="confirmLogoutLabel">Cerrar sesion</h5>
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-body">
 
-
-
-
-
-
-
-
-
-
-
-        Seguro que deseas cerrar sesiÃƒÂ³n?
-
-
-
-
-
-
-
-
-
-
+        Seguro que deseas cerrar sesión?
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-footer">
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
 
-
-
-
-
-
-
-
-
-
-
-        <button type="button" class="btn btn-danger" (click)="logout()" data-bs-dismiss="modal">Cerrar sesiÃƒÂ³n</button>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        <button type="button" class="btn btn-danger" (click)="logout()" data-bs-dismiss="modal">Cerrar sesión</button>
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="saved-budgets-overlay" *ngIf="showSavedBudgetsPanel" (click)="closeSavedBudgetsPanel()"></div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <div class="saved-budgets-panel" [class.open]="showSavedBudgetsPanel">
-
-
-
-
-
-
-
-
-
-
 
   <div class="panel-header">
 
-
-
-
-
-
-
-
-
-
-
     <h6 class="mb-0">Gestor de presupuestos</h6>
-
-
-
-
-
-
-
-
-
-
 
     <button type="button" class="btn-close" (click)="closeSavedBudgetsPanel()" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
   </div>
-
-
-
-
-
-
-
-
-
-
 
   <app-presupuestos-guardados
 
-
-
-
-
-
-
-
-
-
-
     [tareasActuales]="tareasAgregadas"
-
-
-
-
-
-
-
-
-
-
 
     [empresaActual]="selectedEmpresaId"
 
-
-
-
-
-
-
-
-
-
-
     [clienteActual]="clienteSeleccionado"
-
-
-
-
-
-
-
-
-
-
 
     [tareasDelCliente]="tareasAgregadas"
 
-
-
-
-
-
-
-
-
-
-
     [presupuestoCargado]="presupuestoSeleccionado"
-
-
-
-
-
-
-
-
-
-
 
     (presupuestoActualizado)="onPresupuestoActualizado($event)"
 
-
-
-
-
-
-
-
-
-
-
     (presupuestoEliminado)="onPresupuestoEliminado($event)"
-
-
-
-
-
-
-
-
-
-
 
     (cargarPresupuesto)="cargarPresupuestoDesdeLista($event)">
 
-
-
-
-
-
-
-
-
-
-
   </app-presupuestos-guardados>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="modal fade" id="weatherModal" tabindex="-1" aria-labelledby="weatherModalLabel" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered modal-lg">
-
-
-
-
-
-
-
-
-
-
 
     <div class="modal-content dash-modal">
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-header">
 
-
-
-
-
-
-
-
-
-
-
-        <h5 class="modal-title" id="weatherModalLabel">PrÃƒÂ³ximos 5 dÃƒÂ­as</h5>
-
-
-
-
-
-
-
-
-
-
+        <h5 class="modal-title" id="weatherModalLabel">Próximos 5 días</h5>
 
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-body">
 
-
-
-
-
-
-
-
-
-
-
         <ng-container *ngIf="dailyForecast.length; else noWeatherData">
-
-
-
-
-
-
-
-
-
-
 
           <div class="row g-3">
 
-
-
-
-
-
-
-
-
-
-
             <div class="col-12 col-sm-6" *ngFor="let day of dailyForecast">
-
-
-
-
-
-
-
-
-
-
 
               <div class="forecast-card p-3 h-100">
 
-
-
-
-
-
-
-
-
-
-
                 <div class="fw-bold">{{ day.date | date:'EEEE d MMM' }}</div>
-
-
-
-
-
-
-
-
-
-
 
                 <div class="text-muted small">{{ weatherDescription(day.code) }}</div>
 
-
-
-
-
-
-
-
-
-
-
                 <div class="d-flex justify-content-between align-items-center mt-3">
 
+                  <span class="text-primary fw-bold">Máx: {{ day.max | number:'1.0-0' }}°C</span>
 
-
-
-
-
-
-
-
-
-
-                  <span class="text-primary fw-bold">MÃƒÂ¡x: {{ day.max | number:'1.0-0' }}Ã‚Â°C</span>
-
-
-
-
-
-
-
-
-
-
-
-                  <span class="text-secondary">MÃƒÂ­n: {{ day.min | number:'1.0-0' }}Ã‚Â°C</span>
-
-
-
-
-
-
-
-
-
-
+                  <span class="text-secondary">Mín: {{ day.min | number:'1.0-0' }}°C</span>
 
                 </div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
 
         </ng-container>
 
-
-
-
-
-
-
-
-
-
-
         <ng-template #noWeatherData>
-
-
-
-
-
-
-
-
-
-
 
           <p class="text-center text-muted mb-0">No hay datos disponibles en este momento.</p>
 
-
-
-
-
-
-
-
-
-
-
         </ng-template>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-footer">
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-
-
-
-
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" >
 
-
-
-
-
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered">
-
-
-
-
-
-
-
-
-
-
 
     <div class="modal-content dash-modal">
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-header">
-
-
-
-
-
-
-
-
-
-
 
         <h5 class="modal-title" id="imageModalLabel">Subir Imagen</h5>
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-body" style="text-align: center;">
 
-
-
-
-
-
-
-
-
-
-
         <div id="imageCircle" style="display: flex; justify-content: center;">
 
-
-
-
-
-
-
-
-
-
-
-          <img #modalImagePreview class="img-fluid" src="#" alt="PrevisualizaciÃƒÂ³n de la imagen" style="display: none; width: 80%; height: 80%;">
-
-
-
-
-
-
-
-
-
-
+          <img #modalImagePreview class="img-fluid" src="#" alt="Previsualización de la imagen" style="display: none; width: 80%; height: 80%;">
 
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <p #uploadMessage style="margin-top: 10px; color: rgb(6, 113, 254); display: none;">Imagen subida</p>
 
-
-
-
-
-
-
-
-
-
-
         <input type="file" #imageInput accept="image/*" class="form-control" style="margin-top: 10px;" (change)="onImageChange($event)">
-
-
-
-
-
-
-
-
-
-
 
         <p>formato cuadrado recomendado</p>
 
-
-
-
-
-
-
-
-
-
-
       </div>
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-footer">
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn btn-primary" (click)="uploadImage()" [disabled]="!imageSelected" >Cargar Imagen</button>
 
-
-
-
-
-
-
-
-
-
-
   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
-
-
-
-
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
  <!-- Modal Seleccionar provincia -->
 
-
-
-
-
-
-
-
-
-
-
     <div class="modal fade provincia-modal" id="provinciaModal" tabindex="-1" aria-labelledby="modalZonaLabel" aria-hidden="true">
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-dialog modal-dialog-centered">
 
-
-
-
-
-
-
-
-
-
-
         <div class="modal-content modal-zona">
-
-
-
-
-
-
-
-
-
-
 
           <div class="modal-header">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
 
           <div class="modal-body">
 
-
-
-
-
-
-
-
-
-
-
             <h6 id="zonaBloqueadaMensaje" class="text-danger mt-2" style="display: block;">
 
-
-
-
-
-
-
-
-
-
-
-              Esta funciÃƒÂ³n solo se activa con cÃƒÂ³digo de acceso.
-
-
-
-
-
-
-
-
-
-
+              Esta función solo se activa con código de acceso.
 
             </h6>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             <select class="form-select" id="provinciaSelect" [(ngModel)]="provinciaSeleccionada" name="provinciaSeleccionada">
-
-
-
-
-
-
-
-
-
-
 
               <option value="" disabled selected>Seleccione una provincia...</option>
 
-
-
-
-
-
-
-
-
-
-
               <option *ngFor="let provincia of provincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
-
-
-
-
-
-
-
-
-
-
 
             </select>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el paÃƒÂ­s seleccionado.</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el país seleccionado.</div>
 
             <div class="mt-3">
 
-
-
-
-
-
-
-
-
-
-
               <h6 class="modal-zona-title">valor sugerido de mano de obra pura sin cargas sociales</h6>
-
-
-
-
-
-
-
-
-
-
 
               <hr>
 
-
-
-
-
-
-
-
-
-
-
               <div class="modal-zona-card">
-
-
-
-
-
-
-
-
-
-
 
                 <span class="modal-zona-label">Zona 1:</span>
 
-
-
-
-
-
-
-
-
-
-
-                Buenos Aires, Santa Fe, Mendoza, CÃƒÂ³rdoba, TucumÃƒÂ¡n, Salta, Jujuy, Entre RÃƒÂ­os, Corrientes, Formosa,
-
-
-
-
-
-
-
-
-
-
+                Buenos Aires, Santa Fe, Mendoza, Córdoba, Tucumán, Salta, Jujuy, Entre Ríos, Corrientes, Formosa,
 
                 La Pampa, San Luis, La Rioja, Santiago del Estero, Chaco, Misiones, Catamarca, San Juan.
 
-
-
-
-
-
-
-
-
-
-
               </div>
 
-
-
-
-
-
-
-
-
-
-
               <div class="modal-zona-card">
-
-
-
-
-
-
-
-
-
-
 
                 <span class="modal-zona-label">Zona 2:</span>
 
-
-
-
-
-
-
-
-
-
-
-                NeuquÃƒÂ©n, RÃƒÂ­o Negro, Chubut.
-
-
-
-
-
-
-
-
-
-
+                Neuquén, Río Negro, Chubut.
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
               <div class="modal-zona-card">
-
-
-
-
-
-
-
-
-
-
 
                 <span class="modal-zona-label">Zona 3:</span>
 
-
-
-
-
-
-
-
-
-
-
                 Santa Cruz.
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
               <div class="modal-zona-card">
 
-
-
-
-
-
-
-
-
-
-
                 <span class="modal-zona-label">Zona 4:</span>
-
-
-
-
-
-
-
-
-
-
 
                 Tierra del Fuego.
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
               <hr>
 
-
-
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="modal fade" id="recentTasksModal" tabindex="-1" role="dialog" aria-labelledby="recentTasksModalLabel" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered" role="document">
-
-
-
-
-
-
-
-
-
-
 
     <div class="modal-content modal-zona" style="border-radius: 14px;">
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-header">
-
-
-
-
-
-
-
-
-
-
 
         <div class="modal-title" id="recentTasksModalLabel">
 
-
-
-
-
-
-
-
-
-
-
-          <h5 style="margin-bottom: 0;"><i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>ÃƒÂšltimas tareas cotizadas</h5>
-
-
-
-
-
-
-
-
-
-
+          <h5 style="margin-bottom: 0;"><i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>ÁƒÂšltimas tareas cotizadas</h5>
 
           <div style="font-size: 10px; color: #4b5563; font-weight: normal; margin-top: 2px;">
 
-
-
-
-
-
-
-
-
-
-
             toca "AGREGAR" para cargar la tarea y editarla
-
-
-
-
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-body" style="max-height: 400px; overflow-y: auto; padding: 12px;">
 
-
-
-
-
-
-
-
-
-
-
         <div *ngIf="recentTasks.length === 0" class="text-center py-4">
-
-
-
-
-
-
-
-
-
-
 
           <i class="fas fa-info-circle text-muted mb-2" style="font-size: 24px;"></i>
 
-
-
-
-
-
-
-
-
-
-
-          <p class="text-muted">No tenÃƒÂ©s tareas recientes en este dispositivo.</p>
-
-
-
-
-
-
-
-
-
-
+          <p class="text-muted">No tenés tareas recientes en este dispositivo.</p>
 
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         <div class="row g-2">
 
-
-
-
-
-
-
-
-
-
-
           <div class="col-12" *ngFor="let rt of recentTasks">
-
-
-
-
-
-
-
-
-
-
 
             <div class="card h-100 shadow-sm recent-task-card" style="border-radius: 12px; border: 1px solid rgba(0,0,0,0.05); transition: transform 0.2s;">
 
-
-
-
-
-
-
-
-
-
-
               <div class="card-body p-3">
-
-
-
-
-
-
-
-
-
-
 
                 <div class="d-flex justify-content-between align-items-start mb-2">
 
-
-
-
-
-
-
-
-
-
-
                   <h6 class="card-title mb-0" style="font-weight: 700; font-size: 14px;">{{ rt.tarea }}</h6>
-
-
-
-
-
-
-
-
-
-
 
                   <span class="badge bg-light text-dark" style="font-size: 10px;">${{ rt.costo | number:'1.0-0' }}</span>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
                 <p class="card-text text-muted mb-3" style="font-size: 12px; line-height: 1.4;">
 
-
-
-
-
-
-
-
-
-
-
-                  {{ rt.descripcion || 'Sin descripciÃƒÂ³n adicional' }}
-
-
-
-
-
-
-
-
-
-
+                  {{ rt.descripcion || 'Sin descripción adicional' }}
 
                 </p>
 
-
-
-
-
-
-
-
-
-
-
                 <div class="d-flex justify-content-between align-items-center">
-
-
-
-
-
-
-
-
-
-
 
                    <div style="font-size: 10px; color: #9ca3af;">
 
-
-
-
-
-
-
-
-
-
-
                      {{ rt.rubro || 'General' }}
-
-
-
-
-
-
-
-
-
-
 
                    </div>
 
-
-
-
-
-
-
-
-
-
-
                    <button class="btn btn-sm btn-primary px-3" (click)="cargarTareaReciente(rt)" style="border-radius: 8px; font-size: 11px; font-weight: 600;">
-
-
-
-
-
-
-
-
-
-
 
                      <i class="fas fa-plus me-1"></i> AGREGAR
 
-
-
-
-
-
-
-
-
-
-
                    </button>
-
-
-
-
-
-
-
-
-
-
 
                 </div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
 
         </div>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-footer d-flex justify-content-between">
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn btn-sm btn-outline-danger" (click)="borrarHistorialReciente()" *ngIf="recentTasks.length > 0">
-
-
-
-
-
-
-
-
-
-
 
           Limpiar historial
 
-
-
-
-
-
-
-
-
-
-
         </button>
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="modal fade" id="buscadorInfoModal" tabindex="-1" role="dialog" aria-labelledby="buscadorInfoModalLabel" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered" role="document">
-
-
-
-
-
-
-
-
-
-
 
     <div class="modal-content" style="border-radius: 14px; border: 1px solid rgba(64,158,255,.2);">
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6);">
 
-
-
-
-
-
-
-
-
-
-
-        <h5 class="modal-title" id="buscadorInfoModalLabel">CÃ¯Â¿Â½mo usar el buscador</h5>
-
-
-
-
-
-
-
-
-
-
+        <h5 class="modal-title" id="buscadorInfoModalLabel">Cómo usar el buscador</h5>
 
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-body" style="background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); font-size: 12px;">
 
+        <p class="mb-2"><i class="fas fa-search mr-2 text-primary"></i> Podés buscar por palabras sueltas (ej: <em>colocacion puerta</em>).</p>
 
+        <p class="mb-2"><i class="fas fa-font mr-2 text-primary"></i> Ya funciona aunque escribas con acentos (ej: <em>medición</em> encuentra <em>medicion</em>).</p>
 
+        <p class="mb-2"><i class="fas fa-puzzle-piece mr-2 text-primary"></i> Podés buscar por fragmentos de palabras (ej: <em>coloc puert</em> para <em>colocación de puerta</em>).</p>
 
+        <p class="mb-2"><i class="fas fa-lightbulb mr-2 text-primary"></i> Probá con una palabra más general si no aparece exacto (ej: <em>caldera</em>, <em>zócalo</em>, <em>tablero</em>).</p>
 
-
-
-
-
-
-
-        <p class="mb-2"><i class="fas fa-search mr-2 text-primary"></i> PodÃƒÂ©s buscar por palabras sueltas (ej: <em>colocacion puerta</em>).</p>
-
-
-
-
-
-
-
-
-
-
-
-        <p class="mb-2"><i class="fas fa-font mr-2 text-primary"></i> Ya funciona aunque escribas con acentos (ej: <em>mediciÃƒÂ³n</em> encuentra <em>medicion</em>).</p>
-
-
-
-
-
-
-
-
-
-
-
-        <p class="mb-2"><i class="fas fa-puzzle-piece mr-2 text-primary"></i> PodÃƒÂ©s buscar por fragmentos de palabras (ej: <em>coloc puert</em> para <em>colocaciÃƒÂ³n de puerta</em>).</p>
-
-
-
-
-
-
-
-
-
-
-
-        <p class="mb-2"><i class="fas fa-lightbulb mr-2 text-primary"></i> ProbÃƒÂ¡ con una palabra mÃƒÂ¡s general si no aparece exacto (ej: <em>caldera</em>, <em>zÃƒÂ³calo</em>, <em>tablero</em>).</p>
-
-
-
-
-
-
-
-
-
-
-
-        <p class="mb-0"><i class="fas fa-plus-circle mr-2 text-primary"></i> Si no encontrÃƒÂ¡s una tarea, usÃƒÂ¡ <em>TAREA GENERICA</em> y completÃƒÂ¡ descripciÃƒÂ³n y precio.</p>
-
-
-
-
-
-
-
-
-
-
+        <p class="mb-0"><i class="fas fa-plus-circle mr-2 text-primary"></i> Si no encontrás una tarea, usá <em>TAREA GENERICA</em> y completá descripción y precio.</p>
 
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-footer">
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
-
-
-
-
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <div class="modal fade" id="ajustesListaModal" tabindex="-1" role="dialog" aria-labelledby="ajustesListaModalLabel" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered" role="document">
-
-
-
-
-
-
-
-
-
-
 
     <div class="modal-content" style="border-radius: 16px; border: 1px solid rgba(64,158,255,.2); box-shadow: 0 14px 35px rgba(0,0,0,.18);">
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6); border-bottom: 1px solid rgba(11,105,166,.15);">
-
-
-
-
-
-
-
-
-
-
 
         <h5 class="modal-title" id="ajustesListaModalLabel" style="color:#0b69a6; font-weight:700;">
 
-
-
-
-
-
-
-
-
-
-
           <i class="fas fa-cog" aria-hidden="true" style="margin-right: 8px;"></i>Ajustes de la lista
-
-
-
-
-
-
-
-
-
-
 
         </h5>
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-body" style="padding: 14px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9);">
 
-
-
-
-
-
-
-
-
-
-
-        <p style="margin-bottom: 10px; color:#4b5563; font-size: 13px;">AjustÃƒÂ¡ precios y tamaÃƒÂ±o de texto de la lista de tareas.</p>
-
-
-
-
-
-
-
-
-
-
+        <p style="margin-bottom: 10px; color:#4b5563; font-size: 13px;">Ajustá precios y tamaño de texto de la lista de tareas.</p>
 
         <div style="margin-bottom: 10px; background: rgba(103,165,246,.08); border: 1px solid rgba(64,158,255,.16); border-radius: 10px; padding: 10px;">
 
-
-
-
-
-
-
-
-
-
-
           <div style="font-size: 12px; color:#0b69a6; font-weight:700; margin-bottom: 4px;">
 
-
-
-
-
-
-
-
-
-
-
-            <i class="fas fa-key" aria-hidden="true" style="margin-right: 6px;"></i>CÃƒÂ³digo de acceso
-
-
-
-
-
-
-
-
-
-
+            <i class="fas fa-key" aria-hidden="true" style="margin-right: 6px;"></i>Código de acceso
 
           </div>
-
-
-
-
-
-
-
-
-
-
 
           <div id="ajustesListaCodigoAcceso" style="font-size: 20px; color:#1f2937; word-break: break-all;">No disponible</div>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
 
         <p style="font-size: 11px; color: #6b7280; margin-top: -5px; margin-bottom: 15px; padding-left: 5px;">
 
-
-
-
-
-
-
-
-
-
-
-          <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 4px;"></i> recibirÃƒÂ¡s un WhatsApp para renovar tu acceso el dÃƒÂ­a de vencimiento
-
-
-
-
-
-
-
-
-
-
+          <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 4px;"></i> recibirás un WhatsApp para renovar tu acceso el día de vencimiento
 
         </p>
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#faqModalAjustes" data-bs-dismiss="modal">
-
-
-
-
-
-
-
-
-
-
 
           PREGUNTAS FRECUENTES
 
-
-
-
-
-
-
-
-
-
-
         </button>
-
-
-
-
-
-
-
-
-
-
 
         <!-- Tour Guiado comentado por ahora -->
 
-
-
-
-
-
-
-
-
-
-
         <!--button type="button" class="btn btn-outline-primary btn-sm btn-block mb-3" onclick="iniciarTourDesdeAjustes()">
-
-
-
-
-
-
-
-
-
-
 
           <i class="fas fa-route" aria-hidden="true" style="margin-right: 6px;"></i>Ver tour guiado
 
-
-
-
-
-
-
-
-
-
-
         </button-->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         <div class="form-group mb-3 font-size-lista-card">
 
-
-
-
-
-
-
-
-
-
-
           <input type="range" id="fontSizeListaRange" class="form-range" min="10" max="24" step="1" value="12">
-
-
-
-
-
-
-
-
-
-
 
           <div class="font-size-lista-card__value">
 
-
-
-
-
-
-
-
-
-
-
-            TamaÃƒÂ±o actual: <strong id="fontSizeListaValue">12px</strong>
-
-
-
-
-
-
-
-
-
-
+            Tamaño actual: <strong id="fontSizeListaValue">12px</strong>
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn btn-outline-info w-100 mb-2" (click)="showAjustesListaInfo = !showAjustesListaInfo">
 
-
-
-
-
-
-
-
-
-
-
-          <i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 6px;"></i>CÃƒÂ³mo usar subir/bajar lista
-
-
-
-
-
-
-
-
-
-
+          <i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 6px;"></i>Cómo usar subir/bajar lista
 
         </button>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         <div class="collapse mb-3" [class.show]="showAjustesListaInfo" id="ajustesListaInfoCollapse">
 
-
-
-
-
-
-
-
-
-
-
           <div style="background: rgba(64,158,255,.09); border: 1px solid rgba(64,158,255,.22); border-radius: 10px; padding: 10px; font-size: 12px; color:#374151;">
 
+            <p style="margin-bottom: 8px;"><strong>Dinámica:</strong> escribí un porcentaje y tocá <strong>SUBIR</strong> para aumentar toda la lista, o <strong>BAJAR</strong> para reducirla. El ajuste se aplica de forma general a todos los ítems de la tabla.</p>
 
+            <p style="margin-bottom: 8px;"><strong>Ejemplos rápidos:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
 
-
-
-
-
-
-
-
-
-            <p style="margin-bottom: 8px;"><strong>DinÃƒÂ¡mica:</strong> escribÃƒÂ­ un porcentaje y tocÃƒÂ¡ <strong>SUBIR</strong> para aumentar toda la lista, o <strong>BAJAR</strong> para reducirla. El ajuste se aplica de forma general a todos los ÃƒÂ­tems de la tabla.</p>
-
-
-
-
-
-
-
-
-
-
-
-            <p style="margin-bottom: 8px;"><strong>Ejemplos rÃƒÂ¡pidos:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
-
-
-
-
-
-
-
-
-
-
-
-            <p style="margin-bottom: 0;"><strong>Beneficio para el constructor:</strong> te permite adaptar presupuestos en segundos segÃƒÂºn zona, complejidad, urgencia o variaciÃƒÂ³n de costos, sin editar tarea por tarea. Si querÃƒÂ©s volver al valor base, usÃƒÂ¡ <strong>Reestablecer valor original de lista</strong>.</p>
-
-
-
-
-
-
-
-
-
-
+            <p style="margin-bottom: 0;"><strong>Beneficio para el constructor:</strong> te permite adaptar presupuestos en segundos según zona, complejidad, urgencia o variación de costos, sin editar tarea por tarea. Si querés volver al valor base, usá <strong>Reestablecer valor original de lista</strong>.</p>
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         <div class="form-group mb-2">
 
-
-
-
-
-
-
-
-
-
-
           <label for="porcentajeBajar" style="color:#0b69a6;">Bajar lista (%)</label>
 
-
-
-
-
-
-
-
-
-
-
           <div class="input-group" style="z-index: 0">
-
-
-
-
-
-
-
-
-
-
 
             <input type="text" id="porcentajeBajar" class="form-control" placeholder="%" [(ngModel)]="porcentajeBajar">
 
-
-
-
-
-
-
-
-
-
-
             <button class="btn btn-danger flex-grow-1" (click)="disminuirPrecios()">BAJAR</button>
-
-
-
-
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         <div class="form-group mb-3">
 
-
-
-
-
-
-
-
-
-
-
           <label for="porcentaje" style="color:#0b69a6;">Subir lista (%)</label>
-
-
-
-
-
-
-
-
-
-
 
           <div class="input-group" style="z-index: 0">
 
-
-
-
-
-
-
-
-
-
-
             <input type="text" id="porcentaje" class="form-control" placeholder="%" [(ngModel)]="porcentajeSubir">
-
-
-
-
-
-
-
-
-
-
 
             <button class="btn btn-success flex-grow-1" (click)="ajustarPrecios()">SUBIR</button>
 
-
-
-
-
-
-
-
-
-
-
           </div>
 
-
-
-
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn btn-outline-primary w-100" (click)="reestablecerPreciosOriginalesLista()">
 
-
-
-
-
-
-
-
-
-
-
           <i class="fas fa-undo-alt" aria-hidden="true" style="margin-right: 6px;"></i>Reestablecer valor original de lista
-
-
-
-
-
-
-
-
-
-
 
         </button>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
     </div>
 
-
-
-
-
-
-
-
-
-
-
   </div>
-
-
-
-
-
-
-
-
-
-
 
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <!-- ============================================================
-
-
-
-
-
-
-
-
-
-
 
      MODAL: PREGUNTAS FRECUENTES (faqModalAjustes)
 
-
-
-
-
-
-
-
-
-
-
      ============================================================ -->
-
-
-
-
-
-
-
-
-
-
 
 <div class="modal fade" id="faqModalAjustes" tabindex="-1" role="dialog" aria-labelledby="faqModalAjustesLabel" aria-hidden="true">
 
-
-
-
-
-
-
-
-
-
-
   <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-
-
-
-
-
-
-
-
-
-
 
     <div class="modal-content" style="border-radius: 16px; border: 1px solid rgba(64,158,255,.2); box-shadow: 0 14px 35px rgba(0,0,0,.18);">
 
-
-
-
-
-
-
-
-
-
-
       <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6); border-bottom: 1px solid rgba(11,105,166,.15);">
-
-
-
-
-
-
-
-
-
-
 
         <h5 class="modal-title" id="faqModalAjustesLabel" style="color:#0b69a6; font-weight:700;">
 
-
-
-
-
-
-
-
-
-
-
           <i class="fas fa-question-circle" aria-hidden="true" style="margin-right: 8px;"></i>Preguntas Frecuentes
-
-
-
-
-
-
-
-
-
-
 
         </h5>
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-body" style="padding: 18px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); max-height: 70vh; overflow-y: auto;">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         <div class="accordion" id="faqAccordion">
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
-
-
-
-
-
-
-
-
-
-
 
             <h2 class="accordion-header" id="faq1">
 
-
-
-
-
-
-
-
-
-
-
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
 
-
-
-
-
-
-
-
-
-
-
-                <i class="fas fa-percent" style="margin-right: 8px;"></i>Ã‚Â¿CÃƒÂ³mo funciona subir o bajar los precios de la lista?
-
-
-
-
-
-
-
-
-
-
+                <i class="fas fa-percent" style="margin-right: 8px;"></i>¿Cómo funciona subir o bajar los precios de la lista?
 
               </button>
 
-
-
-
-
-
-
-
-
-
-
             </h2>
-
-
-
-
-
-
-
-
-
-
 
             <div id="faq1Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
 
-
-
-
-
-
-
-
-
-
-
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
-
-
-
-
-
-
-
-
-
-
-                <p>EscribÃƒÂ­ un porcentaje en el campo correspondiente y tocÃƒÂ¡ <strong>SUBIR</strong> para aumentar todos los precios de la lista, o <strong>BAJAR</strong> para reducirlos. El ajuste se aplica de forma general a todos los ÃƒÂ­tems.</p>
-
-
-
-
-
-
-
-
-
-
+                <p>Escribí un porcentaje en el campo correspondiente y tocá <strong>SUBIR</strong> para aumentar todos los precios de la lista, o <strong>BAJAR</strong> para reducirlos. El ajuste se aplica de forma general a todos los ítems.</p>
 
                 <p style="margin-bottom:0;"><strong>Ejemplo:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
-
-
-
-
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
-
-
-
-
-
-
-
-
-
-
 
             <h2 class="accordion-header" id="faq2">
 
-
-
-
-
-
-
-
-
-
-
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
 
-
-
-
-
-
-
-
-
-
-
-                <i class="fas fa-undo-alt" style="margin-right: 8px;"></i>Ã‚Â¿CÃƒÂ³mo restablezco los precios originales?
-
-
-
-
-
-
-
-
-
-
+                <i class="fas fa-undo-alt" style="margin-right: 8px;"></i>¿Cómo restablezco los precios originales?
 
               </button>
 
-
-
-
-
-
-
-
-
-
-
             </h2>
-
-
-
-
-
-
-
-
-
-
 
             <div id="faq2Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
 
-
-
-
-
-
-
-
-
-
-
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
-
-
-
-
-
-
-
-
-
-
-                <p style="margin-bottom:0;">UsÃƒÂ¡ el botÃƒÂ³n <strong>"Reestablecer valor original de lista"</strong>. Esto recarga los precios desde el servidor, deshaciendo cualquier ajuste porcentual que hayas aplicado.</p>
-
-
-
-
-
-
-
-
-
-
+                <p style="margin-bottom:0;">Usá el botón <strong>"Reestablecer valor original de lista"</strong>. Esto recarga los precios desde el servidor, deshaciendo cualquier ajuste porcentual que hayas aplicado.</p>
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
-
-
-
-
-
-
-
-
-
-
 
             <h2 class="accordion-header" id="faq3">
 
-
-
-
-
-
-
-
-
-
-
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
 
-
-
-
-
-
-
-
-
-
-
-                <i class="fas fa-text-height" style="margin-right: 8px;"></i>Ã‚Â¿Para quÃƒÂ© sirve el control de tamaÃƒÂ±o de texto?
-
-
-
-
-
-
-
-
-
-
+                <i class="fas fa-text-height" style="margin-right: 8px;"></i>¿Para qué sirve el control de tamaño de texto?
 
               </button>
 
-
-
-
-
-
-
-
-
-
-
             </h2>
-
-
-
-
-
-
-
-
-
-
 
             <div id="faq3Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
 
-
-
-
-
-
-
-
-
-
-
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
-
-
-
-
-
-
-
-
-
-
-                <p style="margin-bottom:0;">El slider ajusta el tamaÃƒÂ±o de la fuente de la tabla de tareas. ÃƒÂštil para ver mÃƒÂ¡s ÃƒÂ­tems en pantalla (texto mÃƒÂ¡s chico) o para mejorar la legibilidad en dispositivos grandes (texto mÃƒÂ¡s grande).</p>
-
-
-
-
-
-
-
-
-
-
+                <p style="margin-bottom:0;">El slider ajusta el tamaño de la fuente de la tabla de tareas. ÁƒÂštil para ver más ítems en pantalla (texto más chico) o para mejorar la legibilidad en dispositivos grandes (texto más grande).</p>
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
 
-
-
-
-
-
-
-
-
-
-
             <h2 class="accordion-header" id="faq4">
-
-
-
-
-
-
-
-
-
-
 
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
 
-
-
-
-
-
-
-
-
-
-
-                <i class="fas fa-key" style="margin-right: 8px;"></i>Ã‚Â¿QuÃƒÂ© es el CÃƒÂ³digo de Acceso?
-
-
-
-
-
-
-
-
-
-
+                <i class="fas fa-key" style="margin-right: 8px;"></i>¿Qué es el Código de Acceso?
 
               </button>
 
-
-
-
-
-
-
-
-
-
-
             </h2>
-
-
-
-
-
-
-
-
-
-
 
             <div id="faq4Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
 
-
-
-
-
-
-
-
-
-
-
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
-
-
-
-
-
-
-
-
-
-
-                <p style="margin-bottom:0;">Es tu identificador ÃƒÂºnico en el sistema. Lo usÃƒÂ¡s para ingresar a la aplicaciÃƒÂ³n y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro. Antes del vencimiento recibirÃƒÂ¡s un WhatsApp para renovarlo.</p>
-
-
-
-
-
-
-
-
-
-
+                <p style="margin-bottom:0;">Es tu identificador único en el sistema. Lo usás para ingresar a la aplicación y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro. Antes del vencimiento recibirás un WhatsApp para renovarlo.</p>
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 0; border: 1px solid rgba(64,158,255,.2);">
 
-
-
-
-
-
-
-
-
-
-
             <h2 class="accordion-header" id="faq5">
-
-
-
-
-
-
-
-
-
-
 
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
 
-
-
-
-
-
-
-
-
-
-
-                <i class="fas fa-save" style="margin-right: 8px;"></i>Ã‚Â¿Los cambios en los precios se guardan permanentemente?
-
-
-
-
-
-
-
-
-
-
+                <i class="fas fa-save" style="margin-right: 8px;"></i>¿Los cambios en los precios se guardan permanentemente?
 
               </button>
 
-
-
-
-
-
-
-
-
-
-
             </h2>
-
-
-
-
-
-
-
-
-
-
 
             <div id="faq5Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
 
-
-
-
-
-
-
-
-
-
-
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
-
-
-
-
-
-
-
-
-
-
-                <p style="margin-bottom:0;">SÃƒÂ­, los cambios se guardan en tu lista de tareas activa. Si querÃƒÂ©s volver a los precios base, usÃƒÂ¡ <strong>"Reestablecer valor original de lista"</strong>. Los precios de la tabla de referencia (buscador) nunca se modifican.</p>
-
-
-
-
-
-
-
-
-
-
+                <p style="margin-bottom:0;">Sí, los cambios se guardan en tu lista de tareas activa. Si querés volver a los precios base, usá <strong>"Reestablecer valor original de lista"</strong>. Los precios de la tabla de referencia (buscador) nunca se modifican.</p>
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         </div>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-footer" style="border-top: 1px solid rgba(11,105,166,.15);">
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
-
-
-
-
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <!-- ============================================================
 
-
-
-
-
-
-
-
-
-
-
      MODAL: PALETA DEL PRESUPUESTO (paletaModal)
-
-
-
-
-
-
-
-
-
-
 
      ============================================================ -->
 
-
-
-
-
-
-
-
-
-
-
 <div class="modal fade" id="paletaModal" tabindex="-1" role="dialog" aria-labelledby="paletaModalLabel" aria-hidden="true">
-
-
-
-
-
-
-
-
-
-
 
   <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
 
-
-
-
-
-
-
-
-
-
-
     <div class="modal-content modal-zona" style="border-radius: 16px;">
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-header">
 
-
-
-
-
-
-
-
-
-
-
         <h5 class="modal-title" id="paletaModalLabel" style="color:#0b69a6; font-weight:700;">
-
-
-
-
-
-
-
-
-
-
 
           <i class="fas fa-palette" aria-hidden="true" style="margin-right: 8px;"></i>Personalizar Colores del Presupuesto
 
-
-
-
-
-
-
-
-
-
-
         </h5>
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-body" style="padding: 20px;">
 
-
-
-
-
-
-
-
-
-
-
         <div class="row">
-
-
-
-
-
-
-
-
-
-
 
           <!-- Columna Izquierda: Controles -->
 
-
-
-
-
-
-
-
-
-
-
           <div class="col-md-5">
-
-
-
-
-
-
-
-
-
-
 
             <h6 class="mb-3" style="font-weight: 700; color: #4b5563;">Ajustes de Color</h6>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             <div class="form-group mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
               <label class="text">Color Principal (Encabezado/Botones)</label>
 
-
-
-
-
-
-
-
-
-
-
               <div class="d-flex gap-2 align-items-center">
-
-
-
-
-
-
-
-
-
-
 
                 <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorPrimario" style="width: 50px;">
 
-
-
-
-
-
-
-
-
-
-
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorPrimario" style="font-size: 12px;">
-
-
-
-
-
-
-
-
-
-
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            <!-- SecciÃƒÂ³n Gradient -->
-
-
-
-
-
-
-
-
-
-
+            <!-- Sección Gradient -->
 
             <div class="p-2 mb-3 border rounded bg-light">
 
-
-
-
-
-
-
-
-
-
-
               <label class="form-label small fw-bold text-primary mb-2">Fondo (Gradiente)</label>
-
-
-
-
-
-
-
-
-
-
 
               <div class="row g-2">
 
-
-
-
-
-
-
-
-
-
-
                 <div class="col-6">
-
-
-
-
-
-
-
-
-
-
 
                   <label class="x-small mb-1">Color 1</label>
 
-
-
-
-
-
-
-
-
-
-
                   <input type="color" class="form-control form-control-color w-100" [(ngModel)]="presupuestoColorSecundario">
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
                 <div class="col-6">
 
-
-
-
-
-
-
-
-
-
-
                   <label class="x-small mb-1">Color 2</label>
-
-
-
-
-
-
-
-
-
-
 
                   <input type="color" class="form-control form-control-color w-100" [(ngModel)]="presupuestoColorSecundario2">
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
                 <div class="col-12">
 
-
-
-
-
-
-
-
-
-
-
-                  <label class="x-small mb-1">DirecciÃƒÂ³n</label>
-
-
-
-
-
-
-
-
-
-
+                  <label class="x-small mb-1">Dirección</label>
 
                   <select class="form-select form-select-sm" [(ngModel)]="presupuestoGradienteAngulo">
 
+                    <option value="to bottom">Abajo Á¢Â†Â“</option>
 
+                    <option value="to top">Arriba Á¢Â†Â‘</option>
 
+                    <option value="to right">Derecha Á¢Â†Â’</option>
 
-
-
-
-
-
-
-
-                    <option value="to bottom">Abajo Ã¢Â†Â“</option>
-
-
-
-
-
-
-
-
-
-
-
-                    <option value="to top">Arriba Ã¢Â†Â‘</option>
-
-
-
-
-
-
-
-
-
-
-
-                    <option value="to right">Derecha Ã¢Â†Â’</option>
-
-
-
-
-
-
-
-
-
-
-
-                    <option value="to left">Izquierda Ã¢Â†Â</option>
-
-
-
-
-
-
-
-
-
-
+                    <option value="to left">Izquierda Á¢Â†Â</option>
 
                   </select>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
-
-
-
-
-
-
-
-
-
-
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             <div class="form-group mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
               <label class="text">Color de Texto General</label>
 
-
-
-
-
-
-
-
-
-
-
               <div class="d-flex gap-2 align-items-center">
-
-
-
-
-
-
-
-
-
-
 
                 <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorTexto" style="width: 50px;">
 
-
-
-
-
-
-
-
-
-
-
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTexto" style="font-size: 12px;">
-
-
-
-
-
-
-
-
-
-
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             <div class="form-group mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
               <label class="text">Fondo Encabezado Tabla</label>
 
-
-
-
-
-
-
-
-
-
-
               <div class="d-flex gap-2 align-items-center">
-
-
-
-
-
-
-
-
-
-
 
                 <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorTabla" style="width: 50px;">
 
-
-
-
-
-
-
-
-
-
-
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTabla" style="font-size: 12px;">
-
-
-
-
-
-
-
-
-
-
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             <div class="form-group mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
               <label class="text">Fondo Cuerpo Tabla</label>
 
-
-
-
-
-
-
-
-
-
-
               <div class="d-flex gap-2 align-items-center">
-
-
-
-
-
-
-
-
-
-
 
                 <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorTablaCuerpo" style="width: 50px;">
 
-
-
-
-
-
-
-
-
-
-
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTablaCuerpo" style="font-size: 12px;">
-
-
-
-
-
-
-
-
-
-
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             <div class="form-group mb-3 coolinput">
-
-
-
-
-
-
-
-
-
-
 
               <label class="text">Texto Encabezado Tabla</label>
 
-
-
-
-
-
-
-
-
-
-
               <div class="d-flex gap-2 align-items-center">
-
-
-
-
-
-
-
-
-
-
 
                 <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorTablaTexto" style="width: 50px;">
 
-
-
-
-
-
-
-
-
-
-
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTablaTexto" style="font-size: 12px;">
-
-
-
-
-
-
-
-
-
-
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
 
             <div class="form-group mb-3 coolinput">
 
-
-
-
-
-
-
-
-
-
-
               <label class="text">Fondo Cajas Info (Empresa/Cliente)</label>
-
-
-
-
-
-
-
-
-
-
 
               <div class="d-flex gap-2 align-items-center">
 
-
-
-
-
-
-
-
-
-
-
                 <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoInfoBoxColorHex" style="width: 50px;">
-
-
-
-
-
-
-
-
-
-
 
                 <input type="range" class="form-range flex-grow-1" min="0" max="1" step="0.05" [(ngModel)]="presupuestoInfoBoxOpacity" title="Transparencia">
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
             </div>
 
-
-
-
-
-
-
-
-
-
-
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
           <!-- Columna Derecha: Vista Previa Miniatura -->
 
-
-
-
-
-
-
-
-
-
-
           <div class="col-md-7">
-
-
-
-
-
-
-
-
-
-
 
             <h6 class="mb-3 text-center" style="font-weight: 700; color: #4b5563;">Vista Previa (Miniatura)</h6>
 
-
-
-
-
-
-
-
-
-
-
             <div class="budget-miniature shadow-sm"
-
-
-
-
-
-
-
-
-
-
 
                  [style.background]="'linear-gradient(' + presupuestoGradienteAngulo + ', ' + presupuestoColorSecundario + ', ' + presupuestoColorSecundario2 + ')'"
 
-
-
-
-
-
-
-
-
-
-
                  [style.color]="presupuestoColorTexto"
-
-
-
-
-
-
-
-
-
-
 
                  style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; position: relative; min-height: 350px; overflow: hidden; transform: scale(0.95); transform-origin: top;">
 
-
-
-
-
-
-
-
-
-
-
               <!-- Header -->
-
-
-
-
-
-
-
-
-
-
 
               <div class="d-flex flex-column align-items-start mb-3" [style.background-color]="getBackgroundColorRgba(presupuestoInfoBoxColorHex, presupuestoInfoBoxOpacity)" [style.color]="presupuestoColorTexto" style="padding: 10px; border-radius: 8px; gap: 8px;">
 
-
-
-
-
-
-
-
-
-
-
                 <div [style.background-color]="presupuestoColorPrimario" style="width: 40px; height: 40px; border-radius: 50%;"></div>
-
-
-
-
-
-
-
-
-
-
 
                 <div class="text-start" style="text-align: left; width: 100%;">
 
-
-
-
-
-
-
-
-
-
-
                    <div [style.color]="presupuestoColorPrimario" style="font-weight: bold; font-size: 14px;">{{ empresaName || 'TU EMPRESA' }}</div>
-
-
-
-
-
-
-
-
-
-
 
                    <div [style.color]="presupuestoColorTexto" style="font-size: 10px; opacity: 0.8;">{{ empresaPhone || 'Tel: 1234-5678' }}</div>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
               <hr style="margin: 10px 0; opacity: 0.1;">
 
-
-
-
-
-
-
-
-
-
-
               <!-- Cliente Section -->
-
-
-
-
-
-
-
-
-
-
 
               <div class="mb-3" [style.background-color]="getBackgroundColorRgba(presupuestoInfoBoxColorHex, presupuestoInfoBoxOpacity)" [style.color]="presupuestoColorTexto" style="padding: 10px; border-radius: 8px;">
 
-
-
-
-
-
-
-
-
-
-
                 <div style="font-size: 10px; font-weight: bold;">CLIENTE</div>
-
-
-
-
-
-
-
-
-
-
 
                 <div style="font-weight: bold; font-size: 12px;">JUAN PEREZ</div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
               <!-- Table Preview -->
 
-
-
-
-
-
-
-
-
-
-
               <table class="table table-bordered table-sm mb-3" [style.color]="presupuestoColorTexto" style="font-size: 9px; line-height: 1;">
-
-
-
-
-
-
-
-
-
-
 
                 <thead [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">
 
-
-
-
-
-
-
-
-
-
-
                   <tr>
-
-
-
-
-
-
-
-
-
-
 
                     <th [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">ITEM</th>
 
-
-
-
-
-
-
-
-
-
-
                     <th [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">AREA</th>
-
-
-
-
-
-
-
-
-
-
 
                     <th [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">VALOR</th>
 
-
-
-
-
-
-
-
-
-
-
                   </tr>
-
-
-
-
-
-
-
-
-
-
 
                 </thead>
 
-
-
-
-
-
-
-
-
-
-
                 <tbody [style.background-color]="presupuestoColorTablaCuerpo" [style.color]="presupuestoColorTexto">
-
-
-
-
-
-
-
-
-
-
 
                   <ng-container *ngIf="tareasAgregadas.length > 0; else demoRows">
 
-
-
-
-
-
-
-
-
-
-
                     <tr *ngFor="let t of tareasAgregadas | slice:0:3">
-
-
-
-
-
-
-
-
-
-
 
                       <td>{{ t.tarea | uppercase }}</td>
 
-
-
-
-
-
-
-
-
-
-
                       <td>{{ t.area | number:'1.2-2' }}</td>
-
-
-
-
-
-
-
-
-
-
 
                       <td>${{ t.totalCost | number:'1.2-2' }}</td>
 
-
-
-
-
-
-
-
-
-
-
                     </tr>
 
-
-
-
-
-
-
-
-
-
-
                   </ng-container>
-
-
-
-
-
-
-
-
-
-
 
                   <ng-template #demoRows>
 
-
-
-
-
-
-
-
-
-
-
                     <tr>
-
-
-
-
-
-
-
-
-
-
 
                       <td>REVOQUE GRUESO</td>
 
-
-
-
-
-
-
-
-
-
-
                       <td>10.00</td>
-
-
-
-
-
-
-
-
-
-
 
                       <td>$5.000,00</td>
 
-
-
-
-
-
-
-
-
-
-
                     </tr>
-
-
-
-
-
-
-
-
-
-
 
                     <tr>
 
-
-
-
-
-
-
-
-
-
-
                       <td>REVOQUE FINO</td>
-
-
-
-
-
-
-
-
-
-
 
                       <td>10.00</td>
 
-
-
-
-
-
-
-
-
-
-
                       <td>$3.500,00</td>
-
-
-
-
-
-
-
-
-
-
 
                     </tr>
 
-
-
-
-
-
-
-
-
-
-
                   </ng-template>
-
-
-
-
-
-
-
-
-
-
 
                 </tbody>
 
-
-
-
-
-
-
-
-
-
-
               </table>
-
-
-
-
-
-
-
-
-
-
 
               <!-- Total -->
 
-
-
-
-
-
-
-
-
-
-
               <div class="text-end">
-
-
-
-
-
-
-
-
-
-
 
                 <div [style.background-color]="presupuestoColorPrimario" style="color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">
 
-
-
-
-
-
-
-
-
-
-
                   <ng-container *ngIf="tareasAgregadas.length > 0; else demoTotal">
-
-
-
-
-
-
-
-
-
-
 
                     TOTAL: ${{ calcularCostoTotal() | number:'1.2-2' }}
 
-
-
-
-
-
-
-
-
-
-
                   </ng-container>
-
-
-
-
-
-
-
-
-
-
 
                   <ng-template #demoTotal>TOTAL: $8.500,00</ng-template>
 
-
-
-
-
-
-
-
-
-
-
                 </div>
 
-
-
-
-
-
-
-
-
-
-
               </div>
-
-
-
-
-
-
-
-
-
-
 
               <!-- Professional Watermark -->
 
-
-
-
-
-
-
-
-
-
-
               <div style="position: absolute; bottom: 5px; right: 8px; font-size: 8px; opacity: 0.3;">
 
-
-
-
-
-
-
-
-
-
-
-                METRO - Software de CotizaciÃƒÂ³n
-
-
-
-
-
-
-
-
-
-
+                METRO - Software de Cotización
 
               </div>
 
-
-
-
-
-
-
-
-
-
-
             </div>
-
-
-
-
-
-
-
-
-
-
 
           </div>
 
-
-
-
-
-
-
-
-
-
-
         </div>
 
-
-
-
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
 
       <div class="modal-footer">
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn btn-secondary" (click)="volverAModalEmpresa()">Volver</button>
-
-
-
-
-
-
-
-
-
-
 
         <button type="button" class="btn btn-outline-danger" (click)="reiniciarColores()">
 
-
-
-
-
-
-
-
-
-
-
           <i class="fas fa-undo"></i> Reiniciar
-
-
-
-
-
-
-
-
-
-
 
         </button>
 
-
-
-
-
-
-
-
-
-
-
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="aplicarPaletaManual()">Aplicar Cambios</button>
-
-
-
-
-
-
-
-
-
-
 
       </div>
 
-
-
-
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
 
   </div>
 
-
-
-
-
-
-
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
