@@ -3452,7 +3452,7 @@
 
           <div class="input-group" style="z-index: 0">
 
-            <input type="number" id="porcentajeBajar" class="form-control" placeholder="%" min="1" max="100" [(ngModel)]="porcentajeBajar">
+            <input type="number" id="porcentajeBajar" class="form-control" placeholder="Ej: 5.50" min="0.01" max="100" step="0.01" [(ngModel)]="porcentajeBajar">
 
             <button class="btn btn-danger flex-grow-1" (click)="disminuirPrecios()">BAJAR</button>
 
@@ -3466,7 +3466,7 @@
 
           <div class="input-group" style="z-index: 0">
 
-            <input type="number" id="porcentaje" class="form-control" placeholder="%" min="1" max="500" [(ngModel)]="porcentajeSubir">
+            <input type="number" id="porcentaje" class="form-control" placeholder="Ej: 5.50" min="0.01" max="500" step="0.01" [(ngModel)]="porcentajeSubir">
 
             <button class="btn btn-success flex-grow-1" (click)="ajustarPrecios()">SUBIR</button>
 

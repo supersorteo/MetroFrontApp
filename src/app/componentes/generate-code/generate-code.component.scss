@@ -977,6 +977,119 @@
   &:hover { box-shadow: 0 4px 14px rgba(5,150,105,0.35); transform: translateY(-1px); }
 }
 
+.gen-btn--price {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #fff;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: 9px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: box-shadow 0.18s, transform 0.18s;
+  &:hover { box-shadow: 0 4px 14px rgba(124,58,237,0.38); transform: translateY(-1px); }
+  .gen-btn__badge--active {
+    background: rgba(255,230,80,0.9);
+    color: #3b1e6e;
+  }
+}
+
+/* ── Modal Ajuste Precios ─────────────────────── */
+.ap-modal { max-width: 420px; }
+
+.ap-section {
+  background: rgba(0,0,0,0.03);
+  border: 1px solid rgba(0,0,0,0.07);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.ap-section__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.65rem;
+  &--up  { color: #059669; }
+  &--down { color: #dc2626; }
+}
+
+.ap-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.ap-input-wrap {
+  position: relative;
+  flex: 1;
+}
+
+.ap-input {
+  width: 100%;
+  padding: 0.44rem 2rem 0.44rem 0.65rem;
+  border: 1.5px solid rgba(0,0,0,0.14);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  background: #fff;
+  outline: none;
+  box-sizing: border-box;
+  &:focus { border-color: #7c3aed; }
+}
+
+.ap-input__suffix {
+  position: absolute;
+  right: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.ap-btn {
+  padding: 0.44rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: box-shadow 0.15s, transform 0.15s;
+  &--up   { background: #059669; color: #fff; &:hover { box-shadow: 0 3px 10px rgba(5,150,105,0.35); transform: translateY(-1px); } }
+  &--down { background: #dc2626; color: #fff; &:hover { box-shadow: 0 3px 10px rgba(220,38,38,0.35); transform: translateY(-1px); } }
+  &--reset {
+    width: 100%;
+    background: transparent;
+    border: 1.5px solid rgba(0,0,0,0.14);
+    color: #374151;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    &:hover { background: rgba(0,0,0,0.04); }
+  }
+}
+
+.ap-section--reset {
+  background: transparent;
+  border-color: rgba(0,0,0,0.06);
+}
+
+.ap-section__desc {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0 0 0.65rem;
+  line-height: 1.5;
+}
+
 .at-modal-overlay {
   align-items: center;
   z-index: 1100;

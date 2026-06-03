@@ -282,6 +282,16 @@
             <input type="text" class="admin-search__input" placeholder="Buscar tarea, rubro, categoría..."
                    [(ngModel)]="tareaFilter" (input)="filtrarTareas()">
           </div>
+          <button class="gen-btn gen-btn--price" (click)="showAjustePreciosPanel = true" title="Ajustar precios del catálogo">
+            <span class="gen-btn__icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/>
+                <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-6.956 6.086A4 4 0 0 1 8 4a4 4 0 0 1 6.956 3.086A7 7 0 0 0 8 1a7 7 0 0 0 0 14 7 7 0 0 0 6.956-5.086A4 4 0 0 1 8 12a4 4 0 0 1-6.956-1.086A7 7 0 0 0 8 15"/>
+              </svg>
+            </span>
+            <span class="gen-btn__text">Precios</span>
+            <span class="gen-btn__badge" [class.gen-btn__badge--active]="factorAdmin !== 1">{{ factorAdminDisplay }}</span>
+          </button>
           <button class="gen-btn gen-btn--task" (click)="abrirNuevaTarea()">
             <span class="gen-btn__icon">➕</span>
             <span class="gen-btn__text">Nueva tarea</span>
@@ -360,6 +370,76 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modal Ajuste de Precios ──────────────────── -->
+  <div class="admin-overlay" *ngIf="showAjustePreciosPanel" (click)="showAjustePreciosPanel = false">
+    <div class="limits-modal ap-modal" (click)="$event.stopPropagation()">
+
+      <div class="limits-modal__header">
+        <div>
+          <h3>Ajuste de precios</h3>
+          <p>{{ admin.pais | titlecase }} &middot; Ajuste actual: <strong>{{ factorAdminDisplay }}</strong></p>
+        </div>
+        <button class="limits-modal__close" type="button" (click)="showAjustePreciosPanel = false">&#x00D7;</button>
+      </div>
+
+      <div class="limits-modal__body">
+
+        <!-- SUBIR -->
+        <section class="ap-section">
+          <p class="ap-section__label ap-section__label--up">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"/>
+            </svg>
+            Subir precios
+          </p>
+          <div class="ap-row">
+            <div class="ap-input-wrap">
+              <input type="number" class="ap-input" [(ngModel)]="porcentajeSubirAdmin"
+                     placeholder="Ej: 5.50" min="0.01" max="500" step="0.01">
+              <span class="ap-input__suffix">%</span>
+            </div>
+            <button class="ap-btn ap-btn--up" (click)="ajustarPreciosAdmin()">Aplicar</button>
+          </div>
+        </section>
+
+        <!-- BAJAR -->
+        <section class="ap-section">
+          <p class="ap-section__label ap-section__label--down">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1"/>
+            </svg>
+            Bajar precios
+          </p>
+          <div class="ap-row">
+            <div class="ap-input-wrap">
+              <input type="number" class="ap-input" [(ngModel)]="porcentajeBajarAdmin"
+                     placeholder="Ej: 5.50" min="0.01" max="100" step="0.01">
+              <span class="ap-input__suffix">%</span>
+            </div>
+            <button class="ap-btn ap-btn--down" (click)="disminuirPreciosAdmin()">Aplicar</button>
+          </div>
+        </section>
+
+        <!-- REESTABLECER -->
+        <section class="ap-section ap-section--reset">
+          <p class="ap-section__desc">Restaura todos los precios a sus valores originales del catálogo, eliminando cualquier ajuste activo.</p>
+          <button class="ap-btn ap-btn--reset" (click)="reestablecerPreciosAdmin()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"/>
+              <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"/>
+            </svg>
+            Restablecer precios originales
+          </button>
+        </section>
+
+      </div>
+
+      <div class="limits-modal__footer">
+        <button class="ea-btn ea-btn--cancel" type="button" (click)="showAjustePreciosPanel = false">Cerrar</button>
       </div>
     </div>
   </div>

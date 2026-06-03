@@ -27,6 +27,7 @@ import { UserTareaStore } from '../../stores/user-tarea.store';
 import { TareaPersonalizadaService, TareaPersonalizada } from '../../servicios/tarea-personalizada.service';
 import { AppToastService } from '../../servicios/app-toast.service';
 import { MembershipLimits, MembershipLimitsService } from '../../servicios/membership-limits.service';
+import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
 
 
 declare var bootstrap: any;
@@ -726,6 +727,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private empresaService: EmpresaService,
     private clienteService: ClienteService,
     private membershipLimitsService: MembershipLimitsService,
+    private ajustePrecioService: AjustePrecioService,
     private http: HttpClient,
     readonly offlineSync: OfflineSyncService,
     private localStore: OfflineLocalStoreService,
@@ -1508,8 +1510,17 @@ obtenerTareas(): void {
   if (this.userData?.pais) {
     this.tareaService.getTareasByPaisCached(this.userData.pais).pipe(takeUntil(this.destroy$)).subscribe({
       next: (tareas) => {
-        this.tareas = tareas;
-        this.tareasFiltradas = tareas;
+        const pais = this.userData!.pais;
+        const adminFactor = this.ajustePrecioService.getAdminFactorLocal(pais);
+        const userFactor  = this.ajustePrecioService.getFactorLocal(this.userCode, pais);
+        const compound    = Math.round(adminFactor * userFactor * 1_000_000) / 1_000_000;
+        const ajustadas   = compound !== 1
+          ? tareas.map(t => ({ ...t, costo: t.costo * compound }))
+          : tareas;
+        this.tareas = ajustadas;
+        this.tareasFiltradas = [...ajustadas];
+        this.ajustePrecioService.syncFactor(this.userCode, pais);
+        this.ajustePrecioService.syncAdminFactor(pais);
       },
       error: () => {
         if (this.tareas.length === 0) {
@@ -2726,41 +2737,71 @@ onImageChange(event: Event): void {
 
 
 
-  disminuirPrecios(): void {
+  async disminuirPrecios(): Promise<void> {
     const porcentaje = parseFloat(this.porcentajeBajar);
     if (isNaN(porcentaje) || porcentaje <= 0 || porcentaje > 100) {
-      this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 1 y 100.' });
+      this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 0.01 y 100.' });
       return;
     }
     if (!this.tareas.length) {
       this.uiDialog.warning({ title: 'Sin tareas', text: 'No hay tareas en el catálogo para ajustar.' });
       return;
     }
-    const factor = 1 - porcentaje / 100;
-    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * factor }));
-    this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * factor }));
+    const confirmed = await this.uiDialog.confirm({
+      title: `Bajar precios ${porcentaje}%`,
+      text: `Todos los precios de tu lista se reducirán un ${porcentaje}%. ¿Confirmas?`,
+      confirmText: 'Sí, bajar',
+      cancelText: 'Cancelar',
+      tone: 'warning',
+      icon: 'warning'
+    });
+    if (!confirmed) return;
+    const delta = 1 - porcentaje / 100;
+    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
+    this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * delta }));
+    this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'bajar', porcentaje);
     this.porcentajeBajar = null;
     this.uiDialog.success({ title: 'Lista actualizada', text: `Precios del catálogo reducidos en ${porcentaje}%.` });
   }
 
-  ajustarPrecios(): void {
+  async ajustarPrecios(): Promise<void> {
     const porcentaje = parseFloat(this.porcentajeSubir);
     if (isNaN(porcentaje) || porcentaje <= 0 || porcentaje > 500) {
-      this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 1 y 500.' });
+      this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 0.01 y 500.' });
       return;
     }
     if (!this.tareas.length) {
       this.uiDialog.warning({ title: 'Sin tareas', text: 'No hay tareas en el catálogo para ajustar.' });
       return;
     }
-    const factor = 1 + porcentaje / 100;
-    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * factor }));
-    this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * factor }));
+    const confirmed = await this.uiDialog.confirm({
+      title: `Subir precios ${porcentaje}%`,
+      text: `Todos los precios de tu lista se incrementarán un ${porcentaje}%. ¿Confirmas?`,
+      confirmText: 'Sí, subir',
+      cancelText: 'Cancelar',
+      tone: 'primary',
+      icon: 'question'
+    });
+    if (!confirmed) return;
+    const delta = 1 + porcentaje / 100;
+    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
+    this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * delta }));
+    this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'subir', porcentaje);
     this.porcentajeSubir = null;
     this.uiDialog.success({ title: 'Lista actualizada', text: `Precios del catálogo incrementados en ${porcentaje}%.` });
   }
 
-  reestablecerPreciosOriginalesLista(): void {
+  async reestablecerPreciosOriginalesLista(): Promise<void> {
+    const confirmed = await this.uiDialog.confirm({
+      title: 'Restablecer precios',
+      text: 'Se eliminarán todos tus ajustes y los precios volverán a los valores originales del catálogo. ¿Confirmas?',
+      confirmText: 'Sí, restablecer',
+      cancelText: 'Cancelar',
+      tone: 'warning',
+      icon: 'warning'
+    });
+    if (!confirmed) return;
+    this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'reestablecer');
     this.obtenerTareas();
     this.uiDialog.success({ title: 'Precios restablecidos', text: 'Se restauraron los precios originales del catálogo.' });
   }
