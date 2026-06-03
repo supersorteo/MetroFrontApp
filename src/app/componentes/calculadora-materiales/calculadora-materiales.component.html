@@ -1,4 +1,4 @@
-<div class="calc-page">
+﻿<div class="calc-page">
 
   @if (sidebarOpen()) {
     <div class="sidebar-overlay" (click)="cerrarSidebar()"></div>
@@ -8,22 +8,6 @@
       <i class="bi bi-x-lg"></i>
     </button>
 
-    <div class="sidebar-panel__profile">
-      <div class="sidebar-panel__avatar">
-        <i class="bi bi-person-circle"></i>
-      </div>
-      <div class="sidebar-panel__profile-copy">
-        <span class="sidebar-panel__profile-mode">{{ userModeLabel }}</span>
-        <strong class="sidebar-panel__profile-name">{{ userDisplayName }}</strong>
-        <span class="sidebar-panel__profile-meta">
-          @if (isTrialMode) {
-            Sesión local de demostración
-          } @else {
-            {{ userEmail || userCode }}
-          }
-        </span>
-      </div>
-    </div>
 
     <ul class="sidebar-panel__list">
       <!-- <li class="sidebar-panel__item">
@@ -231,18 +215,20 @@
                   <div class="calc-card__head-left">
                     <div class="calc-card__info">
                       <span class="calc-card__title">{{ tarea.titulo }}</span>
-                      <span class="calc-card__num">#{{ tarea.id }}</span>
                       @if (tarea.mezcla) {
                         <span class="calc-card__mezcla">Mezcla {{ tarea.mezcla }}</span>
                       }
                     </div>
                   </div>
-                  <div class="calc-card__head-right">
-                    <span class="calc-card__unidad">por {{ tarea.unidad }}</span>
-                    @if (hasResultados(tarea.id)) {
-                      <i class="bi bi-check-circle-fill calc-card__done-icon"></i>
-                    }
-                    <i class="bi calc-card__chevron" [class.bi-chevron-up]="isExpanded(tarea.id)" [class.bi-chevron-down]="!isExpanded(tarea.id)"></i>
+                  <div class="calc-card__head-aside">
+                    <span class="calc-card__num">#{{ tarea.id }}</span>
+                    <div class="calc-card__head-right">
+                      <span class="calc-card__unidad">por {{ tarea.unidad }}</span>
+                      @if (hasResultados(tarea.id)) {
+                        <i class="bi bi-check-circle-fill calc-card__done-icon"></i>
+                      }
+                      <i class="bi calc-card__chevron" [class.bi-chevron-up]="isExpanded(tarea.id)" [class.bi-chevron-down]="!isExpanded(tarea.id)"></i>
+                    </div>
                   </div>
                 </button>
 
@@ -271,16 +257,6 @@
                         <button class="btn-calc" (click)="calcular(tarea)" [disabled]="!getInputValue(tarea.id)" [class.btn-calc--limit]="isTrialCalculationLimitReached()">
                           <i class="bi bi-calculator"></i> Calcular
                         </button>
-                        @if (hasResultados(tarea.id)) {
-                          @if (isGuardado(tarea.id)) {
-                            <span class="btn-guardado-badge" aria-label="Cálculo guardado">
-                              <i class="bi bi-cloud-check-fill"></i> Guardado
-                            </span>
-                          }
-                          <button class="btn-borrar" type="button" (click)="confirmarBorrado(tarea.id)">
-                            <i class="bi bi-arrow-counterclockwise"></i> Borrar
-                          </button>
-                        }
                       </div>
                     </div>
 
@@ -312,6 +288,17 @@
                             </div>
                           }
                         </div>
+                      </div>
+
+                      <div class="calc-secondary-actions">
+                        @if (isGuardado(tarea.id)) {
+                          <span class="btn-guardado-badge" aria-label="Cálculo guardado">
+                            <i class="bi bi-cloud-check-fill"></i> Guardado
+                          </span>
+                        }
+                        <button class="btn-borrar" type="button" (click)="confirmarBorrado(tarea.id)">
+                          <i class="bi bi-arrow-counterclockwise"></i> Borrar
+                        </button>
                       </div>
                     }
                   </div>

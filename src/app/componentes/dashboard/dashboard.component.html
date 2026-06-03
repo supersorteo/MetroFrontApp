@@ -2,7 +2,23 @@
 
 
 
+
+
+
+
+
+
+
+
     <img
+
+
+
+
+
+
+
+
 
 
 
@@ -10,7 +26,23 @@
 
 
 
+
+
+
+
+
+
+
+
       class="fixed-image"
+
+
+
+
+
+
+
+
 
 
 
@@ -18,7 +50,23 @@
 
 
 
+
+
+
+
+
+
+
+
       alt="Logo Empresa"
+
+
+
+
+
+
+
+
 
 
 
@@ -26,7 +74,31 @@
 
 
 
+
+
+
+
+
+
+
+
   </div-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -42,7 +114,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <aside class="menu-panel" *ngIf="showMenuPanel" [class.open]="showMenuPanel">
+
+
+
+
+
+
+
+
 
 
 
@@ -50,7 +146,23 @@
 
 
 
+
+
+
+
+
+
+
+
     <div class="program-title" *ngIf="!isContentVisible">
+
+
+
+
+
+
+
+
 
 
 
@@ -58,15 +170,55 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
 
 
 
-    <button type="button" class="btn-close ms-auto" (click)="toggleMenuPanel()" aria-label="Cerrar menú"></button>
+
+
+
+
+
+
+
+
+    <button type="button" class="btn-close ms-auto" (click)="toggleMenuPanel()" aria-label="Cerrar menÃƒÂº"></button>
+
+
+
+
+
+
+
+
 
 
 
   </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -78,7 +230,23 @@
 
 
 
+
+
+
+
+
+
+
+
     <div
+
+
+
+
+
+
+
+
 
 
 
@@ -86,7 +254,23 @@
 
 
 
+
+
+
+
+
+
+
+
       *ngIf="!trialMode && (pendingSyncSummary.total > 0 || offlineSync.isSyncing())">
+
+
+
+
+
+
+
+
 
 
 
@@ -94,7 +278,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <div class="sync-status-card__title">
+
+
+
+
+
+
+
+
 
 
 
@@ -102,7 +302,23 @@
 
 
 
+
+
+
+
+
+
+
+
           Sincronizacion
+
+
+
+
+
+
+
+
 
 
 
@@ -110,7 +326,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <span class="sync-status-card__count">
+
+
+
+
+
+
+
+
 
 
 
@@ -118,11 +350,43 @@
 
 
 
+
+
+
+
+
+
+
+
         </span>
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -134,11 +398,35 @@
 
 
 
+
+
+
+
+
+
+
+
         Sincronizando cambios pendientes...
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -146,11 +434,43 @@
 
 
 
+
+
+
+
+
+
+
+
         Estos cambios siguen guardados localmente hasta que se sincronicen.
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -162,7 +482,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <span class="sync-chip" *ngIf="pendingSyncSummary.empresa > 0">Empresas: {{ pendingSyncSummary.empresa }}</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -170,7 +506,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <span class="sync-chip" *ngIf="pendingSyncSummary.cliente > 0">Clientes: {{ pendingSyncSummary.cliente }}</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -178,7 +530,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <span class="sync-chip" *ngIf="pendingSyncSummary.presupuesto > 0">Presupuestos: {{ pendingSyncSummary.presupuesto }}</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -186,11 +554,43 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -202,7 +602,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <h6 class="mb-2">Clima actual</h6>
+
+
+
+
+
+
+
+
 
 
 
@@ -210,7 +626,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div *ngIf="weatherError && !weatherLoading" class="text-danger small">{{ weatherError }}</div>
+
+
+
+
+
+
+
+
 
 
 
@@ -218,7 +650,23 @@
 
 
 
-        <div class="weather-temp">{{ currentWeather.temperature | number:'1.0-0' }}°C</div>
+
+
+
+
+
+
+
+
+        <div class="weather-temp">{{ currentWeather.temperature | number:'1.0-0' }}Ã‚Â°C</div>
+
+
+
+
+
+
+
+
 
 
 
@@ -226,7 +674,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <small class="text-muted d-block">{{ currentWeather.location }}</small>
+
+
+
+
+
+
+
+
 
 
 
@@ -234,7 +698,23 @@
 
 
 
-          Ver pronóstico
+
+
+
+
+
+
+
+
+          Ver pronÃƒÂ³stico
+
+
+
+
+
+
+
+
 
 
 
@@ -242,11 +722,43 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -258,7 +770,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <li class="w-100 mb-3 text-center timer-info">
+
+
+
+
+
+
+
+
 
 
 
@@ -266,7 +794,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </li>
+
+
+
+
+
+
+
+
 
 
 
@@ -274,11 +818,35 @@
 
 
 
+
+
+
+
+
+
+
+
         <button (click)="abrirGoogleSheets2()" class="btn btn-primary btn-block animate w-100">PDF valor vivienda JULIO/2025</button>
 
 
 
+
+
+
+
+
+
+
+
       </li>
+
+
+
+
+
+
+
+
 
 
 
@@ -286,11 +854,35 @@
 
 
 
+
+
+
+
+
+
+
+
         <button class="btn btn-primary btn-block w-100 animate">BIBLIOTECA</button>
 
 
 
+
+
+
+
+
+
+
+
       </li>
+
+
+
+
+
+
+
+
 
 
 
@@ -298,7 +890,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button class="btn btn-primary btn-block w-100 animate" (click)="abrirGeneradorQR(); toggleMenuPanel()">
+
+
+
+
+
+
+
+
 
 
 
@@ -306,11 +914,35 @@
 
 
 
+
+
+
+
+
+
+
+
         </button>
 
 
 
+
+
+
+
+
+
+
+
       </li>
+
+
+
+
+
+
+
+
 
 
 
@@ -318,7 +950,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button class="btn btn-warning btn-block w-100 animate" (click)="installPwa()" style="font-weight: bold; background-color: #ffc107; border-color: #ffc107; color: #000;">
+
+
+
+
+
+
+
+
 
 
 
@@ -326,11 +974,35 @@
 
 
 
+
+
+
+
+
+
+
+
         </button>
 
 
 
+
+
+
+
+
+
+
+
       </li>
+
+
+
+
+
+
+
+
 
 
 
@@ -338,11 +1010,35 @@
 
 
 
+
+
+
+
+
+
+
+
         <button class="btn btn-secondary logout-button1 w-100" (click)="logout()">
 
 
 
-          Cerrar sesión
+
+
+
+
+
+
+
+
+          cerrar session
+
+
+
+
+
+
+
+
 
 
 
@@ -350,7 +1046,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </li>
+
+
+
+
+
+
+
+
 
 
 
@@ -358,11 +1070,43 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
 
 
 
+
+
+
+
+
+
+
+
 </aside>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -374,7 +1118,23 @@
 
 
 
-<aside class="tp-import-aside" *ngIf="tpMostrarImportar" [class.open]="tpMostrarImportar" aria-label="Importar desde catálogo">
+
+
+
+
+
+
+
+
+<aside class="tp-import-aside" *ngIf="tpMostrarImportar" [class.open]="tpMostrarImportar" aria-label="Importar desde catÃƒÂ¡logo">
+
+
+
+
+
+
+
+
 
 
 
@@ -382,7 +1142,23 @@
 
 
 
+
+
+
+
+
+
+
+
     <div class="tp-import-aside__title">
+
+
+
+
+
+
+
+
 
 
 
@@ -390,7 +1166,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <i class="bi bi-journal-richtext"></i>
+
+
+
+
+
+
+
+
 
 
 
@@ -398,7 +1190,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="tp-import-aside__title-copy">
+
+
+
+
+
+
+
+
 
 
 
@@ -406,7 +1214,23 @@
 
 
 
-        <span>Importar desde catálogo</span>
+
+
+
+
+
+
+
+
+        <span>Importar desde catÃƒÂ¡logo</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -414,7 +1238,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -422,11 +1262,35 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
 
 
 
-  <p class="tp-import-aside__hint">Tomá una tarea base del catálogo y guardala como personalizada para adaptarla a tu forma de cotizar.</p>
+
+
+
+
+
+
+
+
+  <p class="tp-import-aside__hint">TomÃƒÂ¡ una tarea base del catÃƒÂ¡logo y guardala como personalizada para adaptarla a tu forma de cotizar.</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -434,7 +1298,23 @@
 
 
 
+
+
+
+
+
+
+
+
     <div class="input-group">
+
+
+
+
+
+
+
+
 
 
 
@@ -442,7 +1322,23 @@
 
 
 
-      <input class="form-control tp-input" placeholder="Buscar en el catálogo..." [(ngModel)]="tpFiltroCatalogo" />
+
+
+
+
+
+
+
+
+      <input class="form-control tp-input" placeholder="Buscar en el catÃƒÂ¡logo..." [(ngModel)]="tpFiltroCatalogo" />
+
+
+
+
+
+
+
+
 
 
 
@@ -450,7 +1346,23 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -458,7 +1370,23 @@
 
 
 
+
+
+
+
+
+
+
+
     <div *ngFor="let t of tpCatalogoFiltrado" class="tp-catalog-item">
+
+
+
+
+
+
+
+
 
 
 
@@ -466,7 +1394,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <span class="tp-catalog-item__name">{{ t.tarea }}</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -474,7 +1418,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -482,7 +1442,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <i class="bi bi-bookmark-plus-fill"></i>
+
+
+
+
+
+
+
+
 
 
 
@@ -490,7 +1466,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -498,7 +1490,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <i class="bi bi-inbox me-1"></i>Sin resultados
+
+
+
+
+
+
+
+
 
 
 
@@ -506,7 +1514,23 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -518,7 +1542,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div class="tp-editor-backdrop" *ngIf="showTpEditorModal" (click)="cerrarTpEditor()"></div>
+
+
+
+
+
+
+
+
 
 
 
@@ -526,7 +1574,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="tp-editor-modal__dialog">
+
+
+
+
+
+
+
+
 
 
 
@@ -534,7 +1598,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="tp-editor-modal__header">
+
+
+
+
+
+
+
+
 
 
 
@@ -542,11 +1622,35 @@
 
 
 
+
+
+
+
+
+
+
+
           <i class="bi" [ngClass]="tpEditingId != null ? 'bi-pencil-square' : 'bi-journal-plus'"></i>
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -554,7 +1658,23 @@
 
 
 
-          <span class="tp-editor-modal__eyebrow">{{ tpEditingId != null ? 'Edicion rápida' : 'Nueva tarea personalizada' }}</span>
+
+
+
+
+
+
+
+
+          <span class="tp-editor-modal__eyebrow">{{ tpEditingId != null ? 'Edicion rÃƒÂ¡pida' : 'Nueva tarea personalizada' }}</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -562,7 +1682,23 @@
 
 
 
-          <p class="tp-editor-modal__subtitle">Define nombre, descripción y costo para guardar una tarea clara, prolija y lista para cotizar.</p>
+
+
+
+
+
+
+
+
+          <p class="tp-editor-modal__subtitle">Define nombre, descripciÃƒÂ³n y costo para guardar una tarea clara, prolija y lista para cotizar.</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -570,11 +1706,43 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn-close ms-auto" (click)="cerrarTpEditor()" aria-label="Cerrar"></button>
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -586,7 +1754,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <div class="row g-4">
+
+
+
+
+
+
+
+
 
 
 
@@ -594,7 +1778,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <div class="tp-editor-shell">
+
+
+
+
+
+
+
+
 
 
 
@@ -602,7 +1802,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div class="tp-editor-shell__title">
+
+
+
+
+
+
+
+
 
 
 
@@ -610,7 +1826,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <span>Datos principales</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -622,7 +1854,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 <div class="mb-3">
+
+
+
+
+
+
+
+
 
 
 
@@ -630,7 +1886,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <input class="form-control tp-input"
+
+
+
+
+
+
+
+
 
 
 
@@ -638,7 +1910,23 @@
 
 
 
-                         placeholder="Ej: Instalación eléctrica"
+
+
+
+
+
+
+
+
+                         placeholder="Ej: InstalaciÃƒÂ³n elÃƒÂ©ctrica"
+
+
+
+
+
+
+
+
 
 
 
@@ -646,7 +1934,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <div *ngIf="tpSubmitted && !tpForm.tarea.trim()" class="tp-field-error">
+
+
+
+
+
+
+
+
 
 
 
@@ -654,11 +1958,43 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -670,15 +2006,55 @@
 
 
 
-                  <label class="tp-label">Descripción <span class="tp-optional">(opcional)</span></label>
 
 
 
-                  <textarea class="form-control tp-input" placeholder="Contá brevemente qué incluye esta tarea..." [(ngModel)]="tpForm.descripcion" rows="4"></textarea>
+
+
+
+
+
+                  <label class="tp-label">DescripciÃƒÂ³n <span class="tp-optional">(opcional)</span></label>
+
+
+
+
+
+
+
+
+
+
+
+                  <textarea class="form-control tp-input" placeholder="ContÃƒÂ¡ brevemente quÃƒÂ© incluye esta tarea..." [(ngModel)]="tpForm.descripcion" rows="4"></textarea>
+
+
+
+
+
+
+
+
 
 
 
                 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -690,7 +2066,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <label class="tp-label">Costo unitario ($) <span class="text-danger">*</span></label>
+
+
+
+
+
+
+
+
 
 
 
@@ -698,7 +2090,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <span class="input-group-text tp-input-addon"><i class="bi bi-cash-stack"></i></span>
+
+
+
+
+
+
+
+
 
 
 
@@ -706,7 +2114,23 @@
 
 
 
+
+
+
+
+
+
+
+
                            [ngClass]="{'is-invalid': tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)}"
+
+
+
+
+
+
+
+
 
 
 
@@ -714,7 +2138,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -722,7 +2162,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <i class="bi bi-exclamation-circle-fill me-1"></i>El costo debe ser mayor a 0
+
+
+
+
+
+
+
+
 
 
 
@@ -730,11 +2186,43 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -746,7 +2234,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <button class="btn btn-success tp-btn-action tp-btn-action--primary" (click)="tpGuardar()">
+
+
+
+
+
+
+
+
 
 
 
@@ -754,11 +2258,35 @@
 
 
 
+
+
+
+
+
+
+
+
                   {{ tpEditingId != null ? 'Guardar cambios' : 'Crear tarea' }}
 
 
 
+
+
+
+
+
+
+
+
                 </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -766,7 +2294,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <i class="bi bi-x-circle me-2"></i>Cancelar
+
+
+
+
+
+
+
+
 
 
 
@@ -774,7 +2318,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -782,7 +2342,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -790,7 +2366,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -798,11 +2390,43 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -818,7 +2442,39 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div class="tp-backdrop" *ngIf="showTareasPersonalizadasPanel" (click)="toggleTareasPersonalizadasPanel()"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -830,7 +2486,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="tp-modal__dialog">
+
+
+
+
+
+
+
+
 
 
 
@@ -842,7 +2514,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       <!-- Header -->
+
+
+
+
+
+
+
+
 
 
 
@@ -850,7 +2546,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <div class="tp-modal__header-icon">
+
+
+
+
+
+
+
+
 
 
 
@@ -858,7 +2570,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -866,7 +2594,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <h5 class="tp-modal__title">Mis Tareas Personalizadas</h5>
+
+
+
+
+
+
+
+
 
 
 
@@ -874,7 +2618,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -882,7 +2642,31 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -894,7 +2678,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="tp-modal__body">
+
+
+
+
+
+
+
+
 
 
 
@@ -906,7 +2706,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <!-- Columna izquierda: Formulario + Importar -->
+
+
+
+
+
+
+
+
 
 
 
@@ -918,7 +2742,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             <div class="tp-form-card">
+
+
+
+
+
+
+
+
 
 
 
@@ -926,7 +2774,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <i class="bi bi-{{ tpEditingId != null ? 'pencil-square' : 'plus-circle-fill' }} me-2"></i>
+
+
+
+
+
+
+
+
 
 
 
@@ -934,7 +2798,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -942,7 +2822,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div class="mb-3">
+
+
+
+
+
+
+
+
 
 
 
@@ -950,7 +2846,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <input class="form-control tp-input"
+
+
+
+
+
+
+
+
 
 
 
@@ -958,7 +2870,23 @@
 
 
 
-                         placeholder="Ej: Instalación eléctrica"
+
+
+
+
+
+
+
+
+                         placeholder="Ej: InstalaciÃƒÂ³n elÃƒÂ©ctrica"
+
+
+
+
+
+
+
+
 
 
 
@@ -966,7 +2894,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <div *ngIf="tpSubmitted && !tpForm.tarea.trim()" class="tp-field-error">
+
+
+
+
+
+
+
+
 
 
 
@@ -974,7 +2918,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -982,11 +2942,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div class="mb-3">
 
 
 
-                  <label class="tp-label">Descripci�n <span class="tp-optional">(opcional)</span></label>
+
+
+
+
+
+
+
+
+                  <label class="tp-label">DescripciÃ¯Â¿Â½n <span class="tp-optional">(opcional)</span></label>
+
+
+
+
+
+
+
+
 
 
 
@@ -994,7 +2978,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1002,7 +3002,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <label class="tp-label">Costo unitario ($) <span class="text-danger">*</span></label>
+
+
+
+
+
+
+
+
 
 
 
@@ -1010,7 +3026,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <span class="input-group-text tp-input-addon"><i class="bi bi-currency-dollar"></i></span>
+
+
+
+
+
+
+
+
 
 
 
@@ -1018,7 +3050,23 @@
 
 
 
+
+
+
+
+
+
+
+
                            [ngClass]="{'is-invalid': tpSubmitted && (!tpForm.costo || tpForm.costo <= 0)}"
+
+
+
+
+
+
+
+
 
 
 
@@ -1026,7 +3074,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1034,7 +3098,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <i class="bi bi-exclamation-circle-fill me-1"></i>El costo debe ser mayor a 0
+
+
+
+
+
+
+
+
 
 
 
@@ -1042,7 +3122,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1050,7 +3146,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <button class="btn btn-success flex-grow-1 tp-btn-action" (click)="tpGuardar()">
+
+
+
+
+
+
+
+
 
 
 
@@ -1058,7 +3170,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     {{ tpEditingId != null ? 'Actualizar' : 'Guardar tarea' }}
+
+
+
+
+
+
+
+
 
 
 
@@ -1066,7 +3194,23 @@
 
 
 
-                  <button *ngIf="tpEditingId != null" class="btn btn-outline-secondary tp-btn-action" (click)="tpCancelarEdicion()" title="Cancelar edición">
+
+
+
+
+
+
+
+
+                  <button *ngIf="tpEditingId != null" class="btn btn-outline-secondary tp-btn-action" (click)="tpCancelarEdicion()" title="Cancelar ediciÃƒÂ³n">
+
+
+
+
+
+
+
+
 
 
 
@@ -1074,7 +3218,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -1082,11 +3242,43 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1098,7 +3290,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <button class="tp-import-card__toggle" (click)="tpMostrarImportar = !tpMostrarImportar" type="button">
+
+
+
+
+
+
+
+
 
 
 
@@ -1106,7 +3314,23 @@
 
 
 
-                <span>{{ tpMostrarImportar ? 'Ocultar catálogo' : 'Importar del catálogo' }}</span>
+
+
+
+
+
+
+
+
+                <span>{{ tpMostrarImportar ? 'Ocultar catÃƒÂ¡logo' : 'Importar del catÃƒÂ¡logo' }}</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -1114,7 +3338,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -1122,7 +3362,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div class="input-group mb-2">
+
+
+
+
+
+
+
+
 
 
 
@@ -1130,11 +3386,35 @@
 
 
 
+
+
+
+
+
+
+
+
                   <input class="form-control tp-input" placeholder="Buscar tarea..." [(ngModel)]="tpFiltroCatalogo" />
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1142,7 +3422,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <div *ngFor="let t of tpCatalogoFiltrado" class="tp-catalog-item">
+
+
+
+
+
+
+
+
 
 
 
@@ -1150,7 +3446,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <span class="tp-catalog-item__name">{{ t.tarea }}</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -1158,7 +3470,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1166,7 +3494,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <i class="bi bi-bookmark-plus-fill"></i>
+
+
+
+
+
+
+
+
 
 
 
@@ -1174,7 +3518,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1182,7 +3542,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <i class="bi bi-inbox me-1"></i>Sin resultados
+
+
+
+
+
+
+
+
 
 
 
@@ -1190,11 +3566,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1206,7 +3606,39 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1218,7 +3650,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <div class="col-12 col-md-7">
+
+
+
+
+
+
+
+
 
 
 
@@ -1226,7 +3674,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <span class="tp-list-header__title"><i class="bi bi-list-check me-2"></i>Tareas guardadas</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -1234,7 +3698,31 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1246,15 +3734,55 @@
 
 
 
+
+
+
+
+
+
+
+
               <i class="bi bi-bookmark-heart tp-empty-state__icon"></i>
 
 
 
-              <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea en el formulario.</p>
+
+
+
+
+
+
+
+
+              <p class="tp-empty-state__text">TodavÃƒÂ­a no tenÃƒÂ©s tareas guardadas.<br>CreÃƒÂ¡ tu primera tarea en el formulario.</p>
+
+
+
+
+
+
+
+
 
 
 
             </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1266,7 +3794,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <div *ngFor="let tp of tareasPersonalizadas" class="tp-card" [class.tp-card--editing]="tpEditingId === tp.id">
+
+
+
+
+
+
+
+
 
 
 
@@ -1274,7 +3818,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div class="tp-card__content">
+
+
+
+
+
+
+
+
 
 
 
@@ -1282,7 +3842,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <span class="tp-card__name">{{ tp.tarea }}</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -1290,7 +3866,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1298,7 +3890,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <div class="tp-card__actions">
+
+
+
+
+
+
+
+
 
 
 
@@ -1306,11 +3914,35 @@
 
 
 
+
+
+
+
+
+
+
+
                       <i class="bi bi-plus-circle-fill"></i><span>Agregar</span>
 
 
 
+
+
+
+
+
+
+
+
                     </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -1318,11 +3950,35 @@
 
 
 
-                      <i class="bi bi-pencil-fill"></i><span>Editar</span>
+
+
+
+
+
+
+
+
+                      <i class="bi bi-pencil-fill"></i>
+
+
+
+
+
+
+
+
 
 
 
                     </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -1330,7 +3986,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <i class="bi bi-trash3-fill"></i>
+
+
+
+
+
+
+
+
 
 
 
@@ -1338,7 +4010,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1346,11 +4034,35 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1362,7 +4074,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1370,7 +4106,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1378,7 +4130,31 @@
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1390,7 +4166,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="modal-dialog modal-dialog-centered modal-lg">
+
+
+
+
+
+
+
+
 
 
 
@@ -1398,7 +4190,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header">
+
+
+
+
+
+
+
+
 
 
 
@@ -1406,7 +4214,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+
+
+
+
+
+
+
 
 
 
@@ -1414,7 +4238,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-body">
+
+
+
+
+
+
+
+
 
 
 
@@ -1422,7 +4262,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <div class="card col-md-5">
+
+
+
+
+
+
+
+
 
 
 
@@ -1430,7 +4286,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <div class="card-body">
+
+
+
+
+
+
+
+
 
 
 
@@ -1438,7 +4310,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1446,7 +4334,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <div id="qrContainer" style="display:inline-block"></div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1454,7 +4358,31 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1466,7 +4394,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <div class="card-header fw-bold mb-2">Opciones del QR</div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1478,7 +4422,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
               <div class="btn-toolbar mb-3 d-flex gap-2" role="toolbar">
+
+
+
+
+
+
+
+
 
 
 
@@ -1486,7 +4454,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#qrSectionData" aria-expanded="true">
+
+
+
+
+
+
+
+
 
 
 
@@ -1494,7 +4478,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -1502,11 +4502,35 @@
 
 
 
+
+
+
+
+
+
+
+
                     <i class="fas fa-th"></i> Puntos
 
 
 
+
+
+
+
+
+
+
+
                   </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -1514,11 +4538,35 @@
 
 
 
+
+
+
+
+
+
+
+
                     <i class="fas fa-fill-drip"></i> Fondo
 
 
 
+
+
+
+
+
+
+
+
                   </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -1526,7 +4574,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <i class="fas fa-image"></i> Logo
+
+
+
+
+
+
+
+
 
 
 
@@ -1534,7 +4598,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1542,7 +4622,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <button id="qrBtnActualizar" class="btn btn-primary btn-sm" type="button" (click)="actualizarQR()">
+
+
+
+
+
+
+
+
 
 
 
@@ -1550,7 +4646,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -1558,7 +4670,31 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1570,7 +4706,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div id="qrSectionData" class="collapse show" data-bs-parent="#qrOptionsAccordion">
+
+
+
+
+
+
+
+
 
 
 
@@ -1578,7 +4730,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <label class="form-label">Texto / URL</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -1586,7 +4754,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1594,11 +4778,35 @@
 
 
 
+
+
+
+
+
+
+
+
                     <div class="col-6">
 
 
 
-                      <label class="form-label">Tamaño (px)</label>
+
+
+
+
+
+
+
+
+                      <label class="form-label">TamaÃƒÂ±o (px)</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -1606,11 +4814,35 @@
 
 
 
+
+
+
+
+
+
+
+
                       <div><small class="text-secondary">Actual: <span id="qrSizeOut">280</span> px</small></div>
 
 
 
+
+
+
+
+
+
+
+
                     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1618,7 +4850,23 @@
 
 
 
-                      <label class="form-label">Nivel de corrección</label>
+
+
+
+
+
+
+
+
+                      <label class="form-label">Nivel de correcciÃƒÂ³n</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -1626,7 +4874,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         <option value="L">L (7%)</option>
+
+
+
+
+
+
+
+
 
 
 
@@ -1634,7 +4898,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         <option value="Q">Q (25%)</option>
+
+
+
+
+
+
+
+
 
 
 
@@ -1642,7 +4922,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       </select>
+
+
+
+
+
+
+
+
 
 
 
@@ -1650,11 +4946,43 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1666,11 +4994,35 @@
 
 
 
+
+
+
+
+
+
+
+
                   <div class="row g-3 mt-2">
 
 
 
+
+
+
+
+
+
+
+
                     <div class="col-6">
+
+
+
+
+
+
+
+
 
 
 
@@ -1678,7 +5030,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <select id="qrDotsType" class="form-select" (change)="actualizarQR()">
+
+
+
+
+
+
+
+
 
 
 
@@ -1686,7 +5054,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         <option value="dots" selected>Puntos</option>
+
+
+
+
+
+
+
+
 
 
 
@@ -1694,7 +5078,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         <option value="classy">Classy</option>
+
+
+
+
+
+
+
+
 
 
 
@@ -1702,7 +5102,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         <option value="extra-rounded">Extra redondeado</option>
+
+
+
+
+
+
+
+
 
 
 
@@ -1710,11 +5126,35 @@
 
 
 
+
+
+
+
+
+
+
+
                     </div>
 
 
 
+
+
+
+
+
+
+
+
                     <div class="col-6">
+
+
+
+
+
+
+
+
 
 
 
@@ -1722,7 +5162,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <input id="qrDotsColor" type="color" class="form-control form-control-color w-100" value="#111827" title="Elige color" (input)="actualizarQR()">
+
+
+
+
+
+
+
+
 
 
 
@@ -1730,7 +5186,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <div class="col-6">
+
+
+
+
+
+
+
+
 
 
 
@@ -1738,7 +5210,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <select id="qrCornersSquare" class="form-select" (change)="actualizarQR()">
+
+
+
+
+
+
+
+
 
 
 
@@ -1746,7 +5234,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         <option value="extra-rounded">Extra redondeadas</option>
+
+
+
+
+
+
+
+
 
 
 
@@ -1754,11 +5258,35 @@
 
 
 
+
+
+
+
+
+
+
+
                       </select>
 
 
 
+
+
+
+
+
+
+
+
                     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1766,7 +5294,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <label class="form-label">Esquinas (puntos)</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -1774,7 +5318,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         <option value="square">Cuadradas</option>
+
+
+
+
+
+
+
+
 
 
 
@@ -1782,7 +5342,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         <option value="extra-rounded">Extra redondeadas</option>
+
+
+
+
+
+
+
+
 
 
 
@@ -1790,7 +5366,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1798,7 +5390,31 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1810,11 +5426,35 @@
 
 
 
+
+
+
+
+
+
+
+
                   <div class="row g-3 mt-2">
 
 
 
+
+
+
+
+
+
+
+
                     <div class="col-12">
+
+
+
+
+
+
+
+
 
 
 
@@ -1822,11 +5462,35 @@
 
 
 
+
+
+
+
+
+
+
+
                       <div class="d-flex flex-wrap gap-3">
 
 
 
+
+
+
+
+
+
+
+
                         <div class="form-check">
+
+
+
+
+
+
+
+
 
 
 
@@ -1834,7 +5498,23 @@
 
 
 
+
+
+
+
+
+
+
+
                           <label class="form-check-label" for="qrBgModeSolid">Color</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -1842,7 +5522,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         <div class="form-check">
+
+
+
+
+
+
+
+
 
 
 
@@ -1850,11 +5546,35 @@
 
 
 
+
+
+
+
+
+
+
+
                           <label class="form-check-label" for="qrBgModeTransparent">Transparente</label>
 
 
 
+
+
+
+
+
+
+
+
                         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1862,7 +5582,23 @@
 
 
 
+
+
+
+
+
+
+
+
                           <input class="form-check-input" type="radio" name="qrBgMode" id="qrBgModeGradient" value="gradient" (change)="actualizarQR()">
+
+
+
+
+
+
+
+
 
 
 
@@ -1870,7 +5606,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1878,11 +5630,35 @@
 
 
 
+
+
+
+
+
+
+
+
                     </div>
 
 
 
+
+
+
+
+
+
+
+
                     <div class="col-6">
+
+
+
+
+
+
+
+
 
 
 
@@ -1890,11 +5666,35 @@
 
 
 
+
+
+
+
+
+
+
+
                       <input id="qrBgColor" type="color" class="form-control form-control-color w-100" value="#ffffff" (input)="actualizarQR()">
 
 
 
+
+
+
+
+
+
+
+
                     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1902,7 +5702,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <label class="form-label">Color 2</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -1910,7 +5726,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1918,7 +5750,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <label class="form-label">Orientacion del gradiente</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -1926,7 +5774,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         <option value="to bottom" selected>Abajo</option>
+
+
+
+
+
+
+
+
 
 
 
@@ -1934,7 +5798,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         <option value="to right">Derecha</option>
+
+
+
+
+
+
+
+
 
 
 
@@ -1942,7 +5822,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       </select>
+
+
+
+
+
+
+
+
 
 
 
@@ -1950,11 +5846,43 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1966,7 +5894,23 @@
 
 
 
+
+
+
+
+
+
+
+
                    <div class="row g-3 align-items-center mt-2">
+
+
+
+
+
+
+
+
 
 
 
@@ -1974,7 +5918,23 @@
 
 
 
+
+
+
+
+
+
+
+
                        <label class="form-label">Logo central (opcional)</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -1982,7 +5942,23 @@
 
 
 
+
+
+
+
+
+
+
+
                      </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -1990,11 +5966,35 @@
 
 
 
+
+
+
+
+
+
+
+
                        <input id="qrLogoUrl" type="url" class="form-control" placeholder="URL del logo" [(ngModel)]="qrLogoUrlValue">
 
 
 
+
+
+
+
+
+
+
+
                      </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2002,11 +6002,35 @@
 
 
 
+
+
+
+
+
+
+
+
                        <button id="qrBtnSetLogo" class="btn btn-outline-secondary w-100" type="button" (click)="setQrLogoUrl()">Usar</button>
 
 
 
+
+
+
+
+
+
+
+
                      </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2014,7 +6038,23 @@
 
 
 
+
+
+
+
+
+
+
+
                        <img id="qrLogoPreview" class="qr-logo-preview d-none" alt="logo" style="width: 40px; height: 40px; object-fit: contain;">
+
+
+
+
+
+
+
+
 
 
 
@@ -2022,7 +6062,23 @@
 
 
 
-                         <label class="form-label mb-1">Tamaño del logo (%)</label>
+
+
+
+
+
+
+
+
+                         <label class="form-label mb-1">TamaÃƒÂ±o del logo (%)</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -2030,7 +6086,23 @@
 
 
 
+
+
+
+
+
+
+
+
                        </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2038,7 +6110,23 @@
 
 
 
+
+
+
+
+
+
+
+
                    </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2046,7 +6134,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2054,7 +6158,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2062,7 +6182,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2070,7 +6206,23 @@
 
 
 
+
+
+
+
+
+
+
+
          <div class="d-flex gap-2">
+
+
+
+
+
+
+
+
 
 
 
@@ -2078,11 +6230,35 @@
 
 
 
+
+
+
+
+
+
+
+
              <i class="fas fa-file-image"></i> Descargar PNG
 
 
 
+
+
+
+
+
+
+
+
            </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -2090,7 +6266,23 @@
 
 
 
+
+
+
+
+
+
+
+
              <i class="fas fa-file-code"></i> Descargar SVG
+
+
+
+
+
+
+
+
 
 
 
@@ -2098,7 +6290,23 @@
 
 
 
+
+
+
+
+
+
+
+
          </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2106,7 +6314,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2114,11 +6338,43 @@
 
 
 
+
+
+
+
+
+
+
+
 </div>
 
 
 
+
+
+
+
+
+
+
+
 <div class="dashboard-container">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2142,7 +6398,55 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <div class="card dashboard-card">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2154,7 +6458,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="card-body">
+
+
+
+
+
+
+
+
 
 
 
@@ -2166,7 +6486,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       <div class="task-brand-row mb-2" *ngIf="currentEmpresaLogoUrl">
+
+
+
+
+
+
+
+
 
 
 
@@ -2174,7 +6518,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <img
+
+
+
+
+
+
+
+
 
 
 
@@ -2182,7 +6542,23 @@
 
 
 
+
+
+
+
+
+
+
+
             class="fixed-image"
+
+
+
+
+
+
+
+
 
 
 
@@ -2190,7 +6566,23 @@
 
 
 
+
+
+
+
+
+
+
+
             alt="Logo Empresa"
+
+
+
+
+
+
+
+
 
 
 
@@ -2198,7 +6590,23 @@
 
 
 
+
+
+
+
+
+
+
+
             (click)="openListaEmpresasModal()">
+
+
+
+
+
+
+
+
 
 
 
@@ -2206,7 +6614,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2214,7 +6638,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <ul class="nav nav-tabs task-tabs" role="tablist">
+
+
+
+
+
+
+
+
 
 
 
@@ -2222,7 +6662,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <a
+
+
+
+
+
+
+
+
 
 
 
@@ -2230,7 +6686,23 @@
 
 
 
+
+
+
+
+
+
+
+
               href="#"
+
+
+
+
+
+
+
+
 
 
 
@@ -2238,7 +6710,23 @@
 
 
 
+
+
+
+
+
+
+
+
               [attr.aria-current]="activeTaskTab === 'catalogo' ? 'page' : null"
+
+
+
+
+
+
+
+
 
 
 
@@ -2246,7 +6734,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <i class="bi bi-list-ul me-1"></i> Lista de tareas
+
+
+
+
+
+
+
+
 
 
 
@@ -2254,7 +6758,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </li>
+
+
+
+
+
+
+
+
 
 
 
@@ -2262,7 +6782,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <a
+
+
+
+
+
+
+
+
 
 
 
@@ -2270,7 +6806,23 @@
 
 
 
+
+
+
+
+
+
+
+
               href="#"
+
+
+
+
+
+
+
+
 
 
 
@@ -2278,7 +6830,23 @@
 
 
 
+
+
+
+
+
+
+
+
               [attr.aria-current]="activeTaskTab === 'personalizadas' ? 'page' : null"
+
+
+
+
+
+
+
+
 
 
 
@@ -2286,7 +6854,23 @@
 
 
 
-              <i class="bi bi-bookmarks me-1"></i> Tareas personalizadas
+
+
+
+
+
+
+
+
+                    <i class="bi bi-bookmarks me-1"></i> Tus tareas
+
+
+
+
+
+
+
+
 
 
 
@@ -2294,7 +6878,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </a>
+
+
+
+
+
+
+
+
 
 
 
@@ -2302,7 +6902,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </ul>
+
+
+
+
+
+
+
+
 
 
 
@@ -2310,7 +6926,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="tab-content task-tabs__content">
+
+
+
+
+
+
+
+
 
 
 
@@ -2318,7 +6950,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <div class="inputGroup task-search-input-group">
+
+
+
+
+
+
+
+
 
 
 
@@ -2326,7 +6974,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <label for="busqueda">Buscar tarea</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -2334,7 +6998,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <svg viewBox="0 0 24 24" width="18" height="18" focusable="false" aria-hidden="true">
+
+
+
+
+
+
+
+
 
 
 
@@ -2342,7 +7022,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -2350,7 +7046,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2358,7 +7070,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <button type="button" class="task-help-btn task-help-btn--compact" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="C???mo usar el buscador">
+
+
+
+
+
+
+
+
 
 
 
@@ -2366,7 +7094,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <span>C??mo buscar</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -2374,7 +7118,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2382,7 +7142,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <table class="table table-striped">
+
+
+
+
+
+
+
+
 
 
 
@@ -2390,7 +7166,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <tr>
+
+
+
+
+
+
+
+
 
 
 
@@ -2398,11 +7190,35 @@
 
 
 
+
+
+
+
+
+
+
+
                   <th style="width:15%; min-width:70px; text-align:right;">Costo/$</th>
 
 
 
+
+
+
+
+
+
+
+
                 </tr>
+
+
+
+
+
+
+
+
 
 
 
@@ -2410,7 +7226,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <tbody>
+
+
+
+
+
+
+
+
 
 
 
@@ -2418,7 +7250,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <td style="width:85%; word-break:break-word; white-space:normal;">{{ tarea.tarea }}</td>
+
+
+
+
+
+
+
+
 
 
 
@@ -2426,7 +7274,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 </tr>
+
+
+
+
+
+
+
+
 
 
 
@@ -2434,7 +7298,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </table>
+
+
+
+
+
+
+
+
 
 
 
@@ -2442,7 +7322,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2450,16 +7346,52 @@
 
 
 
+
+
+
+
+
+
+
+
           <div class="tp-inline-panel">
 
 
 
+
+
+
+
+
+
+
+
             <div class="tp-hero" *ngIf="showTpHero">
+
+
               <button class="tp-hero__close" type="button" (click)="cerrarTpHero()" aria-label="Cerrar aviso de tareas personalizadas">
+
+
+
+
 
                 <i class="bi bi-x-lg"></i>
 
+
+
+
+
               </button>
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2468,7 +7400,23 @@
 
 
 
-                <span class="tp-hero__eyebrow"><i class="bi bi-stars me-2"></i>Gestión personalizada</span>
+
+
+
+
+
+
+
+
+                <span class="tp-hero__eyebrow"><i class="bi bi-stars me-2"></i>GestiÃƒÂ³n personalizada</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -2476,7 +7424,23 @@
 
 
 
-                <p class="tp-hero__text">Organizá tus tareas frecuentes, editá valores rápido y agrégalas al presupuesto con un toque.</p>
+
+
+
+
+
+
+
+
+                <p class="tp-hero__text">OrganizÃƒÂ¡ tus tareas frecuentes, editÃƒÂ¡ valores rÃƒÂ¡pido y agrÃƒÂ©galas al presupuesto con un toque.</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -2486,7 +7450,35 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2498,7 +7490,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="inputGroup tp-toolbar__search">
+
+
+
+
+
+
+
+
 
 
 
@@ -2506,7 +7514,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <label for="busquedaPersonalizada">Buscar tarea personalizada</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -2514,7 +7538,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <svg viewBox="0 0 24 24" width="18" height="18" focusable="false" aria-hidden="true">
+
+
+
+
+
+
+
+
 
 
 
@@ -2522,7 +7562,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -2530,43 +7586,31 @@
 
 
 
-              </div>
 
 
 
 
 
-
-
-              <div class="tp-capacity-chip"
-
-
-
-                [class.tp-capacity-chip--warning]="tareasPersonalizadas.length / tpLimitActual >= 0.8 && tareasPersonalizadas.length < tpLimitActual"
-
-
-
-                [class.tp-capacity-chip--full]="tareasPersonalizadas.length >= tpLimitActual">
-
-
-
-                <i class="bi bi-list-ol"></i>
-
-
-
-                <strong>{{ tareasPersonalizadas.length }}</strong>
-
-
-
-                <span class="tp-capacity-chip__sep">/</span>
-
-
-
-                <span class="tp-capacity-chip__max">{{ tpLimitActual }}</span>
 
 
 
               </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2578,19 +7622,36 @@
 
 
 
+
+
+
+
+
+
+
+
                 <button class="tp-toolbar__create" type="button" (click)="abrirTpEditor()">
-
-
-
-                  <i class="bi bi-plus-circle-fill"></i>
-
-
-
-                  <span>Nueva tarea</span>
-
-
-
+                  <span class="tp-toolbar__create-main">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <span>Nueva tarea</span>
+                  </span>
+                  <div class="tp-capacity-chip"
+                    [class.tp-capacity-chip--warning]="tareasPersonalizadas.length / tpLimitActual >= 0.8 && tareasPersonalizadas.length < tpLimitActual"
+                    [class.tp-capacity-chip--full]="tareasPersonalizadas.length >= tpLimitActual">
+                    <i class="bi bi-list-ol"></i>
+                    <strong>{{ tareasPersonalizadas.length }}</strong>
+                    <span class="tp-capacity-chip__sep">/</span>
+                    <span class="tp-capacity-chip__max">{{ tpLimitActual }}</span>
+                  </div>
                 </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -2598,7 +7659,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <span class="tp-toolbar__toggle-icon" aria-hidden="true">
+
+
+
+
+
+
+
+
 
 
 
@@ -2606,7 +7683,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </span>
+
+
+
+
+
+
+
+
 
 
 
@@ -2614,15 +7707,47 @@
 
 
 
-                    <!--small>Acción rápida</small-->
 
 
 
-                    <strong>Importar del catálogo</strong>
+
+
+
+
+
+                    <!--small>AcciÃƒÂ³n rÃƒÂ¡pida</small-->
+
+
+
+
+
+
+
+
+
+
+
+                    <strong>Importar del catÃƒÂ¡logo</strong>
+
+
+
+
+
+
+
+
 
 
 
                   </span>
+
+
+
+
+
+
+
+
 
 
 
@@ -2630,7 +7755,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <i class="bi" [ngClass]="tpMostrarImportar ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
+
+
+
+
+
+
+
+
 
 
 
@@ -2638,7 +7779,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -2646,7 +7803,31 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2658,15 +7839,55 @@
 
 
 
+
+
+
+
+
+
+
+
               <i class="bi bi-bookmark-heart tp-empty-state__icon"></i>
 
 
 
-              <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea desde el botón superior.</p>
+
+
+
+
+
+
+
+
+              <p class="tp-empty-state__text">TodavÃƒÂ­a no tenÃƒÂ©s tareas guardadas.<br>CreÃƒÂ¡ tu primera tarea desde el botÃƒÂ³n superior.</p>
+
+
+
+
+
+
+
+
 
 
 
             </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2678,15 +7899,55 @@
 
 
 
+
+
+
+
+
+
+
+
               <i class="bi bi-search tp-empty-state__icon"></i>
 
 
 
-              <p class="tp-empty-state__text">No hay tareas personalizadas que coincidan con tu búsqueda.</p>
+
+
+
+
+
+
+
+
+              <p class="tp-empty-state__text">No hay tareas personalizadas que coincidan con tu bÃƒÂºsqueda.</p>
+
+
+
+
+
+
+
+
 
 
 
             </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2698,7 +7959,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <div class="tp-card-grid">
+
+
+
+
+
+
+
+
 
 
 
@@ -2706,7 +7983,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div class="tp-card__accent"></div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2714,7 +8007,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <div class="tp-card__top">
+
+
+
+
+
+
+
+
 
 
 
@@ -2722,7 +8031,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <span class="tp-card__name">{{ tp.tarea }}</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -2730,7 +8055,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2738,7 +8079,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2746,7 +8103,23 @@
 
 
 
-                  <p *ngIf="!tp.descripcion" class="tp-card__desc tp-card__desc--muted">Sin descripción adicional.</p>
+
+
+
+
+
+
+
+
+                  <p *ngIf="!tp.descripcion" class="tp-card__desc tp-card__desc--muted">Sin descripciÃƒÂ³n adicional.</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -2754,7 +8127,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <button class="tp-card__action tp-card__action--add" title="Agregar al presupuesto" (click)="tpAgregarAlPresupuesto(tp)">
+
+
+
+
+
+
+
+
 
 
 
@@ -2762,7 +8151,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -2770,11 +8175,35 @@
 
 
 
-                      <i class="bi bi-pencil-square"></i><span>Editar</span>
+
+
+
+
+
+
+
+
+                      <i class="bi bi-pencil-square"></i>
+
+
+
+
+
+
+
+
 
 
 
                     </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -2782,7 +8211,23 @@
 
 
 
-                      <i class="bi bi-trash3-fill"></i><span>Eliminar</span>
+
+
+
+
+
+
+
+
+                      <i class="bi bi-trash3-fill"></i>
+
+
+
+
+
+
+
+
 
 
 
@@ -2790,7 +8235,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2798,15 +8259,47 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
 
 
 
+
+
+
+
+
+
+
+
             </div>
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2814,11 +8307,43 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2830,7 +8355,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="w-100 d-flex justify-content-center align-items-center mb-1" style="gap: 8px;">
+
+
+
+
+
+
+
+
 
 
 
@@ -2838,11 +8379,35 @@
 
 
 
+
+
+
+
+
+
+
+
           <i class="bi bi-geo-alt"></i> Seleccionar provincia
 
 
 
+
+
+
+
+
+
+
+
         </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -2850,11 +8415,35 @@
 
 
 
+
+
+
+
+
+
+
+
           <i class="fas fa-history" aria-hidden="true"></i>
 
 
 
+
+
+
+
+
+
+
+
         </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -2862,7 +8451,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <i class="fas fa-cog" aria-hidden="true"></i>
+
+
+
+
+
+
+
+
 
 
 
@@ -2870,7 +8475,31 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2882,7 +8511,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button class="btn btn-success animate flex-grow-1" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" type="button" (click)="openListaEmpresasModal()">
+
+
+
+
+
+
+
+
 
 
 
@@ -2890,11 +8535,35 @@
 
 
 
+
+
+
+
+
+
+
+
             <path fill="#ffffff" d="m51.18,8.07c-.24-.54-.73-.93-1.32-1.07-.63-.1-1.22.1-1.66.54l-5.89,5.89-3.02-.39-.44-3.07,5.94-5.89c.39-.44.58-1.02.49-1.66-.15-.58-.54-1.07-1.07-1.32-5.11-2.19-10.91-1.07-14.81,2.83-3.36,3.36-4.63,8.18-3.51,12.76l-6.19,6.24-3.02,3.02c-4.53-1.17-9.45.15-12.76,3.51C.04,33.31-1.08,39.3,1.11,44.27c.24.54.78.93,1.36,1.07.58.1,1.22-.1,1.61-.54l5.89-5.89,3.07.39.39,3.07-5.89,5.89c-.44.44-.63,1.02-.49,1.66.1.58.49,1.07,1.07,1.32,1.7.73,3.51,1.12,5.31,1.12,3.46,0,6.87-1.36,9.45-3.95,2.44-2.44,3.8-5.65,3.95-8.96l-3.7-.78c.1,2.68-.88,5.26-2.82,7.16-2.14,2.14-5.07,3.12-7.94,2.78l4.29-4.29c.39-.39.58-.97.54-1.51l-.73-5.36c-.1-.83-.73-1.51-1.56-1.61l-5.31-.63c-.58-.1-1.12.1-1.56.49l-4.29,4.34c-.34-2.87.63-5.89,2.78-7.99,2.63-2.68,6.53-3.56,10.13-2.29.63.2,1.36.05,1.9-.44l3.75-3.8c.1-.05.15-.15.19-.24l6.77-6.72c.49-.54.68-1.27.44-1.9-1.22-3.6-.34-7.5,2.29-10.13,2.14-2.14,5.07-3.12,7.99-2.78l-4.34,4.29c-.39.39-.58.97-.49,1.51l.68,5.36c.1.83.78,1.51,1.56,1.61l5.36.63c.54.1,1.12-.1,1.51-.49l4.34-4.34c.34,2.87-.68,5.89-2.78,7.99-2.68,2.68-6.53,3.56-10.13,2.29-.68-.2-1.41-.05-1.9.44l-3.8,3.8s-.15.15-.2.24l-6.77,6.72c-.24.29-.44.63-.44.97l3.8.88,6.19-6.24c.1-.05.15-.15.2-.19l2.82-2.83c4.58,1.17,9.5-.15,12.81-3.51,3.85-3.85,4.97-9.84,2.78-14.81Z"/>
 
 
 
+
+
+
+
+
+
+
+
           </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -2902,7 +8571,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -2910,7 +8595,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42.97 48.65" width="18" height="18" aria-hidden="true" focusable="false" style="margin-right: 6px;">
+
+
+
+
+
+
+
+
 
 
 
@@ -2918,7 +8619,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <path fill="#ffffff" d="m15.79,13.65c0,3.15,2.55,5.7,5.7,5.7s5.7-2.55,5.7-5.7-2.55-5.7-5.7-5.7-5.7,2.55-5.7,5.7Zm7.18-2.83c0,.55-.45,1-1,1-1.23,0-2.24,1-2.24,2.24,0,.55-.45,1-1,1s-1-.45-1-1c0-2.34,1.9-4.24,4.24-4.24.55,0,1,.44,1,1Z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -2926,7 +8643,23 @@
 
 
 
+
+
+
+
+
+
+
+
           CLIENTES
+
+
+
+
+
+
+
+
 
 
 
@@ -2934,7 +8667,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -2942,11 +8691,51 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2966,11 +8755,59 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </div>
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2990,7 +8827,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <aside class="tareas-panel" *ngIf="showTareasPanel" [class.open]="showTareasPanel">
+
+
+
+
+
+
+
+
 
 
 
@@ -2998,7 +8859,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="tareas-agregadas__header">
+
+
+
+
+
+
+
+
 
 
 
@@ -3006,7 +8883,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <div class="tareas-agregadas__title">
+
+
+
+
+
+
+
+
 
 
 
@@ -3014,7 +8907,23 @@
 
 
 
+
+
+
+
+
+
+
+
               *ngIf="currentEmpresaLogoUrl"
+
+
+
+
+
+
+
+
 
 
 
@@ -3022,7 +8931,23 @@
 
 
 
+
+
+
+
+
+
+
+
               alt="Logo empresa"
+
+
+
+
+
+
+
+
 
 
 
@@ -3030,7 +8955,23 @@
 
 
 
+
+
+
+
+
+
+
+
               style="cursor:pointer"
+
+
+
+
+
+
+
+
 
 
 
@@ -3038,7 +8979,23 @@
 
 
 
+
+
+
+
+
+
+
+
             >
+
+
+
+
+
+
+
+
 
 
 
@@ -3046,7 +9003,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3054,7 +9027,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <button
+
+
+
+
+
+
+
+
 
 
 
@@ -3062,7 +9051,23 @@
 
 
 
+
+
+
+
+
+
+
+
             class="btn btn-sm btn-outline-secondary"
+
+
+
+
+
+
+
+
 
 
 
@@ -3070,7 +9075,23 @@
 
 
 
+
+
+
+
+
+
+
+
             title="Seleccionar cliente"
+
+
+
+
+
+
+
+
 
 
 
@@ -3078,7 +9099,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <i class="fas fa-user-tie" style="font-size:13px;"></i>
+
+
+
+
+
+
+
+
 
 
 
@@ -3086,7 +9123,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3094,7 +9147,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <!--span class="tareas-agregadas__cliente-nombre">{{ presupuestoSeleccionado?.name }}</!--span-->
+
+
+
+
+
+
+
+
 
 
 
@@ -3102,7 +9171,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <small class="tareas-agregadas__cliente-fecha" *ngIf="budgetDate">
+
+
+
+
+
+
+
+
 
 
 
@@ -3110,7 +9195,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </small>
+
+
+
+
+
+
+
+
 
 
 
@@ -3118,7 +9219,31 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3130,11 +9255,43 @@
 
 
 
+
+
+
+
+
+
+
+
       No hay tareas para mostrar.
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3146,7 +9303,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <div class="table-responsive tareas-table-wrapper">
+
+
+
+
+
+
+
+
 
 
 
@@ -3154,7 +9327,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <thead class="thead-light">
+
+
+
+
+
+
+
+
 
 
 
@@ -3162,7 +9351,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <th class="text-center"></th>
+
+
+
+
+
+
+
+
 
 
 
@@ -3170,23 +9375,71 @@
 
 
 
+
+
+
+
+
+
+
+
               <!--th-- class="text-center">Rubro</!--th-->
 
 
 
-              <!--th class="text-center">Categoría</th-->
 
 
 
-              <!--th class="text-center">Descripci�n</th-->
 
 
 
-              <!--th class="text-center">Área (m²/m³)</th-->
+
+
+              <!--th class="text-center">CategorÃƒÂ­a</th-->
 
 
 
-              <th class="text-center">Área (m²/m³)</th>
+
+
+
+
+
+
+
+
+              <!--th class="text-center">DescripciÃ¯Â¿Â½n</th-->
+
+
+
+
+
+
+
+
+
+
+
+              <!--th class="text-center">ÃƒÂrea (mÃ‚Â²/mÃ‚Â³)</th-->
+
+
+
+
+
+
+
+
+
+
+
+              <th class="text-center">ÃƒÂrea (mÃ‚Â²/mÃ‚Â³)</th>
+
+
+
+
+
+
+
+
 
 
 
@@ -3194,11 +9447,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <th class="text-center">Total</th>
 
 
 
+
+
+
+
+
+
+
+
             </tr>
+
+
+
+
+
+
+
+
 
 
 
@@ -3206,7 +9483,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <tbody>
+
+
+
+
+
+
+
+
 
 
 
@@ -3214,7 +9507,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <td class="text-center">
+
+
+
+
+
+
+
+
 
 
 
@@ -3222,7 +9531,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 43.15 46.9" width="18" height="18" aria-hidden="true" focusable="false">
+
+
+
+
+
+
+
+
 
 
 
@@ -3230,7 +9555,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <path fill="#c73838" d="m11.97,17.42v20.37c0,.89.73,1.62,1.62,1.62s1.62-.73,1.62-1.62v-20.37c0-.89-.73-1.62-1.62-1.62s-1.62.73-1.62,1.62Z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -3238,7 +9579,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <path fill="#c73838" d="m27.94,17.42v20.37c0,.89.73,1.62,1.62,1.62s1.62-.73,1.62-1.62v-20.37c0-.89-.73-1.62-1.62-1.62s-1.62.73-1.62,1.62Z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -3246,7 +9603,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -3254,7 +9627,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <td>{{ tarea.tarea }}</td>
+
+
+
+
+
+
+
+
 
 
 
@@ -3262,7 +9651,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <!--td>{{ tarea.categoria }}</!--td-->
+
+
+
+
+
+
+
+
 
 
 
@@ -3270,7 +9675,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <td>{{ tarea.area | number:'1.2-2' }}</td>
+
+
+
+
+
+
+
+
 
 
 
@@ -3278,7 +9699,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <td>{{ tarea.totalCost | currency:'USD':'symbol':'1.2-2' }}</td>
+
+
+
+
+
+
+
+
 
 
 
@@ -3286,7 +9723,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </tbody>
+
+
+
+
+
+
+
+
 
 
 
@@ -3294,11 +9747,43 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3310,7 +9795,23 @@
 
 
 
-        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === 1" (click)="tareasPrevPage()" aria-label="Página anterior">
+
+
+
+
+
+
+
+
+        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === 1" (click)="tareasPrevPage()" aria-label="PÃƒÂ¡gina anterior">
+
+
+
+
+
+
+
+
 
 
 
@@ -3318,7 +9819,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -3326,7 +9843,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <span class="tareas-panel__pag-current">{{ tareasCurrentPage }}</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -3334,7 +9867,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <span class="tareas-panel__pag-total">{{ tareasTotalPages }}</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -3342,7 +9891,23 @@
 
 
 
-        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === tareasTotalPages" (click)="tareasNextPage()" aria-label="Página siguiente">
+
+
+
+
+
+
+
+
+        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === tareasTotalPages" (click)="tareasNextPage()" aria-label="PÃƒÂ¡gina siguiente">
+
+
+
+
+
+
+
+
 
 
 
@@ -3350,11 +9915,43 @@
 
 
 
+
+
+
+
+
+
+
+
         </button>
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3366,11 +9963,35 @@
 
 
 
+
+
+
+
+
+
+
+
         Total: {{ calcularCostoTotal() | currency:'USD':'symbol':'1.2-2' }}
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3378,7 +9999,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button class="tareas-panel__action" type="button" (click)="toggleTareasPanel()" aria-label="Cerrar panel" title="Cerrar panel">
+
+
+
+
+
+
+
+
 
 
 
@@ -3386,7 +10023,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -3394,11 +10047,35 @@
 
 
 
+
+
+
+
+
+
+
+
           <i class="bi bi-save2" aria-hidden="true"></i>
 
 
 
+
+
+
+
+
+
+
+
         </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -3406,7 +10083,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <i class="bi bi-eraser" aria-hidden="true"></i>
+
+
+
+
+
+
+
+
 
 
 
@@ -3414,7 +10107,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button
+
+
+
+
+
+
+
+
 
 
 
@@ -3422,11 +10131,35 @@
 
 
 
+
+
+
+
+
+
+
+
           class="tareas-panel__action tareas-panel__action--danger"
 
 
 
+
+
+
+
+
+
+
+
           type="button"
+
+
+
+
+
+
+
+
 
 
 
@@ -3434,7 +10167,23 @@
 
 
 
+
+
+
+
+
+
+
+
           aria-label="Eliminar todas las tareas"
+
+
+
+
+
+
+
+
 
 
 
@@ -3442,11 +10191,35 @@
 
 
 
+
+
+
+
+
+
+
+
           <i class="bi bi-trash3" aria-hidden="true"></i>
 
 
 
+
+
+
+
+
+
+
+
         </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -3454,7 +10227,23 @@
 
 
 
+
+
+
+
+
+
+
+
           class="tareas-panel__action tareas-panel__action--info"
+
+
+
+
+
+
+
+
 
 
 
@@ -3462,7 +10251,23 @@
 
 
 
+
+
+
+
+
+
+
+
           data-bs-toggle="modal"
+
+
+
+
+
+
+
+
 
 
 
@@ -3470,7 +10275,23 @@
 
 
 
+
+
+
+
+
+
+
+
           aria-label="Ayuda de botones"
+
+
+
+
+
+
+
+
 
 
 
@@ -3478,7 +10299,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <i class="bi bi-question-circle" aria-hidden="true"></i>
+
+
+
+
+
+
+
+
 
 
 
@@ -3486,11 +10323,35 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3506,7 +10367,39 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div class="modal fade" id="tareasPanelHelpModal" tabindex="-1" aria-labelledby="tareasPanelHelpModalLabel" aria-hidden="true">
+
+
+
+
+
+
+
+
 
 
 
@@ -3514,11 +10407,35 @@
 
 
 
+
+
+
+
+
+
+
+
     <div class="modal-content dash-modal">
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header">
+
+
+
+
+
+
+
+
 
 
 
@@ -3526,7 +10443,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+
+
+
+
+
+
+
 
 
 
@@ -3534,7 +10467,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-body">
+
+
+
+
+
+
+
+
 
 
 
@@ -3542,7 +10491,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <li><i class="bi bi-x-lg" aria-hidden="true"></i><span><strong>Cerrar:</strong> cierra el panel de tareas agregadas.</span></li>
+
+
+
+
+
+
+
+
 
 
 
@@ -3550,7 +10515,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <li><i class="bi bi-eraser" aria-hidden="true"></i><span><strong>Quitar carga:</strong> limpia el presupuesto cargado actualmente.</span></li>
+
+
+
+
+
+
+
+
 
 
 
@@ -3558,7 +10539,23 @@
 
 
 
-          <li><i class="bi bi-question-circle" aria-hidden="true"></i><span><strong>Ayuda:</strong> muestra esta explicaci�n r�pida de botones.</span></li>
+
+
+
+
+
+
+
+
+          <li><i class="bi bi-question-circle" aria-hidden="true"></i><span><strong>Ayuda:</strong> muestra esta explicaciÃ³n rÃ¡pida de botones.</span></li>
+
+
+
+
+
+
+
+
 
 
 
@@ -3566,11 +10563,35 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-footer">
+
+
+
+
+
+
+
+
 
 
 
@@ -3578,7 +10599,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3586,11 +10623,35 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3598,7 +10659,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="modal-dialog modal-dialog-centered">
+
+
+
+
+
+
+
+
 
 
 
@@ -3606,7 +10683,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header">
+
+
+
+
+
+
+
+
 
 
 
@@ -3614,11 +10707,35 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3626,7 +10743,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <p class="mb-0">
+
+
+
+
+
+
+
+
 
 
 
@@ -3634,7 +10767,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <span *ngIf="tareaDescripcionAEliminar; else tareaGenerica" class="text-primary fw-bold">{{ tareaDescripcionAEliminar }}</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -3642,7 +10791,23 @@
 
 
 
+
+
+
+
+
+
+
+
           ? Esta accion no se puede deshacer.
+
+
+
+
+
+
+
+
 
 
 
@@ -3650,7 +10815,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3658,7 +10839,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+
+
+
+
+
+
+
+
 
 
 
@@ -3666,11 +10863,35 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3678,11 +10899,43 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3694,7 +10947,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-dialog">
+
+
+
+
+
+
+
+
 
 
 
@@ -3702,7 +10971,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <div class="modal-header task-modal-header">
+
+
+
+
+
+
+
+
 
 
 
@@ -3710,7 +10995,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <h5 class="modal-title" id="exampleModalLabel1">Agregar Tarea</h5>
+
+
+
+
+
+
+
+
 
 
 
@@ -3718,7 +11019,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div class="task-inline-notice__icon" aria-hidden="true">
+
+
+
+
+
+
+
+
 
 
 
@@ -3726,7 +11043,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3734,7 +11067,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <strong class="task-inline-notice__title">{{ tareaPersonalizadaNotice.title }}</strong>
+
+
+
+
+
+
+
+
 
 
 
@@ -3742,7 +11091,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3750,7 +11115,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3758,7 +11139,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3766,7 +11163,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <form>
+
+
+
+
+
+
+
+
 
 
 
@@ -3774,11 +11187,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 <label for="tarea" class="text">Tarea:</label>
 
 
 
+
+
+
+
+
+
+
+
                 <textarea [(ngModel)]="tareaSeleccionada.tarea" name="tarea" class="form-control input" rows="3"
+
+
+
+
+
+
+
+
 
 
 
@@ -3790,7 +11227,39 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3802,7 +11271,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div class="col-6 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -3810,11 +11295,35 @@
 
 
 
+
+
+
+
+
+
+
+
                   <input type="number" [(ngModel)]="tareaSeleccionada.area" name="area" class="form-control input" id="area" placeholder="Ingresa el area" required>
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3822,7 +11331,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <label for="modal-cost" class="text">Costo por m2/m3/ml:</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -3830,7 +11355,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     [readonly]="trialMode" style="color: #ab1444; font-weight: bold; text-align: center;" placeholder="Ingresa el costo" step="0.01" required>
+
+
+
+
+
+
+
+
 
 
 
@@ -3838,11 +11379,35 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
 
 
 
+
+
+
+
+
+
+
+
               <div class="mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -3850,11 +11415,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 <input type="textarea" [(ngModel)]="tareaSeleccionada.descripcion" name="descripcion" class="form-control input" id="description" placeholder="Es opcional">
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3862,7 +11451,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <label for="discount" class="text">Descuento (%):</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -3870,7 +11475,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3878,7 +11499,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <!--button-- type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</!button-->
+
+
+
+
+
+
+
+
 
 
 
@@ -3886,11 +11523,35 @@
 
 
 
+
+
+
+
+
+
+
+
                   <button type="button" (click)="agregarTarea()" class="btn btn-primary w-100" data-bs-dismiss="modal">Agregar</button>
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3898,15 +11559,47 @@
 
 
 
+
+
+
+
+
+
+
+
                   <button type="button" class="btn btn-outline-primary flex-grow-1" (click)="abrirHistorialDesdeModal()">
 
 
 
-                    <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>Últimas tareas
+
+
+
+
+
+
+
+
+                    <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>Ãšltimas tareas
+
+
+
+
+
+
+
+
 
 
 
                   </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -3914,7 +11607,23 @@
 
 
 
+
+
+
+
+
+
+
+
                           (click)="exportarTareaAPersonalizadas()"
+
+
+
+
+
+
+
+
 
 
 
@@ -3922,7 +11631,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 6px;">
+
+
+
+
+
+
+
+
 
 
 
@@ -3930,7 +11655,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <path d="M8 4a.5.5 0 0 1 .5.5V6H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V7H6a.5.5 0 0 1 0-1h1.5V4.5A.5.5 0 0 1 8 4"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -3938,7 +11679,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     Guardar tarea
+
+
+
+
+
+
+
+
 
 
 
@@ -3946,7 +11703,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -3954,7 +11727,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <!--button-- type="button" *ngIf="tareaSeleccionada.id" (click)="actualizarTarea()" class="btn btn-primary" data-bs-dismiss="modal">Actualizar</!--button-->
+
+
+
+
+
+
+
+
 
 
 
@@ -3962,7 +11751,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </form>
+
+
+
+
+
+
+
+
 
 
 
@@ -3970,7 +11775,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -3978,7 +11799,39 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3994,7 +11847,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+
+
+
+
+
+
+
+
 
 
 
@@ -4002,7 +11871,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header">
+
+
+
+
+
+
+
+
 
 
 
@@ -4010,7 +11895,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#2563eb" viewBox="0 0 16 16">
+
+
+
+
+
+
+
+
 
 
 
@@ -4018,7 +11919,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -4026,7 +11943,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4034,11 +11967,35 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-body">
+
+
+
+
+
+
+
+
 
 
 
@@ -4050,7 +12007,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div class="mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -4058,7 +12039,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+
+
+
+
+
+
+
+
 
 
 
@@ -4066,7 +12063,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -4074,7 +12087,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </label>
+
+
+
+
+
+
+
+
 
 
 
@@ -4082,7 +12111,23 @@
 
 
 
+
+
+
+
+
+
+
+
                    [(ngModel)]="clientName" required minlength="2"
+
+
+
+
+
+
+
+
 
 
 
@@ -4090,7 +12135,23 @@
 
 
 
+
+
+
+
+
+
+
+
             @if (cliName.touched && cliName.errors?.['required']) {
+
+
+
+
+
+
+
+
 
 
 
@@ -4098,7 +12159,23 @@
 
 
 
+
+
+
+
+
+
+
+
             }
+
+
+
+
+
+
+
+
 
 
 
@@ -4106,11 +12183,35 @@
 
 
 
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Mínimo 2 caracteres.</div>
+
+
+
+
+
+
+
+
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">MÃƒÂ­nimo 2 caracteres.</div>
+
+
+
+
+
+
+
+
 
 
 
             }
+
+
+
+
+
+
+
+
 
 
 
@@ -4122,7 +12223,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div class="mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -4130,7 +12255,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+
+
+
+
+
+
+
+
 
 
 
@@ -4138,7 +12279,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -4146,7 +12303,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </label>
+
+
+
+
+
+
+
+
 
 
 
@@ -4154,11 +12327,35 @@
 
 
 
+
+
+
+
+
+
+
+
                    [(ngModel)]="clientContact" required pattern="\+?\d{7,15}"
 
 
 
-                   placeholder="Teléfono" #contact="ngModel">
+
+
+
+
+
+
+
+
+                   placeholder="TelÃƒÂ©fono" #contact="ngModel">
+
+
+
+
+
+
+
+
 
 
 
@@ -4166,11 +12363,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El contacto es obligatorio.</div>
 
 
 
+
+
+
+
+
+
+
+
             }
+
+
+
+
+
+
+
+
 
 
 
@@ -4178,11 +12399,35 @@
 
 
 
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Número válido (7-15 dígitos, puede incluir +).</div>
+
+
+
+
+
+
+
+
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">NÃƒÂºmero vÃƒÂ¡lido (7-15 dÃƒÂ­gitos, puede incluir +).</div>
+
+
+
+
+
+
+
+
 
 
 
             }
+
+
+
+
+
+
+
+
 
 
 
@@ -4194,7 +12439,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div class="mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -4202,7 +12471,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+
+
+
+
+
+
+
+
 
 
 
@@ -4210,7 +12495,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -4218,7 +12519,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </label>
+
+
+
+
+
+
+
+
 
 
 
@@ -4226,7 +12543,23 @@
 
 
 
+
+
+
+
+
+
+
+
                    [(ngModel)]="clientEmail" required email
+
+
+
+
+
+
+
+
 
 
 
@@ -4234,7 +12567,23 @@
 
 
 
+
+
+
+
+
+
+
+
             @if (cliEmail.touched && cliEmail.errors?.['required']) {
+
+
+
+
+
+
+
+
 
 
 
@@ -4242,7 +12591,23 @@
 
 
 
+
+
+
+
+
+
+
+
             }
+
+
+
+
+
+
+
+
 
 
 
@@ -4250,11 +12615,35 @@
 
 
 
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no válido.</div>
+
+
+
+
+
+
+
+
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no vÃƒÂ¡lido.</div>
+
+
+
+
+
+
+
+
 
 
 
             }
+
+
+
+
+
+
+
+
 
 
 
@@ -4266,7 +12655,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div class="mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -4274,7 +12687,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+
+
+
+
+
+
+
+
 
 
 
@@ -4282,11 +12711,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 2a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1z"/>
 
 
 
+
+
+
+
+
+
+
+
               </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -4294,7 +12747,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </label>
+
+
+
+
+
+
+
+
 
 
 
@@ -4302,7 +12771,23 @@
 
 
 
+
+
+
+
+
+
+
+
                    [(ngModel)]="clientClave" pattern="\d{2}-\d{8}-\d{1}"
+
+
+
+
+
+
+
+
 
 
 
@@ -4310,7 +12795,23 @@
 
 
 
+
+
+
+
+
+
+
+
             @if (clave.touched && clave.errors?.['pattern']) {
+
+
+
+
+
+
+
+
 
 
 
@@ -4318,7 +12819,23 @@
 
 
 
+
+
+
+
+
+
+
+
             }
+
+
+
+
+
+
+
+
 
 
 
@@ -4330,7 +12847,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div class="mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -4338,7 +12879,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+
+
+
+
+
+
+
+
 
 
 
@@ -4346,7 +12903,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -4354,11 +12927,35 @@
 
 
 
-              Dirección <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span>
+
+
+
+
+
+
+
+
+              DirecciÃƒÂ³n <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span>
+
+
+
+
+
+
+
+
 
 
 
             </label>
+
+
+
+
+
+
+
+
 
 
 
@@ -4366,7 +12963,23 @@
 
 
 
-                   [(ngModel)]="clientDireccion" placeholder="Dirección del cliente">
+
+
+
+
+
+
+
+
+                   [(ngModel)]="clientDireccion" placeholder="DirecciÃƒÂ³n del cliente">
+
+
+
+
+
+
+
+
 
 
 
@@ -4378,7 +12991,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div class="mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -4386,7 +13023,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+
+
+
+
+
+
+
+
 
 
 
@@ -4394,7 +13047,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -4402,7 +13071,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </label>
+
+
+
+
+
+
+
+
 
 
 
@@ -4410,7 +13095,23 @@
 
 
 
+
+
+
+
+
+
+
+
                    [(ngModel)]="budgetDate" required #budgetDateCtrl="ngModel"
+
+
+
+
+
+
+
+
 
 
 
@@ -4418,7 +13119,23 @@
 
 
 
+
+
+
+
+
+
+
+
             @if (budgetDateCtrl.touched && budgetDateCtrl.errors?.['required']) {
+
+
+
+
+
+
+
+
 
 
 
@@ -4426,11 +13143,43 @@
 
 
 
+
+
+
+
+
+
+
+
             }
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4442,7 +13191,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <label for="additionalDetails" class="text">Detalles adicionales <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+
+
+
+
+
+
+
+
 
 
 
@@ -4450,7 +13215,23 @@
 
 
 
-                      [(ngModel)]="additionalDetailsClient" rows="2" placeholder="Información extra del cliente"></textarea>
+
+
+
+
+
+
+
+
+                      [(ngModel)]="additionalDetailsClient" rows="2" placeholder="InformaciÃƒÂ³n extra del cliente"></textarea>
+
+
+
+
+
+
+
+
 
 
 
@@ -4462,7 +13243,31 @@
 
 
 
-          <div class="modal-footer px-0 pb-0">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          <div class="modal-footer d-flex justify-content-end px-0 pb-0">
+
+
+
+
+
+
+
+
 
 
 
@@ -4470,7 +13275,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <span *ngIf="!isSavingClient">
+
+
+
+
+
+
+
+
 
 
 
@@ -4478,7 +13299,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -4486,7 +13323,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 Guardar
+
+
+
+
+
+
+
+
 
 
 
@@ -4494,7 +13347,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <span *ngIf="isSavingClient"><span class="spinner-border spinner-border-sm me-1"></span> Guardando...</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -4502,7 +13371,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4510,7 +13395,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4518,11 +13419,91 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4558,7 +13539,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg lista-clientes-modal__dialog">
+
+
+
+
+
+
+
+
 
 
 
@@ -4566,7 +13563,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header">
+
+
+
+
+
+
+
+
 
 
 
@@ -4574,7 +13587,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <h5 class="modal-title mb-0" id="listaClientesLabel">Lista de Clientes</h5>
+
+
+
+
+
+
+
+
 
 
 
@@ -4582,7 +13611,23 @@
 
 
 
+
+
+
+
+
+
+
+
             class="badge rounded-pill fs-6 px-3 py-2"
+
+
+
+
+
+
+
+
 
 
 
@@ -4590,7 +13635,23 @@
 
 
 
+
+
+
+
+
+
+
+
               'bg-success':  totalClientesUsuario < currentClienteLimit * 0.8,
+
+
+
+
+
+
+
+
 
 
 
@@ -4598,7 +13659,23 @@
 
 
 
+
+
+
+
+
+
+
+
               'bg-danger':   totalClientesUsuario >= currentClienteLimit
+
+
+
+
+
+
+
+
 
 
 
@@ -4606,11 +13683,35 @@
 
 
 
+
+
+
+
+
+
+
+
           >{{ totalClientesUsuario }} / {{ currentClienteLimit }}</span>
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4618,7 +13719,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4626,7 +13743,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <div class="container-fluid">
+
+
+
+
+
+
+
+
 
 
 
@@ -4634,7 +13767,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <div class="col-12 d-flex flex-wrap align-items-center gap-3">
+
+
+
+
+
+
+
+
 
 
 
@@ -4642,11 +13791,35 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4654,7 +13827,23 @@
 
 
 
-            <div class="col-12" *ngFor="let cliente of paginatedClientes | filterCliente:filtroCliente">
+
+
+
+
+
+
+
+
+            <div class="col-12" *ngFor="let cliente of paginatedClientes">
+
+
+
+
+
+
+
+
 
 
 
@@ -4662,7 +13851,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 class="card mb-3 w-100 shadow-sm cliente-card"
+
+
+
+
+
+
+
+
 
 
 
@@ -4670,7 +13875,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 (click)="seleccionarCliente(cliente)"
+
+
+
+
+
+
+
+
 
 
 
@@ -4678,7 +13899,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 tabindex="0"
+
+
+
+
+
+
+
+
 
 
 
@@ -4686,7 +13923,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div class="card-body position-relative cliente-card__body">
+
+
+
+
+
+
+
+
 
 
 
@@ -4694,7 +13947,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <h5 class="card-title cliente-card__title">
+
+
+
+
+
+
+
+
 
 
 
@@ -4702,7 +13971,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       {{ cliente.name }}
+
+
+
+
+
+
+
+
 
 
 
@@ -4710,7 +13995,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <label class="cliente-check">
+
+
+
+
+
+
+
+
 
 
 
@@ -4718,7 +14019,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         type="checkbox"
+
+
+
+
+
+
+
+
 
 
 
@@ -4726,7 +14043,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         (click)="$event.stopPropagation(); seleccionarCliente(cliente)"
+
+
+
+
+
+
+
+
 
 
 
@@ -4734,7 +14067,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <div class="checkmark"></div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4742,7 +14091,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4750,11 +14115,35 @@
 
 
 
+
+
+
+
+
+
+
+
                     Cliente seleccionado
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4762,7 +14151,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <p class="card-text mb-1"><strong>Email:</strong> {{ cliente.email }}</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -4770,7 +14175,23 @@
 
 
 
-                  <p class="card-text mb-1"><strong>Dirección:</strong> {{ cliente.direccion }}</p>
+
+
+
+
+
+
+
+
+                  <p class="card-text mb-1"><strong>DirecciÃƒÂ³n:</strong> {{ cliente.direccion }}</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -4778,7 +14199,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <p class="card-text mb-2"><strong>Detalles:</strong> {{ cliente.additionalDetails }}</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -4786,11 +14223,35 @@
 
 
 
-                    <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action" (click)="cliente.id && solicitarConfirmacionEliminar(cliente.id)">Eliminar</button>
 
 
 
-                    <button class="btn btn-success btn-xs px-3 py-1 cliente-card__action" *ngIf="cliente.id !== undefined" (click)="editarCliente(cliente.id)">Editar</button>
+
+
+
+
+
+                    <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action" title="Eliminar" aria-label="Eliminar" (click)="cliente.id && solicitarConfirmacionEliminar(cliente.id)"><i class="bi bi-trash3-fill"></i></button>
+
+
+
+
+
+
+
+
+
+
+
+                    <button class="btn btn-success btn-xs px-3 py-1 cliente-card__action" title="Editar" aria-label="Editar" *ngIf="cliente.id !== undefined" (click)="editarCliente(cliente.id)"><i class="bi bi-pencil-square"></i></button>
+
+
+
+
+
+
+
+
 
 
 
@@ -4798,7 +14259,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4806,7 +14283,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4814,7 +14307,23 @@
 
 
 
+
+
+
+
+
+
+
+
               No hay clientes asociados a este userCode.
+
+
+
+
+
+
+
+
 
 
 
@@ -4822,7 +14331,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4830,11 +14355,35 @@
 
 
 
-        <!-- Controles de paginación -->
 
 
 
-        <nav aria-label="Paginación de clientes" *ngIf="clientes.length > itemsPerPage">
+
+
+
+
+
+        <!-- Controles de paginaciÃƒÂ³n -->
+
+
+
+
+
+
+
+
+
+
+
+        <nav aria-label="PaginaciÃƒÂ³n de clientes" *ngIf="clientes.length > itemsPerPage">
+
+
+
+
+
+
+
+
 
 
 
@@ -4842,7 +14391,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <li class="page-item" [class.disabled]="currentPage === 1">
+
+
+
+
+
+
+
+
 
 
 
@@ -4850,7 +14415,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <span aria-hidden="true">&laquo;</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -4858,7 +14439,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </li>
+
+
+
+
+
+
+
+
 
 
 
@@ -4866,11 +14463,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <a class="page-link" (click)="setPage(page)">{{ page }}</a>
 
 
 
+
+
+
+
+
+
+
+
             </li>
+
+
+
+
+
+
+
+
 
 
 
@@ -4878,7 +14499,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <a class="page-link" (click)="nextPage()" aria-label="Siguiente">
+
+
+
+
+
+
+
+
 
 
 
@@ -4886,7 +14523,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </a>
+
+
+
+
+
+
+
+
 
 
 
@@ -4894,7 +14547,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </ul>
+
+
+
+
+
+
+
+
 
 
 
@@ -4902,7 +14571,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4910,7 +14595,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn btn-success lista-clientes-modal__footer-btn" (click)="openClientModal()">Crear nuevo cliente</button>
+
+
+
+
+
+
+
+
 
 
 
@@ -4918,7 +14619,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <input
+
+
+
+
+
+
+
+
 
 
 
@@ -4926,7 +14643,23 @@
 
 
 
+
+
+
+
+
+
+
+
             class="form-control"
+
+
+
+
+
+
+
+
 
 
 
@@ -4934,7 +14667,24 @@
 
 
 
-            [(ngModel)]="filtroCliente">
+
+
+
+
+
+
+
+
+            [(ngModel)]="filtroCliente"
+              (ngModelChange)="onFiltroClienteChange()">
+
+
+
+
+
+
+
+
 
 
 
@@ -4942,7 +14692,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn btn-secondary lista-clientes-modal__footer-btn" data-bs-dismiss="modal">Cerrar</button>
+
+
+
+
+
+
+
+
 
 
 
@@ -4950,7 +14716,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -4958,7 +14740,31 @@
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4970,7 +14776,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+
+
+
+
+
+
+
+
 
 
 
@@ -4978,7 +14800,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header">
+
+
+
+
+
+
+
+
 
 
 
@@ -4986,7 +14824,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#2563eb" viewBox="0 0 16 16">
+
+
+
+
+
+
+
+
 
 
 
@@ -4994,7 +14848,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -5002,7 +14872,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -5010,7 +14896,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -5018,7 +14920,23 @@
 
 
 
-        <p style="text-align: center; font-size: 12px; opacity: 0.8;">Podés editar estos datos las veces que quieras.</p>
+
+
+
+
+
+
+
+
+        <p style="text-align: center; font-size: 12px; opacity: 0.8;">PodÃƒÂ©s editar estos datos las veces que quieras.</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -5030,7 +14948,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div class="mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -5038,11 +14980,35 @@
 
 
 
+
+
+
+
+
+
+
+
               Empresa / Nombre personal <span style="color:#e85555;font-size:0.75rem;">*</span>
 
 
 
+
+
+
+
+
+
+
+
             </label>
+
+
+
+
+
+
+
+
 
 
 
@@ -5050,11 +15016,35 @@
 
 
 
+
+
+
+
+
+
+
+
                    [(ngModel)]="empresaName" required
 
 
 
-                   placeholder="¿Cómo se llama?" #eName="ngModel">
+
+
+
+
+
+
+
+
+                   placeholder="Ã‚Â¿CÃƒÂ³mo se llama?" #eName="ngModel">
+
+
+
+
+
+
+
+
 
 
 
@@ -5062,11 +15052,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El nombre es obligatorio.</div>
 
 
 
+
+
+
+
+
+
+
+
             }
+
+
+
+
+
+
+
+
 
 
 
@@ -5078,7 +15092,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div class="mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -5086,7 +15124,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+
+
+
+
+
+
+
+
 
 
 
@@ -5094,15 +15148,47 @@
 
 
 
+
+
+
+
+
+
+
+
               </svg>
 
 
 
-              Teléfono <span style="color:#e85555;font-size:0.75rem;">*</span>
+
+
+
+
+
+
+
+
+              TelÃƒÂ©fono <span style="color:#e85555;font-size:0.75rem;">*</span>
+
+
+
+
+
+
+
+
 
 
 
             </label>
+
+
+
+
+
+
+
+
 
 
 
@@ -5110,11 +15196,35 @@
 
 
 
+
+
+
+
+
+
+
+
                    [(ngModel)]="empresaPhone" required
 
 
 
-                   placeholder="Teléfono de tu empresa" #ePhone="ngModel">
+
+
+
+
+
+
+
+
+                   placeholder="TelÃƒÂ©fono de tu empresa" #ePhone="ngModel">
+
+
+
+
+
+
+
+
 
 
 
@@ -5122,11 +15232,35 @@
 
 
 
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El teléfono es obligatorio.</div>
+
+
+
+
+
+
+
+
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El telÃƒÂ©fono es obligatorio.</div>
+
+
+
+
+
+
+
+
 
 
 
             }
+
+
+
+
+
+
+
+
 
 
 
@@ -5138,7 +15272,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div class="mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -5146,7 +15304,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style="margin-right:3px;opacity:0.8">
+
+
+
+
+
+
+
+
 
 
 
@@ -5154,7 +15328,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -5162,7 +15352,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </label>
+
+
+
+
+
+
+
+
 
 
 
@@ -5170,7 +15376,23 @@
 
 
 
+
+
+
+
+
+
+
+
                    [(ngModel)]="empresaEmail" required email
+
+
+
+
+
+
+
+
 
 
 
@@ -5178,7 +15400,23 @@
 
 
 
+
+
+
+
+
+
+
+
             @if (eEmail.touched && eEmail.errors?.['required']) {
+
+
+
+
+
+
+
+
 
 
 
@@ -5186,7 +15424,23 @@
 
 
 
+
+
+
+
+
+
+
+
             }
+
+
+
+
+
+
+
+
 
 
 
@@ -5194,7 +15448,23 @@
 
 
 
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no válido.</div>
+
+
+
+
+
+
+
+
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no vÃƒÂ¡lido.</div>
+
+
+
+
+
+
+
+
 
 
 
@@ -5202,7 +15472,31 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5214,7 +15508,23 @@
 
 
 
-            <label for="additionalDetailsempresa" class="text">Descripción <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+
+
+
+
+
+
+
+
+            <label for="additionalDetailsempresa" class="text">DescripciÃƒÂ³n <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+
+
+
+
+
+
+
+
 
 
 
@@ -5222,15 +15532,55 @@
 
 
 
+
+
+
+
+
+
+
+
                       [(ngModel)]="additionalDetailsEmpresa" rows="2"
 
 
 
-                      placeholder="Contale a tus clientes de qué se trata tu empresa"></textarea>
+
+
+
+
+
+
+
+
+                      placeholder="Contale a tus clientes de quÃƒÂ© se trata tu empresa"></textarea>
+
+
+
+
+
+
+
+
 
 
 
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5242,7 +15592,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <label for="empresaCuilCuit" class="text">CUIL/CUIT <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+
+
+
+
+
+
+
+
 
 
 
@@ -5250,11 +15616,43 @@
 
 
 
+
+
+
+
+
+
+
+
                    [(ngModel)]="empresaCuilCuit" placeholder="00-00000000-0" />
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5266,7 +15664,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <div class="d-flex gap-2 mb-3">
+
+
+
+
+
+
+
+
 
 
 
@@ -5274,7 +15688,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
+
+
+
+
+
+
+
+
 
 
 
@@ -5282,7 +15712,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -5290,7 +15736,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -5298,7 +15760,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
+
+
+
+
+
+
+
+
 
 
 
@@ -5306,7 +15784,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -5314,7 +15808,23 @@
 
 
 
+
+
+
+
+
+
+
+
               Subir imagen
+
+
+
+
+
+
+
+
 
 
 
@@ -5322,7 +15832,31 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5334,7 +15868,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <div class="mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -5342,7 +15892,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <input type="url" class="form-control input" id="empresaWebsite" name="empresaWebsite"
+
+
+
+
+
+
+
+
 
 
 
@@ -5350,11 +15916,35 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
 
 
 
+
+
+
+
+
+
+
+
             <div class="mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -5362,7 +15952,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <input type="text" class="form-control input" id="empresaTikTok" name="empresaTikTok"
+
+
+
+
+
+
+
+
 
 
 
@@ -5370,11 +15976,35 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
 
 
 
+
+
+
+
+
+
+
+
             <div class="mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -5382,7 +16012,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <input type="text" class="form-control input" id="empresaInstagram" name="empresaInstagram"
+
+
+
+
+
+
+
+
 
 
 
@@ -5390,7 +16036,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -5398,7 +16060,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <label for="empresaFacebook" class="text">Facebook <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+
+
+
+
+
+
+
+
 
 
 
@@ -5406,7 +16084,23 @@
 
 
 
-                     [(ngModel)]="empresaFacebook" placeholder="URL de tu página" />
+
+
+
+
+
+
+
+
+                     [(ngModel)]="empresaFacebook" placeholder="URL de tu pÃƒÂ¡gina" />
+
+
+
+
+
+
+
+
 
 
 
@@ -5414,7 +16108,31 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5426,7 +16144,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <i class="fas fa-palette" aria-hidden="true" style="margin-right: 6px;"></i>PALETA DEL PRESUPUESTO
+
+
+
+
+
+
+
+
 
 
 
@@ -5438,7 +16172,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div class="modal-footer d-flex justify-content-between px-0 pb-0 mt-3">
+
+
+
+
+
+
+
+
 
 
 
@@ -5446,7 +16204,23 @@
 
 
 
-            <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'L�mite alcanzado para tu plan' : null">
+
+
+
+
+
+
+
+
+            <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'LÃ¯Â¿Â½mite alcanzado para tu plan' : null">
+
+
+
+
+
+
+
+
 
 
 
@@ -5454,7 +16228,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -5462,11 +16252,35 @@
 
 
 
+
+
+
+
+
+
+
+
               Guardar
 
 
 
+
+
+
+
+
+
+
+
             </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -5478,7 +16292,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         </form>
+
+
+
+
+
+
+
+
 
 
 
@@ -5486,7 +16324,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -5494,7 +16348,47 @@
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5514,7 +16408,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="modal-dialog modal-lg">
+
+
+
+
+
+
+
+
 
 
 
@@ -5522,7 +16432,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header">
+
+
+
+
+
+
+
+
 
 
 
@@ -5530,7 +16456,23 @@
 
 
 
-          <h5 class="modal-title mb-0" id="listaEmpresasLabel">Lista de Empresas</h5>
+
+
+
+
+
+
+
+
+          <h5 class="modal-title mb-0" id="listaEmpresasLabel">tu empresa</h5>
+
+
+
+
+
+
+
+
 
 
 
@@ -5538,7 +16480,23 @@
 
 
 
+
+
+
+
+
+
+
+
             class="badge rounded-pill fs-6 px-3 py-2"
+
+
+
+
+
+
+
+
 
 
 
@@ -5546,7 +16504,23 @@
 
 
 
+
+
+
+
+
+
+
+
               'bg-success':  empresas.length < currentEmpresaLimit * 0.8,
+
+
+
+
+
+
+
+
 
 
 
@@ -5554,7 +16528,23 @@
 
 
 
+
+
+
+
+
+
+
+
               'bg-danger':   empresas.length >= currentEmpresaLimit
+
+
+
+
+
+
+
+
 
 
 
@@ -5562,18 +16552,24 @@
 
 
 
+
+
+
+
+
+
+
+
           >{{ empresas.length }} / {{ currentEmpresaLimit }}</span>
 
-          <button
-            type="button"
-            class="btn btn-primary btn-sm empresa-list__create"
-            (click)="abrirFormularioNuevaEmpresa()"
-            [disabled]="isEmpresaCreateLimitReached"
-            [attr.title]="isEmpresaCreateLimitReached ? 'Limite alcanzado para tu plan' : null"
-          >
-            <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>
-            Nueva empresa
-          </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -5581,7 +16577,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+
+
+
+
+
+
+
 
 
 
@@ -5589,7 +16601,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-body">
+
+
+
+
+
+
+
+
 
 
 
@@ -5597,7 +16625,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <div class="row">
+
+
+
+
+
+
+
+
 
 
 
@@ -5605,7 +16649,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <div
+
+
+
+
+
+
+
+
 
 
 
@@ -5613,7 +16673,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 [class.cliente-card--selected]="selectedEmpresaId?.id === empresa.id"
+
+
+
+
+
+
+
+
 
 
 
@@ -5621,7 +16697,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 role="button"
+
+
+
+
+
+
+
+
 
 
 
@@ -5629,7 +16721,23 @@
 
 
 
+
+
+
+
+
+
+
+
               >
+
+
+
+
+
+
+
+
 
 
 
@@ -5637,7 +16745,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <div class="cliente-card__header">
+
+
+
+
+
+
+
+
 
 
 
@@ -5645,7 +16769,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <span class="cliente-card__icon" aria-hidden="true">
+
+
+
+
+
+
+
+
 
 
 
@@ -5653,7 +16793,23 @@
 
 
 
+
+
+
+
+
+
+
+
                           <path fill="#5b748f" d="m43.78,0H6.43C2.89,0,0,2.89,0,6.43v25.42c0,3.55,2.89,6.43,6.43,6.43h38.94v-3.31h-7.87v-7.57c0-2.9-2.35-5.26-5.26-5.26h-14.27c-2.9,0-5.26,2.35-5.26,5.26v7.57h-6.28c-1.72,0-3.13-1.4-3.13-3.12V6.43c0-1.72,1.4-3.12,3.13-3.12h37.35c1.72,0,3.12,1.4,3.12,3.12v26.51h3.31V6.43c0-3.55-2.89-6.43-6.43-6.43Z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -5661,7 +16817,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -5669,7 +16841,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       {{ empresa.name }}
+
+
+
+
+
+
+
+
 
 
 
@@ -5677,7 +16865,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     </h5>
+
+
+
+
+
+
+
+
 
 
 
@@ -5685,7 +16889,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <input
+
+
+
+
+
+
+
+
 
 
 
@@ -5693,7 +16913,23 @@
 
 
 
+
+
+
+
+
+
+
+
                         [checked]="selectedEmpresaId?.id === empresa.id"
+
+
+
+
+
+
+
+
 
 
 
@@ -5701,7 +16937,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       >
+
+
+
+
+
+
+
+
 
 
 
@@ -5709,11 +16961,43 @@
 
 
 
+
+
+
+
+
+
+
+
                     </label>
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5725,11 +17009,43 @@
 
 
 
+
+
+
+
+
+
+
+
                     Empresa seleccionada
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5741,11 +17057,43 @@
 
 
 
+
+
+
+
+
+
+
+
                   <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
 
 
 
-                  <p class="card-text mb-1"><strong>Descripci�n:</strong> {{ empresa.description }}</p>
+
+
+
+
+
+
+
+
+                  <p class="card-text mb-1"><strong>DescripciÃ³n:</strong> {{ empresa.description }}</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5757,7 +17105,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action"
+
+
+
+
+
+
+
+
 
 
 
@@ -5765,11 +17129,35 @@
 
 
 
+
+
+
+
+
+
+
+
                       Eliminar
 
 
 
+
+
+
+
+
+
+
+
                     </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -5777,7 +17165,23 @@
 
 
 
+
+
+
+
+
+
+
+
                             *ngIf="empresa.id !== undefined"
+
+
+
+
+
+
+
+
 
 
 
@@ -5785,7 +17189,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       Editar
+
+
+
+
+
+
+
+
 
 
 
@@ -5793,7 +17213,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -5801,11 +17237,43 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5817,25 +17285,55 @@
 
 
 
+
+
+
+
               <div class="empresa-empty-state__icon" aria-hidden="true">
+
                 <i class="bi bi-building-add"></i>
+
               </div>
+
+
 
               <h6 class="empresa-empty-state__title">Todavia no tenes empresas cargadas.</h6>
 
+
+
               <p class="empresa-empty-state__text">Crea tu primera empresa para usarla en tus presupuestos.</p>
 
+
+
               <button
+
                 type="button"
+
                 class="btn btn-primary btn-sm empresa-list__create"
+
                 (click)="abrirFormularioNuevaEmpresa()"
+
                 [disabled]="isEmpresaCreateLimitReached"
+
               >
+
                 <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>
+
                 Nueva empresa
+
               </button>
 
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -5843,15 +17341,47 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
 
 
 
-        <!-- Controles de paginación -->
 
 
 
-        <nav aria-label="Paginación de empresas" *ngIf="empresas.length > itemsPerPageEmpresas">
+
+
+
+
+
+        <!-- Controles de paginaciÃƒÂ³n -->
+
+
+
+
+
+
+
+
+
+
+
+        <nav aria-label="PaginaciÃƒÂ³n de empresas" *ngIf="empresas.length > itemsPerPageEmpresas">
+
+
+
+
+
+
+
+
 
 
 
@@ -5859,7 +17389,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <li class="page-item" [class.disabled]="currentEmpresaPage === 1">
+
+
+
+
+
+
+
+
 
 
 
@@ -5867,7 +17413,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <span aria-hidden="true">&laquo;</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -5875,7 +17437,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </li>
+
+
+
+
+
+
+
+
 
 
 
@@ -5883,11 +17461,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <a class="page-link" (click)="setEmpresaPage(page)">{{ page }}</a>
 
 
 
+
+
+
+
+
+
+
+
             </li>
+
+
+
+
+
+
+
+
 
 
 
@@ -5895,7 +17497,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <a class="page-link" (click)="nextEmpresaPage()" aria-label="Siguiente">
+
+
+
+
+
+
+
+
 
 
 
@@ -5903,7 +17521,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </a>
+
+
+
+
+
+
+
+
 
 
 
@@ -5911,7 +17545,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </ul>
+
+
+
+
+
+
+
+
 
 
 
@@ -5919,7 +17569,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <!-- Tabla original comentada -->
+
+
+
+
+
+
+
+
 
 
 
@@ -5927,7 +17593,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <div class="table-responsive">
+
+
+
+
+
+
+
+
 
 
 
@@ -5935,7 +17617,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <thead class="table-light">
+
+
+
+
+
+
+
+
 
 
 
@@ -5943,11 +17641,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 <th scope="col">Nombre</th>
 
 
 
-                <th scope="col">Teléfono</th>
+
+
+
+
+
+
+
+
+                <th scope="col">TelÃƒÂ©fono</th>
+
+
+
+
+
+
+
+
 
 
 
@@ -5955,7 +17677,23 @@
 
 
 
-                <th scope="col">Descripci�n</th>
+
+
+
+
+
+
+
+
+                <th scope="col">DescripciÃ¯Â¿Â½n</th>
+
+
+
+
+
+
+
+
 
 
 
@@ -5963,11 +17701,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 <th scope="col">Acciones</th>
 
 
 
+
+
+
+
+
+
+
+
               </tr>
+
+
+
+
+
+
+
+
 
 
 
@@ -5975,7 +17737,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <tbody>
+
+
+
+
+
+
+
+
 
 
 
@@ -5983,7 +17761,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <td>{{ empresa.name }}</td>
+
+
+
+
+
+
+
+
 
 
 
@@ -5991,7 +17785,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <td>{{ empresa.email }}</td>
+
+
+
+
+
+
+
+
 
 
 
@@ -5999,7 +17809,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <td>
+
+
+
+
+
+
+
+
 
 
 
@@ -6007,7 +17833,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 </td>
+
+
+
+
+
+
+
+
 
 
 
@@ -6015,7 +17857,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <div class="d-flex gap-2">
+
+
+
+
+
+
+
+
 
 
 
@@ -6023,7 +17881,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <button class="btn btn-success btn-sm" *ngIf="empresa.id !== undefined" (click)="editarEmpresa(empresa.id)">Editar</button>
+
+
+
+
+
+
+
+
 
 
 
@@ -6031,11 +17905,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 </td>
 
 
 
+
+
+
+
+
+
+
+
               </tr>
+
+
+
+
+
+
+
+
 
 
 
@@ -6043,7 +17941,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <td colspan="6" class="text-center">No hay empresas asociadas a este usuario.</td>
+
+
+
+
+
+
+
+
 
 
 
@@ -6051,7 +17965,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </tbody>
+
+
+
+
+
+
+
+
 
 
 
@@ -6059,7 +17989,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6067,7 +18013,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6075,11 +18037,35 @@
 
 
 
+
+
+
+
+
+
+
+
         <input type="text" class="form-control flex-grow-1" placeholder="Filtrar empresa..." [(ngModel)]="filtroEmpresa">
 
 
 
-        <button type="button" class="btn btn-secondary flex-shrink-0" data-bs-dismiss="modal">Cerrar</button>
+
+
+
+
+
+
+
+
+        <button type="button" class="btn btn-primary btn-sm empresa-list__create flex-shrink-0" (click)="abrirFormularioNuevaEmpresa()" [disabled]="isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Limite alcanzado para tu plan' : null"><i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Nueva empresa</button>
+
+
+
+
+
+
+
+
 
 
 
@@ -6087,7 +18073,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6095,7 +18097,39 @@
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6111,7 +18145,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="floating-toolbar">
+
+
+
+
+
+
+
+
 
 
 
@@ -6119,7 +18169,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <span class="toolbar-item__icon" aria-hidden="true">
+
+
+
+
+
+
+
+
 
 
 
@@ -6127,7 +18193,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <path fill="#5b748f" d="m37.1.07L3.32,6.25c-1.93.35-3.32,2.03-3.32,3.99v33.64c0,2.53,2.29,4.45,4.78,3.99l33.78-6.19c1.92-.35,3.32-2.03,3.32-3.98V4.05c0-2.53-2.29-4.44-4.78-3.98ZM12.05,11.89l-5.17,1.11s-.05.03-.06.03c0,0-.03.08-.03.26v6.24c0,.83-.67,1.5-1.5,1.5s-1.5-.67-1.5-1.5v-6.24c0-1.56.85-2.75,2.27-3.18.04-.01.08-.02.12-.03l5.24-1.12c.81-.17,1.61.34,1.78,1.15.17.81-.34,1.61-1.15,1.78Z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -6135,7 +18217,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </span>
+
+
+
+
+
+
+
+
 
 
 
@@ -6143,7 +18241,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -6151,7 +18265,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <span class="toolbar-item__icon" aria-hidden="true">
+
+
+
+
+
+
+
+
 
 
 
@@ -6159,7 +18289,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <path fill="#5b748f" d="m12.67,3.97h30.87c1.1,0,1.99-.89,1.99-1.99s-.89-1.99-1.99-1.99H12.67c-1.1,0-1.99.89-1.99,1.99s.89,1.99,1.99,1.99Z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -6167,7 +18313,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <path fill="#5b748f" d="m43.54,11.04H12.67c-1.1,0-1.99.89-1.99,1.99s.89,1.99,1.99,1.99h30.87c1.1,0,1.99-.89,1.99-1.99s-.89-1.99-1.99-1.99Z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -6175,7 +18337,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <path fill="#5b748f" d="m43.54,22.09H12.67c-1.1,0-1.99.89-1.99,1.99s.89,1.99,1.99,1.99h30.87c1.1,0,1.99-.89,1.99-1.99s-.89-1.99-1.99-1.99Z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -6183,11 +18361,35 @@
 
 
 
+
+
+
+
+
+
+
+
         </svg>
 
 
 
+
+
+
+
+
+
+
+
       </span>
+
+
+
+
+
+
+
+
 
 
 
@@ -6195,7 +18397,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -6203,7 +18421,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <span class="toolbar-item__icon" aria-hidden="true">
+
+
+
+
+
+
+
+
 
 
 
@@ -6211,7 +18445,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <path fill="#5b748f" d="m56.96,20.05c-.34-.54-.93-.83-1.56-.83h-7.74v-9.16c0-1.02-.83-1.85-1.85-1.85h-18.13L20.72.6c-.35-.38-.84-.6-1.35-.6H6.02c-.68,0-1.31.39-1.63,1L.19,9.23c-.17.32-.22.68-.18,1.03v32.48c-.03.36.04.74.24,1.09.34.54.93.88,1.56.88h43.99c.73,0,1.41-.44,1.7-1.12l1.12-2.58h-3.99v.05H4.84l9.55-18.17h38.24l-6.38,14.47h3.99l6.87-15.59c.24-.54.2-1.22-.15-1.71ZM7.13,3.65h11.43l4.16,4.56H4.81l2.33-4.56Zm6.18,15.57c-.68,0-1.31.34-1.66.97l-7.99,15.23V11.89h23.21s.07-.01.1-.01h17.02v7.36H13.31Z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -6219,7 +18469,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </span>
+
+
+
+
+
+
+
+
 
 
 
@@ -6227,7 +18493,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -6235,7 +18517,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <span class="toolbar-item__icon" aria-hidden="true">
+
+
+
+
+
+
+
+
 
 
 
@@ -6243,7 +18541,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <path fill="#5b748f" d="m51.83,33.62v-6.52s0-.1,0-.15v-1.13c0-.78-.44-1.46-1.17-1.7l-10.87-4.36V6.62c0-.75-.46-1.42-1.15-1.7L26.6.13c-.44-.17-.91-.17-1.35,0l-12.04,4.8c-.69.28-1.15.95-1.15,1.7v13.15L1.15,24.11C.46,24.39,0,25.06,0,25.81v1.22s0,.02,0,.03v13.34c0,.72.42,1.37,1.08,1.66l12.05,5.44c.24.11.49.16.75.16s.51-.05.75-.16l11.31-5.11,11.28,5.12c.24.1.49.15.73.15.29,0,.54-.05.78-.15l12.03-5.46c.68-.29,1.07-.93,1.07-1.66v-2.78l-3.65,1.61-10.23,4.58-10.21-4.57v-9.51l9.54,3.87c.22.09.45.13.68.13s.47-.05.68-.13l9.53-3.86v5.5l3.65-1.61ZM25.22,14.54c.23.09.47.14.7.14s.48-.05.7-.14l9.52-3.97v9.19l-10.21,4.09-10.23-4.07v-9.21l9.51,3.97Zm-11.57,8.54l8.82,3.37-8.59,3.48-8.65-3.5,8.42-3.35ZM25.92,3.79l8.68,3.46-8.68,3.62-8.68-3.62,8.68-3.46Zm-12.04,40.03l-10.22-4.61v-9.49l9.54,3.87c.22.09.45.13.69.13s.47-.05.69-.13l9.51-3.86v9.49l-10.19,4.6Zm24.09-13.9l-8.6-3.48,8.79-3.36,8.45,3.34-8.64,3.5Z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -6251,7 +18565,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </span>
+
+
+
+
+
+
+
+
 
 
 
@@ -6259,7 +18589,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -6267,7 +18613,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <span class="toolbar-item__icon" aria-hidden="true">
+
+
+
+
+
+
+
+
 
 
 
@@ -6275,7 +18637,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <path fill="#5b748f" d="m41.27,0H7.34C3.29,0,0,3.29,0,7.34v27.85c0,4.05,3.29,7.34,7.34,7.34h33.93v-3H7.34c-2.39,0-4.34-1.95-4.34-4.34V7.34c0-2.39,1.95-4.34,4.34-4.34h33.93c2.39,0,4.34,1.95,4.34,4.34v27.85h3V7.34c0-4.05-3.29-7.34-7.34-7.34Z"/>
+
+
+
+
+
+
+
+
 
 
 
@@ -6283,7 +18661,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </svg>
+
+
+
+
+
+
+
+
 
 
 
@@ -6291,7 +18685,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <span class="toolbar-item__label">Menu</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -6299,11 +18709,43 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6315,7 +18757,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="modal-dialog modal-dialog-centered">
+
+
+
+
+
+
+
+
 
 
 
@@ -6323,7 +18781,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header">
+
+
+
+
+
+
+
+
 
 
 
@@ -6331,11 +18805,35 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6343,11 +18841,35 @@
 
 
 
-        Seguro que deseas cerrar sesión?
+
+
+
+
+
+
+
+
+        Seguro que deseas cerrar sesiÃƒÂ³n?
+
+
+
+
+
+
+
+
 
 
 
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6355,11 +18877,51 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
 
 
 
-        <button type="button" class="btn btn-danger" (click)="logout()" data-bs-dismiss="modal">Cerrar sesión</button>
+
+
+
+
+
+
+
+
+        <button type="button" class="btn btn-danger" (click)="logout()" data-bs-dismiss="modal">Cerrar sesiÃƒÂ³n</button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6375,7 +18937,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6383,7 +18961,31 @@
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6399,7 +19001,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div class="saved-budgets-panel" [class.open]="showSavedBudgetsPanel">
+
+
+
+
+
+
+
+
 
 
 
@@ -6407,7 +19033,23 @@
 
 
 
+
+
+
+
+
+
+
+
     <h6 class="mb-0">Gestor de presupuestos</h6>
+
+
+
+
+
+
+
+
 
 
 
@@ -6415,7 +19057,23 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6423,7 +19081,23 @@
 
 
 
+
+
+
+
+
+
+
+
     [tareasActuales]="tareasAgregadas"
+
+
+
+
+
+
+
+
 
 
 
@@ -6431,7 +19105,23 @@
 
 
 
+
+
+
+
+
+
+
+
     [clienteActual]="clienteSeleccionado"
+
+
+
+
+
+
+
+
 
 
 
@@ -6439,7 +19129,23 @@
 
 
 
+
+
+
+
+
+
+
+
     [presupuestoCargado]="presupuestoSeleccionado"
+
+
+
+
+
+
+
+
 
 
 
@@ -6447,7 +19153,23 @@
 
 
 
+
+
+
+
+
+
+
+
     (presupuestoEliminado)="onPresupuestoEliminado($event)"
+
+
+
+
+
+
+
+
 
 
 
@@ -6455,11 +19177,43 @@
 
 
 
+
+
+
+
+
+
+
+
   </app-presupuestos-guardados>
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6471,7 +19225,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="modal-dialog modal-dialog-centered modal-lg">
+
+
+
+
+
+
+
+
 
 
 
@@ -6479,11 +19249,35 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header">
 
 
 
-        <h5 class="modal-title" id="weatherModalLabel">Próximos 5 días</h5>
+
+
+
+
+
+
+
+
+        <h5 class="modal-title" id="weatherModalLabel">PrÃƒÂ³ximos 5 dÃƒÂ­as</h5>
+
+
+
+
+
+
+
+
 
 
 
@@ -6491,7 +19285,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6499,7 +19309,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <ng-container *ngIf="dailyForecast.length; else noWeatherData">
+
+
+
+
+
+
+
+
 
 
 
@@ -6507,7 +19333,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <div class="col-12 col-sm-6" *ngFor="let day of dailyForecast">
+
+
+
+
+
+
+
+
 
 
 
@@ -6515,7 +19357,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div class="fw-bold">{{ day.date | date:'EEEE d MMM' }}</div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6523,15 +19381,47 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div class="d-flex justify-content-between align-items-center mt-3">
 
 
 
-                  <span class="text-primary fw-bold">Máx: {{ day.max | number:'1.0-0' }}°C</span>
 
 
 
-                  <span class="text-secondary">Mín: {{ day.min | number:'1.0-0' }}°C</span>
+
+
+
+
+
+                  <span class="text-primary fw-bold">MÃƒÂ¡x: {{ day.max | number:'1.0-0' }}Ã‚Â°C</span>
+
+
+
+
+
+
+
+
+
+
+
+                  <span class="text-secondary">MÃƒÂ­n: {{ day.min | number:'1.0-0' }}Ã‚Â°C</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -6539,7 +19429,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6547,7 +19453,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6555,7 +19477,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <ng-template #noWeatherData>
+
+
+
+
+
+
+
+
 
 
 
@@ -6563,11 +19501,35 @@
 
 
 
+
+
+
+
+
+
+
+
         </ng-template>
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6575,7 +19537,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+
+
+
+
+
+
+
+
 
 
 
@@ -6583,7 +19561,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6591,7 +19585,39 @@
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6607,7 +19633,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="modal-dialog modal-dialog-centered">
+
+
+
+
+
+
+
+
 
 
 
@@ -6615,7 +19657,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header">
+
+
+
+
+
+
+
+
 
 
 
@@ -6623,11 +19681,35 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6635,11 +19717,35 @@
 
 
 
+
+
+
+
+
+
+
+
         <div id="imageCircle" style="display: flex; justify-content: center;">
 
 
 
-          <img #modalImagePreview class="img-fluid" src="#" alt="Previsualización de la imagen" style="display: none; width: 80%; height: 80%;">
+
+
+
+
+
+
+
+
+          <img #modalImagePreview class="img-fluid" src="#" alt="PrevisualizaciÃƒÂ³n de la imagen" style="display: none; width: 80%; height: 80%;">
+
+
+
+
+
+
+
+
 
 
 
@@ -6647,7 +19753,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <p #uploadMessage style="margin-top: 10px; color: rgb(6, 113, 254); display: none;">Imagen subida</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -6655,11 +19777,35 @@
 
 
 
+
+
+
+
+
+
+
+
         <p>formato cuadrado recomendado</p>
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6667,7 +19813,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn btn-primary" (click)="uploadImage()" [disabled]="!imageSelected" >Cargar Imagen</button>
+
+
+
+
+
+
+
+
 
 
 
@@ -6675,7 +19837,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6683,7 +19861,23 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6699,7 +19893,39 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
  <!-- Modal Seleccionar provincia -->
+
+
+
+
+
+
+
+
 
 
 
@@ -6707,11 +19933,35 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-dialog modal-dialog-centered">
 
 
 
+
+
+
+
+
+
+
+
         <div class="modal-content modal-zona">
+
+
+
+
+
+
+
+
 
 
 
@@ -6723,7 +19973,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+
+
+
+
+
+
+
 
 
 
@@ -6731,7 +20005,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <div class="modal-body">
+
+
+
+
+
+
+
+
 
 
 
@@ -6739,7 +20029,23 @@
 
 
 
-              Esta función solo se activa con código de acceso.
+
+
+
+
+
+
+
+
+              Esta funciÃƒÂ³n solo se activa con cÃƒÂ³digo de acceso.
+
+
+
+
+
+
+
+
 
 
 
@@ -6751,7 +20057,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             <select class="form-select" id="provinciaSelect" [(ngModel)]="provinciaSeleccionada" name="provinciaSeleccionada">
+
+
+
+
+
+
+
+
 
 
 
@@ -6759,7 +20089,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <option *ngFor="let provincia of provincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
+
+
+
+
+
+
+
+
 
 
 
@@ -6771,7 +20117,39 @@
 
 
 
-            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el país seleccionado.</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el paÃƒÂ­s seleccionado.</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6783,7 +20161,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <h6 class="modal-zona-title">valor sugerido de mano de obra pura sin cargas sociales</h6>
+
+
+
+
+
+
+
+
 
 
 
@@ -6791,7 +20185,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="modal-zona-card">
+
+
+
+
+
+
+
+
 
 
 
@@ -6799,7 +20209,23 @@
 
 
 
-                Buenos Aires, Santa Fe, Mendoza, Córdoba, Tucumán, Salta, Jujuy, Entre Ríos, Corrientes, Formosa,
+
+
+
+
+
+
+
+
+                Buenos Aires, Santa Fe, Mendoza, CÃƒÂ³rdoba, TucumÃƒÂ¡n, Salta, Jujuy, Entre RÃƒÂ­os, Corrientes, Formosa,
+
+
+
+
+
+
+
+
 
 
 
@@ -6807,11 +20233,35 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
 
 
 
+
+
+
+
+
+
+
+
               <div class="modal-zona-card">
+
+
+
+
+
+
+
+
 
 
 
@@ -6819,7 +20269,23 @@
 
 
 
-                Neuquén, Río Negro, Chubut.
+
+
+
+
+
+
+
+
+                NeuquÃƒÂ©n, RÃƒÂ­o Negro, Chubut.
+
+
+
+
+
+
+
+
 
 
 
@@ -6827,7 +20293,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="modal-zona-card">
+
+
+
+
+
+
+
+
 
 
 
@@ -6835,11 +20317,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 Santa Cruz.
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6847,7 +20353,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <span class="modal-zona-label">Zona 4:</span>
+
+
+
+
+
+
+
+
 
 
 
@@ -6855,7 +20377,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6863,7 +20401,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6871,7 +20425,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6879,7 +20449,79 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6915,7 +20557,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="modal-dialog modal-dialog-centered" role="document">
+
+
+
+
+
+
+
+
 
 
 
@@ -6923,7 +20581,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header">
+
+
+
+
+
+
+
+
 
 
 
@@ -6931,7 +20605,23 @@
 
 
 
-          <h5 style="margin-bottom: 0;"><i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>Últimas tareas cotizadas</h5>
+
+
+
+
+
+
+
+
+          <h5 style="margin-bottom: 0;"><i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>ÃƒÂšltimas tareas cotizadas</h5>
+
+
+
+
+
+
+
+
 
 
 
@@ -6939,7 +20629,23 @@
 
 
 
+
+
+
+
+
+
+
+
             toca "AGREGAR" para cargar la tarea y editarla
+
+
+
+
+
+
+
+
 
 
 
@@ -6947,7 +20653,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6955,7 +20677,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -6963,7 +20701,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <div *ngIf="recentTasks.length === 0" class="text-center py-4">
+
+
+
+
+
+
+
+
 
 
 
@@ -6971,11 +20725,43 @@
 
 
 
-          <p class="text-muted">No tenés tareas recientes en este dispositivo.</p>
+
+
+
+
+
+
+
+
+          <p class="text-muted">No tenÃƒÂ©s tareas recientes en este dispositivo.</p>
+
+
+
+
+
+
+
+
 
 
 
         </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6987,7 +20773,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <div class="col-12" *ngFor="let rt of recentTasks">
+
+
+
+
+
+
+
+
 
 
 
@@ -6995,7 +20797,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="card-body p-3">
+
+
+
+
+
+
+
+
 
 
 
@@ -7003,7 +20821,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <h6 class="card-title mb-0" style="font-weight: 700; font-size: 14px;">{{ rt.tarea }}</h6>
+
+
+
+
+
+
+
+
 
 
 
@@ -7011,7 +20845,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7019,7 +20869,23 @@
 
 
 
-                  {{ rt.descripcion || 'Sin descripción adicional' }}
+
+
+
+
+
+
+
+
+                  {{ rt.descripcion || 'Sin descripciÃƒÂ³n adicional' }}
+
+
+
+
+
+
+
+
 
 
 
@@ -7027,7 +20893,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div class="d-flex justify-content-between align-items-center">
+
+
+
+
+
+
+
+
 
 
 
@@ -7035,7 +20917,23 @@
 
 
 
+
+
+
+
+
+
+
+
                      {{ rt.rubro || 'General' }}
+
+
+
+
+
+
+
+
 
 
 
@@ -7043,7 +20941,23 @@
 
 
 
+
+
+
+
+
+
+
+
                    <button class="btn btn-sm btn-primary px-3" (click)="cargarTareaReciente(rt)" style="border-radius: 8px; font-size: 11px; font-weight: 600;">
+
+
+
+
+
+
+
+
 
 
 
@@ -7051,7 +20965,23 @@
 
 
 
+
+
+
+
+
+
+
+
                    </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -7059,7 +20989,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7067,7 +21013,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7075,7 +21037,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7083,7 +21061,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn btn-sm btn-outline-danger" (click)="borrarHistorialReciente()" *ngIf="recentTasks.length > 0">
+
+
+
+
+
+
+
+
 
 
 
@@ -7091,7 +21085,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -7099,7 +21109,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7107,11 +21133,43 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -7123,7 +21181,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="modal-dialog modal-dialog-centered" role="document">
+
+
+
+
+
+
+
+
 
 
 
@@ -7131,11 +21205,35 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6);">
 
 
 
-        <h5 class="modal-title" id="buscadorInfoModalLabel">C�mo usar el buscador</h5>
+
+
+
+
+
+
+
+
+        <h5 class="modal-title" id="buscadorInfoModalLabel">CÃ¯Â¿Â½mo usar el buscador</h5>
+
+
+
+
+
+
+
+
 
 
 
@@ -7143,7 +21241,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7151,27 +21265,83 @@
 
 
 
-        <p class="mb-2"><i class="fas fa-search mr-2 text-primary"></i> Podés buscar por palabras sueltas (ej: <em>colocacion puerta</em>).</p>
 
 
 
-        <p class="mb-2"><i class="fas fa-font mr-2 text-primary"></i> Ya funciona aunque escribas con acentos (ej: <em>medición</em> encuentra <em>medicion</em>).</p>
 
 
 
-        <p class="mb-2"><i class="fas fa-puzzle-piece mr-2 text-primary"></i> Podés buscar por fragmentos de palabras (ej: <em>coloc puert</em> para <em>colocación de puerta</em>).</p>
+
+
+        <p class="mb-2"><i class="fas fa-search mr-2 text-primary"></i> PodÃƒÂ©s buscar por palabras sueltas (ej: <em>colocacion puerta</em>).</p>
 
 
 
-        <p class="mb-2"><i class="fas fa-lightbulb mr-2 text-primary"></i> Probá con una palabra más general si no aparece exacto (ej: <em>caldera</em>, <em>zócalo</em>, <em>tablero</em>).</p>
 
 
 
-        <p class="mb-0"><i class="fas fa-plus-circle mr-2 text-primary"></i> Si no encontrás una tarea, usá <em>TAREA GENERICA</em> y completá descripción y precio.</p>
+
+
+
+
+
+        <p class="mb-2"><i class="fas fa-font mr-2 text-primary"></i> Ya funciona aunque escribas con acentos (ej: <em>mediciÃƒÂ³n</em> encuentra <em>medicion</em>).</p>
+
+
+
+
+
+
+
+
+
+
+
+        <p class="mb-2"><i class="fas fa-puzzle-piece mr-2 text-primary"></i> PodÃƒÂ©s buscar por fragmentos de palabras (ej: <em>coloc puert</em> para <em>colocaciÃƒÂ³n de puerta</em>).</p>
+
+
+
+
+
+
+
+
+
+
+
+        <p class="mb-2"><i class="fas fa-lightbulb mr-2 text-primary"></i> ProbÃƒÂ¡ con una palabra mÃƒÂ¡s general si no aparece exacto (ej: <em>caldera</em>, <em>zÃƒÂ³calo</em>, <em>tablero</em>).</p>
+
+
+
+
+
+
+
+
+
+
+
+        <p class="mb-0"><i class="fas fa-plus-circle mr-2 text-primary"></i> Si no encontrÃƒÂ¡s una tarea, usÃƒÂ¡ <em>TAREA GENERICA</em> y completÃƒÂ¡ descripciÃƒÂ³n y precio.</p>
+
+
+
+
+
+
+
+
 
 
 
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7179,7 +21349,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+
+
+
+
+
+
+
+
 
 
 
@@ -7187,7 +21373,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7195,7 +21397,31 @@
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -7207,7 +21433,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="modal-dialog modal-dialog-centered" role="document">
+
+
+
+
+
+
+
+
 
 
 
@@ -7215,7 +21457,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6); border-bottom: 1px solid rgba(11,105,166,.15);">
+
+
+
+
+
+
+
+
 
 
 
@@ -7223,7 +21481,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <i class="fas fa-cog" aria-hidden="true" style="margin-right: 8px;"></i>Ajustes de la lista
+
+
+
+
+
+
+
+
 
 
 
@@ -7231,7 +21505,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+
+
+
+
+
+
+
 
 
 
@@ -7239,11 +21529,35 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-body" style="padding: 14px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9);">
 
 
 
-        <p style="margin-bottom: 10px; color:#4b5563; font-size: 13px;">Ajustá precios y tamaño de texto de la lista de tareas.</p>
+
+
+
+
+
+
+
+
+        <p style="margin-bottom: 10px; color:#4b5563; font-size: 13px;">AjustÃƒÂ¡ precios y tamaÃƒÂ±o de texto de la lista de tareas.</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -7251,11 +21565,35 @@
 
 
 
+
+
+
+
+
+
+
+
           <div style="font-size: 12px; color:#0b69a6; font-weight:700; margin-bottom: 4px;">
 
 
 
-            <i class="fas fa-key" aria-hidden="true" style="margin-right: 6px;"></i>Código de acceso
+
+
+
+
+
+
+
+
+            <i class="fas fa-key" aria-hidden="true" style="margin-right: 6px;"></i>CÃƒÂ³digo de acceso
+
+
+
+
+
+
+
+
 
 
 
@@ -7263,7 +21601,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <div id="ajustesListaCodigoAcceso" style="font-size: 20px; color:#1f2937; word-break: break-all;">No disponible</div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7271,11 +21625,35 @@
 
 
 
+
+
+
+
+
+
+
+
         <p style="font-size: 11px; color: #6b7280; margin-top: -5px; margin-bottom: 15px; padding-left: 5px;">
 
 
 
-          <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 4px;"></i> recibirás un WhatsApp para renovar tu acceso el día de vencimiento
+
+
+
+
+
+
+
+
+          <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 4px;"></i> recibirÃƒÂ¡s un WhatsApp para renovar tu acceso el dÃƒÂ­a de vencimiento
+
+
+
+
+
+
+
+
 
 
 
@@ -7283,7 +21661,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#faqModalAjustes" data-bs-dismiss="modal">
+
+
+
+
+
+
+
+
 
 
 
@@ -7291,7 +21685,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </button>
+
+
+
+
+
+
+
+
 
 
 
@@ -7299,11 +21709,35 @@
 
 
 
+
+
+
+
+
+
+
+
         <!--button type="button" class="btn btn-outline-primary btn-sm btn-block mb-3" onclick="iniciarTourDesdeAjustes()">
 
 
 
+
+
+
+
+
+
+
+
           <i class="fas fa-route" aria-hidden="true" style="margin-right: 6px;"></i>Ver tour guiado
+
+
+
+
+
+
+
+
 
 
 
@@ -7315,7 +21749,31 @@
 
 
 
-        <div class="form-group mb-3" style="background: rgba(103,165,246,.08); border: 1px solid rgba(64,158,255,.16); border-radius: 10px; padding: 10px;">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <div class="form-group mb-3 font-size-lista-card">
+
+
+
+
+
+
+
+
 
 
 
@@ -7323,11 +21781,35 @@
 
 
 
-          <div style="font-size: 12px; color:#4b5563;">
 
 
 
-            Tamaño actual: <strong id="fontSizeListaValue">12px</strong>
+
+
+
+
+
+          <div class="font-size-lista-card__value">
+
+
+
+
+
+
+
+
+
+
+
+            TamaÃƒÂ±o actual: <strong id="fontSizeListaValue">12px</strong>
+
+
+
+
+
+
+
+
 
 
 
@@ -7335,7 +21817,31 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -7347,11 +21853,43 @@
 
 
 
-          <i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 6px;"></i>Cómo usar subir/bajar lista
+
+
+
+
+
+
+
+
+          <i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 6px;"></i>CÃƒÂ³mo usar subir/bajar lista
+
+
+
+
+
+
+
+
 
 
 
         </button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -7363,19 +21901,59 @@
 
 
 
+
+
+
+
+
+
+
+
           <div style="background: rgba(64,158,255,.09); border: 1px solid rgba(64,158,255,.22); border-radius: 10px; padding: 10px; font-size: 12px; color:#374151;">
 
 
 
-            <p style="margin-bottom: 8px;"><strong>Dinámica:</strong> escribí un porcentaje y tocá <strong>SUBIR</strong> para aumentar toda la lista, o <strong>BAJAR</strong> para reducirla. El ajuste se aplica de forma general a todos los ítems de la tabla.</p>
 
 
 
-            <p style="margin-bottom: 8px;"><strong>Ejemplos rápidos:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
 
 
 
-            <p style="margin-bottom: 0;"><strong>Beneficio para el constructor:</strong> te permite adaptar presupuestos en segundos según zona, complejidad, urgencia o variación de costos, sin editar tarea por tarea. Si querés volver al valor base, usá <strong>Reestablecer valor original de lista</strong>.</p>
+
+
+            <p style="margin-bottom: 8px;"><strong>DinÃƒÂ¡mica:</strong> escribÃƒÂ­ un porcentaje y tocÃƒÂ¡ <strong>SUBIR</strong> para aumentar toda la lista, o <strong>BAJAR</strong> para reducirla. El ajuste se aplica de forma general a todos los ÃƒÂ­tems de la tabla.</p>
+
+
+
+
+
+
+
+
+
+
+
+            <p style="margin-bottom: 8px;"><strong>Ejemplos rÃƒÂ¡pidos:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
+
+
+
+
+
+
+
+
+
+
+
+            <p style="margin-bottom: 0;"><strong>Beneficio para el constructor:</strong> te permite adaptar presupuestos en segundos segÃƒÂºn zona, complejidad, urgencia o variaciÃƒÂ³n de costos, sin editar tarea por tarea. Si querÃƒÂ©s volver al valor base, usÃƒÂ¡ <strong>Reestablecer valor original de lista</strong>.</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -7383,7 +21961,31 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -7395,7 +21997,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <label for="porcentajeBajar" style="color:#0b69a6;">Bajar lista (%)</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -7403,7 +22021,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <input type="text" id="porcentajeBajar" class="form-control" placeholder="%" [(ngModel)]="porcentajeBajar">
+
+
+
+
+
+
+
+
 
 
 
@@ -7411,11 +22045,43 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
 
 
 
+
+
+
+
+
+
+
+
         </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -7427,7 +22093,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <label for="porcentaje" style="color:#0b69a6;">Subir lista (%)</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -7435,7 +22117,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <input type="text" id="porcentaje" class="form-control" placeholder="%" [(ngModel)]="porcentajeSubir">
+
+
+
+
+
+
+
+
 
 
 
@@ -7443,7 +22141,23 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7455,11 +22169,43 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         <button type="button" class="btn btn-outline-primary w-100" (click)="reestablecerPreciosOriginalesLista()">
 
 
 
+
+
+
+
+
+
+
+
           <i class="fas fa-undo-alt" aria-hidden="true" style="margin-right: 6px;"></i>Reestablecer valor original de lista
+
+
+
+
+
+
+
+
 
 
 
@@ -7471,7 +22217,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7479,7 +22249,23 @@
 
 
 
+
+
+
+
+
+
+
+
   </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7491,7 +22277,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <!-- ============================================================
+
+
+
+
+
+
+
+
 
 
 
@@ -7499,7 +22309,23 @@
 
 
 
+
+
+
+
+
+
+
+
      ============================================================ -->
+
+
+
+
+
+
+
+
 
 
 
@@ -7507,7 +22333,23 @@
 
 
 
+
+
+
+
+
+
+
+
   <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+
+
+
+
+
+
+
+
 
 
 
@@ -7515,7 +22357,23 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6); border-bottom: 1px solid rgba(11,105,166,.15);">
+
+
+
+
+
+
+
+
 
 
 
@@ -7523,7 +22381,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <i class="fas fa-question-circle" aria-hidden="true" style="margin-right: 8px;"></i>Preguntas Frecuentes
+
+
+
+
+
+
+
+
 
 
 
@@ -7531,7 +22405,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+
+
+
+
+
+
+
 
 
 
@@ -7539,7 +22429,31 @@
 
 
 
+
+
+
+
+
+
+
+
       <div class="modal-body" style="padding: 18px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); max-height: 70vh; overflow-y: auto;">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -7555,7 +22469,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+
+
+
+
+
+
+
+
 
 
 
@@ -7563,11 +22501,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
 
 
 
-                <i class="fas fa-percent" style="margin-right: 8px;"></i>¿Cómo funciona subir o bajar los precios de la lista?
+
+
+
+
+
+
+
+
+                <i class="fas fa-percent" style="margin-right: 8px;"></i>Ã‚Â¿CÃƒÂ³mo funciona subir o bajar los precios de la lista?
+
+
+
+
+
+
+
+
 
 
 
@@ -7575,7 +22537,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </h2>
+
+
+
+
+
+
+
+
 
 
 
@@ -7583,11 +22561,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
 
 
-                <p>Escribí un porcentaje en el campo correspondiente y tocá <strong>SUBIR</strong> para aumentar todos los precios de la lista, o <strong>BAJAR</strong> para reducirlos. El ajuste se aplica de forma general a todos los ítems.</p>
+
+
+
+
+
+
+
+
+                <p>EscribÃƒÂ­ un porcentaje en el campo correspondiente y tocÃƒÂ¡ <strong>SUBIR</strong> para aumentar todos los precios de la lista, o <strong>BAJAR</strong> para reducirlos. El ajuste se aplica de forma general a todos los ÃƒÂ­tems.</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -7595,11 +22597,35 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7611,7 +22637,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+
+
+
+
+
+
+
+
 
 
 
@@ -7619,11 +22669,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
 
 
 
-                <i class="fas fa-undo-alt" style="margin-right: 8px;"></i>¿Cómo restablezco los precios originales?
+
+
+
+
+
+
+
+
+                <i class="fas fa-undo-alt" style="margin-right: 8px;"></i>Ã‚Â¿CÃƒÂ³mo restablezco los precios originales?
+
+
+
+
+
+
+
+
 
 
 
@@ -7631,7 +22705,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </h2>
+
+
+
+
+
+
+
+
 
 
 
@@ -7639,11 +22729,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
 
 
-                <p style="margin-bottom:0;">Usá el botón <strong>"Reestablecer valor original de lista"</strong>. Esto recarga los precios desde el servidor, deshaciendo cualquier ajuste porcentual que hayas aplicado.</p>
+
+
+
+
+
+
+
+
+                <p style="margin-bottom:0;">UsÃƒÂ¡ el botÃƒÂ³n <strong>"Reestablecer valor original de lista"</strong>. Esto recarga los precios desde el servidor, deshaciendo cualquier ajuste porcentual que hayas aplicado.</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -7651,7 +22765,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7663,7 +22793,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+
+
+
+
+
+
+
+
 
 
 
@@ -7671,11 +22825,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
 
 
 
-                <i class="fas fa-text-height" style="margin-right: 8px;"></i>¿Para qué sirve el control de tamaño de texto?
+
+
+
+
+
+
+
+
+                <i class="fas fa-text-height" style="margin-right: 8px;"></i>Ã‚Â¿Para quÃƒÂ© sirve el control de tamaÃƒÂ±o de texto?
+
+
+
+
+
+
+
+
 
 
 
@@ -7683,7 +22861,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </h2>
+
+
+
+
+
+
+
+
 
 
 
@@ -7691,11 +22885,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
 
 
-                <p style="margin-bottom:0;">El slider ajusta el tamaño de la fuente de la tabla de tareas. Útil para ver más ítems en pantalla (texto más chico) o para mejorar la legibilidad en dispositivos grandes (texto más grande).</p>
+
+
+
+
+
+
+
+
+                <p style="margin-bottom:0;">El slider ajusta el tamaÃƒÂ±o de la fuente de la tabla de tareas. ÃƒÂštil para ver mÃƒÂ¡s ÃƒÂ­tems en pantalla (texto mÃƒÂ¡s chico) o para mejorar la legibilidad en dispositivos grandes (texto mÃƒÂ¡s grande).</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -7703,11 +22921,43 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -7719,7 +22969,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <h2 class="accordion-header" id="faq4">
+
+
+
+
+
+
+
+
 
 
 
@@ -7727,7 +22993,23 @@
 
 
 
-                <i class="fas fa-key" style="margin-right: 8px;"></i>¿Qué es el Código de Acceso?
+
+
+
+
+
+
+
+
+                <i class="fas fa-key" style="margin-right: 8px;"></i>Ã‚Â¿QuÃƒÂ© es el CÃƒÂ³digo de Acceso?
+
+
+
+
+
+
+
+
 
 
 
@@ -7735,7 +23017,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </h2>
+
+
+
+
+
+
+
+
 
 
 
@@ -7743,11 +23041,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
 
 
-                <p style="margin-bottom:0;">Es tu identificador único en el sistema. Lo usás para ingresar a la aplicación y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro. Antes del vencimiento recibirás un WhatsApp para renovarlo.</p>
+
+
+
+
+
+
+
+
+                <p style="margin-bottom:0;">Es tu identificador ÃƒÂºnico en el sistema. Lo usÃƒÂ¡s para ingresar a la aplicaciÃƒÂ³n y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro. Antes del vencimiento recibirÃƒÂ¡s un WhatsApp para renovarlo.</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -7755,11 +23077,43 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -7771,7 +23125,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <h2 class="accordion-header" id="faq5">
+
+
+
+
+
+
+
+
 
 
 
@@ -7779,7 +23149,23 @@
 
 
 
-                <i class="fas fa-save" style="margin-right: 8px;"></i>¿Los cambios en los precios se guardan permanentemente?
+
+
+
+
+
+
+
+
+                <i class="fas fa-save" style="margin-right: 8px;"></i>Ã‚Â¿Los cambios en los precios se guardan permanentemente?
+
+
+
+
+
+
+
+
 
 
 
@@ -7787,7 +23173,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </h2>
+
+
+
+
+
+
+
+
 
 
 
@@ -7795,11 +23197,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
 
 
-                <p style="margin-bottom:0;">Sí, los cambios se guardan en tu lista de tareas activa. Si querés volver a los precios base, usá <strong>"Reestablecer valor original de lista"</strong>. Los precios de la tabla de referencia (buscador) nunca se modifican.</p>
+
+
+
+
+
+
+
+
+                <p style="margin-bottom:0;">SÃƒÂ­, los cambios se guardan en tu lista de tareas activa. Si querÃƒÂ©s volver a los precios base, usÃƒÂ¡ <strong>"Reestablecer valor original de lista"</strong>. Los precios de la tabla de referencia (buscador) nunca se modifican.</p>
+
+
+
+
+
+
+
+
 
 
 
@@ -7807,7 +23233,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7819,11 +23261,43 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         </div>
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7831,7 +23305,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+
+
+
+
+
+
+
+
 
 
 
@@ -7839,7 +23329,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7847,7 +23353,31 @@
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -7859,7 +23389,23 @@
 
 
 
+
+
+
+
+
+
+
+
      MODAL: PALETA DEL PRESUPUESTO (paletaModal)
+
+
+
+
+
+
+
+
 
 
 
@@ -7867,7 +23413,23 @@
 
 
 
+
+
+
+
+
+
+
+
 <div class="modal fade" id="paletaModal" tabindex="-1" role="dialog" aria-labelledby="paletaModalLabel" aria-hidden="true">
+
+
+
+
+
+
+
+
 
 
 
@@ -7875,7 +23437,23 @@
 
 
 
+
+
+
+
+
+
+
+
     <div class="modal-content modal-zona" style="border-radius: 16px;">
+
+
+
+
+
+
+
+
 
 
 
@@ -7883,7 +23461,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <h5 class="modal-title" id="paletaModalLabel" style="color:#0b69a6; font-weight:700;">
+
+
+
+
+
+
+
+
 
 
 
@@ -7891,7 +23485,23 @@
 
 
 
+
+
+
+
+
+
+
+
         </h5>
+
+
+
+
+
+
+
+
 
 
 
@@ -7899,7 +23509,23 @@
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7907,7 +23533,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <div class="row">
+
+
+
+
+
+
+
+
 
 
 
@@ -7915,7 +23557,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <div class="col-md-5">
+
+
+
+
+
+
+
+
 
 
 
@@ -7927,7 +23585,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             <div class="form-group mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -7935,7 +23617,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="d-flex gap-2 align-items-center">
+
+
+
+
+
+
+
+
 
 
 
@@ -7943,11 +23641,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorPrimario" style="font-size: 12px;">
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7959,7 +23681,31 @@
 
 
 
-            <!-- Sección Gradient -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <!-- SecciÃƒÂ³n Gradient -->
+
+
+
+
+
+
+
+
 
 
 
@@ -7967,7 +23713,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <label class="form-label small fw-bold text-primary mb-2">Fondo (Gradiente)</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -7975,7 +23737,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div class="col-6">
+
+
+
+
+
+
+
+
 
 
 
@@ -7983,11 +23761,35 @@
 
 
 
+
+
+
+
+
+
+
+
                   <input type="color" class="form-control form-control-color w-100" [(ngModel)]="presupuestoColorSecundario">
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -7995,7 +23797,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <label class="x-small mb-1">Color 2</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -8003,7 +23821,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8011,7 +23845,23 @@
 
 
 
-                  <label class="x-small mb-1">Dirección</label>
+
+
+
+
+
+
+
+
+                  <label class="x-small mb-1">DirecciÃƒÂ³n</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -8019,19 +23869,59 @@
 
 
 
-                    <option value="to bottom">Abajo ↓</option>
 
 
 
-                    <option value="to top">Arriba ↑</option>
 
 
 
-                    <option value="to right">Derecha →</option>
+
+
+                    <option value="to bottom">Abajo Ã¢Â†Â“</option>
 
 
 
-                    <option value="to left">Izquierda ←</option>
+
+
+
+
+
+
+
+
+                    <option value="to top">Arriba Ã¢Â†Â‘</option>
+
+
+
+
+
+
+
+
+
+
+
+                    <option value="to right">Derecha Ã¢Â†Â’</option>
+
+
+
+
+
+
+
+
+
+
+
+                    <option value="to left">Izquierda Ã¢Â†Â</option>
+
+
+
+
+
+
+
+
 
 
 
@@ -8039,11 +23929,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8055,7 +23969,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             <div class="form-group mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -8063,7 +24001,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="d-flex gap-2 align-items-center">
+
+
+
+
+
+
+
+
 
 
 
@@ -8071,11 +24025,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTexto" style="font-size: 12px;">
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8087,7 +24065,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             <div class="form-group mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -8095,7 +24097,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="d-flex gap-2 align-items-center">
+
+
+
+
+
+
+
+
 
 
 
@@ -8103,11 +24121,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTabla" style="font-size: 12px;">
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8119,7 +24161,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             <div class="form-group mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -8127,7 +24193,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="d-flex gap-2 align-items-center">
+
+
+
+
+
+
+
+
 
 
 
@@ -8135,11 +24217,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTablaCuerpo" style="font-size: 12px;">
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8151,7 +24257,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             <div class="form-group mb-3 coolinput">
+
+
+
+
+
+
+
+
 
 
 
@@ -8159,7 +24289,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="d-flex gap-2 align-items-center">
+
+
+
+
+
+
+
+
 
 
 
@@ -8167,7 +24313,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTablaTexto" style="font-size: 12px;">
+
+
+
+
+
+
+
+
 
 
 
@@ -8175,7 +24337,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8183,7 +24361,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <label class="text">Fondo Cajas Info (Empresa/Cliente)</label>
+
+
+
+
+
+
+
+
 
 
 
@@ -8191,7 +24385,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoInfoBoxColorHex" style="width: 50px;">
+
+
+
+
+
+
+
+
 
 
 
@@ -8199,7 +24409,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8207,7 +24433,31 @@
 
 
 
+
+
+
+
+
+
+
+
           </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -8219,7 +24469,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <div class="col-md-7">
+
+
+
+
+
+
+
+
 
 
 
@@ -8227,7 +24493,23 @@
 
 
 
+
+
+
+
+
+
+
+
             <div class="budget-miniature shadow-sm"
+
+
+
+
+
+
+
+
 
 
 
@@ -8235,7 +24517,23 @@
 
 
 
+
+
+
+
+
+
+
+
                  [style.color]="presupuestoColorTexto"
+
+
+
+
+
+
+
+
 
 
 
@@ -8243,7 +24541,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <!-- Header -->
+
+
+
+
+
+
+
+
 
 
 
@@ -8251,7 +24565,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div [style.background-color]="presupuestoColorPrimario" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8259,7 +24589,23 @@
 
 
 
+
+
+
+
+
+
+
+
                    <div [style.color]="presupuestoColorPrimario" style="font-weight: bold; font-size: 14px;">{{ empresaName || 'TU EMPRESA' }}</div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8267,11 +24613,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8279,7 +24649,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <!-- Cliente Section -->
+
+
+
+
+
+
+
+
 
 
 
@@ -8287,7 +24673,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <div style="font-size: 10px; font-weight: bold;">CLIENTE</div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8295,7 +24697,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8303,7 +24721,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <table class="table table-bordered table-sm mb-3" [style.color]="presupuestoColorTexto" style="font-size: 9px; line-height: 1;">
+
+
+
+
+
+
+
+
 
 
 
@@ -8311,7 +24745,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <tr>
+
+
+
+
+
+
+
+
 
 
 
@@ -8319,7 +24769,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <th [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">AREA</th>
+
+
+
+
+
+
+
+
 
 
 
@@ -8327,7 +24793,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </tr>
+
+
+
+
+
+
+
+
 
 
 
@@ -8335,7 +24817,23 @@
 
 
 
+
+
+
+
+
+
+
+
                 <tbody [style.background-color]="presupuestoColorTablaCuerpo" [style.color]="presupuestoColorTexto">
+
+
+
+
+
+
+
+
 
 
 
@@ -8343,7 +24841,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <tr *ngFor="let t of tareasAgregadas | slice:0:3">
+
+
+
+
+
+
+
+
 
 
 
@@ -8351,7 +24865,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <td>{{ t.area | number:'1.2-2' }}</td>
+
+
+
+
+
+
+
+
 
 
 
@@ -8359,11 +24889,35 @@
 
 
 
+
+
+
+
+
+
+
+
                     </tr>
 
 
 
+
+
+
+
+
+
+
+
                   </ng-container>
+
+
+
+
+
+
+
+
 
 
 
@@ -8371,7 +24925,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     <tr>
+
+
+
+
+
+
+
+
 
 
 
@@ -8379,7 +24949,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <td>10.00</td>
+
+
+
+
+
+
+
+
 
 
 
@@ -8387,7 +24973,23 @@
 
 
 
+
+
+
+
+
+
+
+
                     </tr>
+
+
+
+
+
+
+
+
 
 
 
@@ -8395,7 +24997,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <td>REVOQUE FINO</td>
+
+
+
+
+
+
+
+
 
 
 
@@ -8403,7 +25021,23 @@
 
 
 
+
+
+
+
+
+
+
+
                       <td>$3.500,00</td>
+
+
+
+
+
+
+
+
 
 
 
@@ -8411,7 +25045,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </ng-template>
+
+
+
+
+
+
+
+
 
 
 
@@ -8419,7 +25069,23 @@
 
 
 
+
+
+
+
+
+
+
+
               </table>
+
+
+
+
+
+
+
+
 
 
 
@@ -8427,7 +25093,23 @@
 
 
 
+
+
+
+
+
+
+
+
               <div class="text-end">
+
+
+
+
+
+
+
+
 
 
 
@@ -8435,7 +25117,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   <ng-container *ngIf="tareasAgregadas.length > 0; else demoTotal">
+
+
+
+
+
+
+
+
 
 
 
@@ -8443,7 +25141,23 @@
 
 
 
+
+
+
+
+
+
+
+
                   </ng-container>
+
+
+
+
+
+
+
+
 
 
 
@@ -8451,11 +25165,35 @@
 
 
 
+
+
+
+
+
+
+
+
                 </div>
 
 
 
+
+
+
+
+
+
+
+
               </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8463,11 +25201,35 @@
 
 
 
+
+
+
+
+
+
+
+
               <div style="position: absolute; bottom: 5px; right: 8px; font-size: 8px; opacity: 0.3;">
 
 
 
-                METRO - Software de Cotización
+
+
+
+
+
+
+
+
+                METRO - Software de CotizaciÃƒÂ³n
+
+
+
+
+
+
+
+
 
 
 
@@ -8475,7 +25237,23 @@
 
 
 
+
+
+
+
+
+
+
+
             </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8483,11 +25261,35 @@
 
 
 
+
+
+
+
+
+
+
+
         </div>
 
 
 
+
+
+
+
+
+
+
+
       </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8495,7 +25297,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn btn-secondary" (click)="volverAModalEmpresa()">Volver</button>
+
+
+
+
+
+
+
+
 
 
 
@@ -8503,7 +25321,23 @@
 
 
 
+
+
+
+
+
+
+
+
           <i class="fas fa-undo"></i> Reiniciar
+
+
+
+
+
+
+
+
 
 
 
@@ -8511,7 +25345,23 @@
 
 
 
+
+
+
+
+
+
+
+
         <button type="button" class="btn btn-primary" data-bs-dismiss="modal" (click)="aplicarPaletaManual()">Aplicar Cambios</button>
+
+
+
+
+
+
+
+
 
 
 
@@ -8519,7 +25369,23 @@
 
 
 
+
+
+
+
+
+
+
+
     </div>
+
+
+
+
+
+
+
+
 
 
 
@@ -8527,7 +25393,65 @@
 
 
 
+
+
+
+
+
+
+
+
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

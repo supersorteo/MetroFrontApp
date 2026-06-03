@@ -13,7 +13,6 @@ import { PresupuestoService } from '../../servicios/presupuesto.service';
 import { Empresa, EmpresaService } from '../../servicios/empresa.service';
 import { Cliente, ClienteService } from '../../servicios/cliente.service';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
-import { FilterClientePipe } from '../../pipes/filter-cliente.pipe';
 import { FilterEmpresaPipe } from '../../pipes/filter-empresa.pipe';
 import { PresupuestosGuardadosComponent } from '../presupuestos-guardados/presupuestos-guardados.component';
 
@@ -70,7 +69,6 @@ function cleanupBootstrapModals(): void {
     CommonModule,
     FormsModule,
     RouterModule,
-    FilterClientePipe,
     FilterEmpresaPipe,
     PresupuestosGuardadosComponent
   ],

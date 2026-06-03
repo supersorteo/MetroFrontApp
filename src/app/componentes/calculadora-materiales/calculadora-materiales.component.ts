@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, signal } from '@angular/core';
+﻿import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -668,8 +668,6 @@ export class CalculadoraMaterialesComponent implements OnInit {
   readonly isTrialMode = localStorage.getItem('trialMode') === 'true';
   readonly userCode = (localStorage.getItem('userCode') || '').trim();
   readonly userEmail = (localStorage.getItem('userEmail') || '').trim();
-  readonly userDisplayName = this.buildUserDisplayName();
-  readonly userModeLabel = this.isTrialMode ? 'Modo de prueba' : 'Modo VIP';
 
   searchTerm = signal('');
   expandedIds = signal<Set<number>>(new Set());
@@ -1232,33 +1230,6 @@ export class CalculadoraMaterialesComponent implements OnInit {
     return historial.find(calculo => calculo.tareaId === tarea.id);
   }
 
-  private buildUserDisplayName(): string {
-    const storedNameKeys = ['userName', 'username', 'nombre', 'fullName', 'displayName'];
-    const storedName = storedNameKeys
-      .map(key => (localStorage.getItem(key) || '').trim())
-      .find(Boolean);
-
-    if (storedName) {
-      return storedName;
-    }
-
-    if (this.isTrialMode) {
-      return 'Usuario de prueba';
-    }
-
-    if (this.userEmail) {
-      const emailName = this.userEmail.split('@')[0]?.trim();
-      if (emailName) {
-        return emailName
-          .replace(/[._-]+/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim()
-          .replace(/\b\w/g, letter => letter.toUpperCase());
-      }
-    }
-
-    return this.userCode || 'Usuario';
-  }
 
   getCategoriaIcono(cat: string): string {
     const map: Record<string, string> = {
