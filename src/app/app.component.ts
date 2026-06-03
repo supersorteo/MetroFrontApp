@@ -19,6 +19,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class AppComponent implements OnInit {
   title = 'pruebaw';
+  showConnectionIndicator = false;
   private readonly destroyRef = inject(DestroyRef);
 
   constructor(
@@ -60,6 +61,13 @@ export class AppComponent implements OnInit {
       return;
     }
     this.router.navigate(['/'], { queryParams: { admin: '1' } });
+  }
+
+  @HostListener('document:keydown.control.alt.c', ['$event'])
+  onConnectionShortcut(event: Event): void {
+    const keyboardEvent = event as KeyboardEvent;
+    keyboardEvent.preventDefault();
+    this.showConnectionIndicator = !this.showConnectionIndicator;
   }
 
   async triggerManualSync(): Promise<void> {

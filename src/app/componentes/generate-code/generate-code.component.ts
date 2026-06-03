@@ -7,6 +7,7 @@ import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { AuthService, UserDataSummary } from '../../servicios/auth.service';
 import { Admin, AdminMembershipLimits, AdminService } from '../../servicios/admin.service';
 import { Tarea, TareaService } from '../../servicios/tarea.service';
+import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
 
 interface AccessCode {
   code: string;
@@ -67,6 +68,11 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     descuento: 0
   };
 
+  showAjustePreciosPanel = false;
+  porcentajeSubirAdmin: number | null = null;
+  porcentajeBajarAdmin: number | null = null;
+  factorAdmin = 1;
+
   editAdminNombre = '';
   editAdminUsername = '';
   editAdminPassword = '';
@@ -91,7 +97,8 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     private adminService: AdminService,
     private tareaService: TareaService,
     private router: Router,
-    private uiDialog: UiDialogService
+    private uiDialog: UiDialogService,
+    private ajustePrecioService: AjustePrecioService
   ) {}
 
   ngOnInit(): void {
@@ -508,11 +515,95 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   loadTareas(): void {
     this.tareaService.getTareasByPais(this.admin.pais).subscribe({
       next: list => {
-        this.tareas = list;
+        const factor = this.ajustePrecioService.getAdminFactorLocal(this.admin.pais);
+        this.factorAdmin = factor;
+        this.tareas = factor !== 1
+          ? list.map(t => ({ ...t, costo: t.costo * factor }))
+          : list;
+        this.ajustePrecioService.syncAdminFactor(this.admin.pais);
         this.filtrarTareas();
       },
       error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron cargar las tareas.' })
     });
+  }
+
+  get factorAdminDisplay(): string {
+    if (this.factorAdmin === 1) return 'Sin ajuste';
+    const pct = (this.factorAdmin - 1) * 100;
+    return pct > 0 ? `+${pct.toFixed(4)}%` : `${pct.toFixed(4)}%`;
+  }
+
+  async ajustarPreciosAdmin(): Promise<void> {
+    const porcentaje = parseFloat(String(this.porcentajeSubirAdmin));
+    if (isNaN(porcentaje) || porcentaje <= 0 || porcentaje > 500) {
+      this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 0.01 y 500.' });
+      return;
+    }
+    if (!this.tareas.length) {
+      this.uiDialog.warning({ title: 'Sin tareas', text: 'No hay tareas en el catálogo para ajustar.' });
+      return;
+    }
+    const confirmed = await this.uiDialog.confirm({
+      title: `Subir precios ${porcentaje}%`,
+      text: `Los precios del catálogo de ${this.admin.pais} se incrementarán un ${porcentaje}% para todos los usuarios. ¿Confirmas?`,
+      confirmText: 'Sí, subir',
+      cancelText: 'Cancelar',
+      tone: 'primary',
+      icon: 'question'
+    });
+    if (!confirmed) return;
+    const delta = 1 + porcentaje / 100;
+    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
+    this.factorAdmin = Math.round(this.factorAdmin * delta * 1_000_000) / 1_000_000;
+    this.filtrarTareas();
+    this.ajustePrecioService.aplicarAjusteAdmin(this.admin.pais, 'subir', porcentaje);
+    this.porcentajeSubirAdmin = null;
+    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios del catálogo incrementados en ${porcentaje}% para todos los usuarios de ${this.admin.pais}.` });
+  }
+
+  async disminuirPreciosAdmin(): Promise<void> {
+    const porcentaje = parseFloat(String(this.porcentajeBajarAdmin));
+    if (isNaN(porcentaje) || porcentaje <= 0 || porcentaje > 100) {
+      this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 0.01 y 100.' });
+      return;
+    }
+    if (!this.tareas.length) {
+      this.uiDialog.warning({ title: 'Sin tareas', text: 'No hay tareas en el catálogo para ajustar.' });
+      return;
+    }
+    const confirmed = await this.uiDialog.confirm({
+      title: `Bajar precios ${porcentaje}%`,
+      text: `Los precios del catálogo de ${this.admin.pais} se reducirán un ${porcentaje}% para todos los usuarios. ¿Confirmas?`,
+      confirmText: 'Sí, bajar',
+      cancelText: 'Cancelar',
+      tone: 'warning',
+      icon: 'warning'
+    });
+    if (!confirmed) return;
+    const delta = 1 - porcentaje / 100;
+    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
+    this.factorAdmin = Math.round(this.factorAdmin * delta * 1_000_000) / 1_000_000;
+    this.filtrarTareas();
+    this.ajustePrecioService.aplicarAjusteAdmin(this.admin.pais, 'bajar', porcentaje);
+    this.porcentajeBajarAdmin = null;
+    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios del catálogo reducidos en ${porcentaje}% para todos los usuarios de ${this.admin.pais}.` });
+  }
+
+  async reestablecerPreciosAdmin(): Promise<void> {
+    const confirmed = await this.uiDialog.confirm({
+      title: 'Restablecer precios',
+      text: `Se eliminarán todos los ajustes activos y los precios del catálogo de ${this.admin.pais} volverán a sus valores originales para todos los usuarios. ¿Confirmas?`,
+      confirmText: 'Sí, restablecer',
+      cancelText: 'Cancelar',
+      tone: 'warning',
+      icon: 'warning'
+    });
+    if (!confirmed) return;
+    this.ajustePrecioService.aplicarAjusteAdmin(this.admin.pais, 'reestablecer');
+    this.factorAdmin = 1;
+    this.showAjustePreciosPanel = false;
+    this.loadTareas();
+    this.uiDialog.success({ title: 'Precios restablecidos', text: `Se restauraron los precios originales del catálogo para todos los usuarios de ${this.admin.pais}.` });
   }
 
   filtrarTareas(): void {

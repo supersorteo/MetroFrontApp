@@ -1,4 +1,4 @@
-<div class="calc-page">
+﻿<div class="calc-page">
 
   @if (sidebarOpen()) {
     <div class="sidebar-overlay" (click)="cerrarSidebar()"></div>
@@ -8,22 +8,6 @@
       <i class="bi bi-x-lg"></i>
     </button>
 
-    <div class="sidebar-panel__profile">
-      <div class="sidebar-panel__avatar">
-        <i class="bi bi-person-circle"></i>
-      </div>
-      <div class="sidebar-panel__profile-copy">
-        <span class="sidebar-panel__profile-mode">{{ userModeLabel }}</span>
-        <strong class="sidebar-panel__profile-name">{{ userDisplayName }}</strong>
-        <span class="sidebar-panel__profile-meta">
-          @if (isTrialMode) {
-            Sesión local de demostración
-          } @else {
-            {{ userEmail || userCode }}
-          }
-        </span>
-      </div>
-    </div>
 
     <ul class="sidebar-panel__list">
       <!-- <li class="sidebar-panel__item">
@@ -160,28 +144,51 @@
     </div>
   }
 
-  <div class="calc-header">
-    <div class="calc-header__inner">
-      <div class="calc-header__icon">
-        <i class="bi bi-calculator"></i>
-      </div>
-      <div>
-        <h1 class="calc-header__title">Calculadora de Materiales</h1>
-        @if (isTrialMode) {
-          <p class="calc-header__badge">
-            <i class="bi bi-info-circle"></i>
-            <span class="calc-header__badge-full">{{ getDemoDailyUsageLabel() }} · 3 tareas aleatorias · historial local</span>
-            <span class="calc-header__badge-short">{{ demoDailyCalculationsUsed() }}/3 hoy · 3 tareas</span>
-          </p>
-        } @else {
-          <p class="calc-header__sub">
-            <span class="calc-header__vip-usage">{{ getVipStorageLabel() }}</span>
-          </p>
-          <p class="calc-header__sub calc-header__sub--hint">Ingresá el área o volumen para obtener las cantidades exactas</p>
-        }
+  @if (welcomeModalOpen()) {
+    <div class="calc-welcome-overlay" (click)="cerrarBienvenida()">
+      <div class="calc-welcome-modal" role="dialog" aria-modal="true" aria-labelledby="calcWelcomeTitle" (click)="$event.stopPropagation()">
+        <button type="button" class="calc-welcome-modal__close" (click)="cerrarBienvenida()" aria-label="Cerrar bienvenida">
+          <i class="bi bi-x-lg"></i>
+        </button>
+
+        <div class="calc-welcome-modal__hero">
+          <span class="calc-welcome-modal__icon" aria-hidden="true">
+            <i class="bi bi-stars"></i>
+          </span>
+          <div class="calc-welcome-modal__copy">
+            <p class="calc-welcome-modal__eyebrow">Bienvenido</p>
+            <h2 id="calcWelcomeTitle" class="calc-welcome-modal__title">Tu calculadora esta lista para trabajar</h2>
+            <p class="calc-welcome-modal__text">Calcula materiales mas rapido, guarda resultados utiles y retoma tareas sin perder contexto.</p>
+          </div>
+        </div>
+
+        <div class="calc-welcome-modal__body">
+          @if (isTrialMode) {
+            <div class="calc-welcome-modal__notice calc-welcome-modal__notice--trial">
+              <i class="bi bi-info-circle"></i>
+              <div>
+                <strong>Modo de prueba</strong>
+                <span>{{ getDemoDailyUsageLabel() }} &middot; 3 tareas aleatorias &middot; historial local</span>
+              </div>
+            </div>
+          } @else {
+            <div class="calc-welcome-modal__notice calc-welcome-modal__notice--vip">
+              <i class="bi bi-gem"></i>
+              <div>
+                <strong>Modo VIP</strong>
+                <span>{{ getVipStorageLabel() }}</span>
+              </div>
+            </div>
+            <p class="calc-welcome-modal__hint">Ingresa el area o volumen para obtener las cantidades exactas.</p>
+          }
+        </div>
+
+        <div class="calc-welcome-modal__footer">
+          <button type="button" class="calc-welcome-modal__cta" (click)="cerrarBienvenida()">Comenzar</button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
   @if (filteredTasks().length === 0) {
     <div class="calc-empty">
@@ -206,7 +213,6 @@
 
                 <button class="calc-card__head" (click)="toggleExpand(tarea.id)">
                   <div class="calc-card__head-left">
-                    <span class="calc-card__num">#{{ tarea.id }}</span>
                     <div class="calc-card__info">
                       <span class="calc-card__title">{{ tarea.titulo }}</span>
                       @if (tarea.mezcla) {
@@ -214,12 +220,15 @@
                       }
                     </div>
                   </div>
-                  <div class="calc-card__head-right">
-                    <span class="calc-card__unidad">por {{ tarea.unidad }}</span>
-                    @if (hasResultados(tarea.id)) {
-                      <i class="bi bi-check-circle-fill calc-card__done-icon"></i>
-                    }
-                    <i class="bi calc-card__chevron" [class.bi-chevron-up]="isExpanded(tarea.id)" [class.bi-chevron-down]="!isExpanded(tarea.id)"></i>
+                  <div class="calc-card__head-aside">
+                    <span class="calc-card__num">#{{ tarea.id }}</span>
+                    <div class="calc-card__head-right">
+                      <span class="calc-card__unidad">por {{ tarea.unidad }}</span>
+                      @if (hasResultados(tarea.id)) {
+                        <i class="bi bi-check-circle-fill calc-card__done-icon"></i>
+                      }
+                      <i class="bi calc-card__chevron" [class.bi-chevron-up]="isExpanded(tarea.id)" [class.bi-chevron-down]="!isExpanded(tarea.id)"></i>
+                    </div>
                   </div>
                 </button>
 
@@ -248,16 +257,6 @@
                         <button class="btn-calc" (click)="calcular(tarea)" [disabled]="!getInputValue(tarea.id)" [class.btn-calc--limit]="isTrialCalculationLimitReached()">
                           <i class="bi bi-calculator"></i> Calcular
                         </button>
-                        @if (hasResultados(tarea.id)) {
-                          @if (isGuardado(tarea.id)) {
-                            <span class="btn-guardado-badge" aria-label="Cálculo guardado">
-                              <i class="bi bi-cloud-check-fill"></i> Guardado
-                            </span>
-                          }
-                          <button class="btn-borrar" type="button" (click)="confirmarBorrado(tarea.id)">
-                            <i class="bi bi-arrow-counterclockwise"></i> Borrar
-                          </button>
-                        }
                       </div>
                     </div>
 
@@ -289,6 +288,17 @@
                             </div>
                           }
                         </div>
+                      </div>
+
+                      <div class="calc-secondary-actions">
+                        @if (isGuardado(tarea.id)) {
+                          <span class="btn-guardado-badge" aria-label="Cálculo guardado">
+                            <i class="bi bi-cloud-check-fill"></i> Guardado
+                          </span>
+                        }
+                        <button class="btn-borrar" type="button" (click)="confirmarBorrado(tarea.id)">
+                          <i class="bi bi-arrow-counterclockwise"></i> Borrar
+                        </button>
                       </div>
                     }
                   </div>

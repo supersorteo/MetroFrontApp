@@ -1,5 +1,5 @@
 ﻿import { CommonModule } from '@angular/common';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit, HostListener, effect, inject } from '@angular/core';
 import { interval, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -13,7 +13,6 @@ import { PresupuestoService } from '../../servicios/presupuesto.service';
 import { Empresa, EmpresaService } from '../../servicios/empresa.service';
 import { Cliente, ClienteService } from '../../servicios/cliente.service';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
-import { FilterClientePipe } from '../../pipes/filter-cliente.pipe';
 import { FilterEmpresaPipe } from '../../pipes/filter-empresa.pipe';
 import { PresupuestosGuardadosComponent } from '../presupuestos-guardados/presupuestos-guardados.component';
 
@@ -28,6 +27,7 @@ import { UserTareaStore } from '../../stores/user-tarea.store';
 import { TareaPersonalizadaService, TareaPersonalizada } from '../../servicios/tarea-personalizada.service';
 import { AppToastService } from '../../servicios/app-toast.service';
 import { MembershipLimits, MembershipLimitsService } from '../../servicios/membership-limits.service';
+import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
 
 
 declare var bootstrap: any;
@@ -68,10 +68,8 @@ function cleanupBootstrapModals(): void {
   standalone: true,
   imports: [
     CommonModule,
-    HttpClientModule,
     FormsModule,
     RouterModule,
-    FilterClientePipe,
     FilterEmpresaPipe,
     PresupuestosGuardadosComponent
   ],
@@ -210,6 +208,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   activeTaskTab: 'catalogo' | 'personalizadas' = 'catalogo';
   showTareasPersonalizadasPanel: boolean = false;
   showTpEditorModal: boolean = false;
+  showTpHero: boolean = localStorage.getItem('tpHeroDismissed') !== 'true';
   tareasPersonalizadas: TareaPersonalizada[] = [];
   tareaPersonalizadaNotice: { title: string; text?: string } | null = null;
   tpEditingId: number | null = null;
@@ -728,6 +727,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private empresaService: EmpresaService,
     private clienteService: ClienteService,
     private membershipLimitsService: MembershipLimitsService,
+    private ajustePrecioService: AjustePrecioService,
     private http: HttpClient,
     readonly offlineSync: OfflineSyncService,
     private localStore: OfflineLocalStoreService,
@@ -1045,6 +1045,27 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     listaEmpresasModalInstance.show();
   }
 
+  abrirFormularioNuevaEmpresa(): void {
+    this.limpiarEmpresaForm();
+
+    const listaEmpresasModalEl = document.getElementById('listaEmpresasModal');
+    if (listaEmpresasModalEl) {
+      const listaEmpresasModalInstance = bootstrap.Modal.getInstance(listaEmpresasModalEl);
+      listaEmpresasModalInstance?.hide();
+    }
+
+    setTimeout(() => {
+      const empresaModalEl = document.getElementById('exampleModal');
+      if (!empresaModalEl) {
+        this.appToast.error('Error al abrir el formulario de empresa');
+        return;
+      }
+
+      const empresaModalInstance = bootstrap.Modal.getInstance(empresaModalEl) || new bootstrap.Modal(empresaModalEl);
+      empresaModalInstance.show();
+    }, 450);
+  }
+
   updatePaginatedEmpresas(): void {
     this.totalEmpresaPages = Math.ceil(this.empresas.length / this.itemsPerPageEmpresas) || 1;
     if (this.currentEmpresaPage > this.totalEmpresaPages) this.currentEmpresaPage = 1;
@@ -1177,11 +1198,21 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     this.clienteAEliminar = null;
   }
 
+  onFiltroClienteChange(): void {
+    this.currentPage = 1;
+    this.updatePaginatedClientes();
+  }
+
   updatePaginatedClientes(): void {
-    this.totalPages = Math.ceil(this.clientes.length / this.itemsPerPage) || 1;
+    const base = this.filtroCliente
+      ? this.clientes.filter(c =>
+          Object.values(c).some(v => v && v.toString().toLowerCase().includes(this.filtroCliente.toLowerCase()))
+        )
+      : this.clientes;
+    this.totalPages = Math.ceil(base.length / this.itemsPerPage) || 1;
     if (this.currentPage > this.totalPages) this.currentPage = 1;
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    this.paginatedClientes = this.clientes.slice(startIndex, startIndex + this.itemsPerPage);
+    this.paginatedClientes = base.slice(startIndex, startIndex + this.itemsPerPage);
   }
 
   setPage(page: number): void {
@@ -1479,8 +1510,17 @@ obtenerTareas(): void {
   if (this.userData?.pais) {
     this.tareaService.getTareasByPaisCached(this.userData.pais).pipe(takeUntil(this.destroy$)).subscribe({
       next: (tareas) => {
-        this.tareas = tareas;
-        this.tareasFiltradas = tareas;
+        const pais = this.userData!.pais;
+        const adminFactor = this.ajustePrecioService.getAdminFactorLocal(pais);
+        const userFactor  = this.ajustePrecioService.getFactorLocal(this.userCode, pais);
+        const compound    = Math.round(adminFactor * userFactor * 1_000_000) / 1_000_000;
+        const ajustadas   = compound !== 1
+          ? tareas.map(t => ({ ...t, costo: t.costo * compound }))
+          : tareas;
+        this.tareas = ajustadas;
+        this.tareasFiltradas = [...ajustadas];
+        this.ajustePrecioService.syncFactor(this.userCode, pais);
+        this.ajustePrecioService.syncAdminFactor(pais);
       },
       error: () => {
         if (this.tareas.length === 0) {
@@ -2548,6 +2588,7 @@ onImageChange(event: Event): void {
     this.empresaInstagram = '';
     this.empresaFacebook = '';
     this.empresaCuilCuit = '';
+    this.showSocialFields = false;
     this.logoUrl = '';
     if (this.modalImagePreview) {
       this.modalImagePreview.nativeElement.style.display = 'none';
@@ -2696,60 +2737,73 @@ onImageChange(event: Event): void {
 
 
 
-    disminuirPrecios(): void {
+  async disminuirPrecios(): Promise<void> {
     const porcentaje = parseFloat(this.porcentajeBajar);
-    if (isNaN(porcentaje) || porcentaje <= 0) {
-      this.appToast.error('Por favor, ingrese un porcentaje válido para bajar', 'Error');
+    if (isNaN(porcentaje) || porcentaje <= 0 || porcentaje > 100) {
+      this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 0.01 y 100.' });
       return;
     }
-    this.tareasAgregadas = this.tareasAgregadas.map(tarea => ({
-      ...tarea,
-      costo: tarea.costo * (1 - porcentaje / 100),
-      totalCost: this.calcularTotalCosto({ ...tarea, costo: tarea.costo * (1 - porcentaje / 100) })
-    }));
-    this.appToast.success(`Lista reducida en ${porcentaje}%`, 'Éxito');
-    this.porcentajeBajar = null;
-    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-  }
-
-  ajustarPrecios(): void {
-    const porcentaje = parseFloat(this.porcentajeSubir);
-    if (isNaN(porcentaje) || porcentaje <= 0) {
-      this.appToast.error('Por favor, ingrese un porcentaje válido para subir', 'Error');
+    if (!this.tareas.length) {
+      this.uiDialog.warning({ title: 'Sin tareas', text: 'No hay tareas en el catálogo para ajustar.' });
       return;
     }
-    this.tareasAgregadas = this.tareasAgregadas.map(tarea => ({
-      ...tarea,
-      costo: tarea.costo * (1 + porcentaje / 100),
-      totalCost: this.calcularTotalCosto({ ...tarea, costo: tarea.costo * (1 + porcentaje / 100) })
-    }));
-    this.appToast.success(`Lista incrementada en ${porcentaje}%`, 'Éxito');
-    this.porcentajeSubir = null;
-    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-  }
-
-  reestablecerPreciosOriginalesLista(): void {
-    if (!this.clienteSeleccionado?.id && !this.trialMode) {
-      this.appToast.warning('No hay un cliente seleccionado para restablecer los precios.', 'Atención');
-      return;
-    }
-
-    if (this.trialMode) {
-       this.appToast.info('Función limitada en modo de prueba', 'Aviso');
-       return;
-    }
-
-    this.userTareaService.getTareasByClienteId(this.clienteSeleccionado!.id as number).subscribe({
-      next: (tareasOriginales) => {
-        this.tareasAgregadas = tareasOriginales;
-        this.mostrarTabla = this.tareasAgregadas.length > 0;
-        localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-        this.appToast.success('Precios restablecidos a los valores originales', 'Éxito');
-      },
-      error: () => {
-        this.appToast.error('Error al restablecer los precios originales', 'Error');
-      }
+    const confirmed = await this.uiDialog.confirm({
+      title: `Bajar precios ${porcentaje}%`,
+      text: `Todos los precios de tu lista se reducirán un ${porcentaje}%. ¿Confirmas?`,
+      confirmText: 'Sí, bajar',
+      cancelText: 'Cancelar',
+      tone: 'warning',
+      icon: 'warning'
     });
+    if (!confirmed) return;
+    const delta = 1 - porcentaje / 100;
+    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
+    this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * delta }));
+    this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'bajar', porcentaje);
+    this.porcentajeBajar = null;
+    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios del catálogo reducidos en ${porcentaje}%.` });
+  }
+
+  async ajustarPrecios(): Promise<void> {
+    const porcentaje = parseFloat(this.porcentajeSubir);
+    if (isNaN(porcentaje) || porcentaje <= 0 || porcentaje > 500) {
+      this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 0.01 y 500.' });
+      return;
+    }
+    if (!this.tareas.length) {
+      this.uiDialog.warning({ title: 'Sin tareas', text: 'No hay tareas en el catálogo para ajustar.' });
+      return;
+    }
+    const confirmed = await this.uiDialog.confirm({
+      title: `Subir precios ${porcentaje}%`,
+      text: `Todos los precios de tu lista se incrementarán un ${porcentaje}%. ¿Confirmas?`,
+      confirmText: 'Sí, subir',
+      cancelText: 'Cancelar',
+      tone: 'primary',
+      icon: 'question'
+    });
+    if (!confirmed) return;
+    const delta = 1 + porcentaje / 100;
+    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
+    this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * delta }));
+    this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'subir', porcentaje);
+    this.porcentajeSubir = null;
+    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios del catálogo incrementados en ${porcentaje}%.` });
+  }
+
+  async reestablecerPreciosOriginalesLista(): Promise<void> {
+    const confirmed = await this.uiDialog.confirm({
+      title: 'Restablecer precios',
+      text: 'Se eliminarán todos tus ajustes y los precios volverán a los valores originales del catálogo. ¿Confirmas?',
+      confirmText: 'Sí, restablecer',
+      cancelText: 'Cancelar',
+      tone: 'warning',
+      icon: 'warning'
+    });
+    if (!confirmed) return;
+    this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'reestablecer');
+    this.obtenerTareas();
+    this.uiDialog.success({ title: 'Precios restablecidos', text: 'Se restauraron los precios originales del catálogo.' });
   }
 
   cambiarTamanoFuenteLista(accion: 'increase' | 'decrease'): void {
@@ -3398,6 +3452,11 @@ fetchUserData(): void {
   abrirTpEditor(): void {
     this.tpCancelarEdicion();
     this.showTpEditorModal = true;
+  }
+
+  cerrarTpHero(): void {
+    this.showTpHero = false;
+    localStorage.setItem('tpHeroDismissed', 'true');
   }
 
   cerrarTpEditor(): void {
