@@ -347,6 +347,18 @@ login(): void {
     this.codeCountry = null;
     this.codeCountryErrorMessage = '';
     this.validateForm();
+    if (this.code.length === 5 || this.code.length === 6) {
+      this.syncCountryWithCode(false);
+    }
+  }
+
+  enterRegisterStep(): void {
+    this.loginStep = 'register';
+    const normalized = this.accessCodeService.normalizeCode(this.code);
+    if (normalized.length === 5 || normalized.length === 6) {
+      this.code = normalized;
+      this.syncCountryWithCode(false);
+    }
   }
 
   syncCountryWithCode(showErrors: boolean = true): void {
