@@ -203,15 +203,16 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const normalizedCode = this.code.trim().toUpperCase();
     const confirmed = await this.uiDialog.confirm({
       title: 'Agregar código',
-      text: `¿Confirmas agregar el código "${this.code.trim()}"?`,
+      text: `¿Confirmas agregar el código "${normalizedCode}"?`,
       confirmText: 'Agregar',
       cancelText: 'Cancelar'
     });
     if (!confirmed) return;
 
-    this.authService.agregarCode({ code: this.code, email: null, pais: this.admin.pais }).subscribe({
+    this.authService.agregarCode({ code: normalizedCode, email: null, pais: this.admin.pais }).subscribe({
       next: response => {
         if (response.message === 'Código agregado con éxito') {
           this.uiDialog.success({ title: 'Código agregado', text: response.message });
