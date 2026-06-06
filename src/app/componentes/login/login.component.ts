@@ -149,6 +149,10 @@ constructor(private authService: AuthService,
 
   ngOnInit(): void {
     this.loadMembershipCatalog();
+    const lastCode = localStorage.getItem('lastLoginCode');
+    if (lastCode) {
+      this.code = lastCode;
+    }
     this.activatedRoute.queryParamMap.subscribe(params => {
       const code = params.get('code');
       const paid = params.get('paid');
@@ -187,6 +191,7 @@ login(): void {
       if (response.email && response.email !== 'Codigo no encontrado' && response.email !== 'Codigo existe pero no asignado a un usuario') {
         this.isAuthenticated = true;
         this.email = response.email;
+        this.authService.clearStaleSessionIfNeeded(this.code);
         localStorage.setItem('userCode', this.code);
         localStorage.setItem('userEmail', this.email);
         localStorage.setItem('userData', JSON.stringify(response));

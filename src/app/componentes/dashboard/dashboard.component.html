@@ -1311,7 +1311,7 @@
 
       </div>
 
-    <div class="row mt-4" *ngIf="activeTaskTab === 'catalogo'">
+    <div class="row mt-4">
 
       <div class="w-100 d-flex justify-content-center align-items-center mb-1" style="gap: 8px;">
 
@@ -1837,7 +1837,7 @@
 
                     Guardar tarea
 
-                  
+
 
                   </button>
 
@@ -2534,7 +2534,7 @@
 
           <div class="modal-footer d-flex justify-content-between px-0 pb-0 mt-3">
 
-            
+
 
             <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Lómite alcanzado para tu plan' : null">
 
@@ -3370,7 +3370,8 @@
 
         <h5 class="modal-title" id="ajustesListaModalLabel" style="color:#0b69a6; font-weight:700;">
 
-          <i class="fas fa-cog" aria-hidden="true" style="margin-right: 8px;"></i>Ajustes de la lista
+          <i class="fas fa-cog" aria-hidden="true" style="margin-right: 8px;"></i>
+          Ajustes &mdash; {{ activeTaskTab === 'personalizadas' ? 'Tus tareas' : 'Catálogo' }}
 
         </h5>
 
@@ -3448,7 +3449,7 @@
 
         <div class="form-group mb-2">
 
-          <label for="porcentajeBajar" style="color:#0b69a6;">Bajar lista (%)</label>
+          <label for="porcentajeBajar" style="color:#0b69a6;">Bajar {{ activeTaskTab === 'personalizadas' ? 'tus tareas' : 'lista' }} (%)</label>
 
           <div class="input-group" style="z-index: 0">
 
@@ -3462,7 +3463,7 @@
 
         <div class="form-group mb-3">
 
-          <label for="porcentaje" style="color:#0b69a6;">Subir lista (%)</label>
+          <label for="porcentaje" style="color:#0b69a6;">Subir {{ activeTaskTab === 'personalizadas' ? 'tus tareas' : 'lista' }} (%)</label>
 
           <div class="input-group" style="z-index: 0">
 

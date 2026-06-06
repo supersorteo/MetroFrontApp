@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { AUTH_API_URL } from '../core/api/api.config';
 import { extractApiErrorMessage } from '../core/http/api-error.util';
+import { metroDB } from './metro-db.service';
 
 
 
@@ -124,14 +125,26 @@ export class AuthService {
 
 
   logout(): void {
-  localStorage.removeItem('userCode');
-  localStorage.removeItem('userEmail');
-  localStorage.removeItem('userData'); // Añadir esta línea
-  localStorage.clear();
-  localStorage.setItem('trialMode', 'false');
+    const lastCode = localStorage.getItem('userCode');
+    localStorage.clear();
+    localStorage.setItem('trialMode', 'false');
+    if (lastCode && lastCode !== 'demo') {
+      localStorage.setItem('lastLoginCode', lastCode);
+    }
+  }
 
-  //this.router.navigate(['/login']);
-}
+  /** Limpia datos de sesión anterior si cambia el userCode. Previene que un nuevo usuario vea datos del anterior. */
+  clearStaleSessionIfNeeded(newUserCode: string): void {
+    const prevCode = localStorage.getItem('userCode');
+    if (!prevCode || prevCode === newUserCode) return;
+
+    const lastLoginCode = localStorage.getItem('lastLoginCode');
+    localStorage.clear();
+    localStorage.setItem('trialMode', 'false');
+    if (lastLoginCode) localStorage.setItem('lastLoginCode', lastLoginCode);
+
+    metroDB.appState.clear().catch(() => {});
+  }
 
   private handleError1(error: HttpErrorResponse): Observable<never> {
     const errorMessage = extractApiErrorMessage(error);

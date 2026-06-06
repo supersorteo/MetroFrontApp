@@ -167,6 +167,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   isSavingClient = false;
   private reabrirEmpresaModal = false;
+  private _reopenListaOnExampleClose = false;
   // Control de modales para empresa e imagen
 
   empresaName: string = '';
@@ -934,6 +935,15 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
     this.onEmpresaSeleccionada(this.selectedEmpresaId);
   }
+
+  // Restaurar cliente seleccionado al volver del presupuesto
+  try {
+    const raw = localStorage.getItem('selectedCliente');
+    if (raw) {
+      this.clienteSeleccionado = JSON.parse(raw);
+      void this.loadTareasAgregadas();
+    }
+  } catch {}
 }
 
 
@@ -1047,6 +1057,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 
   abrirFormularioNuevaEmpresa(): void {
     this.limpiarEmpresaForm();
+    this._reopenListaOnExampleClose = true;
 
     const listaEmpresasModalEl = document.getElementById('listaEmpresasModal');
     if (listaEmpresasModalEl) {
@@ -1483,20 +1494,28 @@ ngAfterViewInit() {
     });
   }
 
-  // Lógica para reabrir el modal de empresa al cerrar el de listaEmpresasModal
+  // Al cerrar listaEmpresasModal: solo limpiar backdrops, no abrir exampleModal automáticamente
   const listaEmpresasModal = document.getElementById('listaEmpresasModal');
   if (listaEmpresasModal) {
     listaEmpresasModal.addEventListener('hidden.bs.modal', () => {
-      const empresaModal = document.getElementById('exampleModal');
-      if (empresaModal && !empresaModal.classList.contains('show')) {
-        setTimeout(() => {
-          const modal = new bootstrap.Modal(empresaModal);
-          modal.show();
-        }, 300);
-      }
-      // Limpiar backdrops
       const backdrops = document.querySelectorAll('.modal-backdrop');
       backdrops.forEach(backdrop => backdrop.remove());
+    });
+  }
+
+  // Al cerrar exampleModal: reabrir listaEmpresasModal solo si se abrió desde ella
+  const exampleModalEl = document.getElementById('exampleModal');
+  if (exampleModalEl) {
+    exampleModalEl.addEventListener('hidden.bs.modal', () => {
+      if (this._reopenListaOnExampleClose) {
+        this._reopenListaOnExampleClose = false;
+        setTimeout(() => {
+          const listaEl = document.getElementById('listaEmpresasModal');
+          if (listaEl && !listaEl.classList.contains('show')) {
+            (bootstrap.Modal.getInstance(listaEl) || new bootstrap.Modal(listaEl)).show();
+          }
+        }, 300);
+      }
     });
   }
 
@@ -2743,13 +2762,15 @@ onImageChange(event: Event): void {
       this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 0.01 y 100.' });
       return;
     }
-    if (!this.tareas.length) {
-      this.uiDialog.warning({ title: 'Sin tareas', text: 'No hay tareas en el catálogo para ajustar.' });
+    const esPersonalizadas = this.activeTaskTab === 'personalizadas';
+    const listaObjetivo = esPersonalizadas ? this.tareasPersonalizadas : this.tareas;
+    if (!listaObjetivo.length) {
+      this.uiDialog.warning({ title: 'Sin tareas', text: `No hay tareas en ${esPersonalizadas ? 'tus tareas' : 'el catálogo'} para ajustar.` });
       return;
     }
     const confirmed = await this.uiDialog.confirm({
       title: `Bajar precios ${porcentaje}%`,
-      text: `Todos los precios de tu lista se reducirán un ${porcentaje}%. ¿Confirmas?`,
+      text: `Todos los precios de ${esPersonalizadas ? 'tus tareas personalizadas' : 'tu lista del catálogo'} se reducirán un ${porcentaje}%. ¿Confirmas?`,
       confirmText: 'Sí, bajar',
       cancelText: 'Cancelar',
       tone: 'warning',
@@ -2757,11 +2778,16 @@ onImageChange(event: Event): void {
     });
     if (!confirmed) return;
     const delta = 1 - porcentaje / 100;
-    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
-    this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * delta }));
-    this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'bajar', porcentaje);
+    if (esPersonalizadas) {
+      this.tareasPersonalizadas = this.tareasPersonalizadas.map(t => ({ ...t, costo: t.costo * delta }));
+      this.ajustePrecioService.aplicarAjustePersonalizada(this.userCode, 'bajar', porcentaje);
+    } else {
+      this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
+      this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * delta }));
+      this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'bajar', porcentaje);
+    }
     this.porcentajeBajar = null;
-    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios del catálogo reducidos en ${porcentaje}%.` });
+    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios ${esPersonalizadas ? 'de tus tareas personalizadas' : 'del catálogo'} reducidos en ${porcentaje}%.` });
   }
 
   async ajustarPrecios(): Promise<void> {
@@ -2770,13 +2796,15 @@ onImageChange(event: Event): void {
       this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 0.01 y 500.' });
       return;
     }
-    if (!this.tareas.length) {
-      this.uiDialog.warning({ title: 'Sin tareas', text: 'No hay tareas en el catálogo para ajustar.' });
+    const esPersonalizadas = this.activeTaskTab === 'personalizadas';
+    const listaObjetivo = esPersonalizadas ? this.tareasPersonalizadas : this.tareas;
+    if (!listaObjetivo.length) {
+      this.uiDialog.warning({ title: 'Sin tareas', text: `No hay tareas en ${esPersonalizadas ? 'tus tareas' : 'el catálogo'} para ajustar.` });
       return;
     }
     const confirmed = await this.uiDialog.confirm({
       title: `Subir precios ${porcentaje}%`,
-      text: `Todos los precios de tu lista se incrementarán un ${porcentaje}%. ¿Confirmas?`,
+      text: `Todos los precios de ${esPersonalizadas ? 'tus tareas personalizadas' : 'tu lista del catálogo'} se incrementarán un ${porcentaje}%. ¿Confirmas?`,
       confirmText: 'Sí, subir',
       cancelText: 'Cancelar',
       tone: 'primary',
@@ -2784,26 +2812,39 @@ onImageChange(event: Event): void {
     });
     if (!confirmed) return;
     const delta = 1 + porcentaje / 100;
-    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
-    this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * delta }));
-    this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'subir', porcentaje);
+    if (esPersonalizadas) {
+      this.tareasPersonalizadas = this.tareasPersonalizadas.map(t => ({ ...t, costo: t.costo * delta }));
+      this.ajustePrecioService.aplicarAjustePersonalizada(this.userCode, 'subir', porcentaje);
+    } else {
+      this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
+      this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * delta }));
+      this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'subir', porcentaje);
+    }
     this.porcentajeSubir = null;
-    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios del catálogo incrementados en ${porcentaje}%.` });
+    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios ${esPersonalizadas ? 'de tus tareas personalizadas' : 'del catálogo'} incrementados en ${porcentaje}%.` });
   }
 
   async reestablecerPreciosOriginalesLista(): Promise<void> {
+    const esPersonalizadas = this.activeTaskTab === 'personalizadas';
     const confirmed = await this.uiDialog.confirm({
       title: 'Restablecer precios',
-      text: 'Se eliminarán todos tus ajustes y los precios volverán a los valores originales del catálogo. ¿Confirmas?',
+      text: esPersonalizadas
+        ? 'Los precios de tus tareas personalizadas volverán a sus valores originales. ¿Confirmas?'
+        : 'Se eliminarán todos tus ajustes y los precios volverán a los valores originales del catálogo. ¿Confirmas?',
       confirmText: 'Sí, restablecer',
       cancelText: 'Cancelar',
       tone: 'warning',
       icon: 'warning'
     });
     if (!confirmed) return;
-    this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'reestablecer');
-    this.obtenerTareas();
-    this.uiDialog.success({ title: 'Precios restablecidos', text: 'Se restauraron los precios originales del catálogo.' });
+    if (esPersonalizadas) {
+      this.ajustePrecioService.aplicarAjustePersonalizada(this.userCode, 'reestablecer');
+      this.cargarTareasPersonalizadas();
+    } else {
+      this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'reestablecer');
+      this.obtenerTareas();
+    }
+    this.uiDialog.success({ title: 'Precios restablecidos', text: `Se restauraron los precios originales de ${esPersonalizadas ? 'tus tareas personalizadas' : 'el catálogo'}.` });
   }
 
   cambiarTamanoFuenteLista(accion: 'increase' | 'decrease'): void {
@@ -3338,7 +3379,14 @@ fetchUserData(): void {
     }
     if (!this.userCode) return;
     this.tpService.getByUserCode(this.userCode).subscribe({
-      next: list => this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list),
+      next: list => {
+        const factor = this.ajustePrecioService.getPersonalizadaFactorLocal(this.userCode);
+        const ajustadas = factor !== 1
+          ? list.map(t => ({ ...t, costo: t.costo * factor }))
+          : list;
+        this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(ajustadas);
+        this.ajustePrecioService.syncPersonalizadaFactor(this.userCode);
+      },
       error: () => {}
     });
   }
