@@ -20,6 +20,7 @@ import { firstValueFrom } from 'rxjs';
 //import { SavedPresupuesto } from '../../servicios/budget-storage.service';
 import { BudgetService, SavedPresupuesto } from '../../servicios/budget.service';
 import { OfflineSyncService, PendingSyncSummary } from '../../servicios/offline-sync.service';
+import { OfflineStatusService } from '../../servicios/offline-status.service';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
 import { EmpresaStore } from '../../stores/empresa.store';
 import { ClienteStore } from '../../stores/cliente.store';
@@ -731,6 +732,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private ajustePrecioService: AjustePrecioService,
     private http: HttpClient,
     readonly offlineSync: OfflineSyncService,
+    readonly offlineStatus: OfflineStatusService,
     private localStore: OfflineLocalStoreService,
     private tpService: TareaPersonalizadaService,
     private appToast: AppToastService,
@@ -2047,6 +2049,26 @@ onPresupuestoActualizado(p: SavedPresupuesto) {
 
 closeSavedBudgetsPanel(): void {
   this.showSavedBudgetsPanel = false;
+}
+
+async triggerManualSync(): Promise<void> {
+  if (this.offlineSync.isSyncing()) {
+    this.appToast.info('La sincronización ya está en curso.', 'Sincronizando');
+    return;
+  }
+
+  if (!this.offlineStatus.isOnline()) {
+    this.appToast.warning('Necesitas conexión para sincronizar los cambios pendientes.', 'Sin conexión');
+    return;
+  }
+
+  if (!this.offlineSync.hasPendingOps()) {
+    this.appToast.info('No hay cambios pendientes para sincronizar.', 'Todo al día');
+    return;
+  }
+
+  this.appToast.info('Iniciando sincronización manual...', 'Sincronización');
+  await this.offlineSync.syncPendingOps();
 }
 
 openColorSchemeModal(): void {
@@ -3857,6 +3879,7 @@ fetchUserData(): void {
     return this.userCode?.trim().length >= 6 ? 6 : 3;
   }
 }
+
 
 
 

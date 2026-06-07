@@ -26,11 +26,50 @@
 
     </div>
 
-    <button type="button" class="btn-close ms-auto" (click)="toggleMenuPanel()" aria-label="Cerrar menÃº"></button>
+    <button type="button" class="btn-close ms-auto" (click)="toggleMenuPanel()" aria-label="Cerrar menú"></button>
 
   </div>
 
   <div class="menu-panel__body">
+  <div class="menu-panel__connection">
+    <div class="conn-pill"
+         [class.conn-pill--offline]="!offlineStatus.isOnline()"
+         [class.conn-pill--syncing]="offlineSync.isSyncing()"
+         [class.conn-pill--pending]="offlineStatus.isOnline() && offlineSync.hasPendingOps() && !offlineSync.isSyncing()">
+
+      @if (offlineSync.isSyncing()) {
+        <i class="bi bi-arrow-repeat conn-pill__icon conn-pill__icon--spin"></i>
+      } @else if (!offlineStatus.isOnline()) {
+        <i class="bi bi-wifi-off conn-pill__icon"></i>
+      } @else if (offlineSync.hasPendingOps()) {
+        <i class="bi bi-cloud-upload conn-pill__icon"></i>
+      } @else {
+        <i class="bi bi-wifi conn-pill__icon"></i>
+      }
+
+      @if (offlineSync.hasPendingOps() && !offlineSync.isSyncing()) {
+        <span class="conn-pill__count">{{ offlineSync.pendingOpsCount() }}</span>
+      }
+
+      <div class="conn-pill__tooltip">
+        @if (offlineSync.isSyncing()) {
+          <span>Sincronizando {{ offlineSync.pendingOpsCount() }} cambio(s)...</span>
+        } @else if (!offlineStatus.isOnline()) {
+          <span>Sin conexión · La app sigue funcionando</span>
+          @if (offlineSync.hasPendingOps()) {
+            <span class="conn-pill__tooltip-sub">{{ offlineSync.pendingOpsCount() }} cambio(s) se sincronizarán al volver la conexión</span>
+          }
+        } @else if (offlineSync.hasPendingOps()) {
+          <span>{{ offlineSync.pendingOpsCount() }} cambio(s) sin sincronizar</span>
+          <button class="conn-pill__sync-btn" type="button" (click)="triggerManualSync()">
+            <i class="bi bi-arrow-repeat"></i> Sincronizar ahora
+          </button>
+        } @else {
+          <span>Conectado</span>
+        }
+      </div>
+    </div>
+  </div>
 
     <div
 
