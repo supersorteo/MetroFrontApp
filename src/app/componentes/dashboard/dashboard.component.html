@@ -1230,7 +1230,7 @@
                 <button class="tp-toolbar__create" type="button" (click)="abrirTpEditor()">
                   <span class="tp-toolbar__create-main">
                     <i class="bi bi-plus-circle-fill"></i>
-                    <span>Nueva tarea</span>
+                    <span>Crear</span>
                   </span>
                   <div class="tp-capacity-chip"
                     [class.tp-capacity-chip--warning]="tareasPersonalizadas.length / tpLimitActual >= 0.8 && tareasPersonalizadas.length < tpLimitActual"
@@ -1254,7 +1254,7 @@
 
                     <!--small>Acción rápida</small-->
 
-                    <strong>Importar del catálogo</strong>
+                    <strong>Importar</strong>
 
                   </span>
 
@@ -2312,8 +2312,6 @@
 
       <div class="modal-footer lista-clientes-modal__footer">
 
-        <button type="button" class="btn btn-success lista-clientes-modal__footer-btn" (click)="openClientModal()">Crear nuevo cliente</button>
-
         <div class="lista-clientes-modal__filter">
 
           <input
@@ -2329,7 +2327,7 @@
 
         </div>
 
-        <button type="button" class="btn btn-secondary lista-clientes-modal__footer-btn" data-bs-dismiss="modal">Cerrar</button>
+        <button type="button" class="btn btn-success lista-clientes-modal__footer-btn" (click)="openClientModal()">Crear nuevo cliente</button>
 
       </div>
 
@@ -2647,9 +2645,9 @@
 
                     <h5 class="card-title cliente-card__title">
 
-                      {{ empresa.name }}
-
                       <img *ngIf="getEmpresaDisplayLogo(empresa)" [src]="getEmpresaDisplayLogo(empresa)" alt="Logo" class="cliente-card__logo">
+
+                      <span>{{ empresa.name }}</span>
 
                     </h5>
 
@@ -3678,17 +3676,147 @@
 
       </div>
 
-      <div class="modal-body" style="padding: 20px;">
+      <div class="modal-body budget-customizer" style="padding: 20px;">
 
-        <div class="row">
+        <div class="budget-customizer__preview-section">
 
-          <!-- Columna Izquierda: Controles -->
+          <h6 class="mb-3 text-center" style="font-weight: 700; color: #4b5563;">Vista Previa (Miniatura)</h6>
 
-          <div class="col-md-5">
+          <div class="budget-miniature shadow-sm budget-customizer__miniature"
 
-            <h6 class="mb-3" style="font-weight: 700; color: #4b5563;">Ajustes de Color</h6>
+               [style.background]="'linear-gradient(' + presupuestoGradienteAngulo + ', ' + presupuestoColorSecundario + ', ' + presupuestoColorSecundario2 + ')'"
 
-            <div class="form-group mb-3 coolinput">
+               [style.color]="presupuestoColorTexto"
+
+               style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; position: relative; min-height: 350px; overflow: hidden; transform: scale(0.95); transform-origin: top;">
+
+            <!-- Header -->
+
+            <div class="d-flex flex-column align-items-start mb-3" [style.background-color]="getBackgroundColorRgba(presupuestoInfoBoxColorHex, presupuestoInfoBoxOpacity)" [style.color]="presupuestoColorTexto" style="padding: 10px; border-radius: 8px; gap: 8px;">
+
+              <div [style.background-color]="presupuestoColorPrimario" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+
+              <div class="text-start" style="text-align: left; width: 100%;">
+
+                 <div [style.color]="presupuestoColorPrimario" style="font-weight: bold; font-size: 14px;">{{ empresaName || 'TU EMPRESA' }}</div>
+
+                 <div [style.color]="presupuestoColorTexto" style="font-size: 10px; opacity: 0.8;">{{ empresaPhone || 'Tel: 1234-5678' }}</div>
+
+              </div>
+
+            </div>
+
+            <hr style="margin: 10px 0; opacity: 0.1;">
+
+            <!-- Cliente Section -->
+
+            <div class="mb-3" [style.background-color]="getBackgroundColorRgba(presupuestoInfoBoxColorHex, presupuestoInfoBoxOpacity)" [style.color]="presupuestoColorTexto" style="padding: 10px; border-radius: 8px;">
+
+              <div style="font-size: 10px; font-weight: bold;">CLIENTE</div>
+
+              <div style="font-weight: bold; font-size: 12px;">JUAN PEREZ</div>
+
+            </div>
+
+            <!-- Table Preview -->
+
+            <table class="table table-bordered table-sm mb-3" [style.color]="presupuestoColorTexto" style="font-size: 9px; line-height: 1;">
+
+              <thead [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">
+
+                <tr>
+
+                  <th [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">ITEM</th>
+
+                  <th [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">AREA</th>
+
+                  <th [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">VALOR</th>
+
+                </tr>
+
+              </thead>
+
+              <tbody [style.background-color]="presupuestoColorTablaCuerpo" [style.color]="presupuestoColorTexto">
+
+                <ng-container *ngIf="tareasAgregadas.length > 0; else demoRows">
+
+                  <tr *ngFor="let t of tareasAgregadas | slice:0:3">
+
+                    <td>{{ t.tarea | uppercase }}</td>
+
+                    <td>{{ t.area | number:'1.2-2' }}</td>
+
+                    <td>${{ t.totalCost | number:'1.2-2' }}</td>
+
+                  </tr>
+
+                </ng-container>
+
+                <ng-template #demoRows>
+
+                  <tr>
+
+                    <td>REVOQUE GRUESO</td>
+
+                    <td>10.00</td>
+
+                    <td>$5.000,00</td>
+
+                  </tr>
+
+                  <tr>
+
+                    <td>REVOQUE FINO</td>
+
+                    <td>10.00</td>
+
+                    <td>$3.500,00</td>
+
+                  </tr>
+
+                </ng-template>
+
+              </tbody>
+
+            </table>
+
+            <!-- Total -->
+
+            <div class="text-end">
+
+              <div [style.background-color]="presupuestoColorPrimario" style="color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">
+
+                <ng-container *ngIf="tareasAgregadas.length > 0; else demoTotal">
+
+                  TOTAL: ${{ calcularCostoTotal() | number:'1.2-2' }}
+
+                </ng-container>
+
+                <ng-template #demoTotal>TOTAL: $8.500,00</ng-template>
+
+              </div>
+
+            </div>
+
+            <!-- Professional Watermark -->
+
+            <div style="position: absolute; bottom: 5px; right: 8px; font-size: 8px; opacity: 0.3;">
+
+              METRO - Software de Cotizaci?n
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="budget-customizer__controls-section">
+
+          <h6 class="mb-3" style="font-weight: 700; color: #4b5563;">Ajustes de Color</h6>
+
+          <div class="budget-customizer__controls-grid">
+
+            <div class="form-group mb-0 coolinput budget-customizer__control">
 
               <label class="text">Color Principal (Encabezado/Botones)</label>
 
@@ -3702,9 +3830,7 @@
 
             </div>
 
-            <!-- Sección Gradient -->
-
-            <div class="p-2 mb-3 border rounded bg-light">
+            <div class="p-2 border rounded bg-light budget-customizer__control budget-customizer__control--wide">
 
               <label class="form-label small fw-bold text-primary mb-2">Fondo (Gradiente)</label>
 
@@ -3728,7 +3854,7 @@
 
                 <div class="col-12">
 
-                  <label class="x-small mb-1">Dirección</label>
+                  <label class="x-small mb-1">Direcci?n</label>
 
                   <select class="form-select form-select-sm" [(ngModel)]="presupuestoGradienteAngulo">
 
@@ -3748,7 +3874,7 @@
 
             </div>
 
-            <div class="form-group mb-3 coolinput">
+            <div class="form-group mb-0 coolinput budget-customizer__control">
 
               <label class="text">Color de Texto General</label>
 
@@ -3762,7 +3888,7 @@
 
             </div>
 
-            <div class="form-group mb-3 coolinput">
+            <div class="form-group mb-0 coolinput budget-customizer__control">
 
               <label class="text">Fondo Encabezado Tabla</label>
 
@@ -3776,7 +3902,7 @@
 
             </div>
 
-            <div class="form-group mb-3 coolinput">
+            <div class="form-group mb-0 coolinput budget-customizer__control">
 
               <label class="text">Fondo Cuerpo Tabla</label>
 
@@ -3790,7 +3916,7 @@
 
             </div>
 
-            <div class="form-group mb-3 coolinput">
+            <div class="form-group mb-0 coolinput budget-customizer__control">
 
               <label class="text">Texto Encabezado Tabla</label>
 
@@ -3804,7 +3930,7 @@
 
             </div>
 
-            <div class="form-group mb-3 coolinput">
+            <div class="form-group mb-0 coolinput budget-customizer__control">
 
               <label class="text">Fondo Cajas Info (Empresa/Cliente)</label>
 
@@ -3820,144 +3946,9 @@
 
           </div>
 
-          <!-- Columna Derecha: Vista Previa Miniatura -->
-
-          <div class="col-md-7">
-
-            <h6 class="mb-3 text-center" style="font-weight: 700; color: #4b5563;">Vista Previa (Miniatura)</h6>
-
-            <div class="budget-miniature shadow-sm"
-
-                 [style.background]="'linear-gradient(' + presupuestoGradienteAngulo + ', ' + presupuestoColorSecundario + ', ' + presupuestoColorSecundario2 + ')'"
-
-                 [style.color]="presupuestoColorTexto"
-
-                 style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; position: relative; min-height: 350px; overflow: hidden; transform: scale(0.95); transform-origin: top;">
-
-              <!-- Header -->
-
-              <div class="d-flex flex-column align-items-start mb-3" [style.background-color]="getBackgroundColorRgba(presupuestoInfoBoxColorHex, presupuestoInfoBoxOpacity)" [style.color]="presupuestoColorTexto" style="padding: 10px; border-radius: 8px; gap: 8px;">
-
-                <div [style.background-color]="presupuestoColorPrimario" style="width: 40px; height: 40px; border-radius: 50%;"></div>
-
-                <div class="text-start" style="text-align: left; width: 100%;">
-
-                   <div [style.color]="presupuestoColorPrimario" style="font-weight: bold; font-size: 14px;">{{ empresaName || 'TU EMPRESA' }}</div>
-
-                   <div [style.color]="presupuestoColorTexto" style="font-size: 10px; opacity: 0.8;">{{ empresaPhone || 'Tel: 1234-5678' }}</div>
-
-                </div>
-
-              </div>
-
-              <hr style="margin: 10px 0; opacity: 0.1;">
-
-              <!-- Cliente Section -->
-
-              <div class="mb-3" [style.background-color]="getBackgroundColorRgba(presupuestoInfoBoxColorHex, presupuestoInfoBoxOpacity)" [style.color]="presupuestoColorTexto" style="padding: 10px; border-radius: 8px;">
-
-                <div style="font-size: 10px; font-weight: bold;">CLIENTE</div>
-
-                <div style="font-weight: bold; font-size: 12px;">JUAN PEREZ</div>
-
-              </div>
-
-              <!-- Table Preview -->
-
-              <table class="table table-bordered table-sm mb-3" [style.color]="presupuestoColorTexto" style="font-size: 9px; line-height: 1;">
-
-                <thead [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">
-
-                  <tr>
-
-                    <th [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">ITEM</th>
-
-                    <th [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">AREA</th>
-
-                    <th [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">VALOR</th>
-
-                  </tr>
-
-                </thead>
-
-                <tbody [style.background-color]="presupuestoColorTablaCuerpo" [style.color]="presupuestoColorTexto">
-
-                  <ng-container *ngIf="tareasAgregadas.length > 0; else demoRows">
-
-                    <tr *ngFor="let t of tareasAgregadas | slice:0:3">
-
-                      <td>{{ t.tarea | uppercase }}</td>
-
-                      <td>{{ t.area | number:'1.2-2' }}</td>
-
-                      <td>${{ t.totalCost | number:'1.2-2' }}</td>
-
-                    </tr>
-
-                  </ng-container>
-
-                  <ng-template #demoRows>
-
-                    <tr>
-
-                      <td>REVOQUE GRUESO</td>
-
-                      <td>10.00</td>
-
-                      <td>$5.000,00</td>
-
-                    </tr>
-
-                    <tr>
-
-                      <td>REVOQUE FINO</td>
-
-                      <td>10.00</td>
-
-                      <td>$3.500,00</td>
-
-                    </tr>
-
-                  </ng-template>
-
-                </tbody>
-
-              </table>
-
-              <!-- Total -->
-
-              <div class="text-end">
-
-                <div [style.background-color]="presupuestoColorPrimario" style="color: white; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 12px;">
-
-                  <ng-container *ngIf="tareasAgregadas.length > 0; else demoTotal">
-
-                    TOTAL: ${{ calcularCostoTotal() | number:'1.2-2' }}
-
-                  </ng-container>
-
-                  <ng-template #demoTotal>TOTAL: $8.500,00</ng-template>
-
-                </div>
-
-              </div>
-
-              <!-- Professional Watermark -->
-
-              <div style="position: absolute; bottom: 5px; right: 8px; font-size: 8px; opacity: 0.3;">
-
-                METRO - Software de Cotización
-
-              </div>
-
-            </div>
-
-          </div>
-
         </div>
 
       </div>
-
       <div class="modal-footer">
 
         <button type="button" class="btn btn-secondary" (click)="volverAModalEmpresa()">Volver</button>
