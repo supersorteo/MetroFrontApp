@@ -26,7 +26,7 @@
 
     </div>
 
-    <button type="button" class="btn-close ms-auto" (click)="toggleMenuPanel()" aria-label="Cerrar men˙"></button>
+    <button type="button" class="btn-close ms-auto" (click)="toggleMenuPanel()" aria-label="Cerrar men√∫"></button>
 
   </div>
 
@@ -55,9 +55,9 @@
         @if (offlineSync.isSyncing()) {
           <span>Sincronizando {{ offlineSync.pendingOpsCount() }} cambio(s)...</span>
         } @else if (!offlineStatus.isOnline()) {
-          <span>Sin conexiÛn ∑ La app sigue funcionando</span>
+          <span>Sin conexi√≥n ¬∑ La app sigue funcionando</span>
           @if (offlineSync.hasPendingOps()) {
-            <span class="conn-pill__tooltip-sub">{{ offlineSync.pendingOpsCount() }} cambio(s) se sincronizar·n al volver la conexiÛn</span>
+            <span class="conn-pill__tooltip-sub">{{ offlineSync.pendingOpsCount() }} cambio(s) se sincronizar√°n al volver la conexi√≥n</span>
           }
         } @else if (offlineSync.hasPendingOps()) {
           <span>{{ offlineSync.pendingOpsCount() }} cambio(s) sin sincronizar</span>
@@ -135,7 +135,7 @@
 
       <div *ngIf="currentWeather && !weatherLoading">
 
-        <div class="weather-temp">{{ currentWeather.temperature | number:'1.0-0' }}∞C</div>
+        <div class="weather-temp">{{ currentWeather.temperature | number:'1.0-0' }}¬∞C</div>
 
         <div class="weather-desc">{{ weatherDescription(currentWeather.weathercode) }}</div>
 
@@ -143,7 +143,7 @@
 
         <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#weatherModal" (click)="loadWeather()">
 
-          Ver pronÛstico
+          Ver pron√≥stico
 
         </button>
 
@@ -195,7 +195,7 @@
 
         <button class="btn btn-secondary logout-button1 w-100" (click)="logout()">
 
-          Cerrar sesiÛn
+          Cerrar sesi√≥n
 
         </button>
 
@@ -209,7 +209,7 @@
 
 <div class="tp-import-backdrop" *ngIf="tpMostrarImportar" (click)="tpMostrarImportar = false"></div>
 
-<aside class="tp-import-aside" *ngIf="tpMostrarImportar" [class.open]="tpMostrarImportar" aria-label="Importar desde cat·logo">
+<aside class="tp-import-aside" *ngIf="tpMostrarImportar" [class.open]="tpMostrarImportar" aria-label="Importar desde cat√°logo">
 
   <div class="tp-import-aside__header">
 
@@ -225,7 +225,7 @@
 
         <small>Panel lateral</small>
 
-        <span>Importar desde cat·logo</span>
+        <span>Importar desde cat√°logo</span>
 
       </div>
 
@@ -235,7 +235,7 @@
 
   </div>
 
-  <p class="tp-import-aside__hint">Tom· una tarea base del cat·logo y guardala como personalizada para adaptarla a tu forma de cotizar.</p>
+  <p class="tp-import-aside__hint">Tom√° una tarea base del cat√°logo y guardala como personalizada para adaptarla a tu forma de cotizar.</p>
 
   <div class="tp-import-aside__toolbar">
 
@@ -243,7 +243,7 @@
 
       <span class="input-group-text tp-input-addon"><i class="bi bi-search"></i></span>
 
-      <input class="form-control tp-input" placeholder="Buscar en el cat·logo..." [(ngModel)]="tpFiltroCatalogo" />
+      <input class="form-control tp-input" placeholder="Buscar en el cat√°logo..." [(ngModel)]="tpFiltroCatalogo" />
 
     </div>
 
@@ -297,11 +297,11 @@
 
         <div class="tp-editor-modal__copy">
 
-          <span class="tp-editor-modal__eyebrow">{{ tpEditingId != null ? 'Edicion r·pida' : 'Nueva tarea personalizada' }}</span>
+          <span class="tp-editor-modal__eyebrow">{{ tpEditingId != null ? 'Edicion r√°pida' : 'Nueva tarea personalizada' }}</span>
 
           <h4 class="tp-editor-modal__title">{{ tpEditingId != null ? 'Actualizar tarea guardada' : 'Crear una tarea profesional' }}</h4>
 
-          <p class="tp-editor-modal__subtitle">Define nombre, descripciÛn y costo para guardar una tarea clara, prolija y lista para cotizar.</p>
+          <p class="tp-editor-modal__subtitle">Define nombre, descripci√≥n y costo para guardar una tarea clara, prolija y lista para cotizar.</p>
 
         </div>
 
@@ -335,7 +335,7 @@
 
                          [ngClass]="{'is-invalid': tpSubmitted && !tpForm.tarea.trim()}"
 
-                         placeholder="Ej: InstalaciÛn elÈctrica"
+                         placeholder="Ej: Instalaci√≥n el√©ctrica"
 
                          [(ngModel)]="tpForm.tarea" />
 
@@ -349,9 +349,9 @@
 
                 <div class="mb-3">
 
-                  <label class="tp-label">DescripciÛn <span class="tp-optional">(opcional)</span></label>
+                  <label class="tp-label">Descripci√≥n <span class="tp-optional">(opcional)</span></label>
 
-                  <textarea class="form-control tp-input" placeholder="Cont· brevemente quÈ incluye esta tarea..." [(ngModel)]="tpForm.descripcion" rows="4"></textarea>
+                  <textarea class="form-control tp-input" placeholder="Cont√° brevemente qu√© incluye esta tarea..." [(ngModel)]="tpForm.descripcion" rows="4"></textarea>
 
                 </div>
 
@@ -475,7 +475,7 @@
 
                          [ngClass]="{'is-invalid': tpSubmitted && !tpForm.tarea.trim()}"
 
-                         placeholder="Ej: InstalaciÛn elÈctrica"
+                         placeholder="Ej: Instalaci√≥n el√©ctrica"
 
                          [(ngModel)]="tpForm.tarea" />
 
@@ -489,7 +489,7 @@
 
                 <div class="mb-3">
 
-                  <label class="tp-label">DescripciÛn <span class="tp-optional">(opcional)</span></label>
+                  <label class="tp-label">Descripci√≥n <span class="tp-optional">(opcional)</span></label>
 
                   <textarea class="form-control tp-input" placeholder="Detalle opcional..." [(ngModel)]="tpForm.descripcion" rows="3"></textarea>
 
@@ -529,7 +529,7 @@
 
                   </button>
 
-                  <button *ngIf="tpEditingId != null" class="btn btn-outline-secondary tp-btn-action" (click)="tpCancelarEdicion()" title="Cancelar ediciÛn">
+                  <button *ngIf="tpEditingId != null" class="btn btn-outline-secondary tp-btn-action" (click)="tpCancelarEdicion()" title="Cancelar edici√≥n">
 
                     <i class="bi bi-x-lg"></i>
 
@@ -547,7 +547,7 @@
 
                 <span class="tp-import-card__icon"><i class="bi bi-{{ tpMostrarImportar ? 'chevron-up' : 'arrow-down-circle' }}"></i></span>
 
-                <span>{{ tpMostrarImportar ? 'Ocultar cat·logo' : 'Importar del cat·logo' }}</span>
+                <span>{{ tpMostrarImportar ? 'Ocultar cat√°logo' : 'Importar del cat√°logo' }}</span>
 
                 <span class="ms-auto badge bg-secondary rounded-pill">{{ tpCatalogoFiltrado.length }}</span>
 
@@ -613,7 +613,7 @@
 
               <i class="bi bi-bookmark-heart tp-empty-state__icon"></i>
 
-              <p class="tp-empty-state__text">TodavÌa no tenÈs tareas guardadas.<br>Cre· tu primera tarea en el formulario.</p>
+              <p class="tp-empty-state__text">Todav√≠a no ten√©s tareas guardadas.<br>Cre√° tu primera tarea en el formulario.</p>
 
             </div>
 
@@ -775,7 +775,7 @@
 
                     <div class="col-6">
 
-                      <label class="form-label">TamaÒo (px)</label>
+                      <label class="form-label">Tama√±o (px)</label>
 
                       <input id="qrSizeRange" type="range" class="form-range" min="180" max="600" step="10" value="280" (input)="updateSizeLabel($event); actualizarQR()">
 
@@ -785,7 +785,7 @@
 
                     <div class="col-6">
 
-                      <label class="form-label">Nivel de correcciÛn</label>
+                      <label class="form-label">Nivel de correcci√≥n</label>
 
                       <select id="qrEcLevel" class="form-select" (change)="actualizarQR()">
 
@@ -981,7 +981,7 @@
 
                        <div class="flex-grow-1">
 
-                         <label class="form-label mb-1">TamaÒo del logo (%)</label>
+                         <label class="form-label mb-1">Tama√±o del logo (%)</label>
 
                          <input id="qrLogoSize" type="range" class="form-range" min="5" max="40" step="1" value="18" (input)="actualizarQR()">
 
@@ -1195,11 +1195,11 @@
 
               <div class="tp-hero__copy">
 
-                <span class="tp-hero__eyebrow"><i class="bi bi-stars me-2"></i>GestiÛn personalizada</span>
+                <span class="tp-hero__eyebrow"><i class="bi bi-stars me-2"></i>Gesti√≥n personalizada</span>
 
                 <h3 class="tp-hero__title">Tus tareas, listas para cotizar</h3>
 
-                <p class="tp-hero__text">Organiz· tus tareas frecuentes, edit· valores r·pido y agrÈgalas al presupuesto con un toque.</p>
+                <p class="tp-hero__text">Organiz√° tus tareas frecuentes, edit√° valores r√°pido y agr√©galas al presupuesto con un toque.</p>
 
               </div>
 
@@ -1252,7 +1252,7 @@
 
                   <span class="tp-toolbar__toggle-text">
 
-                    <!--small>AcciÛn r·pida</small-->
+                    <!--small>Acci√≥n r√°pida</small-->
 
                     <strong>Importar</strong>
 
@@ -1274,7 +1274,7 @@
 
               <i class="bi bi-bookmark-heart tp-empty-state__icon"></i>
 
-              <p class="tp-empty-state__text">TodavÌa no tenÈs tareas guardadas.<br>Cre· tu primera tarea desde el botÛn superior.</p>
+              <p class="tp-empty-state__text">Todav√≠a no ten√©s tareas guardadas.<br>Cre√° tu primera tarea desde el bot√≥n superior.</p>
 
             </div>
 
@@ -1282,7 +1282,7 @@
 
               <i class="bi bi-search tp-empty-state__icon"></i>
 
-              <p class="tp-empty-state__text">No hay tareas personalizadas que coincidan con tu b˙squeda.</p>
+              <p class="tp-empty-state__text">No hay tareas personalizadas que coincidan con tu b√∫squeda.</p>
 
             </div>
 
@@ -1312,7 +1312,7 @@
 
                   <p *ngIf="tp.descripcion" class="tp-card__desc">{{ tp.descripcion }}</p>
 
-                  <p *ngIf="!tp.descripcion" class="tp-card__desc tp-card__desc--muted">Sin descripciÛn adicional.</p>
+                  <p *ngIf="!tp.descripcion" class="tp-card__desc tp-card__desc--muted">Sin descripci√≥n adicional.</p>
 
                   <div class="tp-card__actions">
 
@@ -1492,13 +1492,13 @@
 
               <!--th-- class="text-center">Rubro</!--th-->
 
-              <!--th class="text-center">CategorÌa</th-->
+              <!--th class="text-center">Categor√≠a</th-->
 
-              <!--th class="text-center">DescripciÛn</th-->
+              <!--th class="text-center">Descripci√≥n</th-->
 
-              <!--th class="text-center">¡rea (m≤/m≥)</th-->
+              <!--th class="text-center">√Årea (m¬≤/m¬≥)</th-->
 
-              <th class="text-center">¡rea (m≤/m≥)</th>
+              <th class="text-center">√Årea (m¬≤/m¬≥)</th>
 
               <th class="text-center">Costo</th>
 
@@ -1558,7 +1558,7 @@
 
       <div *ngIf="tareasTotalPages > 1" class="tareas-panel__pagination">
 
-        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === 1" (click)="tareasPrevPage()" aria-label="P·gina anterior">
+        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === 1" (click)="tareasPrevPage()" aria-label="P√°gina anterior">
 
           &#8249;
 
@@ -1574,7 +1574,7 @@
 
         </span>
 
-        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === tareasTotalPages" (click)="tareasNextPage()" aria-label="P·gina siguiente">
+        <button class="tareas-panel__pag-btn" [disabled]="tareasCurrentPage === tareasTotalPages" (click)="tareasNextPage()" aria-label="P√°gina siguiente">
 
           &#8250;
 
@@ -1676,7 +1676,7 @@
 
           <li><i class="bi bi-trash3" aria-hidden="true"></i><span><strong>Eliminar todo:</strong> borra todas las tareas agregadas del panel.</span></li>
 
-          <li><i class="bi bi-question-circle" aria-hidden="true"></i><span><strong>Ayuda:</strong> muestra esta explicaciÛn r·pida de botones.</span></li>
+          <li><i class="bi bi-question-circle" aria-hidden="true"></i><span><strong>Ayuda:</strong> muestra esta explicaci√≥n r√°pida de botones.</span></li>
 
         </ul>
 
@@ -1842,7 +1842,7 @@
 
                   <button type="button" class="btn btn-outline-primary flex-grow-1" (click)="abrirHistorialDesdeModal()">
 
-                    <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>⁄ltimas tareas
+                    <i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>√öltimas tareas
 
                   </button>
 
@@ -1938,7 +1938,7 @@
 
             @if (cliName.touched && cliName.errors?.['minlength']) {
 
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">MÌnimo 2 caracteres.</div>
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">M√≠nimo 2 caracteres.</div>
 
             }
 
@@ -1962,7 +1962,7 @@
 
                    [(ngModel)]="clientContact" required pattern="\+?\d{7,15}"
 
-                   placeholder="TelÈfono" #contact="ngModel">
+                   placeholder="Tel√©fono" #contact="ngModel">
 
             @if (contact.touched && contact.errors?.['required']) {
 
@@ -1972,7 +1972,7 @@
 
             @if (contact.touched && contact.errors?.['pattern']) {
 
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">N˙mero v·lido (7-15 dÌgitos, puede incluir +).</div>
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">N√∫mero v√°lido (7-15 d√≠gitos, puede incluir +).</div>
 
             }
 
@@ -2006,7 +2006,7 @@
 
             @if (cliEmail.touched && cliEmail.errors?.['email']) {
 
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no v·lido.</div>
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no v√°lido.</div>
 
             }
 
@@ -2054,13 +2054,13 @@
 
               </svg>
 
-              DirecciÛn <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span>
+              Direcci√≥n <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span>
 
             </label>
 
             <input type="text" class="form-control input" id="direccion" name="clientDireccion"
 
-                   [(ngModel)]="clientDireccion" placeholder="DirecciÛn del cliente">
+                   [(ngModel)]="clientDireccion" placeholder="Direcci√≥n del cliente">
 
           </div>
 
@@ -2098,7 +2098,7 @@
 
             <textarea class="form-control input" id="additionalDetails" name="additionalDetailsClient"
 
-                      [(ngModel)]="additionalDetailsClient" rows="2" placeholder="InformaciÛn extra del cliente"></textarea>
+                      [(ngModel)]="additionalDetailsClient" rows="2" placeholder="Informaci√≥n extra del cliente"></textarea>
 
           </div>
 
@@ -2242,7 +2242,7 @@
 
                   <p class="card-text mb-1"><strong>CUIT/Clave:</strong> {{ cliente.clave }}</p>
 
-                  <p class="card-text mb-1"><strong>DirecciÛn:</strong> {{ cliente.direccion }}</p>
+                  <p class="card-text mb-1"><strong>Direcci√≥n:</strong> {{ cliente.direccion }}</p>
 
                   <p class="card-text mb-1"><strong>Fecha:</strong> {{ cliente.budgetDate }}</p>
 
@@ -2272,9 +2272,9 @@
 
         </div>
 
-        <!-- Controles de paginaciÛn -->
+        <!-- Controles de paginaci√≥n -->
 
-        <nav aria-label="PaginaciÛn de clientes" *ngIf="clientes.length > itemsPerPage">
+        <nav aria-label="Paginaci√≥n de clientes" *ngIf="clientes.length > itemsPerPage">
 
           <ul class="pagination justify-content-center flex-wrap">
 
@@ -2363,7 +2363,7 @@
 
       <div class="modal-body">
 
-        <p style="text-align: center; font-size: 12px; opacity: 0.8;">PodÈs editar estos datos las veces que quieras.</p>
+        <p style="text-align: center; font-size: 12px; opacity: 0.8;">Pod√©s editar estos datos las veces que quieras.</p>
 
         <form #empresaForm="ngForm" (ngSubmit)="saveFormData()">
 
@@ -2379,7 +2379,7 @@
 
                    [(ngModel)]="empresaName" required
 
-                   placeholder="øCÛmo se llama?" #eName="ngModel">
+                   placeholder="¬øC√≥mo se llama?" #eName="ngModel">
 
             @if (eName.touched && eName.errors?.['required']) {
 
@@ -2399,7 +2399,7 @@
 
               </svg>
 
-              TelÈfono <span style="color:#e85555;font-size:0.75rem;">*</span>
+              Tel√©fono <span style="color:#e85555;font-size:0.75rem;">*</span>
 
             </label>
 
@@ -2407,11 +2407,11 @@
 
                    [(ngModel)]="empresaPhone" required
 
-                   placeholder="TelÈfono de tu empresa" #ePhone="ngModel">
+                   placeholder="Tel√©fono de tu empresa" #ePhone="ngModel">
 
             @if (ePhone.touched && ePhone.errors?.['required']) {
 
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El telÈfono es obligatorio.</div>
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">El tel√©fono es obligatorio.</div>
 
             }
 
@@ -2445,7 +2445,7 @@
 
             @if (eEmail.touched && eEmail.errors?.['email']) {
 
-              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no v·lido.</div>
+              <div class="text-danger" style="font-size:0.78rem;margin-top:2px;">Formato de email no v√°lido.</div>
 
             }
 
@@ -2453,13 +2453,13 @@
 
           <div class="mb-3 coolinput">
 
-            <label for="additionalDetailsempresa" class="text">DescripciÛn <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
+            <label for="additionalDetailsempresa" class="text">Descripci√≥n <span style="opacity:0.6;font-size:0.75rem;">(opcional)</span></label>
 
             <textarea class="form-control input" id="additionalDetailsempresa" name="additionalDetailsEmpresa"
 
                       [(ngModel)]="additionalDetailsEmpresa" rows="2"
 
-                      placeholder="Contale a tus clientes de quÈ se trata tu empresa"></textarea>
+                      placeholder="Contale a tus clientes de qu√© se trata tu empresa"></textarea>
 
           </div>
 
@@ -2543,7 +2543,7 @@
 
               <input type="text" class="form-control input" id="empresaFacebook" name="empresaFacebook"
 
-                     [(ngModel)]="empresaFacebook" placeholder="URL de tu p·gina" />
+                     [(ngModel)]="empresaFacebook" placeholder="URL de tu p√°gina" />
 
             </div>
 
@@ -2559,7 +2559,7 @@
 
 
 
-            <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'LÛmite alcanzado para tu plan' : null">
+            <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'L√≥mite alcanzado para tu plan' : null">
 
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
 
@@ -2679,7 +2679,7 @@
 
                   <p class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
 
-                  <p class="card-text mb-1"><strong>DescripciÛn:</strong> {{ empresa.description }}</p>
+                  <p class="card-text mb-1"><strong>Descripci√≥n:</strong> {{ empresa.description }}</p>
 
                   <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
 
@@ -2731,9 +2731,9 @@
 
         </div>
 
-        <!-- Controles de paginaciÛn -->
+        <!-- Controles de paginaci√≥n -->
 
-        <nav aria-label="PaginaciÛn de empresas" *ngIf="empresas.length > itemsPerPageEmpresas">
+        <nav aria-label="Paginaci√≥n de empresas" *ngIf="empresas.length > itemsPerPageEmpresas">
 
           <ul class="pagination justify-content-center flex-wrap">
 
@@ -2781,11 +2781,11 @@
 
                 <th scope="col">Nombre</th>
 
-                <th scope="col">TelÈfono</th>
+                <th scope="col">Tel√©fono</th>
 
                 <th scope="col">Email</th>
 
-                <th scope="col">DescripciÛn</th>
+                <th scope="col">Descripci√≥n</th>
 
                 <th scope="col">Logo</th>
 
@@ -2973,7 +2973,7 @@
 
       <div class="modal-body">
 
-        Seguro que deseas cerrar sesiÛn?
+        Seguro que deseas cerrar sesi√≥n?
 
       </div>
 
@@ -2981,7 +2981,7 @@
 
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
 
-        <button type="button" class="btn btn-danger" (click)="logout()" data-bs-dismiss="modal">Cerrar sesiÛn</button>
+        <button type="button" class="btn btn-danger" (click)="logout()" data-bs-dismiss="modal">Cerrar sesi√≥n</button>
 
       </div>
 
@@ -3033,7 +3033,7 @@
 
       <div class="modal-header">
 
-        <h5 class="modal-title" id="weatherModalLabel">PrÛximos 5 dÌas</h5>
+        <h5 class="modal-title" id="weatherModalLabel">Pr√≥ximos 5 d√≠as</h5>
 
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
@@ -3055,9 +3055,9 @@
 
                 <div class="d-flex justify-content-between align-items-center mt-3">
 
-                  <span class="text-primary fw-bold">M·x: {{ day.max | number:'1.0-0' }}∞C</span>
+                  <span class="text-primary fw-bold">M√°x: {{ day.max | number:'1.0-0' }}¬∞C</span>
 
-                  <span class="text-secondary">MÌn: {{ day.min | number:'1.0-0' }}∞C</span>
+                  <span class="text-secondary">M√≠n: {{ day.min | number:'1.0-0' }}¬∞C</span>
 
                 </div>
 
@@ -3107,7 +3107,7 @@
 
         <div id="imageCircle" style="display: flex; justify-content: center;">
 
-          <img #modalImagePreview class="img-fluid" src="#" alt="PrevisualizaciÛn de la imagen" style="display: none; width: 80%; height: 80%;">
+          <img #modalImagePreview class="img-fluid" src="#" alt="Previsualizaci√≥n de la imagen" style="display: none; width: 80%; height: 80%;">
 
         </div>
 
@@ -3151,7 +3151,7 @@
 
             <h6 id="zonaBloqueadaMensaje" class="text-danger mt-2" style="display: block;">
 
-              Esta funciÛn solo se activa con cÛdigo de acceso.
+              Esta funci√≥n solo se activa con c√≥digo de acceso.
 
             </h6>
 
@@ -3163,7 +3163,7 @@
 
             </select>
 
-            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el paÌs seleccionado.</div>
+            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el pa√≠s seleccionado.</div>
 
             <div class="mt-3">
 
@@ -3175,7 +3175,7 @@
 
                 <span class="modal-zona-label">Zona 1:</span>
 
-                Buenos Aires, Santa Fe, Mendoza, CÛrdoba, Tucum·n, Salta, Jujuy, Entre RÌos, Corrientes, Formosa,
+                Buenos Aires, Santa Fe, Mendoza, C√≥rdoba, Tucum√°n, Salta, Jujuy, Entre R√≠os, Corrientes, Formosa,
 
                 La Pampa, San Luis, La Rioja, Santiago del Estero, Chaco, Misiones, Catamarca, San Juan.
 
@@ -3185,7 +3185,7 @@
 
                 <span class="modal-zona-label">Zona 2:</span>
 
-                NeuquÈn, RÌo Negro, Chubut.
+                Neuqu√©n, R√≠o Negro, Chubut.
 
               </div>
 
@@ -3227,7 +3227,7 @@
 
         <div class="modal-title" id="recentTasksModalLabel">
 
-          <h5 style="margin-bottom: 0;"><i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>⁄ltimas tareas cotizadas</h5>
+          <h5 style="margin-bottom: 0;"><i class="fas fa-history" aria-hidden="true" style="margin-right: 6px;"></i>√öltimas tareas cotizadas</h5>
 
           <div style="font-size: 10px; color: #4b5563; font-weight: normal; margin-top: 2px;">
 
@@ -3247,7 +3247,7 @@
 
           <i class="fas fa-info-circle text-muted mb-2" style="font-size: 24px;"></i>
 
-          <p class="text-muted">No tenÈs tareas recientes en este dispositivo.</p>
+          <p class="text-muted">No ten√©s tareas recientes en este dispositivo.</p>
 
         </div>
 
@@ -3269,7 +3269,7 @@
 
                 <p class="card-text text-muted mb-3" style="font-size: 12px; line-height: 1.4;">
 
-                  {{ rt.descripcion || 'Sin descripciÛn adicional' }}
+                  {{ rt.descripcion || 'Sin descripci√≥n adicional' }}
 
                 </p>
 
@@ -3325,7 +3325,7 @@
 
       <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6);">
 
-        <h5 class="modal-title" id="buscadorInfoModalLabel">CÛmo usar el buscador</h5>
+        <h5 class="modal-title" id="buscadorInfoModalLabel">C√≥mo usar el buscador</h5>
 
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
 
@@ -3333,15 +3333,15 @@
 
       <div class="modal-body" style="background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); font-size: 12px;">
 
-        <p class="mb-2"><i class="fas fa-search mr-2 text-primary"></i> PodÈs buscar por palabras sueltas (ej: <em>colocacion puerta</em>).</p>
+        <p class="mb-2"><i class="fas fa-search mr-2 text-primary"></i> Pod√©s buscar por palabras sueltas (ej: <em>colocacion puerta</em>).</p>
 
-        <p class="mb-2"><i class="fas fa-font mr-2 text-primary"></i> Ya funciona aunque escribas con acentos (ej: <em>mediciÛn</em> encuentra <em>medicion</em>).</p>
+        <p class="mb-2"><i class="fas fa-font mr-2 text-primary"></i> Ya funciona aunque escribas con acentos (ej: <em>medici√≥n</em> encuentra <em>medicion</em>).</p>
 
-        <p class="mb-2"><i class="fas fa-puzzle-piece mr-2 text-primary"></i> PodÈs buscar por fragmentos de palabras (ej: <em>coloc puert</em> para <em>colocaciÛn de puerta</em>).</p>
+        <p class="mb-2"><i class="fas fa-puzzle-piece mr-2 text-primary"></i> Pod√©s buscar por fragmentos de palabras (ej: <em>coloc puert</em> para <em>colocaci√≥n de puerta</em>).</p>
 
-        <p class="mb-2"><i class="fas fa-lightbulb mr-2 text-primary"></i> Prob· con una palabra m·s general si no aparece exacto (ej: <em>caldera</em>, <em>zÛcalo</em>, <em>tablero</em>).</p>
+        <p class="mb-2"><i class="fas fa-lightbulb mr-2 text-primary"></i> Prob√° con una palabra m√°s general si no aparece exacto (ej: <em>caldera</em>, <em>z√≥calo</em>, <em>tablero</em>).</p>
 
-        <p class="mb-0"><i class="fas fa-plus-circle mr-2 text-primary"></i> Si no encontr·s una tarea, us· <em>TAREA GENERICA</em> y complet· descripciÛn y precio.</p>
+        <p class="mb-0"><i class="fas fa-plus-circle mr-2 text-primary"></i> Si no encontr√°s una tarea, us√° <em>TAREA GENERICA</em> y complet√° descripci√≥n y precio.</p>
 
       </div>
 
@@ -3378,13 +3378,13 @@
 
       <div class="modal-body" style="padding: 14px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9);">
 
-        <p style="margin-bottom: 10px; color:#4b5563; font-size: 13px;">Ajust· precios y tamaÒo de texto de la lista de tareas.</p>
+        <p style="margin-bottom: 10px; color:#4b5563; font-size: 13px;">Ajust√° precios y tama√±o de texto de la lista de tareas.</p>
 
         <div style="margin-bottom: 10px; background: rgba(103,165,246,.08); border: 1px solid rgba(64,158,255,.16); border-radius: 10px; padding: 10px;">
 
           <div style="font-size: 12px; color:#0b69a6; font-weight:700; margin-bottom: 4px;">
 
-            <i class="fas fa-key" aria-hidden="true" style="margin-right: 6px;"></i>CÛdigo de acceso
+            <i class="fas fa-key" aria-hidden="true" style="margin-right: 6px;"></i>C√≥digo de acceso
 
           </div>
 
@@ -3394,7 +3394,7 @@
 
         <p style="font-size: 11px; color: #6b7280; margin-top: -5px; margin-bottom: 15px; padding-left: 5px;">
 
-          <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 4px;"></i> recibir·s un WhatsApp para renovar tu acceso el dÌa de vencimiento
+          <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 4px;"></i> recibir√°s un WhatsApp para renovar tu acceso el d√≠a de vencimiento
 
         </p>
 
@@ -3418,7 +3418,7 @@
 
           <div class="font-size-lista-card__value">
 
-            TamaÒo actual: <strong id="fontSizeListaValue">12px</strong>
+            Tama√±o actual: <strong id="fontSizeListaValue">12px</strong>
 
           </div>
 
@@ -3426,7 +3426,7 @@
 
         <button type="button" class="btn btn-outline-info w-100 mb-2" (click)="showAjustesListaInfo = !showAjustesListaInfo">
 
-          <i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 6px;"></i>CÛmo usar subir/bajar lista
+          <i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 6px;"></i>C√≥mo usar subir/bajar lista
 
         </button>
 
@@ -3434,11 +3434,11 @@
 
           <div style="background: rgba(64,158,255,.09); border: 1px solid rgba(64,158,255,.22); border-radius: 10px; padding: 10px; font-size: 12px; color:#374151;">
 
-            <p style="margin-bottom: 8px;"><strong>Din·mica:</strong> escribÌ un porcentaje y toc· <strong>SUBIR</strong> para aumentar toda la lista, o <strong>BAJAR</strong> para reducirla. El ajuste se aplica de forma general a todos los Ìtems de la tabla.</p>
+            <p style="margin-bottom: 8px;"><strong>Din√°mica:</strong> escrib√≠ un porcentaje y toc√° <strong>SUBIR</strong> para aumentar toda la lista, o <strong>BAJAR</strong> para reducirla. El ajuste se aplica de forma general a todos los √≠tems de la tabla.</p>
 
-            <p style="margin-bottom: 8px;"><strong>Ejemplos r·pidos:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
+            <p style="margin-bottom: 8px;"><strong>Ejemplos r√°pidos:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
 
-            <p style="margin-bottom: 0;"><strong>Beneficio para el constructor:</strong> te permite adaptar presupuestos en segundos seg˙n zona, complejidad, urgencia o variaciÛn de costos, sin editar tarea por tarea. Si querÈs volver al valor base, us· <strong>Reestablecer valor original de lista</strong>.</p>
+            <p style="margin-bottom: 0;"><strong>Beneficio para el constructor:</strong> te permite adaptar presupuestos en segundos seg√∫n zona, complejidad, urgencia o variaci√≥n de costos, sin editar tarea por tarea. Si quer√©s volver al valor base, us√° <strong>Reestablecer valor original de lista</strong>.</p>
 
           </div>
 
@@ -3520,7 +3520,7 @@
 
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
 
-                <i class="fas fa-percent" style="margin-right: 8px;"></i>øCÛmo funciona subir o bajar los precios de la lista?
+                <i class="fas fa-percent" style="margin-right: 8px;"></i>¬øC√≥mo funciona subir o bajar los precios de la lista?
 
               </button>
 
@@ -3530,7 +3530,7 @@
 
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
-                <p>EscribÌ un porcentaje en el campo correspondiente y toc· <strong>SUBIR</strong> para aumentar todos los precios de la lista, o <strong>BAJAR</strong> para reducirlos. El ajuste se aplica de forma general a todos los Ìtems.</p>
+                <p>Escrib√≠ un porcentaje en el campo correspondiente y toc√° <strong>SUBIR</strong> para aumentar todos los precios de la lista, o <strong>BAJAR</strong> para reducirlos. El ajuste se aplica de forma general a todos los √≠tems.</p>
 
                 <p style="margin-bottom:0;"><strong>Ejemplo:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
 
@@ -3546,7 +3546,7 @@
 
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
 
-                <i class="fas fa-undo-alt" style="margin-right: 8px;"></i>øCÛmo restablezco los precios originales?
+                <i class="fas fa-undo-alt" style="margin-right: 8px;"></i>¬øC√≥mo restablezco los precios originales?
 
               </button>
 
@@ -3556,7 +3556,7 @@
 
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
-                <p style="margin-bottom:0;">Us· el botÛn <strong>"Reestablecer valor original de lista"</strong>. Esto recarga los precios desde el servidor, deshaciendo cualquier ajuste porcentual que hayas aplicado.</p>
+                <p style="margin-bottom:0;">Us√° el bot√≥n <strong>"Reestablecer valor original de lista"</strong>. Esto recarga los precios desde el servidor, deshaciendo cualquier ajuste porcentual que hayas aplicado.</p>
 
               </div>
 
@@ -3570,7 +3570,7 @@
 
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
 
-                <i class="fas fa-text-height" style="margin-right: 8px;"></i>øPara quÈ sirve el control de tamaÒo de texto?
+                <i class="fas fa-text-height" style="margin-right: 8px;"></i>¬øPara qu√© sirve el control de tama√±o de texto?
 
               </button>
 
@@ -3580,7 +3580,7 @@
 
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
-                <p style="margin-bottom:0;">El slider ajusta el tamaÒo de la fuente de la tabla de tareas. ⁄til para ver m·s Ìtems en pantalla (texto m·s chico) o para mejorar la legibilidad en dispositivos grandes (texto m·s grande).</p>
+                <p style="margin-bottom:0;">El slider ajusta el tama√±o de la fuente de la tabla de tareas. √ötil para ver m√°s √≠tems en pantalla (texto m√°s chico) o para mejorar la legibilidad en dispositivos grandes (texto m√°s grande).</p>
 
               </div>
 
@@ -3594,7 +3594,7 @@
 
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
 
-                <i class="fas fa-key" style="margin-right: 8px;"></i>øQuÈ es el CÛdigo de Acceso?
+                <i class="fas fa-key" style="margin-right: 8px;"></i>¬øQu√© es el C√≥digo de Acceso?
 
               </button>
 
@@ -3604,7 +3604,7 @@
 
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
-                <p style="margin-bottom:0;">Es tu identificador ˙nico en el sistema. Lo us·s para ingresar a la aplicaciÛn y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro. Antes del vencimiento recibir·s un WhatsApp para renovarlo.</p>
+                <p style="margin-bottom:0;">Es tu identificador √∫nico en el sistema. Lo us√°s para ingresar a la aplicaci√≥n y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro. Antes del vencimiento recibir√°s un WhatsApp para renovarlo.</p>
 
               </div>
 
@@ -3618,7 +3618,7 @@
 
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
 
-                <i class="fas fa-save" style="margin-right: 8px;"></i>øLos cambios en los precios se guardan permanentemente?
+                <i class="fas fa-save" style="margin-right: 8px;"></i>¬øLos cambios en los precios se guardan permanentemente?
 
               </button>
 
@@ -3628,7 +3628,7 @@
 
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
-                <p style="margin-bottom:0;">SÌ, los cambios se guardan en tu lista de tareas activa. Si querÈs volver a los precios base, us· <strong>"Reestablecer valor original de lista"</strong>. Los precios de la tabla de referencia (buscador) nunca se modifican.</p>
+                <p style="margin-bottom:0;">S√≠, los cambios se guardan en tu lista de tareas activa. Si quer√©s volver a los precios base, us√° <strong>"Reestablecer valor original de lista"</strong>. Los precios de la tabla de referencia (buscador) nunca se modifican.</p>
 
               </div>
 
@@ -3802,7 +3802,7 @@
 
             <div style="position: absolute; bottom: 5px; right: 8px; font-size: 8px; opacity: 0.3;">
 
-              METRO - Software de Cotizaci?n
+              METRO - Software de Cotizaci√≥n
 
             </div>
 
@@ -3854,7 +3854,7 @@
 
                 <div class="col-12">
 
-                  <label class="x-small mb-1">Direcci?n</label>
+                  <label class="x-small mb-1">Direcci√≥n</label>
 
                   <select class="form-select form-select-sm" [(ngModel)]="presupuestoGradienteAngulo">
 
