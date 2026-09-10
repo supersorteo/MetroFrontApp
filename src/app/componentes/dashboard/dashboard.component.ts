@@ -1506,10 +1506,11 @@ ngAfterViewInit() {
   }
 
   // Al cerrar exampleModal: reabrir listaEmpresasModal solo si se abrió desde ella
+  // y NO si se cerró para abrir imageModal (reabrirEmpresaModal === true)
   const exampleModalEl = document.getElementById('exampleModal');
   if (exampleModalEl) {
     exampleModalEl.addEventListener('hidden.bs.modal', () => {
-      if (this._reopenListaOnExampleClose) {
+      if (this._reopenListaOnExampleClose && !this.reabrirEmpresaModal) {
         this._reopenListaOnExampleClose = false;
         setTimeout(() => {
           const listaEl = document.getElementById('listaEmpresasModal');
