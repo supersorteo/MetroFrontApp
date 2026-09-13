@@ -8,6 +8,7 @@ import {
   TareaCalculadaResumen
 } from '../../servicios/calculadora-materiales.service';
 import { AppToastService } from '../../servicios/app-toast.service';
+import { RagCalculadoraChatComponent } from '../rag-calculadora-chat/rag-calculadora-chat.component';
 
 export interface Material {
   nombre: string;
@@ -659,7 +660,7 @@ function construirResumenesDesdeHistorial(
 @Component({
   selector: 'app-calculadora-materiales',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RagCalculadoraChatComponent],
   templateUrl: './calculadora-materiales.component.html',
   styleUrl: './calculadora-materiales.component.scss'
 })

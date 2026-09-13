@@ -1,0 +1,48 @@
+<!-- Botón flotante -->
+<div class="rag-chat-fab" (click)="toggle()" [class.rag-chat-fab--active]="abierto()" title="Asistente de materiales">
+  <i class="bi" [class.bi-robot]="!abierto()" [class.bi-x-lg]="abierto()"></i>
+</div>
+
+<!-- Panel de chat -->
+@if (abierto()) {
+  <div class="rag-chat-panel">
+    <div class="rag-chat-header">
+      <i class="bi bi-robot me-2"></i>
+      <span>Asistente de Materiales</span>
+      <button class="rag-chat-close" (click)="cerrar()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="rag-chat-messages" #scrollContainer>
+      @for (msg of mensajes(); track $index) {
+        <div class="rag-chat-bubble"
+             [class.rag-chat-bubble--usuario]="msg.rol === 'usuario'"
+             [class.rag-chat-bubble--asistente]="msg.rol === 'asistente'">
+          @if (msg.cargando) {
+            <span class="rag-chat-typing">
+              <span></span><span></span><span></span>
+            </span>
+          } @else {
+            <pre class="rag-chat-text">{{ msg.texto }}</pre>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="rag-chat-input-row">
+      <textarea
+        class="rag-chat-input"
+        rows="2"
+        placeholder="Ej: ¿Cuánto cemento para 40m² de revoque grueso interior?"
+        [ngModel]="preguntaActual()"
+        (ngModelChange)="preguntaActual.set($event)"
+        (keydown)="onKeydown($event)"
+        [disabled]="cargando()"
+      ></textarea>
+      <button class="rag-chat-send" (click)="enviar()" [disabled]="cargando() || !preguntaActual().trim()">
+        <i class="bi bi-send-fill"></i>
+      </button>
+    </div>
+  </div>
+}
