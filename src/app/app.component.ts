@@ -23,6 +23,10 @@ export class AppComponent implements OnInit {
   showConnectionIndicator = false;
   private readonly destroyRef = inject(DestroyRef);
 
+  private readonly ADMIN_SEQ = ['d', 'r', 'l', 'm'];
+  private adminKeyBuf: string[] = [];
+  private adminKeyTimer: ReturnType<typeof setTimeout> | null = null;
+
   constructor(
     private router: Router,
     private adminService: AdminService,
@@ -52,10 +56,25 @@ export class AppComponent implements OnInit {
     });
   }
 
-  @HostListener('document:keydown.control.alt.m', ['$event'])
-  onAdminShortcut(event: Event): void {
-    const keyboardEvent = event as KeyboardEvent;
-    keyboardEvent.preventDefault();
+  @HostListener('document:keydown', ['$event'])
+  onSequenceKey(event: KeyboardEvent): void {
+    const tag = (event.target as HTMLElement).tagName.toLowerCase();
+    if (tag === 'input' || tag === 'textarea') return;
+
+    const key = event.key.toLowerCase();
+    this.adminKeyBuf.push(key);
+    if (this.adminKeyBuf.length > this.ADMIN_SEQ.length) this.adminKeyBuf.shift();
+
+    if (this.adminKeyTimer) clearTimeout(this.adminKeyTimer);
+    this.adminKeyTimer = setTimeout(() => { this.adminKeyBuf = []; }, 2500);
+
+    if (this.adminKeyBuf.join('') === this.ADMIN_SEQ.join('')) {
+      this.adminKeyBuf = [];
+      this.triggerAdmin();
+    }
+  }
+
+  private triggerAdmin(): void {
     this.adminService.setReturnUrl(this.router.url);
     if (this.adminService.isLoggedIn()) {
       this.router.navigate(['/admin-generate-code']);

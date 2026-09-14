@@ -1,38 +1,129 @@
-<!-- Botón flotante -->
-<div class="rag-chat-fab" (click)="toggle()" [class.rag-chat-fab--active]="abierto()" title="Asistente MetroApp">
-  <i class="bi" [class.bi-robot]="!abierto()" [class.bi-x-lg]="abierto()"></i>
+@if (visible()) {
+
+<!-- Botón flotante arrastrable -->
+<div class="rag-fab"
+     [style.left.px]="fabPos().x"
+     [style.top.px]="fabPos().y"
+     [class.rag-fab--active]="abierto()"
+     [class.rag-fab--dragging]="isDragging()"
+     (mousedown)="onFabDown($event)"
+     (touchstart)="onFabDown($event)"
+     title="Archi — Asistente MetroApp">
+
+  <!-- Obrero con casco (visible cuando está cerrado) -->
+  <span class="rag-fab__worker" [class.rag-fab__worker--hidden]="abierto()">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true">
+      <!-- Cuerpo / uniforme -->
+      <path d="M8,100 L8,76 Q20,62 50,62 Q80,62 92,76 L92,100 Z" fill="#1e3a8a"/>
+      <path d="M43,62 L50,72 L57,62" fill="#1e40af"/>
+      <!-- Cuello -->
+      <rect x="44" y="57" width="12" height="9" rx="5" fill="#f5c9a0"/>
+      <!-- Cara -->
+      <ellipse cx="50" cy="50" rx="19" ry="20" fill="#f5c9a0"/>
+      <!-- Orejas -->
+      <ellipse cx="31" cy="51" rx="3.5" ry="4" fill="#f0bc8e"/>
+      <ellipse cx="69" cy="51" rx="3.5" ry="4" fill="#f0bc8e"/>
+      <!-- Ojos blancos -->
+      <ellipse cx="42" cy="48" rx="4" ry="4.2" fill="white"/>
+      <ellipse cx="58" cy="48" rx="4" ry="4.2" fill="white"/>
+      <!-- Pupilas -->
+      <ellipse cx="42.5" cy="48.5" rx="2.2" ry="2.4" fill="#1e293b"/>
+      <ellipse cx="58.5" cy="48.5" rx="2.2" ry="2.4" fill="#1e293b"/>
+      <!-- Brillo ojos -->
+      <circle cx="43.4" cy="47.4" r="0.9" fill="white"/>
+      <circle cx="59.4" cy="47.4" r="0.9" fill="white"/>
+      <!-- Cejas -->
+      <path d="M38,43 Q42,40 46,43" stroke="#7d5a3c" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M54,43 Q58,40 62,43" stroke="#7d5a3c" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <!-- Nariz -->
+      <ellipse cx="50" cy="54" rx="2.5" ry="1.5" fill="#e8a878" opacity=".5"/>
+      <!-- Sonrisa -->
+      <path d="M43,59 Q50,66 57,59" stroke="#c07840" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <!-- Ala del casco -->
+      <rect x="21" y="32" width="58" height="5.5" rx="2.75" fill="#dde4ed"/>
+      <!-- Domo del casco -->
+      <path d="M25,35 Q25,7 50,7 Q75,7 75,35 Z" fill="#eef2f7"/>
+      <!-- Brillo del casco -->
+      <path d="M29,32 Q30,17 38,11" stroke="white" stroke-width="2.5" opacity=".45" fill="none" stroke-linecap="round"/>
+      <!-- Badge MetroApp (M) -->
+      <rect x="37" y="14" width="26" height="17" rx="4" fill="#1d4ed8"/>
+      <path d="M42,28 L42,17 L50,23 L58,17 L58,28"
+            stroke="white" stroke-width="3.5" fill="none"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </span>
+
+  <!-- X para cerrar -->
+  <span class="rag-fab__close" [class.rag-fab__close--visible]="abierto()">
+    <i class="bi bi-x-lg"></i>
+  </span>
+  <span class="rag-fab__ring"></span>
 </div>
 
 <!-- Panel de chat -->
 @if (abierto()) {
-  <div class="rag-chat-panel">
-    <div class="rag-chat-header">
-      <i class="bi bi-robot me-2"></i>
-      <span>Asistente MetroApp</span>
-      <button class="rag-chat-close" (click)="cerrar()">
+  <div class="rag-panel"
+       [style.left]="panelStyle().left"
+       [style.top]="panelStyle().top"
+       [style.width]="panelStyle().width">
+
+    <div class="rag-panel__header">
+      <!-- Icono obrero en el header -->
+      <div class="rag-panel__header-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true">
+          <path d="M8,100 L8,76 Q20,62 50,62 Q80,62 92,76 L92,100 Z" fill="#1e3a8a"/>
+          <path d="M43,62 L50,72 L57,62" fill="#1e40af"/>
+          <rect x="44" y="57" width="12" height="9" rx="5" fill="#f5c9a0"/>
+          <ellipse cx="50" cy="50" rx="19" ry="20" fill="#f5c9a0"/>
+          <ellipse cx="31" cy="51" rx="3.5" ry="4" fill="#f0bc8e"/>
+          <ellipse cx="69" cy="51" rx="3.5" ry="4" fill="#f0bc8e"/>
+          <ellipse cx="42" cy="48" rx="4" ry="4.2" fill="white"/>
+          <ellipse cx="58" cy="48" rx="4" ry="4.2" fill="white"/>
+          <ellipse cx="42.5" cy="48.5" rx="2.2" ry="2.4" fill="#1e293b"/>
+          <ellipse cx="58.5" cy="48.5" rx="2.2" ry="2.4" fill="#1e293b"/>
+          <circle cx="43.4" cy="47.4" r="0.9" fill="white"/>
+          <circle cx="59.4" cy="47.4" r="0.9" fill="white"/>
+          <path d="M38,43 Q42,40 46,43" stroke="#7d5a3c" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <path d="M54,43 Q58,40 62,43" stroke="#7d5a3c" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <ellipse cx="50" cy="54" rx="2.5" ry="1.5" fill="#e8a878" opacity=".5"/>
+          <path d="M43,59 Q50,66 57,59" stroke="#c07840" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <rect x="21" y="32" width="58" height="5.5" rx="2.75" fill="#dde4ed"/>
+          <path d="M25,35 Q25,7 50,7 Q75,7 75,35 Z" fill="#eef2f7"/>
+          <path d="M29,32 Q30,17 38,11" stroke="white" stroke-width="2.5" opacity=".45" fill="none" stroke-linecap="round"/>
+          <rect x="37" y="14" width="26" height="17" rx="4" fill="#1d4ed8"/>
+          <path d="M42,28 L42,17 L50,23 L58,17 L58,28"
+                stroke="white" stroke-width="3.5" fill="none"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="rag-panel__header-info">
+        <span class="rag-panel__header-title">Archi</span>
+        <span class="rag-panel__header-sub">Tu asistente de obra y de la app</span>
+      </div>
+      <button class="rag-panel__close" (click)="cerrar()" title="Cerrar">
         <i class="bi bi-x-lg"></i>
       </button>
     </div>
 
-    <div class="rag-chat-messages">
+    <div class="rag-panel__messages">
       @for (msg of mensajes(); track $index) {
-        <div class="rag-chat-bubble"
-             [class.rag-chat-bubble--usuario]="msg.rol === 'usuario'"
-             [class.rag-chat-bubble--asistente]="msg.rol === 'asistente'">
+        <div class="rag-bubble"
+             [class.rag-bubble--user]="msg.rol === 'usuario'"
+             [class.rag-bubble--bot]="msg.rol === 'asistente'">
           @if (msg.cargando) {
-            <span class="rag-chat-typing">
+            <span class="rag-typing">
               <span></span><span></span><span></span>
             </span>
           } @else {
-            <pre class="rag-chat-text">{{ msg.texto }}</pre>
+            <pre class="rag-bubble__text">{{ msg.texto }}</pre>
           }
         </div>
       }
     </div>
 
-    <div class="rag-chat-input-row">
+    <div class="rag-panel__input-row">
       <textarea
-        class="rag-chat-input"
+        class="rag-panel__input"
         rows="2"
         placeholder="Preguntá sobre materiales o sobre la app..."
         [ngModel]="preguntaActual()"
@@ -40,9 +131,18 @@
         (keydown)="onKeydown($event)"
         [disabled]="cargando()"
       ></textarea>
-      <button class="rag-chat-send" (click)="enviar()" [disabled]="cargando() || !preguntaActual().trim()">
+      <button class="rag-panel__send" (click)="enviar()" [disabled]="cargando() || !preguntaActual().trim()">
         <i class="bi bi-send-fill"></i>
       </button>
     </div>
+
+    <div class="rag-panel__footer">
+      <button class="rag-panel__hide-btn" (click)="ocultar()" title="Ocultar Archi (presioná a·r·c·h·i para volver a verlo)">
+        <i class="bi bi-eye-slash"></i> Ocultar Archi
+      </button>
+    </div>
+
   </div>
 }
+
+} <!-- fin @if (visible()) -->
