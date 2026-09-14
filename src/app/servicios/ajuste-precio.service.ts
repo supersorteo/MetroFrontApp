@@ -20,8 +20,9 @@ export interface AjusteHistorialItem {
 @Injectable({ providedIn: 'root' })
 export class AjustePrecioService {
 
-  private readonly apiUrl      = `${APP_API_URL}/ajuste-precio`;
-  private readonly apiAdminUrl = `${APP_API_URL}/ajuste-precio-admin`;
+  private readonly apiUrl              = `${APP_API_URL}/ajuste-precio`;
+  private readonly apiAdminUrl         = `${APP_API_URL}/ajuste-precio-admin`;
+  private readonly apiPersonalizadaUrl = `${APP_API_URL}/ajuste-precio-personalizada`;
 
   constructor(private http: HttpClient) {}
 
@@ -113,6 +114,51 @@ export class AjustePrecioService {
 
   getHistorialAdmin(pais: string): Observable<AjusteHistorialItem[]> {
     return this.http.get<AjusteHistorialItem[]>(`${this.apiAdminUrl}/${pais}/historial`)
+      .pipe(catchError(() => of([])));
+  }
+
+  // ─── Tareas personalizadas (factor por userCode) ─────────────────────────────
+
+  private personalizadaCacheKey(userCode: string): string {
+    return `ajuste_precio_personalizada_${userCode}`.toLowerCase();
+  }
+
+  getPersonalizadaFactorLocal(userCode: string): number {
+    try {
+      const raw = localStorage.getItem(this.personalizadaCacheKey(userCode));
+      return raw ? (JSON.parse(raw).factor ?? 1) : 1;
+    } catch { return 1; }
+  }
+
+  syncPersonalizadaFactor(userCode: string): void {
+    this.http.get<AjusteResponse>(`${this.apiPersonalizadaUrl}/${userCode}`)
+      .pipe(catchError(() => of(null)))
+      .subscribe(res => {
+        if (res) localStorage.setItem(this.personalizadaCacheKey(userCode), JSON.stringify(res));
+      });
+  }
+
+  aplicarAjustePersonalizada(
+    userCode: string,
+    tipo: 'subir' | 'bajar' | 'reestablecer',
+    porcentaje?: number
+  ): void {
+    const actual = this.getPersonalizadaFactorLocal(userCode);
+    let nuevo = tipo === 'reestablecer' ? 1
+               : tipo === 'subir'       ? actual * (1 + (porcentaje ?? 0) / 100)
+                                        : actual * (1 - (porcentaje ?? 0) / 100);
+    nuevo = Math.round(nuevo * 1_000_000) / 1_000_000;
+    localStorage.setItem(this.personalizadaCacheKey(userCode),
+      JSON.stringify({ factor: nuevo, updatedAt: new Date().toISOString() }));
+    this.http.post<AjusteResponse>(this.apiPersonalizadaUrl, { userCode, tipo, porcentaje })
+      .pipe(catchError(() => of(null)))
+      .subscribe(res => {
+        if (res) localStorage.setItem(this.personalizadaCacheKey(userCode), JSON.stringify(res));
+      });
+  }
+
+  getHistorialPersonalizada(userCode: string): Observable<AjusteHistorialItem[]> {
+    return this.http.get<AjusteHistorialItem[]>(`${this.apiPersonalizadaUrl}/${userCode}/historial`)
       .pipe(catchError(() => of([])));
   }
 }

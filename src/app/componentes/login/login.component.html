@@ -84,7 +84,7 @@
 
       <div class="login-divider"><span>o</span></div>
 
-      <button type="button" class="btn btn-outline-primary w-100 login-btn" (click)="loginStep = 'register'">
+      <button type="button" class="btn btn-outline-primary w-100 login-btn" (click)="enterRegisterStep()">
         <i class="bi bi-person-plus me-2"></i>Registrar mi código
       </button>
     </div>
@@ -110,8 +110,9 @@
         <input type="text" class="form-control login-input-field"
                [(ngModel)]="code" placeholder="Ingresá tu código" name="code"
                (input)="onCodeInput()" (blur)="syncCountryWithCode()">
-        <div class="lf-error" *ngIf="codeCountry">
-          <i class="bi bi-geo-alt me-1"></i>Este codigo pertenece a {{ codeCountry }}.
+        <div class="lf-hint lf-hint--country" *ngIf="codeCountry">
+          <i class="bi bi-check-circle-fill me-1" style="color:#22c55e"></i>
+          País detectado: <strong>{{ codeCountry }}</strong>
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit, HostListener, effect, inject } from '@angular/core';
 import { interval, Subject } from 'rxjs';
@@ -20,6 +20,7 @@ import { firstValueFrom } from 'rxjs';
 //import { SavedPresupuesto } from '../../servicios/budget-storage.service';
 import { BudgetService, SavedPresupuesto } from '../../servicios/budget.service';
 import { OfflineSyncService, PendingSyncSummary } from '../../servicios/offline-sync.service';
+import { OfflineStatusService } from '../../servicios/offline-status.service';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
 import { EmpresaStore } from '../../stores/empresa.store';
 import { ClienteStore } from '../../stores/cliente.store';
@@ -167,6 +168,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   isSavingClient = false;
   private reabrirEmpresaModal = false;
+  private _reopenListaOnExampleClose = false;
   // Control de modales para empresa e imagen
 
   empresaName: string = '';
@@ -730,6 +732,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private ajustePrecioService: AjustePrecioService,
     private http: HttpClient,
     readonly offlineSync: OfflineSyncService,
+    readonly offlineStatus: OfflineStatusService,
     private localStore: OfflineLocalStoreService,
     private tpService: TareaPersonalizadaService,
     private appToast: AppToastService,
@@ -806,13 +809,14 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     }
   }
 
-  // ── Sesión: leer userCode, detectar demo, fetchUserData o redirigir ──────
+  // -- Sesión: leer userCode, detectar demo, fetchUserData o redirigir ------
   private initSession(): void {
     this.trialMode = this.isTrialMode();
     if (this.trialMode) {
       this.loadDemoData();
       this.totalClientesUsuario = this.getDemoClientesCount();
       this.loadMembershipLimits();
+      this.cargarTareasPersonalizadas();
       return;
     }
     this.loadUserCode();
@@ -820,8 +824,8 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     localStorage.removeItem('reloadClientes');
   }
 
-  // ── Presupuesto pendiente: leer antes de initEmpresas para que el ────────
-  //    callback de clientes lo encuentre en this.presupuestoPendiente ────────
+  // -- Presupuesto pendiente: leer antes de initEmpresas para que el --------
+  //    callback de clientes lo encuentre en this.presupuestoPendiente --------
   private restorePendingBudget(): void {
     const stored = localStorage.getItem('presupuestoCargado');
     if (stored) {
@@ -829,7 +833,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     }
   }
 
-  // ── UI auxiliar: countdown, colorScheme, fecha de presupuesto ────────────
+  // -- UI auxiliar: countdown, colorScheme, fecha de presupuesto ------------
   private initUiState(): void {
     interval(1000).pipe(takeUntil(this.destroy$)).subscribe(() => {
       if (this.userData?.fechaVencimiento) {
@@ -934,6 +938,15 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
     this.onEmpresaSeleccionada(this.selectedEmpresaId);
   }
+
+  // Restaurar cliente seleccionado al volver del presupuesto
+  try {
+    const raw = localStorage.getItem('selectedCliente');
+    if (raw) {
+      this.clienteSeleccionado = JSON.parse(raw);
+      void this.loadTareasAgregadas();
+    }
+  } catch {}
 }
 
 
@@ -1047,6 +1060,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 
   abrirFormularioNuevaEmpresa(): void {
     this.limpiarEmpresaForm();
+    this._reopenListaOnExampleClose = true;
 
     const listaEmpresasModalEl = document.getElementById('listaEmpresasModal');
     if (listaEmpresasModalEl) {
@@ -1483,20 +1497,29 @@ ngAfterViewInit() {
     });
   }
 
-  // Lógica para reabrir el modal de empresa al cerrar el de listaEmpresasModal
+  // Al cerrar listaEmpresasModal: solo limpiar backdrops, no abrir exampleModal automáticamente
   const listaEmpresasModal = document.getElementById('listaEmpresasModal');
   if (listaEmpresasModal) {
     listaEmpresasModal.addEventListener('hidden.bs.modal', () => {
-      const empresaModal = document.getElementById('exampleModal');
-      if (empresaModal && !empresaModal.classList.contains('show')) {
-        setTimeout(() => {
-          const modal = new bootstrap.Modal(empresaModal);
-          modal.show();
-        }, 300);
-      }
-      // Limpiar backdrops
       const backdrops = document.querySelectorAll('.modal-backdrop');
       backdrops.forEach(backdrop => backdrop.remove());
+    });
+  }
+
+  // Al cerrar exampleModal: reabrir listaEmpresasModal solo si se abrió desde ella
+  // y NO si se cerró para abrir imageModal (reabrirEmpresaModal === true)
+  const exampleModalEl = document.getElementById('exampleModal');
+  if (exampleModalEl) {
+    exampleModalEl.addEventListener('hidden.bs.modal', () => {
+      if (this._reopenListaOnExampleClose && !this.reabrirEmpresaModal) {
+        this._reopenListaOnExampleClose = false;
+        setTimeout(() => {
+          const listaEl = document.getElementById('listaEmpresasModal');
+          if (listaEl && !listaEl.classList.contains('show')) {
+            (bootstrap.Modal.getInstance(listaEl) || new bootstrap.Modal(listaEl)).show();
+          }
+        }, 300);
+      }
     });
   }
 
@@ -1667,16 +1690,14 @@ actualizarTarea(): void {
 
 agregarTarea(): void {
 
-/*if (this.trialMode && this.tareasAgregadas.length >= 7) {
-  this.appToast.info('En modo demo solo podés agregar 7 tareas', 'Modo demo');
-  return;
-}*/
-
 if (this.trialMode) {
   const clienteId = this.clienteSeleccionado?.id ?? null;
+  const demoKey = this.demoTareasKey(clienteId);
+  let demoList: UserTarea[];
+  try { demoList = JSON.parse(localStorage.getItem(demoKey) || '[]'); } catch { demoList = []; }
 
-  if (this.tareasAgregadas.length >= 7) {
-    this.appToast.info('En modo demo solo podés agregar 7 tareas', 'Modo demo');
+  if (demoList.length >= 7) {
+    this.uiDialog.warning({ title: 'Límite alcanzado', text: 'En el plan demo solo podés agregar hasta 7 tareas por presupuesto.' });
     return;
   }
 
@@ -1691,11 +1712,12 @@ if (this.trialMode) {
     totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
   };
 
-  this.tareasAgregadas.push(nuevaTarea);
+  demoList.push(nuevaTarea);
+  this.tareasAgregadas = demoList;
   this.mostrarTabla = true;
 
-  localStorage.setItem(this.demoTareasKey(clienteId), JSON.stringify(this.tareasAgregadas));
-  localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+  localStorage.setItem(demoKey, JSON.stringify(demoList));
+  localStorage.setItem('tareasAgregadas', JSON.stringify(demoList));
 
   this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
   this.updatePaginatedTareasPanel();
@@ -1880,11 +1902,6 @@ private async aplicarPresupuestoGuardado(
 
 
 toggleSavedBudgetsPanel(): void {
-  if (this.trialMode) {
-    this.uiDialog.info({ title: 'Modo demo', text: 'Esta función no está habilitada en el modo de prueba.' });
-    return;
-  }
-
   const nextState = !this.showSavedBudgetsPanel;
   this.showSavedBudgetsPanel = nextState;
   if (nextState) {
@@ -2028,6 +2045,26 @@ onPresupuestoActualizado(p: SavedPresupuesto) {
 
 closeSavedBudgetsPanel(): void {
   this.showSavedBudgetsPanel = false;
+}
+
+async triggerManualSync(): Promise<void> {
+  if (this.offlineSync.isSyncing()) {
+    this.appToast.info('La sincronización ya está en curso.', 'Sincronizando');
+    return;
+  }
+
+  if (!this.offlineStatus.isOnline()) {
+    this.appToast.warning('Necesitas conexión para sincronizar los cambios pendientes.', 'Sin conexión');
+    return;
+  }
+
+  if (!this.offlineSync.hasPendingOps()) {
+    this.appToast.info('No hay cambios pendientes para sincronizar.', 'Todo al día');
+    return;
+  }
+
+  this.appToast.info('Iniciando sincronización manual...', 'Sincronización');
+  await this.offlineSync.syncPendingOps();
 }
 
 openColorSchemeModal(): void {
@@ -2190,7 +2227,7 @@ eliminarTarea(id: number): void {
     error: (err) => {
       console.error('Error completo al eliminar tarea:', err); // Para debug
 
-      // 🔥 Extraer el mensaje del backend de forma robusta
+      // ?? Extraer el mensaje del backend de forma robusta
       let mensajeBackend = 'Error al eliminar la tarea del servidor';
 
       // Caso 1: Backend devuelve { error: "mensaje" }
@@ -2210,7 +2247,7 @@ eliminarTarea(id: number): void {
         mensajeBackend = err.message;
       }
 
-      // 🔥 Ahora sí: detectar si la tarea está asociada a presupuestos
+      // ?? Ahora sí: detectar si la tarea está asociada a presupuestos
       if (
         mensajeBackend.toLowerCase().includes('presupuesto') ||
         mensajeBackend.toLowerCase().includes('asociada') ||
@@ -2743,13 +2780,15 @@ onImageChange(event: Event): void {
       this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 0.01 y 100.' });
       return;
     }
-    if (!this.tareas.length) {
-      this.uiDialog.warning({ title: 'Sin tareas', text: 'No hay tareas en el catálogo para ajustar.' });
+    const esPersonalizadas = this.activeTaskTab === 'personalizadas';
+    const listaObjetivo = esPersonalizadas ? this.tareasPersonalizadas : this.tareas;
+    if (!listaObjetivo.length) {
+      this.uiDialog.warning({ title: 'Sin tareas', text: `No hay tareas en ${esPersonalizadas ? 'tus tareas' : 'el catálogo'} para ajustar.` });
       return;
     }
     const confirmed = await this.uiDialog.confirm({
       title: `Bajar precios ${porcentaje}%`,
-      text: `Todos los precios de tu lista se reducirán un ${porcentaje}%. ¿Confirmas?`,
+      text: `Todos los precios de ${esPersonalizadas ? 'tus tareas personalizadas' : 'tu lista del catálogo'} se reducirán un ${porcentaje}%. ¿Confirmas?`,
       confirmText: 'Sí, bajar',
       cancelText: 'Cancelar',
       tone: 'warning',
@@ -2757,11 +2796,16 @@ onImageChange(event: Event): void {
     });
     if (!confirmed) return;
     const delta = 1 - porcentaje / 100;
-    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
-    this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * delta }));
-    this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'bajar', porcentaje);
+    if (esPersonalizadas) {
+      this.tareasPersonalizadas = this.tareasPersonalizadas.map(t => ({ ...t, costo: t.costo * delta }));
+      this.ajustePrecioService.aplicarAjustePersonalizada(this.userCode, 'bajar', porcentaje);
+    } else {
+      this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
+      this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * delta }));
+      this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'bajar', porcentaje);
+    }
     this.porcentajeBajar = null;
-    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios del catálogo reducidos en ${porcentaje}%.` });
+    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios ${esPersonalizadas ? 'de tus tareas personalizadas' : 'del catálogo'} reducidos en ${porcentaje}%.` });
   }
 
   async ajustarPrecios(): Promise<void> {
@@ -2770,13 +2814,15 @@ onImageChange(event: Event): void {
       this.uiDialog.warning({ title: 'Valor inválido', text: 'Ingresá un porcentaje entre 0.01 y 500.' });
       return;
     }
-    if (!this.tareas.length) {
-      this.uiDialog.warning({ title: 'Sin tareas', text: 'No hay tareas en el catálogo para ajustar.' });
+    const esPersonalizadas = this.activeTaskTab === 'personalizadas';
+    const listaObjetivo = esPersonalizadas ? this.tareasPersonalizadas : this.tareas;
+    if (!listaObjetivo.length) {
+      this.uiDialog.warning({ title: 'Sin tareas', text: `No hay tareas en ${esPersonalizadas ? 'tus tareas' : 'el catálogo'} para ajustar.` });
       return;
     }
     const confirmed = await this.uiDialog.confirm({
       title: `Subir precios ${porcentaje}%`,
-      text: `Todos los precios de tu lista se incrementarán un ${porcentaje}%. ¿Confirmas?`,
+      text: `Todos los precios de ${esPersonalizadas ? 'tus tareas personalizadas' : 'tu lista del catálogo'} se incrementarán un ${porcentaje}%. ¿Confirmas?`,
       confirmText: 'Sí, subir',
       cancelText: 'Cancelar',
       tone: 'primary',
@@ -2784,26 +2830,39 @@ onImageChange(event: Event): void {
     });
     if (!confirmed) return;
     const delta = 1 + porcentaje / 100;
-    this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
-    this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * delta }));
-    this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'subir', porcentaje);
+    if (esPersonalizadas) {
+      this.tareasPersonalizadas = this.tareasPersonalizadas.map(t => ({ ...t, costo: t.costo * delta }));
+      this.ajustePrecioService.aplicarAjustePersonalizada(this.userCode, 'subir', porcentaje);
+    } else {
+      this.tareas = this.tareas.map(t => ({ ...t, costo: t.costo * delta }));
+      this.tareasFiltradas = this.tareasFiltradas.map(t => ({ ...t, costo: t.costo * delta }));
+      this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'subir', porcentaje);
+    }
     this.porcentajeSubir = null;
-    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios del catálogo incrementados en ${porcentaje}%.` });
+    this.uiDialog.success({ title: 'Lista actualizada', text: `Precios ${esPersonalizadas ? 'de tus tareas personalizadas' : 'del catálogo'} incrementados en ${porcentaje}%.` });
   }
 
   async reestablecerPreciosOriginalesLista(): Promise<void> {
+    const esPersonalizadas = this.activeTaskTab === 'personalizadas';
     const confirmed = await this.uiDialog.confirm({
       title: 'Restablecer precios',
-      text: 'Se eliminarán todos tus ajustes y los precios volverán a los valores originales del catálogo. ¿Confirmas?',
+      text: esPersonalizadas
+        ? 'Los precios de tus tareas personalizadas volverán a sus valores originales. ¿Confirmas?'
+        : 'Se eliminarán todos tus ajustes y los precios volverán a los valores originales del catálogo. ¿Confirmas?',
       confirmText: 'Sí, restablecer',
       cancelText: 'Cancelar',
       tone: 'warning',
       icon: 'warning'
     });
     if (!confirmed) return;
-    this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'reestablecer');
-    this.obtenerTareas();
-    this.uiDialog.success({ title: 'Precios restablecidos', text: 'Se restauraron los precios originales del catálogo.' });
+    if (esPersonalizadas) {
+      this.ajustePrecioService.aplicarAjustePersonalizada(this.userCode, 'reestablecer');
+      this.cargarTareasPersonalizadas();
+    } else {
+      this.ajustePrecioService.aplicarAjuste(this.userCode, this.userData?.pais, 'reestablecer');
+      this.obtenerTareas();
+    }
+    this.uiDialog.success({ title: 'Precios restablecidos', text: `Se restauraron los precios originales de ${esPersonalizadas ? 'tus tareas personalizadas' : 'el catálogo'}.` });
   }
 
   cambiarTamanoFuenteLista(accion: 'increase' | 'decrease'): void {
@@ -3305,7 +3364,7 @@ fetchUserData(): void {
     }
   }
 
-  // ── Tareas Personalizadas ────────────────────────────────────────────────
+  // -- Tareas Personalizadas ------------------------------------------------
   private readonly TP_DEMO_KEY = 'demo_tareas_personalizadas';
   private readonly TP_LIMIT_DEMO = 5;
   private readonly TP_LIMIT_VIP = 500;
@@ -3323,9 +3382,8 @@ fetchUserData(): void {
     if (this.showTareasPersonalizadasPanel) {
       this.tpMostrarImportar = false;
       this.tpCancelarEdicion();
-      if (this.trialMode) {
-        this.tareasPersonalizadas = this.tpLoadDemo();
-      } else {
+      this.cargarTareasPersonalizadas();
+      if (!this.trialMode) {
         this.tpService.syncPending(this.userCode).subscribe();
       }
     }
@@ -3338,7 +3396,14 @@ fetchUserData(): void {
     }
     if (!this.userCode) return;
     this.tpService.getByUserCode(this.userCode).subscribe({
-      next: list => this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list),
+      next: list => {
+        const factor = this.ajustePrecioService.getPersonalizadaFactorLocal(this.userCode);
+        const ajustadas = factor !== 1
+          ? list.map(t => ({ ...t, costo: t.costo * factor }))
+          : list;
+        this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(ajustadas);
+        this.ajustePrecioService.syncPersonalizadaFactor(this.userCode);
+      },
       error: () => {}
     });
   }
@@ -3357,10 +3422,7 @@ fetchUserData(): void {
     const isNew = this.tpEditingId == null;
     const limit = this.trialMode ? this.TP_LIMIT_DEMO : this.TP_LIMIT_VIP;
     if (isNew && this.tareasPersonalizadas.length >= limit) {
-      this.appToast.warning(
-        `Alcanzaste el límite de ${limit} tareas personalizadas`,
-        'Límite alcanzado'
-      );
+      this.uiDialog.warning({ title: 'Límite alcanzado', text: `Alcanzaste el límite de ${limit} tareas personalizadas en el plan demo.` });
       return;
     }
 
@@ -3378,6 +3440,11 @@ fetchUserData(): void {
 
     if (this.trialMode) {
       const list = this.tpLoadDemo();
+      if (isNew && list.length >= this.TP_LIMIT_DEMO) {
+        this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
+        this.uiDialog.warning({ title: 'Límite alcanzado', text: `Alcanzaste el límite de ${this.TP_LIMIT_DEMO} tareas personalizadas en el plan demo.` });
+        return;
+      }
       if (this.tpEditingId != null) {
         const idx = list.findIndex(t => t.id === this.tpEditingId);
         if (idx !== -1) list[idx] = { ...payload, id: this.tpEditingId };
@@ -3525,6 +3592,11 @@ fetchUserData(): void {
       };
       if (this.trialMode) {
         const list = this.tpLoadDemo();
+        if (list.length >= this.TP_LIMIT_DEMO) {
+          this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
+          this.uiDialog.warning({ title: 'Límite alcanzado', text: `Alcanzaste el límite de ${this.TP_LIMIT_DEMO} tareas personalizadas en el plan demo.` });
+          return;
+        }
         const created: TareaPersonalizada = { ...payload, id: -Date.now() };
         list.unshift(created);
         this.tpSaveDemo(list);
@@ -3583,6 +3655,11 @@ fetchUserData(): void {
 
       if (this.trialMode) {
         const list = this.tpLoadDemo();
+        if (list.length >= this.TP_LIMIT_DEMO) {
+          this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
+          this.uiDialog.warning({ title: 'Límite alcanzado', text: `Alcanzaste el límite de ${this.TP_LIMIT_DEMO} tareas personalizadas en el plan demo.` });
+          return;
+        }
         const created: TareaPersonalizada = { ...payload, id: -Date.now() };
         list.unshift(created);
         this.tpSaveDemo(list);
@@ -3809,6 +3886,7 @@ fetchUserData(): void {
     return this.userCode?.trim().length >= 6 ? 6 : 3;
   }
 }
+
 
 
 
