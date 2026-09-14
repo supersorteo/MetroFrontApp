@@ -1,6 +1,7 @@
 import { Component, DestroyRef, HostListener, inject, OnInit } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { RagChatComponent } from './componentes/rag-chat/rag-chat.component';
 import { AdminService } from './servicios/admin.service';
 import { OfflineStatusService } from './servicios/offline-status.service';
 import { OfflineSyncService } from './servicios/offline-sync.service';
@@ -13,7 +14,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule],
+  imports: [RouterOutlet, CommonModule, RagChatComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

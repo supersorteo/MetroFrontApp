@@ -6,7 +6,7 @@ $blue-dark: #1d4ed8;
 .rag-chat-fab {
   position: fixed;
   bottom: 24px;
-  right: 86px;
+  right: 24px;
   width: $fab-size;
   height: $fab-size;
   border-radius: 50%;
@@ -29,7 +29,7 @@ $blue-dark: #1d4ed8;
 .rag-chat-panel {
   position: fixed;
   bottom: 86px;
-  right: 78px;
+  right: 16px;
   width: min(420px, calc(100vw - 32px));
   height: 480px;
   background: var(--bs-body-bg, #fff);

@@ -1,16 +1,16 @@
 $radius: 12px;
 $fab-size: 52px;
-$blue: #2563eb;
-$blue-dark: #1d4ed8;
+$green: #059669;
+$green-dark: #047857;
 
-.rag-chat-fab {
+.rag-ayuda-fab {
   position: fixed;
   bottom: 24px;
-  right: 86px;
+  right: 24px;
   width: $fab-size;
   height: $fab-size;
   border-radius: 50%;
-  background: $blue;
+  background: $green;
   color: #fff;
   display: flex;
   align-items: center;
@@ -22,14 +22,14 @@ $blue-dark: #1d4ed8;
   transition: background .2s, transform .15s;
   user-select: none;
 
-  &:hover { background: $blue-dark; transform: scale(1.06); }
-  &--active { background: $blue-dark; }
+  &:hover { background: $green-dark; transform: scale(1.06); }
+  &--active { background: $green-dark; }
 }
 
-.rag-chat-panel {
+.rag-ayuda-panel {
   position: fixed;
   bottom: 86px;
-  right: 78px;
+  right: 16px;
   width: min(420px, calc(100vw - 32px));
   height: 480px;
   background: var(--bs-body-bg, #fff);
@@ -42,18 +42,18 @@ $blue-dark: #1d4ed8;
   overflow: hidden;
 }
 
-.rag-chat-header {
+.rag-ayuda-header {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  background: $blue;
+  background: $green;
   color: #fff;
   font-weight: 600;
   font-size: .95rem;
   flex-shrink: 0;
 }
 
-.rag-chat-close {
+.rag-ayuda-close {
   margin-left: auto;
   background: none;
   border: none;
@@ -68,7 +68,7 @@ $blue-dark: #1d4ed8;
   &:hover { opacity: 1; }
 }
 
-.rag-chat-messages {
+.rag-ayuda-messages {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
@@ -78,7 +78,7 @@ $blue-dark: #1d4ed8;
   scroll-behavior: smooth;
 }
 
-.rag-chat-bubble {
+.rag-ayuda-bubble {
   max-width: 88%;
   padding: 8px 12px;
   border-radius: $radius;
@@ -87,7 +87,7 @@ $blue-dark: #1d4ed8;
 
   &--usuario {
     align-self: flex-end;
-    background: $blue;
+    background: $green;
     color: #fff;
     border-bottom-right-radius: 2px;
   }
@@ -100,14 +100,14 @@ $blue-dark: #1d4ed8;
   }
 }
 
-.rag-chat-text {
+.rag-ayuda-text {
   margin: 0;
   white-space: pre-wrap;
   font-family: inherit;
   font-size: inherit;
 }
 
-.rag-chat-typing {
+.rag-ayuda-typing {
   display: flex;
   gap: 4px;
   align-items: center;
@@ -130,7 +130,7 @@ $blue-dark: #1d4ed8;
   30% { opacity: 1; transform: translateY(-4px); }
 }
 
-.rag-chat-input-row {
+.rag-ayuda-input-row {
   display: flex;
   gap: 8px;
   padding: 10px 12px;
@@ -138,7 +138,7 @@ $blue-dark: #1d4ed8;
   flex-shrink: 0;
 }
 
-.rag-chat-input {
+.rag-ayuda-input {
   flex: 1;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -152,17 +152,17 @@ $blue-dark: #1d4ed8;
 
   &:focus {
     outline: none;
-    border-color: $blue;
+    border-color: $green;
   }
 
   &:disabled { opacity: .6; }
 }
 
-.rag-chat-send {
+.rag-ayuda-send {
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  background: $blue;
+  background: $green;
   color: #fff;
   border: none;
   cursor: pointer;
@@ -175,5 +175,5 @@ $blue-dark: #1d4ed8;
   transition: background .15s;
 
   &:disabled { background: #94a3b8; cursor: not-allowed; }
-  &:not(:disabled):hover { background: $blue-dark; }
+  &:not(:disabled):hover { background: $green-dark; }
 }

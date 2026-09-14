@@ -1,0 +1,48 @@
+<!-- Botón flotante -->
+<div class="rag-ayuda-fab" (click)="toggle()" [class.rag-ayuda-fab--active]="abierto()" title="Ayuda MetroApp">
+  <i class="bi" [class.bi-question-circle]="!abierto()" [class.bi-x-lg]="abierto()"></i>
+</div>
+
+<!-- Panel de chat -->
+@if (abierto()) {
+  <div class="rag-ayuda-panel">
+    <div class="rag-ayuda-header">
+      <i class="bi bi-question-circle me-2"></i>
+      <span>Ayuda MetroApp</span>
+      <button class="rag-ayuda-close" (click)="cerrar()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <div class="rag-ayuda-messages" #scrollContainer>
+      @for (msg of mensajes(); track $index) {
+        <div class="rag-ayuda-bubble"
+             [class.rag-ayuda-bubble--usuario]="msg.rol === 'usuario'"
+             [class.rag-ayuda-bubble--asistente]="msg.rol === 'asistente'">
+          @if (msg.cargando) {
+            <span class="rag-ayuda-typing">
+              <span></span><span></span><span></span>
+            </span>
+          } @else {
+            <pre class="rag-ayuda-text">{{ msg.texto }}</pre>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="rag-ayuda-input-row">
+      <textarea
+        class="rag-ayuda-input"
+        rows="2"
+        placeholder="Ej: ¿Cómo activo el modo VIP?"
+        [ngModel]="preguntaActual()"
+        (ngModelChange)="preguntaActual.set($event)"
+        (keydown)="onKeydown($event)"
+        [disabled]="cargando()"
+      ></textarea>
+      <button class="rag-ayuda-send" (click)="enviar()" [disabled]="cargando() || !preguntaActual().trim()">
+        <i class="bi bi-send-fill"></i>
+      </button>
+    </div>
+  </div>
+}

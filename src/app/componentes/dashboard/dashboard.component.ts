@@ -816,6 +816,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       this.loadDemoData();
       this.totalClientesUsuario = this.getDemoClientesCount();
       this.loadMembershipLimits();
+      this.cargarTareasPersonalizadas();
       return;
     }
     this.loadUserCode();
@@ -1689,16 +1690,14 @@ actualizarTarea(): void {
 
 agregarTarea(): void {
 
-/*if (this.trialMode && this.tareasAgregadas.length >= 7) {
-  this.appToast.info('En modo demo solo podés agregar 7 tareas', 'Modo demo');
-  return;
-}*/
-
 if (this.trialMode) {
   const clienteId = this.clienteSeleccionado?.id ?? null;
+  const demoKey = this.demoTareasKey(clienteId);
+  let demoList: UserTarea[];
+  try { demoList = JSON.parse(localStorage.getItem(demoKey) || '[]'); } catch { demoList = []; }
 
-  if (this.tareasAgregadas.length >= 7) {
-    this.appToast.info('En modo demo solo podés agregar 7 tareas', 'Modo demo');
+  if (demoList.length >= 7) {
+    this.uiDialog.warning({ title: 'Límite alcanzado', text: 'En el plan demo solo podés agregar hasta 7 tareas por presupuesto.' });
     return;
   }
 
@@ -1713,11 +1712,12 @@ if (this.trialMode) {
     totalCost: this.calcularTotalCosto(this.tareaSeleccionada)
   };
 
-  this.tareasAgregadas.push(nuevaTarea);
+  demoList.push(nuevaTarea);
+  this.tareasAgregadas = demoList;
   this.mostrarTabla = true;
 
-  localStorage.setItem(this.demoTareasKey(clienteId), JSON.stringify(this.tareasAgregadas));
-  localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
+  localStorage.setItem(demoKey, JSON.stringify(demoList));
+  localStorage.setItem('tareasAgregadas', JSON.stringify(demoList));
 
   this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
   this.updatePaginatedTareasPanel();
@@ -3382,9 +3382,8 @@ fetchUserData(): void {
     if (this.showTareasPersonalizadasPanel) {
       this.tpMostrarImportar = false;
       this.tpCancelarEdicion();
-      if (this.trialMode) {
-        this.tareasPersonalizadas = this.tpLoadDemo();
-      } else {
+      this.cargarTareasPersonalizadas();
+      if (!this.trialMode) {
         this.tpService.syncPending(this.userCode).subscribe();
       }
     }
@@ -3423,10 +3422,7 @@ fetchUserData(): void {
     const isNew = this.tpEditingId == null;
     const limit = this.trialMode ? this.TP_LIMIT_DEMO : this.TP_LIMIT_VIP;
     if (isNew && this.tareasPersonalizadas.length >= limit) {
-      this.appToast.warning(
-        `Alcanzaste el límite de ${limit} tareas personalizadas`,
-        'Límite alcanzado'
-      );
+      this.uiDialog.warning({ title: 'Límite alcanzado', text: `Alcanzaste el límite de ${limit} tareas personalizadas en el plan demo.` });
       return;
     }
 
@@ -3444,6 +3440,11 @@ fetchUserData(): void {
 
     if (this.trialMode) {
       const list = this.tpLoadDemo();
+      if (isNew && list.length >= this.TP_LIMIT_DEMO) {
+        this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
+        this.uiDialog.warning({ title: 'Límite alcanzado', text: `Alcanzaste el límite de ${this.TP_LIMIT_DEMO} tareas personalizadas en el plan demo.` });
+        return;
+      }
       if (this.tpEditingId != null) {
         const idx = list.findIndex(t => t.id === this.tpEditingId);
         if (idx !== -1) list[idx] = { ...payload, id: this.tpEditingId };
@@ -3591,6 +3592,11 @@ fetchUserData(): void {
       };
       if (this.trialMode) {
         const list = this.tpLoadDemo();
+        if (list.length >= this.TP_LIMIT_DEMO) {
+          this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
+          this.uiDialog.warning({ title: 'Límite alcanzado', text: `Alcanzaste el límite de ${this.TP_LIMIT_DEMO} tareas personalizadas en el plan demo.` });
+          return;
+        }
         const created: TareaPersonalizada = { ...payload, id: -Date.now() };
         list.unshift(created);
         this.tpSaveDemo(list);
@@ -3649,6 +3655,11 @@ fetchUserData(): void {
 
       if (this.trialMode) {
         const list = this.tpLoadDemo();
+        if (list.length >= this.TP_LIMIT_DEMO) {
+          this.tareasPersonalizadas = this.ordenarTareasPersonalizadas(list);
+          this.uiDialog.warning({ title: 'Límite alcanzado', text: `Alcanzaste el límite de ${this.TP_LIMIT_DEMO} tareas personalizadas en el plan demo.` });
+          return;
+        }
         const created: TareaPersonalizada = { ...payload, id: -Date.now() };
         list.unshift(created);
         this.tpSaveDemo(list);
