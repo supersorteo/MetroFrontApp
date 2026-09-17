@@ -22,7 +22,10 @@
 
     <div class="program-title" *ngIf="!isContentVisible">
 
-      <h6>Orbita software</h6>
+      <img class="program-title__logo" src="assets/orbita-software-logo.png" alt="Orbita Software">
+      <a class="program-title__website" href="https://www.orbitasoftware.site" target="_blank" rel="noopener noreferrer">
+        www.orbitasoftware.site
+      </a>
 
     </div>
 
@@ -31,46 +34,6 @@
   </div>
 
   <div class="menu-panel__body">
-  <div class="menu-panel__connection">
-    <div class="conn-pill"
-         [class.conn-pill--offline]="!offlineStatus.isOnline()"
-         [class.conn-pill--syncing]="offlineSync.isSyncing()"
-         [class.conn-pill--pending]="offlineStatus.isOnline() && offlineSync.hasPendingOps() && !offlineSync.isSyncing()">
-
-      @if (offlineSync.isSyncing()) {
-        <i class="bi bi-arrow-repeat conn-pill__icon conn-pill__icon--spin"></i>
-      } @else if (!offlineStatus.isOnline()) {
-        <i class="bi bi-wifi-off conn-pill__icon"></i>
-      } @else if (offlineSync.hasPendingOps()) {
-        <i class="bi bi-cloud-upload conn-pill__icon"></i>
-      } @else {
-        <i class="bi bi-wifi conn-pill__icon"></i>
-      }
-
-      @if (offlineSync.hasPendingOps() && !offlineSync.isSyncing()) {
-        <span class="conn-pill__count">{{ offlineSync.pendingOpsCount() }}</span>
-      }
-
-      <div class="conn-pill__tooltip">
-        @if (offlineSync.isSyncing()) {
-          <span>Sincronizando {{ offlineSync.pendingOpsCount() }} cambio(s)...</span>
-        } @else if (!offlineStatus.isOnline()) {
-          <span>Sin conexión · La app sigue funcionando</span>
-          @if (offlineSync.hasPendingOps()) {
-            <span class="conn-pill__tooltip-sub">{{ offlineSync.pendingOpsCount() }} cambio(s) se sincronizarán al volver la conexión</span>
-          }
-        } @else if (offlineSync.hasPendingOps()) {
-          <span>{{ offlineSync.pendingOpsCount() }} cambio(s) sin sincronizar</span>
-          <button class="conn-pill__sync-btn" type="button" (click)="triggerManualSync()">
-            <i class="bi bi-arrow-repeat"></i> Sincronizar ahora
-          </button>
-        } @else {
-          <span>Conectado</span>
-        }
-      </div>
-    </div>
-  </div>
-
     <div
 
       class="sync-status-card"
@@ -153,9 +116,16 @@
 
     <ul class="list-unstyled d-flex flex-column align-items-center">
 
-      <li class="w-100 mb-3 text-center timer-info">
+      <li class="w-100 mt-2 text-center" *ngIf="showPreviousVersionSidebarLink">
 
-        {{ remainingTime }}
+        <a
+          class="btn btn-outline-primary btn-block w-100 previous-version-sidebar-link"
+          href="https://www.metroapp.site/metro2025.html"
+          target="_blank"
+          rel="noopener noreferrer">
+          <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+          METRO versión anterior
+        </a>
 
       </li>
 
@@ -191,9 +161,59 @@
 
       </li>
 
-      <li class="w-100 text-center mt-2">
+      <li class="w-100 mt-2 text-center">
 
-        <button class="btn btn-secondary logout-button1 w-100" (click)="logout()">
+        <button class="btn btn-outline-primary btn-block w-100 animate" (click)="compartirApp(); toggleMenuPanel()">
+
+          <i class="bi bi-share me-1" aria-hidden="true"></i>COMPARTIR APP
+
+        </button>
+
+      </li>
+
+      <li class="w-100 d-flex align-items-center justify-content-center gap-2 mt-2 sidebar-session-row">
+
+        <div class="menu-panel__connection">
+          <div class="conn-pill"
+               [class.conn-pill--offline]="!offlineStatus.isOnline()"
+               [class.conn-pill--syncing]="offlineSync.isSyncing()"
+               [class.conn-pill--pending]="offlineStatus.isOnline() && offlineSync.hasPendingOps() && !offlineSync.isSyncing()">
+
+            @if (offlineSync.isSyncing()) {
+              <i class="bi bi-arrow-repeat conn-pill__icon conn-pill__icon--spin"></i>
+            } @else if (!offlineStatus.isOnline()) {
+              <i class="bi bi-wifi-off conn-pill__icon"></i>
+            } @else if (offlineSync.hasPendingOps()) {
+              <i class="bi bi-cloud-upload conn-pill__icon"></i>
+            } @else {
+              <i class="bi bi-wifi conn-pill__icon"></i>
+            }
+
+            @if (offlineSync.hasPendingOps() && !offlineSync.isSyncing()) {
+              <span class="conn-pill__count">{{ offlineSync.pendingOpsCount() }}</span>
+            }
+
+            <div class="conn-pill__tooltip">
+              @if (offlineSync.isSyncing()) {
+                <span>Sincronizando {{ offlineSync.pendingOpsCount() }} cambio(s)...</span>
+              } @else if (!offlineStatus.isOnline()) {
+                <span>Sin conexión · La app sigue funcionando</span>
+                @if (offlineSync.hasPendingOps()) {
+                  <span class="conn-pill__tooltip-sub">{{ offlineSync.pendingOpsCount() }} cambio(s) se sincronizarán al volver la conexión</span>
+                }
+              } @else if (offlineSync.hasPendingOps()) {
+                <span>{{ offlineSync.pendingOpsCount() }} cambio(s) sin sincronizar</span>
+                <button class="conn-pill__sync-btn" type="button" (click)="triggerManualSync()">
+                  <i class="bi bi-arrow-repeat"></i> Sincronizar ahora
+                </button>
+              } @else {
+                <span>Conectado</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary logout-button1" (click)="logout()">
 
           Cerrar sesión
 
@@ -609,11 +629,11 @@
 
             </div>
 
-            <div *ngIf="tareasPersonalizadas.length === 0" class="tp-empty-state">
-
-              <i class="bi bi-bookmark-heart tp-empty-state__icon"></i>
+            <div *ngIf="tareasPersonalizadas.length === 0" class="tp-empty-state tp-empty-state--with-sprite">
 
               <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea en el formulario.</p>
+
+              <img class="tp-empty-state__sprite" src="assets/archi-relajado-sprite.png" alt="Arquitecto relajado">
 
             </div>
 
@@ -1041,9 +1061,9 @@
 
     <div class="containerbuscar">
 
-      <div class="task-brand-row mb-2" *ngIf="currentEmpresaLogoUrl">
+      <div class="task-brand-row mb-2" *ngIf="currentEmpresaLogoUrl || showPreviousVersionBanner">
 
-        <div class="fixed-image-container">
+        <div class="fixed-image-container" *ngIf="currentEmpresaLogoUrl">
 
           <img
 
@@ -1059,6 +1079,29 @@
 
             (click)="openListaEmpresasModal()">
 
+        </div>
+
+        <div class="tareas-agregadas__version-banner" *ngIf="showPreviousVersionBanner">
+          <div class="tareas-agregadas__version-banner-top">
+            <a
+              href="https://www.metroapp.site/metro2025.html"
+              target="_blank"
+              rel="noopener noreferrer">
+              Usá METRO versión anterior aquí
+            </a>
+            <button
+              type="button"
+              class="tareas-agregadas__version-banner-close"
+              aria-label="Cerrar banner"
+              title="Cerrar"
+              (click)="closePreviousVersionBanner()">
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+          </div>
+          <label class="tareas-agregadas__version-banner-check">
+            <input type="checkbox" [(ngModel)]="previousVersionDontShowAgain">
+            <span>No volver a mostrar este banner</span>
+          </label>
         </div>
 
       </div>
@@ -1229,7 +1272,6 @@
 
                 <button class="tp-toolbar__create" type="button" (click)="abrirTpEditor()">
                   <span class="tp-toolbar__create-main">
-                    <i class="bi bi-plus-circle-fill"></i>
                     <span>Crear</span>
                   </span>
                   <div class="tp-capacity-chip"
@@ -1258,23 +1300,17 @@
 
                   </span>
 
-                  <span class="tp-toolbar__toggle-arrow" aria-hidden="true">
-
-                    <i class="bi" [ngClass]="tpMostrarImportar ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
-
-                  </span>
-
                 </button>
 
               </div>
 
             </div>
 
-            <div *ngIf="tareasPersonalizadas.length === 0" class="tp-empty-state tp-empty-state--hero">
-
-              <i class="bi bi-bookmark-heart tp-empty-state__icon"></i>
+            <div *ngIf="tareasPersonalizadas.length === 0" class="tp-empty-state tp-empty-state--hero tp-empty-state--with-sprite">
 
               <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea desde el botón superior.</p>
+
+              <img class="tp-empty-state__sprite" src="assets/archi-relajado-sprite.png" alt="Arquitecto relajado">
 
             </div>
 
@@ -1456,7 +1492,11 @@
               class="btn btn-sm btn-outline-secondary tareas-agregadas__cliente-btn"
               title="Seleccionar cliente"
               (click)="$event.stopPropagation(); openListaClientesModal()">
-              <i class="fas fa-user-tie" aria-hidden="true"></i>
+              <span class="tareas-agregadas__cliente-switch-icon" aria-hidden="true">
+                <i class="fas fa-user tareas-agregadas__cliente-switch-icon-user tareas-agregadas__cliente-switch-icon-user--top"></i>
+                <i class="fas fa-user tareas-agregadas__cliente-switch-icon-user tareas-agregadas__cliente-switch-icon-user--bottom"></i>
+                <i class="bi bi-arrow-left-right tareas-agregadas__cliente-switch-icon-arrows"></i>
+              </span>
             </button>
           </div>
 
@@ -1596,9 +1636,9 @@
 
         </button>
 
-        <button class="tareas-panel__action" type="button" (click)="toggleSavedBudgetsPanel()" aria-label="Guardar presupuesto" title="Guardar presupuesto">
+        <button class="tareas-panel__action" type="button" (click)="openSaveBudgetModal()" aria-label="Guardar presupuesto" title="Guardar presupuesto">
 
-          <i class="bi bi-save2" aria-hidden="true"></i>
+          <i class="bi bi-floppy" aria-hidden="true"></i>
 
         </button>
 
@@ -1670,7 +1710,7 @@
 
           <li><i class="bi bi-x-lg" aria-hidden="true"></i><span><strong>Cerrar:</strong> cierra el panel de tareas agregadas.</span></li>
 
-          <li><i class="bi bi-save2" aria-hidden="true"></i><span><strong>Guardar:</strong> abre la vista para guardar el presupuesto actual.</span></li>
+          <li><i class="bi bi-floppy" aria-hidden="true"></i><span><strong>Guardar:</strong> abre la vista para guardar el presupuesto actual.</span></li>
 
           <li><i class="bi bi-eraser" aria-hidden="true"></i><span><strong>Quitar carga:</strong> limpia el presupuesto cargado actualmente.</span></li>
 
@@ -2148,7 +2188,7 @@
 
           <span
 
-            class="badge rounded-pill fs-6 px-3 py-2"
+            class="badge rounded-pill fs-6 px-3 py-2 lista-clientes__limit-badge"
 
             [ngClass]="{
 
@@ -2328,8 +2368,6 @@
         </div>
 
         <button type="button" class="btn btn-success lista-clientes-modal__footer-btn" (click)="openClientModal()">Crear nuevo cliente</button>
-        <button type="button" class="btn btn-secondary lista-clientes-modal__footer-btn" data-bs-dismiss="modal">Cerrar</button>
-
       </div>
 
     </div>
@@ -2598,7 +2636,7 @@
 
           <span
 
-            class="badge rounded-pill fs-6 px-3 py-2"
+            class="badge rounded-pill fs-6 px-3 py-2 empresa-list__limit-badge"
 
             [ngClass]="{
 
@@ -2722,7 +2760,7 @@
 
                 <i class="bi bi-plus-circle me-1" aria-hidden="true"></i>
 
-                Nueva empresa
+                Crear
 
               </button>
 
@@ -2848,7 +2886,7 @@
 
         <input type="text" class="form-control flex-grow-1" placeholder="Filtrar empresa..." [(ngModel)]="filtroEmpresa">
 
-        <button type="button" class="btn btn-primary btn-sm empresa-list__create flex-shrink-0" (click)="abrirFormularioNuevaEmpresa()" [disabled]="isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Limite alcanzado para tu plan' : null"><i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Nueva empresa</button>
+        <button type="button" class="btn btn-primary btn-sm empresa-list__create flex-shrink-0" (click)="abrirFormularioNuevaEmpresa()" [disabled]="isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Limite alcanzado para tu plan' : null"><i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Crear</button>
 
       </div>
 
@@ -3018,12 +3056,43 @@
 
     (presupuestoActualizado)="onPresupuestoActualizado($event)"
 
+    (presupuestoGuardado)="closeSaveBudgetModal()"
+
     (presupuestoEliminado)="onPresupuestoEliminado($event)"
 
     (cargarPresupuesto)="cargarPresupuestoDesdeLista($event)">
 
   </app-presupuestos-guardados>
 
+</div>
+
+<div class="save-budget-modal-backdrop" *ngIf="showSaveBudgetModal" (click)="closeSaveBudgetModal()">
+  <div class="save-budget-modal" role="dialog" aria-modal="true" aria-labelledby="saveBudgetModalTitle" (click)="$event.stopPropagation()">
+    <div class="save-budget-modal__header">
+      <h5 id="saveBudgetModalTitle">Guardar presupuesto</h5>
+      <button type="button" class="btn-close" aria-label="Cerrar" (click)="closeSaveBudgetModal()"></button>
+    </div>
+    <div class="save-budget-modal__body">
+      <div class="save-budget-modal__details">
+        <div><span>Cliente</span><strong>{{ clienteSeleccionado?.name || 'Sin cliente' }}</strong></div>
+        <div><span>Fecha del presupuesto</span><strong>{{ budgetDate | date:'dd/MM/yyyy' }}</strong></div>
+      </div>
+      <label class="form-label" for="nombrePresupuestoModal">Nombre del presupuesto</label>
+      <input
+        id="nombrePresupuestoModal"
+        class="form-control"
+        type="text"
+        [(ngModel)]="nombrePresupuestoModal"
+        placeholder="Ej.: Presupuesto reforma cocina"
+        maxlength="120"
+        (keyup.enter)="guardarPresupuestoDesdeModal()"
+      />
+    </div>
+    <div class="save-budget-modal__footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeSaveBudgetModal()">Cancelar</button>
+      <button type="button" class="btn btn-primary" [disabled]="!nombrePresupuestoModal.trim()" (click)="guardarPresupuestoDesdeModal()">Guardar</button>
+    </div>
+  </div>
 </div>
 
 <div class="modal fade" id="weatherModal" tabindex="-1" aria-labelledby="weatherModalLabel" aria-hidden="true">
@@ -3151,63 +3220,48 @@
           <div class="modal-body">
 
             <h6 id="zonaBloqueadaMensaje" class="text-danger mt-2" style="display: block;">
-
               Esta función solo se activa con código de acceso.
-
             </h6>
 
-            <select class="form-select" id="provinciaSelect" [(ngModel)]="provinciaSeleccionada" name="provinciaSeleccionada">
+            <p class="provincia-modal__hint">
+              Elegí tu provincia para aplicar el índice sugerido a los valores de mano de obra.
+            </p>
 
-              <option value="" disabled selected>Seleccione una provincia...</option>
+            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">
+              No hay provincias disponibles para el país seleccionado.
+            </div>
 
-              <option *ngFor="let provincia of provincias" [value]="provincia.nombre">{{ provincia.nombre }}</option>
+            <div class="table-responsive provincia-modal__table-wrap" *ngIf="provincias.length > 0">
+              <table class="table table-hover align-middle provincia-modal__table">
+                <thead>
+                  <tr>
+                    <th>Provincia</th>
+                    <th class="text-end">Índice MO</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let provincia of provincias"
+                      [class.provincia-modal__row--selected]="provinciaSeleccionada === provincia.nombre"
+                      (click)="seleccionarProvincia(provincia.nombre)"
+                      tabindex="0"
+                      (keydown.enter)="seleccionarProvincia(provincia.nombre)">
+                    <td>
+                      <span class="provincia-modal__radio" aria-hidden="true"></span>
+                      {{ provincia.nombre }}
+                    </td>
+                    <td class="text-end">
+                      <strong>{{ getProvinciaIndice(provincia.nombre) }}%</strong>
+                      <span class="provincia-modal__delta">{{ provinciaAjusteLabel(provincia.nombre) }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-            </select>
-
-            <div *ngIf="provincias.length === 0" class="text-muted text-center py-3">No hay provincias disponibles para el país seleccionado.</div>
-
-            <div class="mt-3">
-
-              <h6 class="modal-zona-title">valor sugerido de mano de obra pura sin cargas sociales</h6>
-
-              <hr>
-
-              <div class="modal-zona-card">
-
-                <span class="modal-zona-label">Zona 1:</span>
-
-                Buenos Aires, Santa Fe, Mendoza, Córdoba, Tucumán, Salta, Jujuy, Entre Ríos, Corrientes, Formosa,
-
-                La Pampa, San Luis, La Rioja, Santiago del Estero, Chaco, Misiones, Catamarca, San Juan.
-
-              </div>
-
-              <div class="modal-zona-card">
-
-                <span class="modal-zona-label">Zona 2:</span>
-
-                Neuquén, Río Negro, Chubut.
-
-              </div>
-
-              <div class="modal-zona-card">
-
-                <span class="modal-zona-label">Zona 3:</span>
-
-                Santa Cruz.
-
-              </div>
-
-              <div class="modal-zona-card">
-
-                <span class="modal-zona-label">Zona 4:</span>
-
-                Tierra del Fuego.
-
-              </div>
-
-              <hr>
-
+            <div class="provincia-modal__selected" *ngIf="provinciaSeleccionada">
+              <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+              Provincia aplicada: <strong>{{ provinciaSeleccionada }}</strong>
+              <span>({{ getProvinciaIndice(provinciaSeleccionada) }}% del valor base)</span>
             </div>
 
           </div>
@@ -3415,11 +3469,11 @@
 
         <div class="form-group mb-3 font-size-lista-card">
 
-          <input type="range" id="fontSizeListaRange" class="form-range" min="10" max="24" step="1" value="12">
+          <input type="range" id="fontSizeListaRange" class="form-range" min="10" max="24" step="1" [value]="fontSizeLista" (input)="onFontSizeListaChange($event)" aria-label="Tamaño de fuente de la lista">
 
           <div class="font-size-lista-card__value">
 
-            Tamaño actual: <strong id="fontSizeListaValue">12px</strong>
+            Tamaño actual: <strong id="fontSizeListaValue">{{ fontSizeLista }}px</strong>
 
           </div>
 
@@ -3478,6 +3532,10 @@
           <i class="fas fa-undo-alt" aria-hidden="true" style="margin-right: 6px;"></i>Reestablecer valor original de lista
 
         </button>
+
+        <div class="timer-info ajustes-lista__timer" role="status" aria-live="polite">
+          {{ remainingTime }}
+        </div>
 
       </div>
 

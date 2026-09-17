@@ -556,7 +556,9 @@ export const CATEGORIAS = [...new Set(TAREAS.map(t => t.categoria))];
 
 const DEMO_HISTORY_STORAGE_KEY = 'demoCalculadoraHistorial';
 const DEMO_DAILY_USAGE_STORAGE_KEY = 'demoCalculadoraDailyUsage';
+const DEMO_TASKS_STORAGE_KEY = 'demoCalculadoraTareas';
 const DEMO_TASK_LIMIT = 3;
+const DEMO_TASKS_TTL_MS = 24 * 60 * 60 * 1000;
 const DEMO_HISTORY_LIMIT = 3;
 const DEMO_DAILY_CALC_LIMIT = 3;
 const USER_HISTORY_LIMIT = 10;
@@ -629,6 +631,41 @@ function seleccionarTareasAleatorias(limit: number): Tarea[] {
   return shuffled.slice(0, Math.min(limit, shuffled.length));
 }
 
+function cargarTareasDemoDesdeStorage(): Tarea[] {
+  try {
+    const raw = localStorage.getItem(DEMO_TASKS_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    const generatedAt = Number(parsed?.generatedAt);
+    const taskIds = Array.isArray(parsed?.taskIds) ? parsed.taskIds : [];
+    const age = Date.now() - generatedAt;
+
+    if (
+      taskIds.length === DEMO_TASK_LIMIT &&
+      taskIds.every((id: unknown) => typeof id === 'number') &&
+      age >= 0 &&
+      age < DEMO_TASKS_TTL_MS
+    ) {
+      const tareasGuardadas = taskIds
+        .map((id: number) => TAREAS.find(tarea => tarea.id === id))
+        .filter((tarea: Tarea | undefined): tarea is Tarea => !!tarea);
+
+      if (tareasGuardadas.length === DEMO_TASK_LIMIT) {
+        return tareasGuardadas;
+      }
+    }
+
+    const tareasNuevas = seleccionarTareasAleatorias(DEMO_TASK_LIMIT);
+    localStorage.setItem(DEMO_TASKS_STORAGE_KEY, JSON.stringify({
+      taskIds: tareasNuevas.map(tarea => tarea.id),
+      generatedAt: Date.now()
+    }));
+    return tareasNuevas;
+  } catch (e) {
+    console.warn('[Calculadora] No se pudo persistir la selección de tareas demo:', e);
+    return seleccionarTareasAleatorias(DEMO_TASK_LIMIT);
+  }
+}
+
 function construirResumenesDesdeHistorial(
   historial: CalculoMaterialGuardado[],
   limit: number
@@ -668,6 +705,8 @@ export class CalculadoraMaterialesComponent implements OnInit {
   readonly isTrialMode = localStorage.getItem('trialMode') === 'true';
   readonly userCode = (localStorage.getItem('userCode') || '').trim();
   readonly userEmail = (localStorage.getItem('userEmail') || '').trim();
+  readonly isPremiumMode = !this.isTrialMode;
+  private readonly welcomeDismissedStorageKey = `calculadoraWelcomeDismissed_${this.userCode || this.userEmail || 'premium'}`;
 
   searchTerm = signal('');
   expandedIds = signal<Set<number>>(new Set());
@@ -676,8 +715,9 @@ export class CalculadoraMaterialesComponent implements OnInit {
   sidebarOpen = signal(false);
   ultimasTareasOpen = signal(false);
   historialOpen = signal(false);
-  welcomeModalOpen = signal(true);
-  tareasVisibles = signal<Tarea[]>(this.isTrialMode ? seleccionarTareasAleatorias(DEMO_TASK_LIMIT) : TAREAS);
+  noMostrarBienvenida = signal(this.isPremiumMode && localStorage.getItem(this.welcomeDismissedStorageKey) === 'true');
+  welcomeModalOpen = signal(this.isPremiumMode && !this.noMostrarBienvenida());
+  tareasVisibles = signal<Tarea[]>(this.isTrialMode ? cargarTareasDemoDesdeStorage() : TAREAS);
   ultimasTareas = signal<TareaResumen[]>([]);
   historialCalculos = signal<CalculoMaterialGuardado[]>([]);
   saveStatus = signal<Record<number, SaveStatus | undefined>>({});
@@ -890,6 +930,21 @@ export class CalculadoraMaterialesComponent implements OnInit {
   abrirHistorial(): void { this.cerrarSidebar(); this.historialPage.set(1); this.historialOpen.set(true); }
   cerrarHistorial(): void { this.historialOpen.set(false); }
   cerrarBienvenida(): void { this.welcomeModalOpen.set(false); }
+
+  actualizarNoMostrarBienvenida(event: Event): void {
+    if (!this.isPremiumMode) {
+      return;
+    }
+
+    const checked = (event.target as HTMLInputElement).checked;
+    this.noMostrarBienvenida.set(checked);
+
+    if (checked) {
+      localStorage.setItem(this.welcomeDismissedStorageKey, 'true');
+    } else {
+      localStorage.removeItem(this.welcomeDismissedStorageKey);
+    }
+  }
 
   historialNextPage(): void {
     if (this.historialPage() < this.historialTotalPages()) {
@@ -1135,6 +1190,11 @@ export class CalculadoraMaterialesComponent implements OnInit {
 
   private ensureTaskVisible(taskId: number): void {
     if (this.tareasVisibles().some(t => t.id === taskId)) {
+      return;
+    }
+
+    // El modo demo debe mantener siempre su límite visible de tres tareas.
+    if (this.isTrialMode) {
       return;
     }
 

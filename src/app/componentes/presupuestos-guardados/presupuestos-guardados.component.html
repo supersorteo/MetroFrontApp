@@ -17,7 +17,9 @@
         {{ isSavingBudget ? 'Procesando...' : (presupuestoCargado ? 'Actualizar' : 'Guardar') }}
       </button>
       <div>
-        <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
+        @if (!esModoDemo) {
+          <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
+        }
       </div>
     </div>
 
@@ -84,7 +86,15 @@
       }
     </div>
   } @else {
-    <div class="empty-state">Todavía no hay presupuestos guardados para este cliente.</div>
+    <div class="empty-state">
+      <p class="empty-state__message">Consigue acceso a metro y guarda clientes y presupuestos</p>
+      <img
+        class="empty-state__sprite"
+        src="assets/archi-explicando-presupuestos.webp"
+        alt="Archi explicando cómo guardar presupuestos"
+      />
+      <p class="empty-state__hint">Todavía no hay presupuestos guardados para este cliente.</p>
+    </div>
   }
 </div>
 

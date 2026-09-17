@@ -15,44 +15,42 @@
 
       <div class="login-card login-card--trial" (click)="activarModoPrueba()">
         <div class="login-card__glow"></div>
-        <div class="login-card__trial-left">
-          <div class="login-card__icon"><i class="bi bi-play-circle-fill"></i></div>
-          <span class="login-card__badge-new">¡GRATIS!</span>
+        <div class="login-card__visual">
+          <img src="assets/archi-probar-sistema.webp" alt="Archi probando el sistema" />
         </div>
-        <div class="login-card__trial-right">
+        <div class="login-card__content">
+          <span class="login-card__badge-new">¡GRATIS!</span>
           <h3 class="login-card__title">Probar el sistema</h3>
           <p class="login-card__desc">Explorá todas las funciones sin registrarte. Cero compromisos.</p>
-          <span class="login-card__cta">Comenzar demo&nbsp;<i class="bi bi-arrow-right-circle-fill"></i></span>
+          <span class="login-card__cta">Comenzar demo</span>
         </div>
       </div>
 
       <div class="login-card login-card--member" (click)="loginStep = 'login'">
         <div class="login-card__glow"></div>
-        <div class="login-card__icon"><i class="bi bi-shield-lock-fill"></i></div>
-        <h3 class="login-card__title">Ya soy miembro</h3>
-        <p class="login-card__desc">Ingresá con tu código de acceso</p>
-        <span class="login-card__cta">Ingresar&nbsp;<i class="bi bi-arrow-right-circle-fill"></i></span>
+        <div class="login-card__content">
+          <h3 class="login-card__title">Ya soy miembro</h3>
+          <p class="login-card__desc">Ingresá con tu código de acceso</p>
+          <span class="login-card__cta">Ingresar</span>
+        </div>
+        <div class="login-card__visual">
+          <img src="assets/archi-ya-soy-miembro.webp" alt="Archi indicando que ya es miembro" />
+        </div>
       </div>
 
       <div class="login-card login-card--join" (click)="loginStep = 'join'">
         <div class="login-card__glow"></div>
-        <div class="login-card__icon"><i class="bi bi-rocket-takeoff-fill"></i></div>
-        <h3 class="login-card__title">Quiero unirme</h3>
-        <p class="login-card__desc">Obtené tu membresía y empezá hoy</p>
-        <span class="login-card__cta">Ver opciones&nbsp;<i class="bi bi-arrow-right-circle-fill"></i></span>
+        <div class="login-card__visual">
+          <img src="assets/archi-quiero-unirme.webp" alt="Archi invitando a unirse" />
+        </div>
+        <div class="login-card__content">
+          <h3 class="login-card__title">Quiero unirme</h3>
+          <p class="login-card__desc">Obtené tu membresía y empezá hoy</p>
+          <span class="login-card__cta">Ver opciones</span>
+        </div>
       </div>
 
     </div>
-
-    <div class="login-extras">
-      <button class="btn btn-sm btn-link text-muted" (click)="openCalculadora()">
-        <i class="bi bi-calculator me-1"></i>Calculadora de materiales
-      </button>
-      <button class="btn btn-sm btn-link text-muted" (click)="shareOnWhatsApp()">
-        <i class="bi bi-share me-1"></i>Compartir app
-      </button>
-    </div>
-
 
   </div>
 

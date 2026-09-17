@@ -159,12 +159,42 @@
 }
 
 .empty-state {
-  padding: 32px 16px;
+  padding: 24px 16px 18px;
   text-align: center;
   color: #7a859b;
   border: 1px dashed rgba(90, 113, 153, 0.35);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.7);
+}
+
+.empty-state__message {
+  max-width: 360px;
+  margin: 0 auto 4px;
+  color: #174ea6;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.empty-state__sprite {
+  display: block;
+  width: min(100%, 360px);
+  height: 260px;
+  margin: 0 auto;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.empty-state__hint {
+  margin: 0;
+  color: #7a859b;
+  font-size: 0.84rem;
+}
+
+@media (max-width: 576px) {
+  .empty-state__sprite {
+    height: 230px;
+  }
 }
 
 // ── Edit Presupuesto Modal ──────────────────────────────────

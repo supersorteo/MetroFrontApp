@@ -140,6 +140,13 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  compartirApp(): void {
+    const url = 'www.metroapp.site';
+    const text = `METRO, la app con precios de la construccion. Hace tus presupuestos mas facil y rapido. ${url}`;
+    const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(text)}`;
+    window.location.href = whatsappUrl;
+  }
+
   installPwa() {
     if (!this.deferredPrompt) {
       return;
@@ -199,6 +206,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
   @ViewChild('modalImagePreview') modalImagePreview!: ElementRef<HTMLImageElement>;
   @ViewChild('uploadMessage') uploadMessage!: ElementRef<HTMLParagraphElement>;
+  @ViewChild(PresupuestosGuardadosComponent) presupuestosGuardadosComponent?: PresupuestosGuardadosComponent;
   imageSelected: boolean = false;
 
   tareas: Tarea[] = [];
@@ -206,7 +214,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   mostrarTabla: boolean = false;
   showSavedBudgetsPanel: boolean = false;
+  showSaveBudgetModal: boolean = false;
+  nombrePresupuestoModal = '';
+  private readonly previousVersionBannerStorageKey = 'metroPreviousVersionBannerDismissed';
+  showPreviousVersionBanner = localStorage.getItem(this.previousVersionBannerStorageKey) !== 'true';
+  showPreviousVersionSidebarLink = !this.showPreviousVersionBanner;
+  previousVersionDontShowAgain = localStorage.getItem(this.previousVersionBannerStorageKey) === 'true';
   showTareasPanel: boolean = false;
+  fontSizeLista = 12;
+  private readonly fontSizeListaMin = 10;
+  private readonly fontSizeListaMax = 24;
   activeTaskTab: 'catalogo' | 'personalizadas' = 'catalogo';
   showTareasPersonalizadasPanel: boolean = false;
   showTpEditorModal: boolean = false;
@@ -263,6 +280,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   provincias: Provincia[] = []; // Nuevo
   provinciaSeleccionada: string = '';
+  tareasCatalogoBase: Tarea[] = [];
 
   isContentVisible: boolean = false;
   showAjustesListaInfo: boolean = false;
@@ -356,12 +374,14 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
     this.actualizarTablaYStorage();
   }
 
-  private clearVisibleTasks(): void {
+  private clearVisibleTasks(closePanel = true): void {
     this.tareasAgregadas = [];
     this.tareasAgregadasPaginadas = [];
     this.tareasCurrentPage = 1;
     this.mostrarTabla = false;
-    this.showTareasPanel = false;
+    if (closePanel) {
+      this.showTareasPanel = false;
+    }
     this.presupuestoService.setTareasAgregadas([]);
   }
 
@@ -959,7 +979,9 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       void this.loadTareasAgregadas();
       return;
     }
-    this.clearVisibleTasks();
+    // Al cambiar de cliente desde el panel de tareas premium, conservar el
+    // panel abierto mientras el store carga las tareas del nuevo cliente.
+    this.clearVisibleTasks(false);
     this.clienteStore.select(cliente);
   }
 
@@ -1417,6 +1439,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   }
 
 ngAfterViewInit() {
+  this.restaurarTamanoFuenteLista();
   const menuBtn = document.getElementById('menuToggleBtn');
   const offcanvasElement = document.getElementById('offcanvasMenu');
   if (menuBtn && offcanvasElement) {
@@ -1530,18 +1553,17 @@ ngAfterViewInit() {
 
 // src/app/componentes/dashboard/dashboard.component.ts shareReplay
 obtenerTareas(): void {
+  if (!this.provinciaSeleccionada) {
+    this.provinciaSeleccionada = localStorage.getItem(`provincia_seleccionada_${this.userCode || 'anon'}`)
+      || this.userData?.provincia
+      || '';
+  }
   if (this.userData?.pais) {
     this.tareaService.getTareasByPaisCached(this.userData.pais).pipe(takeUntil(this.destroy$)).subscribe({
       next: (tareas) => {
         const pais = this.userData!.pais;
-        const adminFactor = this.ajustePrecioService.getAdminFactorLocal(pais);
-        const userFactor  = this.ajustePrecioService.getFactorLocal(this.userCode, pais);
-        const compound    = Math.round(adminFactor * userFactor * 1_000_000) / 1_000_000;
-        const ajustadas   = compound !== 1
-          ? tareas.map(t => ({ ...t, costo: t.costo * compound }))
-          : tareas;
-        this.tareas = ajustadas;
-        this.tareasFiltradas = [...ajustadas];
+        this.tareasCatalogoBase = tareas.map(t => ({ ...t }));
+        this.aplicarFactoresCatalogo();
         this.ajustePrecioService.syncFactor(this.userCode, pais);
         this.ajustePrecioService.syncAdminFactor(pais);
       },
@@ -1555,6 +1577,40 @@ obtenerTareas(): void {
     });
   }
 }
+
+  private aplicarFactoresCatalogo(): void {
+    if (!this.userData?.pais || this.tareasCatalogoBase.length === 0) return;
+    const pais = this.userData.pais;
+        const adminFactor = this.ajustePrecioService.getAdminFactorLocal(pais);
+        const userFactor  = this.ajustePrecioService.getFactorLocal(this.userCode, pais);
+    const provinciaFactor = this.getProvinciaFactor();
+    const compound = Math.round(adminFactor * userFactor * provinciaFactor * 1_000_000) / 1_000_000;
+    const ajustadas = compound !== 1
+      ? this.tareasCatalogoBase.map(t => ({ ...t, costo: t.costo * compound }))
+      : this.tareasCatalogoBase.map(t => ({ ...t }));
+    this.tareas = ajustadas;
+    this.tareasFiltradas = [...ajustadas];
+  }
+
+  getProvinciaIndice(provincia: string | null | undefined): number {
+    return this.provinciaService.getIndiceManoObra(provincia);
+  }
+
+  getProvinciaFactor(): number {
+    return this.getProvinciaIndice(this.provinciaSeleccionada) / 100;
+  }
+
+  seleccionarProvincia(provincia: string): void {
+    this.provinciaSeleccionada = provincia;
+    this.aplicarFactoresCatalogo();
+    localStorage.setItem(`provincia_seleccionada_${this.userCode || 'anon'}`, provincia);
+  }
+
+  provinciaAjusteLabel(provincia: string): string {
+    const diferencia = this.getProvinciaIndice(provincia) - 100;
+    if (diferencia === 0) return 'Base';
+    return `${diferencia > 0 ? '+' : ''}${diferencia}%`;
+  }
 
 
 
@@ -1907,6 +1963,35 @@ toggleSavedBudgetsPanel(): void {
   if (nextState) {
     this.showTareasPanel = false;
   }
+}
+
+openSaveBudgetModal(): void {
+  if (this.trialMode) {
+    this.uiDialog.info({ title: 'Modo demo', text: 'Guardar presupuestos no está habilitado en el modo de prueba.' });
+    return;
+  }
+  if (!this.clienteSeleccionado) {
+    this.uiDialog.info({ title: 'Cliente requerido', text: 'Selecciona un cliente antes de guardar el presupuesto.' });
+    return;
+  }
+  if (!this.tareasAgregadas.length) {
+    this.uiDialog.info({ title: 'Tareas requeridas', text: 'Agrega al menos una tarea antes de guardar el presupuesto.' });
+    return;
+  }
+  this.nombrePresupuestoModal = this.presupuestoSeleccionado?.name || '';
+  this.showSaveBudgetModal = true;
+}
+
+  closeSaveBudgetModal(): void {
+  this.showSaveBudgetModal = false;
+  this.nombrePresupuestoModal = '';
+}
+
+guardarPresupuestoDesdeModal(): void {
+  const nombre = this.nombrePresupuestoModal.trim();
+  if (!nombre || !this.presupuestosGuardadosComponent) return;
+  this.presupuestosGuardadosComponent.nombreTemporal = nombre;
+  this.presupuestosGuardadosComponent.guardarPresupuestoActual();
 }
 
 
@@ -2866,23 +2951,46 @@ onImageChange(event: Event): void {
   }
 
   cambiarTamanoFuenteLista(accion: 'increase' | 'decrease'): void {
+    this.aplicarTamanoFuenteLista(this.fontSizeLista + (accion === 'increase' ? 1 : -1));
+  }
+
+  closePreviousVersionBanner(): void {
+    if (this.previousVersionDontShowAgain) {
+      localStorage.setItem(this.previousVersionBannerStorageKey, 'true');
+    }
+    this.showPreviousVersionBanner = false;
+    this.showPreviousVersionSidebarLink = true;
+    this.appToast.info('El acceso a la versión anterior de METRO está disponible en el sidebar.', 'Acceso disponible');
+  }
+
+  onFontSizeListaChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.aplicarTamanoFuenteLista(Number(input.value));
+  }
+
+  private aplicarTamanoFuenteLista(size: number): void {
+    if (!Number.isFinite(size)) return;
+    this.fontSizeLista = Math.min(this.fontSizeListaMax, Math.max(this.fontSizeListaMin, Math.round(size)));
+
     const tabla = document.getElementById('tabla');
-    if (!tabla) return;
-
-    const currentSize = window.getComputedStyle(tabla).fontSize;
-    let newSize = parseFloat(currentSize);
-
-    if (accion === 'increase') {
-      newSize += 1;
-    } else {
-      newSize -= 1;
+    if (tabla) {
+      tabla.style.setProperty('font-size', `${this.fontSizeLista}px`, 'important');
+      const cells = tabla.querySelectorAll('td, th, span, div');
+      cells.forEach(cell => {
+        (cell as HTMLElement).style.setProperty('font-size', `${this.fontSizeLista}px`, 'important');
+      });
     }
 
-    tabla.style.setProperty('font-size', `${newSize}px`, 'important');
-    const cells = tabla.querySelectorAll('td, th, span, div');
-    cells.forEach(cell => {
-      (cell as HTMLElement).style.setProperty('font-size', `${newSize}px`, 'important');
-    });
+    localStorage.setItem(this.fontSizeListaStorageKey(), String(this.fontSizeLista));
+  }
+
+  private fontSizeListaStorageKey(): string {
+    return `fontSizeLista_${this.userCode || 'anon'}`;
+  }
+
+  private restaurarTamanoFuenteLista(): void {
+    const stored = Number(localStorage.getItem(this.fontSizeListaStorageKey()));
+    this.aplicarTamanoFuenteLista(Number.isFinite(stored) && stored > 0 ? stored : 12);
   }
 
 

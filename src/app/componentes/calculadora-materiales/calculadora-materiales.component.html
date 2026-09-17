@@ -180,6 +180,13 @@
               </div>
             </div>
             <p class="calc-welcome-modal__hint">Ingresa el area o volumen para obtener las cantidades exactas.</p>
+            <label class="calc-welcome-modal__preference">
+              <input
+                type="checkbox"
+                [checked]="noMostrarBienvenida()"
+                (change)="actualizarNoMostrarBienvenida($event)">
+              <span>Entendido, no mostrar este mensaje otra vez</span>
+            </label>
           }
         </div>
 

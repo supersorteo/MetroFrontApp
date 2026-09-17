@@ -403,12 +403,6 @@ login(): void {
     this.isContentVisible = false;
   }
 
-  openCalculadora(): void {
-    window.open('https://metroapp.site/calculadora_materiales.html', '_blank');
-    }
-
-
-
   activarModoPrueba(): void {
   ['demoEmpresas', 'demoTareas', 'selectedEmpresaId', 'selectedEmpresa',
    'selectedClienteId', 'selectedCliente', 'tareasAgregadas', 'userData']
@@ -435,12 +429,6 @@ openWebsite(): void {
     window.location.href = fallbackUrl;
   }
 }
-
-    shareOnWhatsApp(): void {
-      const url = 'www.metroapp.site';
-      const text = `METRO, la app con precios de la construccion. Hace tus presupuestos mas facil y rapido. ${url}`;
-      const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(text)}`; window.location.href = whatsappUrl;
-    }
 
     clearForm(): void {
       this.code = '';

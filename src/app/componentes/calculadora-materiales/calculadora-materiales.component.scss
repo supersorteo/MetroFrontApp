@@ -223,6 +223,26 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
     line-height: 1.5;
   }
 
+  &__preference {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: .55rem;
+    margin: .9rem 0 0;
+    color: #405b78;
+    font-size: .82rem;
+    line-height: 1.4;
+    cursor: pointer;
+
+    input {
+      width: 1rem;
+      height: 1rem;
+      flex: 0 0 auto;
+      margin-top: .1rem;
+      accent-color: #d97706;
+      cursor: pointer;
+    }
+  }
+
   &__footer {
     padding: 0 1.6rem 1.5rem;
     display: flex;

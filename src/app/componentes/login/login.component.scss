@@ -11,8 +11,8 @@
   justify-content: flex-start;
   padding: 32px 16px 48px;
   background:
-    linear-gradient(180deg, rgba(248, 251, 255, 0.82) 0%, rgba(236, 244, 255, 0.9) 100%),
-    url('https://images.pexels.com/photos/6285148/pexels-photo-6285148.jpeg?cs=srgb&dl=pexels-gustavo-fring-6285148.jpg&fm=jpg') center/cover no-repeat;
+    linear-gradient(180deg, rgba(248, 251, 255, 0.72) 0%, rgba(236, 244, 255, 0.82) 100%),
+    url('/assets/fondo-obra-atardecer.png') center/cover no-repeat;
   overflow-x: hidden;
 }
 
@@ -103,16 +103,11 @@
 
 /* Grid especial para home */
 .login-cards--home {
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
-
-  .login-card--trial {
-    grid-column: 1 / -1;
-  }
+  grid-template-columns: 1fr;
+  gap: 22px;
 
   @media (max-width: 480px) {
     grid-template-columns: 1fr;
-    .login-card--trial { grid-column: 1; }
   }
 }
 
@@ -195,6 +190,103 @@
   }
 }
 
+/* ── Sprites de la pantalla de inicio ── */
+.login-cards--home .login-card {
+  min-height: 300px;
+  padding: 18px 28px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 0.9fr);
+  align-items: center;
+  gap: 24px;
+  text-align: left;
+  overflow: visible;
+
+  .login-card__visual {
+    align-self: stretch;
+    height: 330px;
+    min-height: 330px;
+    margin: -34px 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    order: 1;
+    overflow: visible;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 365px;
+      object-fit: contain;
+      object-position: center bottom;
+      transform: translateY(12px);
+      opacity: 0;
+      animation: archiSpriteFadeIn 0.8s ease-out forwards;
+    }
+  }
+
+  .login-card__content {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    z-index: 1;
+  }
+
+  .login-card__title { font-size: 1.3rem; }
+  .login-card__desc { max-width: 250px; }
+  .login-card__cta { margin-top: 8px; }
+}
+
+@keyframes archiSpriteFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Cadena: cada sprite comienza un segundo después del anterior. */
+.login-cards--home .login-card:nth-child(2) img { animation-delay: 1s; }
+.login-cards--home .login-card:nth-child(3) img { animation-delay: 2s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .login-cards--home .login-card img {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* Alternancia: imagen izquierda, derecha, izquierda. */
+.login-cards--home .login-card:nth-child(2) {
+  .login-card__visual { order: 2; }
+  .login-card__content { order: 1; }
+}
+
+@media (max-width: 560px) {
+  .login-cards--home .login-card {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 18px 20px 22px;
+    text-align: center;
+
+    .login-card__visual {
+      order: 1;
+      height: 270px;
+      min-height: 270px;
+      margin: -24px 0 -14px;
+      width: 100%;
+
+      img { height: 300px; }
+    }
+
+    .login-card__content {
+      order: 2;
+      align-items: center;
+    }
+
+    .login-card__desc { max-width: none; }
+  }
+}
+
 /* ── Card trial ── */
 .login-card--trial {
   flex-direction: row;
@@ -210,23 +302,6 @@
     background: radial-gradient(ellipse at 0% 50%, rgba(37, 99, 235, 0.22), transparent 60%);
   }
 
-  .login-card__trial-left {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    margin-right: 20px;
-    flex-shrink: 0;
-  }
-
-  .login-card__trial-right {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
-  }
-
-  .login-card__icon  { font-size: 2.6rem; color: #1d4ed8; margin-bottom: 0; }
   .login-card__title { font-size: 1.15rem; color: #0f1c3f; }
   .login-card__desc  { font-size: 0.83rem; color: rgba(15, 28, 63, 0.7); }
   .login-card__cta   { color: #2563eb; font-size: 0.85rem; }
@@ -236,11 +311,6 @@
     box-shadow: 0 16px 40px rgba(37, 99, 235, 0.2);
   }
 
-  @media (max-width: 480px) {
-    flex-direction: column;
-    text-align: center;
-    .login-card__trial-left { margin-right: 0; margin-bottom: 8px; }
-  }
 }
 
 .login-card__badge-new {
@@ -651,22 +721,6 @@
     &:hover { text-decoration: underline; }
   }
 }
-
-/* ── Extras ── */
-.login-extras {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  flex-wrap: wrap;
-
-  .btn-link {
-    color: rgba(15,28,63,0.45) !important;
-    font-size: 0.78rem;
-    text-decoration: none;
-    &:hover { color: rgba(15,28,63,0.7) !important; }
-  }
-}
-
 
 /* ── ng-select base (fuera de modales) ── */
 :host ::ng-deep .ng-select .ng-select-container {

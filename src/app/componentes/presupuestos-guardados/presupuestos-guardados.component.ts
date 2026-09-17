@@ -33,6 +33,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   @Output() cargarPresupuesto = new EventEmitter<SavedPresupuesto>();
   @Output() presupuestoEliminado = new EventEmitter<SavedPresupuesto>();
   @Output() presupuestoActualizado = new EventEmitter<SavedPresupuesto>();
+  @Output() presupuestoGuardado = new EventEmitter<SavedPresupuesto>();
 
   nombreTemporal = '';
   filtro = '';
@@ -152,6 +153,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       next: (nuevo) => {
         this.isSavingBudget = false;
         this.nombreTemporal = '';
+        this.presupuestoGuardado.emit(nuevo);
         this.notifyBudgetSaved('guardado', nuevo);
       },
       error: (err) => {
@@ -312,6 +314,8 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   }
 
   get isOffline(): boolean { return !navigator.onLine; }
+
+  get esModoDemo(): boolean { return localStorage.getItem('trialMode') === 'true'; }
 
   get limiteAlcanzado(): boolean { return this.totalGuardados >= this.maxItems; }
 
