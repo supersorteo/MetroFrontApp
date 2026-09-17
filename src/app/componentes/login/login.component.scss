@@ -887,3 +887,68 @@
 .admin-country-card {
   min-height: 120px;
 }
+
+/* Demo country selector */
+.login-demo-country {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f1c3f;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  &__subtitle {
+    font-size: 0.85rem;
+    color: rgba(15,28,63,0.6);
+    margin-bottom: 28px;
+    text-align: center;
+  }
+
+  &__options {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  &__btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 28px;
+    background: rgba(255,255,255,0.75);
+    border: 1.5px solid rgba(15,28,63,0.15);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    min-width: 110px;
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(15,28,63,0.12);
+      border-color: rgba(15,28,63,0.35);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  &__flag {
+    font-size: 2.4rem;
+    line-height: 1;
+  }
+
+  &__name {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #0f1c3f;
+  }
+}

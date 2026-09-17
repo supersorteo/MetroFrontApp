@@ -13,7 +13,7 @@
 
     <div class="login-cards login-cards--home">
 
-      <div class="login-card login-card--trial" (click)="activarModoPrueba()">
+      <div class="login-card login-card--trial" (click)="loginStep = 'demoCountry'">
         <div class="login-card__glow"></div>
         <div class="login-card__visual">
           <img src="assets/archi-probar-sistema.webp" alt="Archi probando el sistema" />
@@ -50,6 +50,41 @@
         </div>
       </div>
 
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PASO DEMO: seleccionar país
+  ══════════════════════════════════════ -->
+  <div *ngIf="loginStep === 'demoCountry'" class="login-step">
+
+    <button class="login-back" (click)="loginStep = 'home'">
+      <i class="bi bi-arrow-left"></i> Volver
+    </button>
+
+    <div class="login-demo-country">
+      <h2 class="login-demo-country__title">¿En qué país trabajás?</h2>
+      <p class="login-demo-country__subtitle">Vamos a mostrarte los precios reales de tu región</p>
+
+      <div class="login-demo-country__options">
+
+        <button class="login-demo-country__btn" (click)="activarModoPrueba('Argentina')">
+          <span class="login-demo-country__flag">🇦🇷</span>
+          <span class="login-demo-country__name">Argentina</span>
+        </button>
+
+        <button class="login-demo-country__btn" (click)="activarModoPrueba('Colombia')">
+          <span class="login-demo-country__flag">🇨🇴</span>
+          <span class="login-demo-country__name">Colombia</span>
+        </button>
+
+        <button class="login-demo-country__btn" (click)="activarModoPrueba('Uruguay')">
+          <span class="login-demo-country__flag">🇺🇾</span>
+          <span class="login-demo-country__name">Uruguay</span>
+        </button>
+
+      </div>
     </div>
 
   </div>

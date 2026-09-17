@@ -50,7 +50,7 @@ export class LoginComponent implements OnInit{
 
   password: string = '';
   isContentVisible: boolean = false;
-  loginStep: 'home' | 'login' | 'join' | 'register' | 'checkout' | 'adminCountry' | 'adminLogin' = 'home';
+  loginStep: 'home' | 'login' | 'join' | 'register' | 'checkout' | 'adminCountry' | 'adminLogin' | 'demoCountry' = 'home';
   websiteUrl: string = "https://wa.link/9lbeyq";
 
   errorMessage: string = '';
@@ -403,7 +403,7 @@ login(): void {
     this.isContentVisible = false;
   }
 
-  activarModoPrueba(): void {
+  activarModoPrueba(pais: string = 'Argentina'): void {
   ['demoEmpresas', 'demoTareas', 'selectedEmpresaId', 'selectedEmpresa',
    'selectedClienteId', 'selectedCliente', 'tareasAgregadas', 'userData']
     .forEach(k => localStorage.removeItem(k));
@@ -413,6 +413,7 @@ login(): void {
 
   localStorage.setItem('trialMode', 'true');
   localStorage.setItem('userCode', 'demo');
+  localStorage.setItem('demoPais', pais);
   this.route.navigate(['dashboard']);
 }
 
