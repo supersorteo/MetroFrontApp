@@ -1582,7 +1582,7 @@ obtenerTareas(): void {
     const provinciaFactor = this.getProvinciaFactor();
     const compound = Math.round(adminFactor * userFactor * provinciaFactor * 1_000_000) / 1_000_000;
     const ajustadas = compound !== 1
-      ? this.tareasCatalogoBase.map(t => ({ ...t, costo: t.costo * compound }))
+      ? this.tareasCatalogoBase.map(t => ({ ...t, costo: Math.round(t.costo * compound * 100) / 100 }))
       : this.tareasCatalogoBase.map(t => ({ ...t }));
     this.tareas = ajustadas;
     this.tareasFiltradas = [...ajustadas];
@@ -2383,11 +2383,11 @@ private actualizarTablaYStorage() {
 
 
       calcularTotalCosto(tarea: Tarea | UserTarea): number {
-  return (tarea.area || 0) * (tarea.costo || 0) * (1 - (tarea.descuento || 0) / 100);
+  return Math.round((tarea.area || 0) * (tarea.costo || 0) * (1 - (tarea.descuento || 0) / 100) * 100) / 100;
 }
 
 calcularCostoTotal(): number {
-  return this.tareasAgregadas.reduce((total, tarea) => total + (tarea.totalCost || 0), 0);
+  return Math.round(this.tareasAgregadas.reduce((total, tarea) => total + (tarea.totalCost || 0), 0) * 100) / 100;
 }
 
 
