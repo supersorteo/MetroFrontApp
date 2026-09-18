@@ -52,7 +52,7 @@ export class DatosDeTareasComponent implements OnInit {
 
   get editTotalCost(): number {
     const base = (this.editForm.costo || 0) * (this.editForm.area || 0);
-    return base * (1 - (this.editForm.descuento || 0) / 100);
+    return Math.round(base * (1 - (this.editForm.descuento || 0) / 100) * 100) / 100;
   }
 
   // Color scheme
@@ -135,7 +135,7 @@ export class DatosDeTareasComponent implements OnInit {
 
   // ============ TOTAL ============
   calcularCostoTotal(): number {
-    return this.tareasAgregadas.reduce((total, tarea) => total + (tarea.totalCost || 0), 0);
+    return Math.round(this.tareasAgregadas.reduce((total, tarea) => total + (tarea.totalCost || 0), 0) * 100) / 100;
   }
 
   formatCurrency(value: number): string {
@@ -159,9 +159,9 @@ export class DatosDeTareasComponent implements OnInit {
     this.editForm = {
       tarea:       t.tarea,
       descripcion: t.descripcion || '',
-      area:        t.area || 0,
-      costo:       t.costo || 0,
-      descuento:   t.descuento || 0
+      area:        Math.round((t.area || 0) * 100) / 100,
+      costo:       Math.round((t.costo || 0) * 100) / 100,
+      descuento:   Math.round((t.descuento || 0) * 100) / 100
     };
     this.showEditModal = true;
   }

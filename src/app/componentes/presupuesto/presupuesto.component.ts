@@ -197,7 +197,7 @@ export class PresupuestoComponent implements OnInit {
   }
 
   calcularTotal(): void {
-    this.totalCosto = this.tareasAgregadas.reduce((sum, t) => sum + (t.totalCost || 0), 0);
+    this.totalCosto = Math.round(this.tareasAgregadas.reduce((sum, t) => sum + (t.totalCost || 0), 0) * 100) / 100;
   }
 
   formatCurrency(value: number): string {
