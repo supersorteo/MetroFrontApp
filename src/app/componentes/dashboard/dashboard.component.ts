@@ -147,6 +147,18 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     window.location.href = whatsappUrl;
   }
 
+  abrirModalPlanes(): void {
+    const modal = new (window as any).bootstrap.Modal(document.getElementById('planesModal'));
+    modal.show();
+  }
+
+  irAPlanes(tipo: 'checkout' | 'whatsapp'): void {
+    const modal = (window as any).bootstrap.Modal.getInstance(document.getElementById('planesModal'));
+    if (modal) modal.hide();
+    const step = tipo === 'checkout' ? 'checkout' : 'join';
+    this.route.navigate(['/'], { queryParams: { step } });
+  }
+
   installPwa() {
     if (!this.deferredPrompt) {
       return;

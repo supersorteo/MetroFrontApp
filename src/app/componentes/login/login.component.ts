@@ -170,6 +170,12 @@ constructor(private authService: AuthService,
         }
         this.loginStep = 'adminCountry';
       }
+      const step = params.get('step');
+      if (step === 'join') {
+        this.loginStep = 'join';
+      } else if (step === 'checkout') {
+        this.loginStep = 'checkout';
+      }
     });
   }
 

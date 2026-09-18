@@ -171,6 +171,14 @@
 
       </li>
 
+      <li class="w-100 mt-2 text-center" *ngIf="trialMode">
+
+        <button class="btn btn-demo-planes w-100" (click)="abrirModalPlanes(); toggleMenuPanel()">
+          <i class="bi bi-rocket-takeoff-fill me-1"></i> OBTENER MEMBRESÍA
+        </button>
+
+      </li>
+
       <li class="w-100 d-flex align-items-center justify-content-center gap-2 mt-2 sidebar-session-row">
 
         <div class="menu-panel__connection">
@@ -693,6 +701,59 @@
 
   </div>
 
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL PLANES (solo demo)
+══════════════════════════════════════ -->
+<div class="modal fade" id="planesModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content planes-modal">
+
+      <div class="planes-modal__header">
+        <div class="planes-modal__rocket">🚀</div>
+        <h2 class="planes-modal__title">Obtené tu membresía completa</h2>
+        <p class="planes-modal__sub">Desbloqueá todas las funciones sin límites</p>
+        <button type="button" class="planes-modal__close" data-bs-dismiss="modal">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="planes-modal__benefits">
+        <span class="planes-modal__benefit"><i class="bi bi-check-circle-fill"></i> Tareas ilimitadas por presupuesto</span>
+        <span class="planes-modal__benefit"><i class="bi bi-check-circle-fill"></i> Clientes y empresas sin límite</span>
+        <span class="planes-modal__benefit"><i class="bi bi-check-circle-fill"></i> Guardado de presupuestos</span>
+        <span class="planes-modal__benefit"><i class="bi bi-check-circle-fill"></i> Precios actualizados de tu región</span>
+      </div>
+
+      <div class="planes-modal__options">
+
+        <button class="planes-modal__card" (click)="irAPlanes('checkout')">
+          <div class="planes-modal__card-icon"><i class="bi bi-credit-card-2-front-fill"></i></div>
+          <h4 class="planes-modal__card-title">Pagar en línea</h4>
+          <p class="planes-modal__card-desc">Comprá tu membresía y recibí tu código automáticamente</p>
+          <div class="planes-modal__card-badges">
+            <span><i class="bi bi-bag-check-fill me-1"></i>Mercado Pago</span>
+            <span><i class="bi bi-paypal me-1"></i>PayPal</span>
+          </div>
+          <span class="planes-modal__card-cta">Comprar ahora <i class="bi bi-arrow-right-circle-fill"></i></span>
+        </button>
+
+        <button class="planes-modal__card" (click)="irAPlanes('whatsapp')">
+          <div class="planes-modal__card-icon planes-modal__card-icon--ws"><i class="bi bi-whatsapp"></i></div>
+          <h4 class="planes-modal__card-title">Pagar por WhatsApp</h4>
+          <p class="planes-modal__card-desc">Pagá en efectivo y recibí tu código por WhatsApp</p>
+          <div class="planes-modal__card-badges planes-modal__card-badges--ws">
+            <span><i class="bi bi-cash-coin me-1"></i>Efectivo</span>
+            <span><i class="bi bi-chat-dots-fill me-1"></i>Entrega manual</span>
+          </div>
+          <span class="planes-modal__card-cta planes-modal__card-cta--ws">Contactar <i class="bi bi-arrow-right-circle-fill"></i></span>
+        </button>
+
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <div class="modal fade qr-modal" id="qrModal" tabindex="-1" aria-hidden="true">
