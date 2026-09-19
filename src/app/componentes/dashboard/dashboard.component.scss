@@ -1,4 +1,4 @@
-// ── Tareas Personalizadas Modal ──────────────────────────────────────────
+﻿// â”€â”€ Tareas Personalizadas Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @keyframes tp-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -2663,7 +2663,7 @@ p {
 
 .table-responsive {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch; /* Mejora el desplazamiento en dispositivos táctiles */
+  -webkit-overflow-scrolling: touch; /* Mejora el desplazamiento en dispositivos tÃ¡ctiles */
 }
 
 .table {
@@ -2748,10 +2748,10 @@ p {
   color: #6c757d;
 }
 
-/* Media query para dispositivos móviles (pantallas <= 576px) */
+/* Media query para dispositivos mÃ³viles (pantallas <= 576px) */
 @media (max-width: 576px) {
   .table {
-    font-size: 0.75rem; /* Tamaño de fuente más pequeño */
+    font-size: 0.75rem; /* TamaÃ±o de fuente mÃ¡s pequeÃ±o */
   }
 
   .table th,
@@ -2761,11 +2761,11 @@ p {
 
   .btn-sm {
     padding: 0.2rem 0.4rem;
-    font-size: 0.7rem; /* Botones más pequeños */
+    font-size: 0.7rem; /* Botones mÃ¡s pequeÃ±os */
   }
 
   .pagination {
-    font-size: 0.8rem; /* Paginación más pequeña */
+    font-size: 0.8rem; /* PaginaciÃ³n mÃ¡s pequeÃ±a */
   }
 
   .page-link {
@@ -2773,7 +2773,7 @@ p {
   }
 
   .modal-dialog {
-    margin: 0.5rem; /* Reducir márgenes del modal */
+    margin: 0.5rem; /* Reducir mÃ¡rgenes del modal */
   }
 
   .modal-body {
@@ -4459,9 +4459,9 @@ p {
 }
 
 
-/* ═════════════════════════════════════════════════════════
-   DASH-MODAL — Dark glassmorphism theme for all modals
-   ═════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   DASH-MODAL â€” Dark glassmorphism theme for all modals
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 /* Entrada animada */
 @keyframes dashModalIn {
@@ -4479,7 +4479,7 @@ p {
   animation: dashModalIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* ── Contenedor principal ───────────────────────────── */
+/* â”€â”€ Contenedor principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dash-modal {
   background: linear-gradient(145deg, #0d1f3c 0%, #0a1628 60%, #06101e 100%) !important;
   border: 1px solid rgba(99, 179, 237, 0.22) !important;
@@ -4489,7 +4489,7 @@ p {
   overflow: hidden;
 }
 
-/* ── Header ─────────────────────────────────────────── */
+/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dash-modal .modal-header {
   background: linear-gradient(90deg, rgba(28,55,105,0.9) 0%, rgba(13,32,66,0.9) 100%) !important;
   border-bottom: 1px solid rgba(99, 179, 237, 0.18) !important;
@@ -4510,7 +4510,7 @@ p {
 }
 .dash-modal .modal-header .btn-close:hover { opacity: 1; }
 
-/* ── Body ───────────────────────────────────────────── */
+/* â”€â”€ Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dash-modal .modal-body {
   background: transparent !important;
   background-image: none !important;
@@ -4585,7 +4585,7 @@ p {
   cursor: default;
 }
 
-/* ── Tables ─────────────────────────────────────────── */
+/* â”€â”€ Tables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dash-modal .modal-body .table {
   color: #c8daf0 !important;
   border-color: rgba(99,179,237,0.12);
@@ -4619,7 +4619,7 @@ p {
   background: transparent !important;
 }
 
-/* ── Cards ──────────────────────────────────────────── */
+/* â”€â”€ Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dash-modal .modal-body .card {
   background: rgba(255,255,255,0.04) !important;
   border: 1px solid rgba(99,179,237,0.16) !important;
@@ -4627,7 +4627,7 @@ p {
   color: #e2eaf6 !important;
 }
 
-/* ── Pagination ─────────────────────────────────────── */
+/* â”€â”€ Pagination â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dash-modal .modal-body .page-link {
   background: rgba(255,255,255,0.05) !important;
   border-color: rgba(99,179,237,0.2) !important;
@@ -4647,7 +4647,7 @@ p {
   color: rgba(99,179,237,0.3) !important;
 }
 
-/* ── Alerts / badges ────────────────────────────────── */
+/* â”€â”€ Alerts / badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dash-modal .modal-body .alert-info {
   background: rgba(37,99,235,0.14) !important;
   border-color: rgba(99,179,237,0.28) !important;
@@ -4655,7 +4655,7 @@ p {
   border-radius: 8px;
 }
 
-/* ── Footer ─────────────────────────────────────────── */
+/* â”€â”€ Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dash-modal .modal-footer {
   background: rgba(8,18,36,0.7) !important;
   border-top: 1px solid rgba(99,179,237,0.13) !important;
@@ -4716,7 +4716,7 @@ p {
   border-radius: 8px !important;
 }
 
-/* ── ng-select inside dash-modal ────────────────────── */
+/* â”€â”€ ng-select inside dash-modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :host ::ng-deep .dash-modal .ng-select .ng-select-container {
   background: rgba(255,255,255,0.06) !important;
   border: 1px solid rgba(99,179,237,0.28) !important;
@@ -4760,7 +4760,7 @@ p {
   color: #7eb8e8 !important;
 }
 
-/* ── Recent Task Cards (Historial) ─────────────────────── */
+/* â”€â”€ Recent Task Cards (Historial) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .recent-task-card {
   background: #ffffff !important;
   border: 1px solid #dbe8ff !important;
@@ -4858,7 +4858,7 @@ p {
   }
 }
 
-/* ── QR Modal ───────────────────────────────────────── */
+/* â”€â”€ QR Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .qr-modal {
   .modal-dialog {
     max-width: 1080px;
@@ -5118,30 +5118,29 @@ p {
 
 
 
+
 /* --------------------------------------
-   BOT�N PLANES DEMO (men� lateral)
+   BOTON PLANES DEMO (menu lateral)
 -------------------------------------- */
 .btn-demo-planes {
-  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  background: linear-gradient(135deg, #0f1c3f 0%, #1d4ed8 100%);
   color: #fff;
   font-weight: 700;
   font-size: 0.85rem;
   border: none;
   border-radius: 20px;
   padding: 12px 20px;
-  box-shadow: 0 4px 14px rgba(239,68,68,0.35);
+  box-shadow: 0 4px 14px rgba(11,105,166,0.3);
   transition: transform 0.15s, box-shadow 0.15s;
   letter-spacing: 0.5px;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(239,68,68,0.45);
+    box-shadow: 0 8px 20px rgba(11,105,166,0.42);
     color: #fff;
   }
 
-  &:active {
-    transform: translateY(0);
-  }
+  &:active { transform: translateY(0); }
 }
 
 /* --------------------------------------
@@ -5154,113 +5153,102 @@ p {
 
   &__header {
     position: relative;
-    background: linear-gradient(135deg, #1e3a6e 0%, #2563eb 100%);
-    padding: 32px 24px 24px;
+    background: linear-gradient(160deg, #0f1c3f 0%, #1e3a6e 100%);
+    padding: 28px 24px 22px;
     text-align: center;
     color: #fff;
   }
 
-  &__rocket {
-    font-size: 2.8rem;
-    margin-bottom: 8px;
-  }
+  &__rocket { font-size: 2.4rem; margin-bottom: 6px; }
 
   &__title {
-    font-size: 1.4rem;
+    font-size: 1.25rem;
     font-weight: 800;
     margin-bottom: 4px;
     letter-spacing: -0.3px;
   }
 
-  &__sub {
-    font-size: 0.88rem;
-    opacity: 0.82;
-    margin: 0;
-  }
+  &__sub { font-size: 0.85rem; opacity: 0.75; margin: 0; }
 
   &__close {
     position: absolute;
-    top: 14px;
-    right: 16px;
-    background: rgba(255,255,255,0.15);
+    top: 12px;
+    right: 14px;
+    background: rgba(255,255,255,0.12);
     border: none;
     color: #fff;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: background 0.15s;
+    font-size: 0.8rem;
 
-    &:hover { background: rgba(255,255,255,0.28); }
+    &:hover { background: rgba(255,255,255,0.22); }
   }
 
   &__benefits {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 16px;
-    padding: 18px 24px;
-    background: #f0f7ff;
-    border-bottom: 1px solid rgba(37,99,235,0.1);
+    gap: 6px 14px;
+    padding: 14px 20px;
+    background: rgba(37,99,200,0.05);
+    border-bottom: 1px solid rgba(37,99,200,0.1);
     justify-content: center;
   }
 
   &__benefit {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 600;
-    color: #1e3a6e;
-
-    i { color: #22c55e; margin-right: 4px; }
+    color: #0f1c3f;
+    i { color: #059669; margin-right: 4px; }
   }
 
   &__options {
     display: flex;
     gap: 16px;
-    padding: 24px;
+    padding: 20px;
     flex-wrap: wrap;
     justify-content: center;
-    background: #fff;
+    background: rgba(255,255,255,0.95);
   }
 
   &__card {
     flex: 1;
-    min-width: 200px;
-    max-width: 260px;
+    min-width: 190px;
+    max-width: 250px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 24px 18px;
-    background: rgba(37,99,235,0.04);
-    border: 2px solid rgba(37,99,235,0.18);
-    border-radius: 18px;
+    gap: 8px;
+    padding: 22px 16px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(37,99,200,0.18);
+    border-radius: 20px;
     cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    backdrop-filter: blur(14px);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
     text-align: center;
+    box-shadow: 0 4px 20px rgba(37,99,200,0.08);
 
     &:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 28px rgba(37,99,235,0.15);
-      border-color: #2563eb;
+      transform: translateY(-5px);
+      box-shadow: 0 16px 40px rgba(37,99,200,0.18);
+      border-color: rgba(37,99,200,0.38);
+      background: rgba(255,255,255,0.78);
     }
   }
 
   &__card-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #2563eb, #1e40af);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
+    font-size: 2.2rem;
+    line-height: 1;
+    margin-bottom: 2px;
+    color: #059669;
 
-    &--ws {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-    }
+    &--ws { color: #16a34a; }
   }
 
   &__card-title {
@@ -5271,7 +5259,7 @@ p {
   }
 
   &__card-desc {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: rgba(15,28,63,0.6);
     margin: 0;
     line-height: 1.4;
@@ -5279,31 +5267,119 @@ p {
 
   &__card-badges {
     display: flex;
-    gap: 6px;
+    gap: 5px;
     flex-wrap: wrap;
     justify-content: center;
 
     span {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 600;
-      background: rgba(37,99,235,0.1);
-      color: #1e40af;
+      background: rgba(5,150,100,0.1);
+      border: 1px solid rgba(5,150,100,0.28);
+      color: #065f46;
       border-radius: 20px;
-      padding: 3px 10px;
+      padding: 2px 8px;
     }
 
     &--ws span {
-      background: rgba(34,197,94,0.12);
-      color: #15803d;
+      background: rgba(22,163,74,0.1);
+      border-color: rgba(22,163,74,0.25);
+      color: #166534;
     }
   }
 
   &__card-cta {
     font-size: 0.82rem;
     font-weight: 700;
-    color: #2563eb;
-    margin-top: 4px;
+    color: #059669;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 
     &--ws { color: #16a34a; }
+  }
+
+  &__plan-section {
+    padding: 18px 20px 4px;
+    background: #fff;
+
+    &--pay {
+      padding-top: 0;
+      padding-bottom: 16px;
+    }
+  }
+
+  &__plan-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: rgba(15,28,63,0.45);
+    margin-bottom: 12px;
+  }
+
+  &__plan-cards {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  &__plan-card {
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 14px 12px;
+    background: rgba(255,255,255,0.7);
+    border: 1.5px solid rgba(37,99,200,0.18);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: border-color 0.18s, background 0.18s, transform 0.18s;
+    position: relative;
+
+    &:hover { border-color: rgba(37,99,200,0.4); transform: translateY(-2px); }
+
+    &--selected {
+      border-color: #1d4ed8;
+      background: rgba(29,78,216,0.06);
+
+      .planes-modal__plan-months { color: #1d4ed8; }
+    }
+  }
+
+  &__plan-months {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #0f1c3f;
+  }
+
+  &__plan-price {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: rgba(15,28,63,0.55);
+  }
+
+  &__plan-check {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 0.85rem;
+    color: #1d4ed8;
+  }
+
+  &__no-catalog {
+    font-size: 0.8rem;
+    color: rgba(15,28,63,0.5);
+    text-align: center;
+    padding: 8px 0;
+    margin: 0;
+  }
+
+  &__card:disabled {
+    opacity: 0.4;
+    pointer-events: none;
   }
 }

@@ -29,6 +29,8 @@ import { TareaPersonalizadaService, TareaPersonalizada } from '../../servicios/t
 import { AppToastService } from '../../servicios/app-toast.service';
 import { MembershipLimits, MembershipLimitsService } from '../../servicios/membership-limits.service';
 import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
+import { MembershipPaymentService } from '../../servicios/membership-payment.service';
+import { mapMembershipCountryOption, MembershipCountryOption } from '../../core/membership/membership-checkout.util';
 
 
 declare var bootstrap: any;
@@ -147,16 +149,79 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     window.location.href = whatsappUrl;
   }
 
+  private planesModal: any = null;
+  planesPais: MembershipCountryOption | null = null;
+  selectedPlanMeses: number | null = null;
+  planesLoading: boolean = false;
+
+  private readonly DEMO_COUNTRIES = [
+    { nombre: 'Argentina', codigo: 'AR', flag: '' },
+    { nombre: 'Chile',     codigo: 'CL', flag: '' },
+    { nombre: 'Colombia',  codigo: 'CO', flag: '' },
+    { nombre: 'Uruguay',   codigo: 'UY', flag: '' }
+  ];
+
   abrirModalPlanes(): void {
-    const modal = new (window as any).bootstrap.Modal(document.getElementById('planesModal'));
-    modal.show();
+    const el = document.getElementById('planesModal');
+    if (!el) return;
+    if (!this.planesModal) {
+      this.planesModal = new (window as any).bootstrap.Modal(el);
+    }
+    this.selectedPlanMeses = null;
+    this.cargarPlanesDemoPais();
+    this.planesModal.show();
   }
 
-  irAPlanes(tipo: 'checkout' | 'whatsapp'): void {
-    const modal = (window as any).bootstrap.Modal.getInstance(document.getElementById('planesModal'));
-    if (modal) modal.hide();
-    const step = tipo === 'checkout' ? 'checkout' : 'join';
-    this.route.navigate(['/'], { queryParams: { step } });
+  private cargarPlanesDemoPais(): void {
+    const demoPais = localStorage.getItem('demoPais') || 'Argentina';
+    const cached = localStorage.getItem('membershipCatalogCache');
+    if (cached) {
+      try {
+        const catalog: MembershipCountryOption[] = JSON.parse(cached);
+        this.planesPais = catalog.find(c => c.nombre === demoPais) ?? null;
+        return;
+      } catch {}
+    }
+    this.planesLoading = true;
+    this.membershipPaymentService.getCatalog().subscribe({
+      next: (catalog) => {
+        const options: MembershipCountryOption[] = Object.entries(catalog.countries)
+          .map(([code, country]) => mapMembershipCountryOption(code, country, this.DEMO_COUNTRIES));
+        localStorage.setItem('membershipCatalogCache', JSON.stringify(options));
+        this.planesPais = options.find(c => c.nombre === demoPais) ?? null;
+        this.planesLoading = false;
+      },
+      error: () => { this.planesLoading = false; }
+    });
+  }
+
+  seleccionarPlan(meses: number): void {
+    this.selectedPlanMeses = meses;
+  }
+
+  pagarPorWhatsApp(): void {
+    if (!this.selectedPlanMeses) return;
+    const plan = this.planesPais?.plans.find(p => p.months === this.selectedPlanMeses);
+    const pais = this.planesPais?.nombre || localStorage.getItem('demoPais') || 'mi región';
+    const precio = plan ? `${Math.round(plan.amount).toLocaleString('es')} ${this.planesPais?.currency}` : '';
+    const text = `Hola! Quiero adquirir el plan de ${this.selectedPlanMeses} meses${precio ? ` (${precio})` : ''} para MetroApp. Soy de ${pais}.`;
+    const phone = '5491128634744';
+    const nativeUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
+    window.open(nativeUrl, '_blank');
+  }
+
+  irAlCheckout(): void {
+    if (!this.selectedPlanMeses) return;
+    const demoPais = localStorage.getItem('demoPais') || '';
+    const countryEntry = this.DEMO_COUNTRIES.find(c => c.nombre === demoPais);
+    const params: Record<string, any> = { step: 'checkout', plan: this.selectedPlanMeses };
+    if (countryEntry?.codigo) params['country'] = countryEntry.codigo;
+    if (this.planesModal) {
+      this.planesModal.hide();
+      setTimeout(() => this.route.navigate(['/'], { queryParams: params }), 320);
+    } else {
+      this.route.navigate(['/'], { queryParams: params });
+    }
   }
 
   installPwa() {
@@ -769,7 +834,8 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private tpService: TareaPersonalizadaService,
     private appToast: AppToastService,
     private uiDialog: UiDialogService,
-    private budgetService: BudgetService
+    private budgetService: BudgetService,
+    private membershipPaymentService: MembershipPaymentService
   ) {
     // Sync empresas IDB → lista local + paginación
     effect(() => {

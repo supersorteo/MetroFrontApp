@@ -14,7 +14,9 @@ export class AuthLoggedGuard implements CanActivate {
   if (route.queryParamMap.get('admin') === '1') {
     return true;
   }
-
+  if (route.queryParamMap.get('step')) {
+    return true;
+  }
   if (this.authService.isLoggedIn() || this.authService.isTrialMode()) {
     this.router.navigate(['/dashboard']);
     return false;

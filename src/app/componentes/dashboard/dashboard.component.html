@@ -726,30 +726,61 @@
         <span class="planes-modal__benefit"><i class="bi bi-check-circle-fill"></i> Precios actualizados de tu región</span>
       </div>
 
-      <div class="planes-modal__options">
+      <!-- Selección de plan -->
+      <div class="planes-modal__plan-section">
+        <p class="planes-modal__plan-title">1. Elegí tu plan</p>
 
-        <button class="planes-modal__card" (click)="irAPlanes('checkout')">
-          <div class="planes-modal__card-icon"><i class="bi bi-credit-card-2-front-fill"></i></div>
-          <h4 class="planes-modal__card-title">Pagar en línea</h4>
-          <p class="planes-modal__card-desc">Comprá tu membresía y recibí tu código automáticamente</p>
-          <div class="planes-modal__card-badges">
-            <span><i class="bi bi-bag-check-fill me-1"></i>Mercado Pago</span>
-            <span><i class="bi bi-paypal me-1"></i>PayPal</span>
-          </div>
-          <span class="planes-modal__card-cta">Comprar ahora <i class="bi bi-arrow-right-circle-fill"></i></span>
-        </button>
+        <div class="text-center py-2" *ngIf="planesLoading">
+          <span class="spinner-border spinner-border-sm text-primary me-2"></span>
+          <span class="small text-muted">Cargando planes...</span>
+        </div>
 
-        <button class="planes-modal__card" (click)="irAPlanes('whatsapp')">
-          <div class="planes-modal__card-icon planes-modal__card-icon--ws"><i class="bi bi-whatsapp"></i></div>
-          <h4 class="planes-modal__card-title">Pagar por WhatsApp</h4>
-          <p class="planes-modal__card-desc">Pagá en efectivo y recibí tu código por WhatsApp</p>
-          <div class="planes-modal__card-badges planes-modal__card-badges--ws">
-            <span><i class="bi bi-cash-coin me-1"></i>Efectivo</span>
-            <span><i class="bi bi-chat-dots-fill me-1"></i>Entrega manual</span>
-          </div>
-          <span class="planes-modal__card-cta planes-modal__card-cta--ws">Contactar <i class="bi bi-arrow-right-circle-fill"></i></span>
-        </button>
+        <div class="planes-modal__plan-cards" *ngIf="!planesLoading && planesPais">
+          <button
+            *ngFor="let plan of planesPais.plans"
+            class="planes-modal__plan-card"
+            [class.planes-modal__plan-card--selected]="selectedPlanMeses === plan.months"
+            (click)="seleccionarPlan(plan.months)">
+            <span class="planes-modal__plan-months">{{ plan.months }} meses</span>
+            <span class="planes-modal__plan-price">{{ plan.amount | number:'1.0-0' }} {{ planesPais.currency }}</span>
+            <i class="bi bi-check-circle-fill planes-modal__plan-check" *ngIf="selectedPlanMeses === plan.months"></i>
+          </button>
+        </div>
 
+        <p class="planes-modal__no-catalog" *ngIf="!planesLoading && !planesPais">
+          <i class="bi bi-wifi-off me-1"></i> Sin conexión. Contactanos por WhatsApp y te informamos el precio.
+        </p>
+      </div>
+
+      <!-- Métodos de pago -->
+      <div class="planes-modal__plan-section planes-modal__plan-section--pay">
+        <p class="planes-modal__plan-title">2. Elegí cómo pagar</p>
+
+        <div class="planes-modal__options">
+
+          <button class="planes-modal__card" [disabled]="!selectedPlanMeses" (click)="irAlCheckout()">
+            <div class="planes-modal__card-icon"><i class="bi bi-credit-card-2-front-fill"></i></div>
+            <h4 class="planes-modal__card-title">Pagar en línea</h4>
+            <p class="planes-modal__card-desc">Recibí tu código automáticamente</p>
+            <div class="planes-modal__card-badges">
+              <span><i class="bi bi-bag-check-fill me-1"></i>Mercado Pago</span>
+              <span><i class="bi bi-paypal me-1"></i>PayPal</span>
+            </div>
+            <span class="planes-modal__card-cta">Comprar ahora <i class="bi bi-arrow-right-circle-fill"></i></span>
+          </button>
+
+          <button class="planes-modal__card" [disabled]="!selectedPlanMeses" (click)="pagarPorWhatsApp()">
+            <div class="planes-modal__card-icon planes-modal__card-icon--ws"><i class="bi bi-whatsapp"></i></div>
+            <h4 class="planes-modal__card-title">Pagar por WhatsApp</h4>
+            <p class="planes-modal__card-desc">Pagá en efectivo y recibí tu código</p>
+            <div class="planes-modal__card-badges planes-modal__card-badges--ws">
+              <span><i class="bi bi-cash-coin me-1"></i>Efectivo</span>
+              <span><i class="bi bi-chat-dots-fill me-1"></i>Entrega manual</span>
+            </div>
+            <span class="planes-modal__card-cta planes-modal__card-cta--ws">Contactar <i class="bi bi-arrow-right-circle-fill"></i></span>
+          </button>
+
+        </div>
       </div>
 
     </div>

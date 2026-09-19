@@ -69,6 +69,8 @@ export class LoginComponent implements OnInit{
   membershipCountries: MembershipCountryOption[] = [];
   purchaseCountryCode: string | null = null;
   purchasePlanMonths: number | null = 3;
+  private pendingCountryCode: string | null = null;
+  private pendingPlanMonths: number | null = null;
   purchaseName: string = '';
   purchaseEmail: string = '';
   purchasePhone: string = '';
@@ -175,6 +177,16 @@ constructor(private authService: AuthService,
         this.loginStep = 'join';
       } else if (step === 'checkout') {
         this.loginStep = 'checkout';
+        const planParam = params.get('plan');
+        const months = planParam ? parseInt(planParam, 10) : null;
+        const countryParam = params.get('country');
+        if (countryParam) {
+          this.pendingCountryCode = countryParam;
+          this.pendingPlanMonths = (months && !isNaN(months)) ? months : null;
+          this.applyPendingCheckoutPreset();
+        } else if (months && !isNaN(months)) {
+          this.purchasePlanMonths = months;
+        }
       }
     });
   }
@@ -477,6 +489,17 @@ openWebsite(): void {
       };
     }
 
+    private applyPendingCheckoutPreset(): void {
+      if (!this.pendingCountryCode || this.membershipCountries.length === 0) return;
+      this.purchaseCountryCode = this.pendingCountryCode;
+      this.pendingCountryCode = null;
+      this.onPurchaseCountryChange();
+      if (this.pendingPlanMonths) {
+        this.purchasePlanMonths = this.pendingPlanMonths;
+        this.pendingPlanMonths = null;
+      }
+    }
+
     loadMembershipCatalog(): void {
       this.isLoadingCatalog = true;
       this.membershipPaymentService.getCatalog().subscribe({
@@ -486,6 +509,7 @@ openWebsite(): void {
             .sort((left, right) => left.nombre.localeCompare(right.nombre));
           this.cacheMembershipCatalog(this.membershipCountries);
           this.isLoadingCatalog = false;
+          this.applyPendingCheckoutPreset();
         },
         error: () => {
           const cachedCatalog = this.getCachedMembershipCatalog();
@@ -493,6 +517,7 @@ openWebsite(): void {
             this.membershipCountries = cachedCatalog;
             this.isLoadingCatalog = false;
             this.appToast.info('Mostrando el catálogo guardado localmente.');
+            this.applyPendingCheckoutPreset();
             return;
           }
           this.isLoadingCatalog = false;
