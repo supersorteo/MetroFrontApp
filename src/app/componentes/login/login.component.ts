@@ -437,6 +437,14 @@ login(): void {
 
 
 
+volverDesdeCheckout(): void {
+  if (localStorage.getItem('trialMode') === 'true') {
+    this.route.navigate(['/dashboard']);
+  } else {
+    this.loginStep = 'join';
+  }
+}
+
 openWebsite(): void {
   const phone = '54 9 11 2863-4744'; // Reemplaza con el numero real
   const text = 'Hola! quiero una clave de membresia para "METRO"';
