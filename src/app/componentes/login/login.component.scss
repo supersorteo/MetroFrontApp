@@ -891,13 +891,13 @@
 /* Demo country selector */
 @keyframes flag-wave-fabric {
   0%   { transform: rotateY(0deg)   skewY(0deg);    filter: brightness(1); }
-  10%  { transform: rotateY(-22deg) skewY(3.5deg);  filter: brightness(0.82); }
-  22%  { transform: rotateY(10deg)  skewY(-2.5deg); filter: brightness(1.1); }
-  36%  { transform: rotateY(18deg)  skewY(3deg);    filter: brightness(0.88); }
-  50%  { transform: rotateY(-4deg)  skewY(-1.5deg); filter: brightness(1.05); }
-  64%  { transform: rotateY(-14deg) skewY(2.5deg);  filter: brightness(0.85); }
-  78%  { transform: rotateY(8deg)   skewY(-1.5deg); filter: brightness(1.07); }
-  90%  { transform: rotateY(-3deg)  skewY(0.5deg);  filter: brightness(0.97); }
+  10%  { transform: rotateY(-10deg) skewY(1.8deg);  filter: brightness(0.94); }
+  22%  { transform: rotateY(5deg)   skewY(-1.2deg); filter: brightness(1.04); }
+  36%  { transform: rotateY(8deg)   skewY(1.5deg);  filter: brightness(0.96); }
+  50%  { transform: rotateY(-2deg)  skewY(-0.8deg); filter: brightness(1.02); }
+  64%  { transform: rotateY(-7deg)  skewY(1.2deg);  filter: brightness(0.95); }
+  78%  { transform: rotateY(4deg)   skewY(-0.8deg); filter: brightness(1.03); }
+  90%  { transform: rotateY(-1deg)  skewY(0.3deg);  filter: brightness(0.99); }
   100% { transform: rotateY(0deg)   skewY(0deg);    filter: brightness(1); }
 }
 
@@ -974,7 +974,6 @@
     width: 116px;
     height: 77px;
     display: block;
-    border-radius: 3px 10px 10px 3px;
     box-shadow:
       4px 6px 20px rgba(15,28,63,0.22),
       0 1px 4px rgba(15,28,63,0.1);
@@ -982,7 +981,7 @@
     background-position: center;
     flex-shrink: 0;
     transform-origin: left center;
-    animation: flag-wave-fabric 3.2s ease-in-out infinite;
+    animation: flag-wave-fabric 14s ease-in-out infinite;
     will-change: transform, filter;
   }
 

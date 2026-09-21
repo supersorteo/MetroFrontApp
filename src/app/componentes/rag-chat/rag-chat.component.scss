@@ -111,6 +111,117 @@ $shadow    : 0 8px 32px rgba(0, 0, 0, .18);
   100% { transform: scale(1.55); opacity: 0; }
 }
 
+// ─── AVISO DE LA VERSIÓN ANTERIOR ──────────────────────────────────────────
+
+.rag-version-bubble {
+  position: fixed;
+  width: min(300px, calc(100vw - 32px));
+  padding: 12px 13px 11px;
+  background: #fff;
+  color: #1e293b;
+  border: 1px solid rgba(37, 99, 235, .18);
+  border-radius: 16px;
+  box-shadow: 0 12px 34px rgba(15, 23, 42, .22);
+  z-index: 1051;
+  animation: version-bubble-in .3s cubic-bezier(.34, 1.45, .64, 1);
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: 20px;
+    bottom: -8px;
+    width: 15px;
+    height: 15px;
+    background: #fff;
+    border-right: 1px solid rgba(37, 99, 235, .18);
+    border-bottom: 1px solid rgba(37, 99, 235, .18);
+    transform: rotate(45deg);
+  }
+
+  &--below-fab {
+    &::after {
+      top: -8px;
+      bottom: auto;
+      border-top: 1px solid rgba(37, 99, 235, .18);
+      border-left: 1px solid rgba(37, 99, 235, .18);
+      border-right: none;
+      border-bottom: none;
+    }
+  }
+}
+
+.rag-version-bubble__top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-right: 22px;
+  color: #1e3a8a;
+  font-size: .82rem;
+}
+
+.rag-version-bubble__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 25px;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  font-size: .72rem;
+}
+
+.rag-version-bubble__close {
+  position: absolute;
+  top: -3px;
+  right: -2px;
+  border: 0;
+  padding: 4px;
+  color: #64748b;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+
+  &:hover { color: #1e293b; background: #eff6ff; }
+}
+
+.rag-version-bubble__text {
+  margin: 9px 0 7px;
+  font-size: .78rem;
+  line-height: 1.35;
+}
+
+.rag-version-bubble__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #1d4ed8;
+  font-size: .78rem;
+  font-weight: 700;
+  text-decoration: none;
+
+  &:hover { color: #1e3a8a; text-decoration: underline; }
+}
+
+.rag-version-bubble__check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  color: #64748b;
+  font-size: .68rem;
+  cursor: pointer;
+
+  input { margin: 0; accent-color: $blue; }
+}
+
+@keyframes version-bubble-in {
+  from { opacity: 0; transform: translateY(8px) scale(.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 // ─── PANEL ──────────────────────────────────────────────────────────────────
 
 .rag-panel {

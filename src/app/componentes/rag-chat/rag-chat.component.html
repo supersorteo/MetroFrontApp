@@ -22,6 +22,49 @@
   <span class="rag-fab__ring"></span>
 </div>
 
+@if (showPreviousVersionBubble()) {
+  <div
+    class="rag-version-bubble"
+    [class.rag-version-bubble--below-fab]="fabPos().y <= 170"
+    [style.left]="versionBubbleStyle().left"
+    [style.top]="versionBubbleStyle().top"
+    role="status"
+    aria-live="polite">
+    <div class="rag-version-bubble__top">
+      <span class="rag-version-bubble__avatar" aria-hidden="true">
+        <i class="bi bi-chat-heart-fill"></i>
+      </span>
+      <strong>Una opción para vos</strong>
+      <button
+        type="button"
+        class="rag-version-bubble__close"
+        aria-label="Cerrar aviso"
+        title="Cerrar"
+        (click)="closePreviousVersionBubble()">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </div>
+    <p class="rag-version-bubble__text">
+      Si querés, podés usar la versión anterior de METRO aquí:
+    </p>
+    <a
+      class="rag-version-bubble__link"
+      href="https://www.metroapp.site/"
+      target="_blank"
+      rel="noopener noreferrer">
+      Usá METRO versión anterior
+      <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+    </a>
+    <label class="rag-version-bubble__check">
+      <input
+        type="checkbox"
+        [checked]="previousVersionDontShowAgain()"
+        (change)="onPreviousVersionDontShowAgainChange($event)">
+      <span>No volver a mostrar este aviso</span>
+    </label>
+  </div>
+}
+
 <!-- Panel de chat -->
 @if (abierto()) {
   <div class="rag-panel"

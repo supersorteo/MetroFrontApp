@@ -5,7 +5,7 @@ import { interval, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Tarea, TareaService } from '../../servicios/tarea.service';
 import { Provincia, ProvinciaService } from '../../servicios/provincia.service';
 import { UserTarea, UserTareaService } from '../../servicios/user-tarea.service';
@@ -81,6 +81,7 @@ function cleanupBootstrapModals(): void {
 })
 export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
+  private premiumCtaTimer: ReturnType<typeof setTimeout> | null = null;
   deferredPrompt: any;
 
   filtroCliente: string = '';
@@ -159,6 +160,34 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     { nombre: 'Chile',     codigo: 'CL', flag: '' },
     { nombre: 'Colombia',  codigo: 'CO', flag: '' },
     { nombre: 'Uruguay',   codigo: 'UY', flag: '' }
+  ];
+
+  readonly membershipBenefits = [
+    {
+      image: 'assets/benefits/materials-calculator-sprite-v2.png',
+      title: 'Calculadora de materiales',
+      description: 'Calculá cantidades de materiales de forma rápida y clara.'
+    },
+    {
+      image: 'assets/benefits/unlimited-tasks-sprite.png',
+      title: 'Tareas ilimitadas por presupuesto',
+      description: 'Organizá todos los trabajos de cada presupuesto sin límites.'
+    },
+    {
+      image: 'assets/benefits/clients-companies-sprite.png',
+      title: 'Clientes y empresas según tu plan',
+      description: 'Gestioná tus clientes y empresas con la capacidad incluida en tu membresía.'
+    },
+    {
+      image: 'assets/benefits/saved-budgets-sprite.png',
+      title: 'Guardado de presupuestos',
+      description: 'Conservá tus presupuestos organizados para retomarlos cuando quieras.'
+    },
+    {
+      image: 'assets/benefits/regional-prices-sprite.png',
+      title: 'Precios actualizados por región',
+      description: 'Trabajá con referencias de precios actualizadas para tu zona.'
+    }
   ];
 
   abrirModalPlanes(): void {
@@ -293,10 +322,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   showSavedBudgetsPanel: boolean = false;
   showSaveBudgetModal: boolean = false;
   nombrePresupuestoModal = '';
-  private readonly previousVersionBannerStorageKey = 'metroPreviousVersionBannerDismissed';
-  showPreviousVersionBanner = localStorage.getItem(this.previousVersionBannerStorageKey) !== 'true';
-  showPreviousVersionSidebarLink = !this.showPreviousVersionBanner;
-  previousVersionDontShowAgain = localStorage.getItem(this.previousVersionBannerStorageKey) === 'true';
   showTareasPanel: boolean = false;
   fontSizeLista = 12;
   private readonly fontSizeListaMin = 10;
@@ -305,6 +330,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   showTareasPersonalizadasPanel: boolean = false;
   showTpEditorModal: boolean = false;
   showTpHero: boolean = localStorage.getItem('tpHeroDismissed') !== 'true';
+  tpHeroDontShowAgain: boolean = localStorage.getItem('tpHeroDismissed') === 'true';
   tareasPersonalizadas: TareaPersonalizada[] = [];
   tareaPersonalizadaNotice: { title: string; text?: string } | null = null;
   tpEditingId: number | null = null;
@@ -380,6 +406,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   currentEmpresaLogoUrl: string = '';
   empresaLogoUrls: Record<string, string> = {};
   trialMode: boolean = false;
+  showPremiumCta: boolean = false;
   totalClientesUsuario: number = 0;
   membershipLimits: MembershipLimits = {
     id: null,
@@ -835,7 +862,8 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private appToast: AppToastService,
     private uiDialog: UiDialogService,
     private budgetService: BudgetService,
-    private membershipPaymentService: MembershipPaymentService
+    private membershipPaymentService: MembershipPaymentService,
+    private activatedRoute: ActivatedRoute
   ) {
     // Sync empresas IDB → lista local + paginación
     effect(() => {
@@ -892,6 +920,12 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 
   ngOnInit(): void {
     this.initSession();
+    this.initPremiumCtaVisibility();
+    this.activatedRoute.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      if (this.trialMode && params['openMembership'] === 'true') {
+        setTimeout(() => this.abrirModalPlanes(), 0);
+      }
+    });
     this.loadRecentTasks();
     this.refreshPendingSyncSummary();
     this.restorePendingBudget();
@@ -910,10 +944,12 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   // -- Sesión: leer userCode, detectar demo, fetchUserData o redirigir ------
   private initSession(): void {
     this.trialMode = this.isTrialMode();
+    this.showTpHero = this.trialMode || localStorage.getItem('tpHeroDismissed') !== 'true';
     if (this.trialMode) {
       this.loadDemoData();
       this.totalClientesUsuario = this.getDemoClientesCount();
       this.loadMembershipLimits();
+      this.loadProvincias();
       this.cargarTareasPersonalizadas();
       return;
     }
@@ -966,6 +1002,10 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.premiumCtaTimer) {
+      clearTimeout(this.premiumCtaTimer);
+      this.premiumCtaTimer = null;
+    }
     this.clearTareaPersonalizadaNotice();
     cleanupBootstrapModals();
   }
@@ -976,6 +1016,29 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   private isTrialMode(): boolean {
   return localStorage.getItem('trialMode') === 'true';
 }
+
+  private initPremiumCtaVisibility(): void {
+    if (!this.trialMode) {
+      this.showPremiumCta = false;
+      return;
+    }
+
+    let startedAt = Number(localStorage.getItem('demoStartedAt'));
+    if (!Number.isFinite(startedAt) || startedAt <= 0) {
+      startedAt = Date.now();
+      localStorage.setItem('demoStartedAt', String(startedAt));
+    }
+
+    const remaining = Math.max(0, 15_000 - (Date.now() - startedAt));
+    if (remaining === 0) {
+      this.showPremiumCta = true;
+      return;
+    }
+
+    this.premiumCtaTimer = setTimeout(() => {
+      this.showPremiumCta = true;
+    }, remaining);
+  }
 
 
   private loadDemoData(): void {
@@ -1675,6 +1738,13 @@ obtenerTareas(): void {
   }
 
   seleccionarProvincia(provincia: string): void {
+    if (this.trialMode) {
+      this.uiDialog.info({
+        title: 'Modo demo',
+        text: 'Podés consultar las provincias, pero necesitás un código de acceso para seleccionar una.'
+      });
+      return;
+    }
     this.provinciaSeleccionada = provincia;
     this.aplicarFactoresCatalogo();
     localStorage.setItem(`provincia_seleccionada_${this.userCode || 'anon'}`, provincia);
@@ -3028,15 +3098,6 @@ onImageChange(event: Event): void {
     this.aplicarTamanoFuenteLista(this.fontSizeLista + (accion === 'increase' ? 1 : -1));
   }
 
-  closePreviousVersionBanner(): void {
-    if (this.previousVersionDontShowAgain) {
-      localStorage.setItem(this.previousVersionBannerStorageKey, 'true');
-    }
-    this.showPreviousVersionBanner = false;
-    this.showPreviousVersionSidebarLink = true;
-    this.appToast.info('El acceso a la versión anterior de METRO está disponible en el sidebar.', 'Acceso disponible');
-  }
-
   onFontSizeListaChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.aplicarTamanoFuenteLista(Number(input.value));
@@ -3492,6 +3553,12 @@ fetchUserData(): void {
     }, 450);
   }
 
+  abrirPaletaDesdeEmpresa(empresa: Empresa, event: Event): void {
+    event.stopPropagation();
+    this.onEmpresaSeleccionada(empresa);
+    this.abrirModalPaleta();
+  }
+
   volverAModalEmpresa(): void {
     const paletaModalEl = document.getElementById('paletaModal');
     if (paletaModalEl) {
@@ -3705,7 +3772,14 @@ fetchUserData(): void {
 
   cerrarTpHero(): void {
     this.showTpHero = false;
-    localStorage.setItem('tpHeroDismissed', 'true');
+    if (!this.trialMode && this.tpHeroDontShowAgain) {
+      localStorage.setItem('tpHeroDismissed', 'true');
+    }
+  }
+
+  onTpHeroDontShowAgainChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.tpHeroDontShowAgain = input.checked;
   }
 
   cerrarTpEditor(): void {

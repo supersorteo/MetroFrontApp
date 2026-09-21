@@ -45,6 +45,86 @@
     <span class="calc-back-fab__label">Volver</span>
   </button>
 
+  @if (showPremiumCta()) {
+    <button
+      class="premium-membership-cta"
+      type="button"
+      (click)="abrirMetroPremium()"
+      aria-label="Abrir METRO PREMIUM">
+      <span>METRO PREMIUM</span>
+    </button>
+  }
+
+  @if (membershipModalOpen()) {
+    <div class="calc-premium-modal-overlay" (click)="cerrarMetroPremium()">
+      <div class="calc-premium-modal" role="dialog" aria-modal="true" aria-labelledby="calcPremiumTitle" (click)="$event.stopPropagation()">
+        <div class="calc-premium-modal__header">
+          <h2 id="calcPremiumTitle">OBTEN METRO PREMIUM</h2>
+          <button type="button" (click)="cerrarMetroPremium()" aria-label="Cerrar OBTEN METRO PREMIUM">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <div id="calculatorBenefitsCarousel" class="carousel slide calc-premium-modal__carousel" data-bs-ride="carousel" data-bs-interval="4500" aria-label="Beneficios de METRO PREMIUM">
+          <div class="carousel-indicators">
+            <button *ngFor="let benefit of membershipBenefits; let i = index" type="button" data-bs-target="#calculatorBenefitsCarousel" [attr.data-bs-slide-to]="i" [class.active]="i === 0" [attr.aria-label]="'Mostrar beneficio ' + (i + 1)"></button>
+          </div>
+          <div class="carousel-inner">
+            <div *ngFor="let benefit of membershipBenefits; let i = index" class="carousel-item" [class.active]="i === 0">
+              <div class="calc-premium-modal__slide">
+                <img [src]="benefit.image" [alt]="benefit.title">
+                <div>
+                  <strong>{{ benefit.title }}</strong>
+                  <span>{{ benefit.description }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#calculatorBenefitsCarousel" data-bs-slide="prev" aria-label="Beneficio anterior"><span class="carousel-control-prev-icon"></span></button>
+          <button class="carousel-control-next" type="button" data-bs-target="#calculatorBenefitsCarousel" data-bs-slide="next" aria-label="Beneficio siguiente"><span class="carousel-control-next-icon"></span></button>
+        </div>
+
+        <div class="calc-premium-modal__plans">
+          <p>1. Elegí tu plan</p>
+          <div class="calc-premium-modal__plan-grid">
+            <button type="button" [class.is-selected]="selectedMembershipPlan() === 3" (click)="seleccionarMembershipPlan(3)">
+              <strong>Plan 3 meses</strong>
+              <span class="calc-premium-modal__plan-label">Ideal para comenzar</span>
+              <span class="calc-premium-modal__plan-benefit"><i class="bi bi-check-circle-fill"></i> Calculadora de materiales</span>
+              <span class="calc-premium-modal__plan-benefit"><i class="bi bi-check-circle-fill"></i> Hasta 30 clientes</span>
+              <span class="calc-premium-modal__plan-benefit"><i class="bi bi-check-circle-fill"></i> 1 empresa</span>
+              <span class="calc-premium-modal__plan-benefit"><i class="bi bi-check-circle-fill"></i> Presupuestos guardados</span>
+              <span class="calc-premium-modal__plan-benefit"><i class="bi bi-check-circle-fill"></i> Tareas ilimitadas</span>
+              <span class="calc-premium-modal__plan-benefit"><i class="bi bi-check-circle-fill"></i> Precios por región</span>
+              <span class="calc-premium-modal__plan-cta">Elegir plan <i class="bi bi-arrow-right-circle-fill"></i></span>
+            </button>
+            <button type="button" [class.is-selected]="selectedMembershipPlan() === 6" (click)="seleccionarMembershipPlan(6)">
+              <strong>Plan 6 meses</strong>
+              <span class="calc-premium-modal__plan-label">Más capacidad para crecer</span>
+              <span class="calc-premium-modal__plan-benefit"><i class="bi bi-check-circle-fill"></i> Calculadora de materiales</span>
+              <span class="calc-premium-modal__plan-benefit"><i class="bi bi-check-circle-fill"></i> Hasta 60 clientes</span>
+              <span class="calc-premium-modal__plan-benefit"><i class="bi bi-check-circle-fill"></i> Hasta 3 empresas</span>
+              <span class="calc-premium-modal__plan-benefit"><i class="bi bi-check-circle-fill"></i> Presupuestos guardados</span>
+              <span class="calc-premium-modal__plan-benefit"><i class="bi bi-check-circle-fill"></i> Tareas ilimitadas</span>
+              <span class="calc-premium-modal__plan-benefit"><i class="bi bi-check-circle-fill"></i> Precios por región</span>
+              <span class="calc-premium-modal__plan-cta">Elegir plan <i class="bi bi-arrow-right-circle-fill"></i></span>
+            </button>
+          </div>
+        </div>
+
+        @if (selectedMembershipPlan()) {
+          <div class="calc-premium-modal__payment" [class.is-focused]="selectedMembershipPlan()">
+            <p>2. Elegí cómo pagar</p>
+            <div class="calc-premium-modal__payment-grid">
+              <button type="button" (click)="irAlCheckoutDesdeCalculadora()"><i class="bi bi-credit-card-2-front-fill"></i><strong>Pagar en línea</strong><span>Mercado Pago o PayPal</span></button>
+              <button type="button" (click)="pagarPorWhatsAppDesdeCalculadora()"><i class="bi bi-whatsapp"></i><strong>Pagar por WhatsApp</strong><span>Efectivo y entrega manual</span></button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
   @if (ultimasTareasOpen()) {
     <div class="calc-modal-overlay" (click)="cerrarUltimasTareas()">
       <div class="calc-modal" (click)="$event.stopPropagation()">
