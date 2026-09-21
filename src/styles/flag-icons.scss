@@ -1,0 +1,25 @@
+.fi {
+  position: relative;
+  display: inline-block;
+  width: 1.333333em;
+  line-height: 1em;
+  background-size: contain;
+  background-position: 50%;
+  background-repeat: no-repeat;
+}
+
+.fi::before {
+  content: "\00a0";
+}
+
+.fi-ar {
+  background-image: url('../../node_modules/flag-icons/flags/4x3/ar.svg');
+}
+
+.fi-co {
+  background-image: url('../../node_modules/flag-icons/flags/4x3/co.svg');
+}
+
+.fi-uy {
+  background-image: url('../../node_modules/flag-icons/flags/4x3/uy.svg');
+}

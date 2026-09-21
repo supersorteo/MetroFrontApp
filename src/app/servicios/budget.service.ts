@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, catchError, from, map, Observable, tap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, from, map, Observable, of, tap, throwError } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { APP_API_URL } from '../core/api/api.config';
 import { Cliente } from './cliente.service';
@@ -40,6 +40,13 @@ export class BudgetService {
 
   cargarPresupuestosPorCliente(clienteId: number): Observable<SavedPresupuesto[]> {
     this.setBudgets([]);
+
+    if (localStorage.getItem('trialMode') === 'true') {
+      const demoPresupuestos = this.getDemoPresupuestos(clienteId);
+      this.setBudgets(demoPresupuestos);
+      return of(demoPresupuestos);
+    }
+
     if (!navigator.onLine) {
       return from(this.getLocalBudgets(clienteId)).pipe(
         map(presupuestos => {
@@ -339,6 +346,85 @@ export class BudgetService {
 
   private getCurrentClientTasks(): UserTarea[] {
     return this.readJson<UserTarea[]>('tareasAgregadas') ?? [];
+  }
+
+  private getDemoPresupuestos(clienteId: number): SavedPresupuesto[] {
+    const cliente = this.getSelectedCliente() ?? {
+      id: clienteId,
+      name: 'Cliente demo',
+      contact: '',
+      budgetDate: new Date().toISOString().split('T')[0],
+      additionalDetails: '',
+      userCode: 'demo',
+      clave: '',
+      email: '',
+      direccion: ''
+    };
+    const empresa = this.getSelectedEmpresa();
+    const tareas: UserTarea[] = [
+      {
+        id: 1,
+        tarea: 'Base zapata armado y llenado',
+        costo: 1234,
+        area: 1,
+        descripcion: '',
+        descuento: 0,
+        totalCost: 1234,
+        clienteId,
+        empresaId: empresa?.id,
+        pais: 'Argentina',
+        rubro: 'Demo',
+        categoria: 'Demo'
+      },
+      {
+        id: 4,
+        tarea: 'Base coat',
+        costo: 1234,
+        area: 1,
+        descripcion: '',
+        descuento: 0,
+        totalCost: 1234,
+        clienteId,
+        empresaId: empresa?.id,
+        pais: 'Argentina',
+        rubro: 'Demo',
+        categoria: 'Demo'
+      },
+      {
+        id: 8,
+        tarea: 'Bidé armado y grifería',
+        costo: 1234,
+        area: 1,
+        descripcion: '',
+        descuento: 0,
+        totalCost: 1234,
+        clienteId,
+        empresaId: empresa?.id,
+        pais: 'Argentina',
+        rubro: 'Demo',
+        categoria: 'Demo'
+      }
+    ];
+    const ahora = Date.now();
+
+    return [
+      {
+        id: 900001,
+        name: 'Refacción de oficina demo',
+        createdAt: new Date(ahora - 86_400_000).toISOString(),
+        cliente,
+        empresa,
+        tareas: tareas.slice(0, 2)
+      },
+      {
+        id: 900002,
+        name: 'Instalación sanitaria demo',
+        createdAt: new Date(ahora - 172_800_000).toISOString(),
+        cliente,
+        empresa,
+        tareas: tareas.slice(1)
+      }
+    ];
   }
 
   private getSelectedCliente(): Cliente | null {

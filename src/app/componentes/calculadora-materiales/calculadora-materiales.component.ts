@@ -1,4 +1,5 @@
 ﻿import { Component, OnInit, computed, signal } from '@angular/core';
+import { OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -700,12 +701,13 @@ function construirResumenesDesdeHistorial(
   templateUrl: './calculadora-materiales.component.html',
   styleUrl: './calculadora-materiales.component.scss'
 })
-export class CalculadoraMaterialesComponent implements OnInit {
+export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
   readonly categorias = CATEGORIAS;
   readonly isTrialMode = localStorage.getItem('trialMode') === 'true';
   readonly userCode = (localStorage.getItem('userCode') || '').trim();
   readonly userEmail = (localStorage.getItem('userEmail') || '').trim();
   readonly isPremiumMode = !this.isTrialMode;
+  private premiumCtaTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly welcomeDismissedStorageKey = `calculadoraWelcomeDismissed_${this.userCode || this.userEmail || 'premium'}`;
 
   searchTerm = signal('');
@@ -713,6 +715,16 @@ export class CalculadoraMaterialesComponent implements OnInit {
   inputValues = signal<Record<number, number | null>>({});
   resultados = signal<Record<number, ResultadoMaterial[]>>({});
   sidebarOpen = signal(false);
+  showPremiumCta = signal(false);
+  membershipModalOpen = signal(false);
+  selectedMembershipPlan = signal<number | null>(null);
+  readonly membershipBenefits = [
+    { image: 'assets/benefits/materials-calculator-sprite-v2.png', title: 'Calculadora de materiales', description: 'Calculá cantidades de materiales de forma rápida y clara.' },
+    { image: 'assets/benefits/unlimited-tasks-sprite.png', title: 'Tareas ilimitadas por presupuesto', description: 'Organizá todos los trabajos de cada presupuesto sin límites.' },
+    { image: 'assets/benefits/clients-companies-sprite.png', title: 'Clientes y empresas según tu plan', description: 'Gestioná tus clientes y empresas con la capacidad de tu membresía.' },
+    { image: 'assets/benefits/saved-budgets-sprite.png', title: 'Guardado de presupuestos', description: 'Conservá tus presupuestos organizados para retomarlos cuando quieras.' },
+    { image: 'assets/benefits/regional-prices-sprite.png', title: 'Precios actualizados por región', description: 'Trabajá con referencias de precios actualizadas para tu zona.' }
+  ];
   ultimasTareasOpen = signal(false);
   historialOpen = signal(false);
   noMostrarBienvenida = signal(this.isPremiumMode && localStorage.getItem(this.welcomeDismissedStorageKey) === 'true');
@@ -762,6 +774,7 @@ export class CalculadoraMaterialesComponent implements OnInit {
     const currentlyTrialMode = this.isTrialMode || localStorage.getItem('trialMode') === 'true';
 
     if (currentlyTrialMode) {
+      this.initPremiumCtaVisibility();
       const historialDemo = cargarHistorialDemoDesdeStorage().slice(0, DEMO_HISTORY_LIMIT);
       this.historialCalculos.set(historialDemo);
       this.ultimasTareas.set(construirResumenesDesdeHistorial(historialDemo, DEMO_HISTORY_LIMIT));
@@ -775,6 +788,29 @@ export class CalculadoraMaterialesComponent implements OnInit {
 
     this.cargarHistorialBackend();
     this.cargarUltimasTareasBackend();
+  }
+
+  ngOnDestroy(): void {
+    if (this.premiumCtaTimer) {
+      clearTimeout(this.premiumCtaTimer);
+      this.premiumCtaTimer = null;
+    }
+  }
+
+  private initPremiumCtaVisibility(): void {
+    let startedAt = Number(localStorage.getItem('demoStartedAt'));
+    if (!Number.isFinite(startedAt) || startedAt <= 0) {
+      startedAt = Date.now();
+      localStorage.setItem('demoStartedAt', String(startedAt));
+    }
+
+    const remaining = Math.max(0, 15_000 - (Date.now() - startedAt));
+    if (remaining === 0) {
+      this.showPremiumCta.set(true);
+      return;
+    }
+
+    this.premiumCtaTimer = setTimeout(() => this.showPremiumCta.set(true), remaining);
   }
 
   filteredByCategoria(cat: string): Tarea[] {
@@ -930,6 +966,33 @@ export class CalculadoraMaterialesComponent implements OnInit {
   abrirHistorial(): void { this.cerrarSidebar(); this.historialPage.set(1); this.historialOpen.set(true); }
   cerrarHistorial(): void { this.historialOpen.set(false); }
   cerrarBienvenida(): void { this.welcomeModalOpen.set(false); }
+
+  abrirMetroPremium(): void {
+    this.membershipModalOpen.set(true);
+    this.selectedMembershipPlan.set(null);
+  }
+
+  cerrarMetroPremium(): void {
+    this.membershipModalOpen.set(false);
+  }
+
+  seleccionarMembershipPlan(months: number): void {
+    this.selectedMembershipPlan.set(months);
+  }
+
+  irAlCheckoutDesdeCalculadora(): void {
+    const plan = this.selectedMembershipPlan();
+    if (!plan) return;
+    this.router.navigate(['/'], { queryParams: { step: 'checkout', plan } });
+  }
+
+  pagarPorWhatsAppDesdeCalculadora(): void {
+    const plan = this.selectedMembershipPlan();
+    if (!plan) return;
+    const pais = localStorage.getItem('demoPais') || 'mi región';
+    const text = `Hola! Quiero adquirir el plan de ${plan} meses para MetroApp. Soy de ${pais}.`;
+    window.open(`whatsapp://send?phone=5491128634744&text=${encodeURIComponent(text)}`, '_blank');
+  }
 
   actualizarNoMostrarBienvenida(event: Event): void {
     if (!this.isPremiumMode) {

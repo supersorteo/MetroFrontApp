@@ -45,12 +45,6 @@
     }
   </div>
 
-  @if (presupuestosFiltrados.length || filtro) {
-    <div class="filter-wrapper">
-      <input type="text" class="form-control filter-input" [(ngModel)]="filtro" placeholder="Buscar por nombre o cliente" />
-    </div>
-  }
-
   @if (presupuestosFiltrados.length > 0) {
     <div class="saved-budgets-list">
       @for (presupuesto of presupuestosFiltrados; track presupuesto.id) {
@@ -68,19 +62,29 @@
             <small>Creado {{ presupuesto.createdAt | date: 'short' }}</small>
             <div class="text-muted small">
               <span>Empresa: {{ presupuesto.empresa?.name || empresaActual?.name || 'Sin empresa' }}</span> |
-              <span>Cliente: {{ presupuesto.cliente?.name || clienteActual?.name || 'Sin cliente' }}</span> |
+              <span>Cliente: {{ presupuesto.cliente.name || clienteActual?.name || 'Sin cliente' }}</span> |
               <span>Tareas: {{ presupuesto.tareas.length || 0 }}</span>
             </div>
           </div>
 
           <div class="saved-budget-actions">
-            <button type="button" class="btn btn-outline-primary btn-sm" (click)="cargar(presupuesto)">CARGAR</button>
-            <button type="button" class="btn btn-warning" (click)="editarPresupuesto(presupuesto)"
-              [title]="esPresupuestoCargado(presupuesto) ? 'Editar presupuesto cargado' : 'Primero debes cargar este presupuesto'">
-              Editar
+            <button type="button" class="btn btn-outline-primary btn-sm" (click)="cargar(presupuesto)"
+              title="Cargar presupuesto" aria-label="Cargar presupuesto">
+              <i class="bi bi-arrow-down-circle" aria-hidden="true"></i>
             </button>
-            <button type="button" class="btn btn-outline-danger btn-sm" (click)="eliminar(presupuesto)">ELIMINAR</button>
-            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="verPresupuesto(presupuesto)">VER / DESCARGAR</button>
+            <button type="button" class="btn btn-warning" (click)="editarPresupuesto(presupuesto)"
+              [title]="esPresupuestoCargado(presupuesto) ? 'Editar presupuesto cargado' : 'Primero debes cargar este presupuesto'"
+              [attr.aria-label]="esPresupuestoCargado(presupuesto) ? 'Editar presupuesto cargado' : 'Primero debes cargar este presupuesto'">
+              <i class="bi bi-pencil-square" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm" (click)="eliminar(presupuesto)"
+              title="Eliminar presupuesto" aria-label="Eliminar presupuesto">
+              <i class="bi bi-trash3" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="verPresupuesto(presupuesto)"
+              title="Ver o descargar presupuesto" aria-label="Ver o descargar presupuesto">
+              <i class="bi bi-eye" aria-hidden="true"></i>
+            </button>
           </div>
         </div>
       }
@@ -94,6 +98,19 @@
         alt="Archi explicando cómo guardar presupuestos"
       />
       <p class="empty-state__hint">Todavía no hay presupuestos guardados para este cliente.</p>
+    </div>
+  }
+
+  @if (presupuestosFiltrados.length || filtro) {
+    <div class="filter-wrapper">
+      <i class="bi bi-search filter-icon" aria-hidden="true"></i>
+      <input
+        type="text"
+        class="form-control filter-input"
+        [(ngModel)]="filtro"
+        placeholder="Buscar por nombre o cliente"
+        aria-label="Buscar presupuesto por nombre o cliente"
+      />
     </div>
   }
 </div>

@@ -116,7 +116,7 @@
 
     <ul class="list-unstyled d-flex flex-column align-items-center">
 
-      <li class="w-100 mt-2 text-center" *ngIf="showPreviousVersionSidebarLink">
+      <li class="w-100 mt-2 text-center">
 
         <a
           class="btn btn-outline-primary btn-block w-100 previous-version-sidebar-link"
@@ -167,14 +167,6 @@
 
           <i class="bi bi-share me-1" aria-hidden="true"></i>COMPARTIR APP
 
-        </button>
-
-      </li>
-
-      <li class="w-100 mt-2 text-center" *ngIf="trialMode">
-
-        <button class="btn btn-demo-planes w-100" (click)="abrirModalPlanes(); toggleMenuPanel()">
-          <i class="bi bi-rocket-takeoff-fill me-1"></i> OBTENER MEMBRESÍA
         </button>
 
       </li>
@@ -325,15 +317,17 @@
 
         <div class="tp-editor-modal__copy">
 
-          <span class="tp-editor-modal__eyebrow">{{ tpEditingId != null ? 'Edicion rápida' : 'Nueva tarea personalizada' }}</span>
-
-          <h4 class="tp-editor-modal__title">{{ tpEditingId != null ? 'Actualizar tarea guardada' : 'Crear una tarea profesional' }}</h4>
-
-          <p class="tp-editor-modal__subtitle">Define nombre, descripción y costo para guardar una tarea clara, prolija y lista para cotizar.</p>
+          <h4 class="tp-editor-modal__title">{{ tpEditingId != null ? 'Actualizar tarea guardada' : 'Crear tarea personalizada' }}</h4>
 
         </div>
 
         <button type="button" class="btn-close ms-auto" (click)="cerrarTpEditor()" aria-label="Cerrar"></button>
+
+      </div>
+
+      <div class="tp-editor-modal__description-row">
+
+        <p class="tp-editor-modal__subtitle">Define nombre, descripción y costo para guardar una tarea clara, prolija y lista para cotizar.</p>
 
       </div>
 
@@ -703,6 +697,15 @@
 
 </div>
 
+<button
+  *ngIf="showPremiumCta"
+  class="premium-membership-cta"
+  type="button"
+  (click)="abrirModalPlanes()"
+  aria-label="Abrir METRO PREMIUM">
+  <span>METRO PREMIUM</span>
+</button>
+
 <!-- ══════════════════════════════════════
      MODAL PLANES (solo demo)
 ══════════════════════════════════════ -->
@@ -711,19 +714,50 @@
     <div class="modal-content planes-modal">
 
       <div class="planes-modal__header">
-        <div class="planes-modal__rocket">🚀</div>
-        <h2 class="planes-modal__title">Obtené tu membresía completa</h2>
-        <p class="planes-modal__sub">Desbloqueá todas las funciones sin límites</p>
+        <h2 class="planes-modal__title">OBTEN METRO PREMIUM</h2>
         <button type="button" class="planes-modal__close" data-bs-dismiss="modal">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
 
-      <div class="planes-modal__benefits">
-        <span class="planes-modal__benefit"><i class="bi bi-check-circle-fill"></i> Tareas ilimitadas por presupuesto</span>
-        <span class="planes-modal__benefit"><i class="bi bi-check-circle-fill"></i> Clientes y empresas sin límite</span>
-        <span class="planes-modal__benefit"><i class="bi bi-check-circle-fill"></i> Guardado de presupuestos</span>
-        <span class="planes-modal__benefit"><i class="bi bi-check-circle-fill"></i> Precios actualizados de tu región</span>
+      <div
+        id="planesBenefitsCarousel"
+        class="carousel slide planes-modal__carousel"
+        data-bs-ride="carousel"
+        data-bs-interval="4500"
+        aria-label="Beneficios de la membresía">
+        <div class="carousel-indicators">
+          <button
+            *ngFor="let benefit of membershipBenefits; let i = index"
+            type="button"
+            data-bs-target="#planesBenefitsCarousel"
+            [attr.data-bs-slide-to]="i"
+            [class.active]="i === 0"
+            [attr.aria-label]="'Mostrar beneficio ' + (i + 1)">
+          </button>
+        </div>
+
+        <div class="carousel-inner">
+          <div
+            *ngFor="let benefit of membershipBenefits; let i = index"
+            class="carousel-item"
+            [class.active]="i === 0">
+            <div class="planes-modal__benefit-slide">
+              <img [src]="benefit.image" [alt]="benefit.title" class="planes-modal__benefit-image">
+              <div class="planes-modal__benefit-caption">
+                <strong>{{ benefit.title }}</strong>
+                <span>{{ benefit.description }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#planesBenefitsCarousel" data-bs-slide="prev" aria-label="Beneficio anterior">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#planesBenefitsCarousel" data-bs-slide="next" aria-label="Beneficio siguiente">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        </button>
       </div>
 
       <!-- Selección de plan -->
@@ -752,8 +786,37 @@
         </p>
       </div>
 
+      <div class="planes-modal__detail-section" *ngIf="!planesLoading && planesPais">
+        <p class="planes-modal__plan-title">Beneficios de cada plan</p>
+        <div class="planes-modal__detail-cards">
+          <button
+            *ngFor="let plan of planesPais.plans"
+            type="button"
+            class="planes-modal__detail-card"
+            [class.planes-modal__detail-card--selected]="selectedPlanMeses === plan.months"
+            (click)="seleccionarPlan(plan.months)">
+            <div class="planes-modal__detail-card-head">
+              <span class="planes-modal__detail-card-months">Plan {{ plan.months }} meses</span>
+              <span class="planes-modal__detail-card-price">{{ plan.amount | number:'1.0-0' }} {{ planesPais.currency }}</span>
+            </div>
+            <ul class="planes-modal__detail-list">
+              <li><i class="bi bi-check-circle-fill"></i> Calculadora de materiales</li>
+              <li><i class="bi bi-check-circle-fill"></i> Tareas ilimitadas por presupuesto</li>
+              <li><i class="bi bi-check-circle-fill"></i> {{ plan.months >= 6 ? 60 : 30 }} clientes</li>
+              <li><i class="bi bi-check-circle-fill"></i> {{ plan.months >= 6 ? 3 : 1 }} empresa{{ plan.months >= 6 ? 's' : '' }}</li>
+              <li><i class="bi bi-check-circle-fill"></i> Guardado de presupuestos</li>
+              <li><i class="bi bi-check-circle-fill"></i> Precios actualizados por región</li>
+            </ul>
+            <span class="planes-modal__detail-card-cta">
+              {{ selectedPlanMeses === plan.months ? 'Plan seleccionado' : 'Elegir este plan' }}
+              <i class="bi" [class.bi-check-circle-fill]="selectedPlanMeses === plan.months" [class.bi-arrow-right-circle-fill]="selectedPlanMeses !== plan.months"></i>
+            </span>
+          </button>
+        </div>
+      </div>
+
       <!-- Métodos de pago -->
-      <div class="planes-modal__plan-section planes-modal__plan-section--pay">
+      <div class="planes-modal__plan-section planes-modal__plan-section--pay" *ngIf="selectedPlanMeses">
         <p class="planes-modal__plan-title">2. Elegí cómo pagar</p>
 
         <div class="planes-modal__options">
@@ -1153,7 +1216,7 @@
 
     <div class="containerbuscar">
 
-      <div class="task-brand-row mb-2" *ngIf="currentEmpresaLogoUrl || showPreviousVersionBanner">
+      <div class="task-brand-row mb-2" *ngIf="currentEmpresaLogoUrl">
 
         <div class="fixed-image-container" *ngIf="currentEmpresaLogoUrl">
 
@@ -1171,29 +1234,6 @@
 
             (click)="openListaEmpresasModal()">
 
-        </div>
-
-        <div class="tareas-agregadas__version-banner" *ngIf="showPreviousVersionBanner">
-          <div class="tareas-agregadas__version-banner-top">
-            <a
-              href="https://www.metroapp.site/"
-              target="_blank"
-              rel="noopener noreferrer">
-              Usá METRO versión anterior aquí
-            </a>
-            <button
-              type="button"
-              class="tareas-agregadas__version-banner-close"
-              aria-label="Cerrar banner"
-              title="Cerrar"
-              (click)="closePreviousVersionBanner()">
-              <i class="bi bi-x-lg" aria-hidden="true"></i>
-            </button>
-          </div>
-          <label class="tareas-agregadas__version-banner-check">
-            <input type="checkbox" [(ngModel)]="previousVersionDontShowAgain">
-            <span>No volver a mostrar este banner</span>
-          </label>
         </div>
 
       </div>
@@ -1322,7 +1362,7 @@
 
             <div class="tp-hero" *ngIf="showTpHero">
 
-              <button class="tp-hero__close" type="button" (click)="cerrarTpHero()" aria-label="Cerrar aviso de tareas personalizadas">
+              <button *ngIf="!trialMode" class="tp-hero__close" type="button" (click)="cerrarTpHero()" aria-label="Cerrar aviso de tareas personalizadas">
 
                 <i class="bi bi-x-lg"></i>
 
@@ -1335,6 +1375,14 @@
                 <h3 class="tp-hero__title">Tus tareas, listas para cotizar</h3>
 
                 <p class="tp-hero__text">Organizá tus tareas frecuentes, editá valores rápido y agrégalas al presupuesto con un toque.</p>
+
+                <label class="tp-hero__check" *ngIf="!trialMode">
+                  <input
+                    type="checkbox"
+                    [checked]="tpHeroDontShowAgain"
+                    (change)="onTpHeroDontShowAgainChange($event)">
+                  <span>No volver a mostrar este mensaje</span>
+                </label>
 
               </div>
 
@@ -2818,6 +2866,12 @@
 
                     <button class="btn btn-success btn-xs px-3 py-1 cliente-card__action" title="Editar" aria-label="Editar" *ngIf="empresa.id !== undefined" (click)="editarEmpresa(empresa.id)"><i class="bi bi-pencil-square" aria-hidden="true"></i></button>
 
+                    <button type="button" class="btn btn-outline-secondary btn-xs px-3 py-1 cliente-card__action cliente-card__palette-action"
+                      title="Personalizar colores" aria-label="Personalizar colores"
+                      (click)="abrirPaletaDesdeEmpresa(empresa, $event)">
+                      <i class="bi bi-palette-fill" aria-hidden="true"></i>
+                    </button>
+
                   </div>
 
                 </div>
@@ -2992,7 +3046,7 @@
 
   <div class="floating-toolbar">
 
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" (click)="verPresupuesto()" type="button" aria-label="Ver presupuesto">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--presupuesto" (click)="verPresupuesto()" type="button" aria-label="Ver presupuesto">
 
       <span class="toolbar-item__icon" aria-hidden="true">
 
@@ -3008,7 +3062,11 @@
 
     </button>
 
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" (click)="toggleTareasPanel()" type="button" aria-label="Abrir tareas agregadas">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--tareas"
+      [class.toolbar-item--has-tasks]="tareasAgregadas.length > 0"
+      (click)="toggleTareasPanel()"
+      type="button"
+      aria-label="Abrir tareas agregadas">
 
       <span class="toolbar-item__icon" aria-hidden="true">
 
@@ -3034,7 +3092,7 @@
 
     </button>
 
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" (click)="toggleSavedBudgetsPanel()" type="button" aria-label="Gestor de presupuestos">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--gestor" (click)="toggleSavedBudgetsPanel()" type="button" aria-label="Gestor de presupuestos">
 
       <span class="toolbar-item__icon" aria-hidden="true">
 
@@ -3050,7 +3108,7 @@
 
     </button>
 
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" type="button" aria-label="Calculadora" [routerLink]="['/calculadora']">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--calculadora" type="button" aria-label="Calculadora" [routerLink]="['/calculadora']">
 
       <span class="toolbar-item__icon" aria-hidden="true">
 
@@ -3066,7 +3124,7 @@
 
     </button>
 
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost" type="button" (click)="toggleMenuPanel()" aria-label="Abrir menu">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--menu" type="button" (click)="toggleMenuPanel()" aria-label="Abrir menu">
 
       <span class="toolbar-item__icon" aria-hidden="true">
 
@@ -3311,8 +3369,8 @@
 
           <div class="modal-body">
 
-            <h6 id="zonaBloqueadaMensaje" class="text-danger mt-2" style="display: block;">
-              Esta función solo se activa con código de acceso.
+            <h6 id="zonaBloqueadaMensaje" class="text-danger mt-2" *ngIf="trialMode">
+              Modo demo: podés consultar las provincias, pero la selección requiere un código de acceso.
             </h6>
 
             <p class="provincia-modal__hint">
@@ -3333,10 +3391,12 @@
                 </thead>
                 <tbody>
                   <tr *ngFor="let provincia of provincias"
-                      [class.provincia-modal__row--selected]="provinciaSeleccionada === provincia.nombre"
-                      (click)="seleccionarProvincia(provincia.nombre)"
-                      tabindex="0"
-                      (keydown.enter)="seleccionarProvincia(provincia.nombre)">
+                      [class.provincia-modal__row--selected]="!trialMode && provinciaSeleccionada === provincia.nombre"
+                      [class.provincia-modal__row--disabled]="trialMode"
+                      [attr.aria-disabled]="trialMode"
+                      (click)="!trialMode && seleccionarProvincia(provincia.nombre)"
+                      [attr.tabindex]="trialMode ? -1 : 0"
+                      (keydown.enter)="!trialMode && seleccionarProvincia(provincia.nombre)">
                     <td>
                       <span class="provincia-modal__radio" aria-hidden="true"></span>
                       {{ provincia.nombre }}
@@ -3350,7 +3410,7 @@
               </table>
             </div>
 
-            <div class="provincia-modal__selected" *ngIf="provinciaSeleccionada">
+            <div class="provincia-modal__selected" *ngIf="provinciaSeleccionada && !trialMode">
               <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
               Provincia aplicada: <strong>{{ provinciaSeleccionada }}</strong>
               <span>({{ getProvinciaIndice(provinciaSeleccionada) }}% del valor base)</span>
@@ -3819,7 +3879,7 @@
 
         <h5 class="modal-title" id="paletaModalLabel" style="color:#0b69a6; font-weight:700;">
 
-          <i class="fas fa-palette" aria-hidden="true" style="margin-right: 8px;"></i>Personalizar Colores del Presupuesto
+          <i class="fas fa-palette" aria-hidden="true" style="margin-right: 8px;"></i>Personalizar colores
 
         </h5>
 

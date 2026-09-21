@@ -432,6 +432,8 @@ login(): void {
   localStorage.setItem('trialMode', 'true');
   localStorage.setItem('userCode', 'demo');
   localStorage.setItem('demoPais', pais);
+  localStorage.setItem('demoStartedAt', String(Date.now()));
+  window.dispatchEvent(new CustomEvent('metro-demo-entered'));
   this.route.navigate(['dashboard']);
 }
 
