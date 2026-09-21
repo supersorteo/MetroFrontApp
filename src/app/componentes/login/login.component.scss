@@ -985,6 +985,17 @@
     will-change: transform, filter;
   }
 
+  &__flag--emoji {
+    width: auto;
+    height: auto;
+    font-size: 64px;
+    line-height: 1;
+    border-radius: 0;
+    box-shadow: none;
+    background: none;
+    filter: none;
+  }
+
   &__name {
     font-size: 0.92rem;
     font-weight: 700;
