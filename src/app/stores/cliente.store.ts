@@ -102,6 +102,12 @@ export class ClienteStore {
     }, { allowSignalWrites: true });
   }
 
+  refresh(): void {
+    const userCode = this.empresaStore.userCode();
+    if (!userCode) return;
+    this.svc.getClienteByUserCode(userCode).subscribe();
+  }
+
   select(cliente: Cliente | null): void {
     this._selected.set(cliente);
     this._pendingSelectedId.set(cliente?.id ?? null);

@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy, signal, computed, NgZone, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, NgZone, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RagUnificadoService, RagUnificadoResponse } from '../../servicios/rag-unificado.service';
+import { ClienteStore } from '../../stores/cliente.store';
 
 interface Mensaje {
   rol: 'usuario' | 'asistente';
@@ -66,6 +67,8 @@ export class RagChatComponent implements OnInit, OnDestroy {
   private boundMU  = this.onMU.bind(this);
   private boundTM  = this.onTM.bind(this);
   private boundTE  = this.onTE.bind(this);
+
+  private readonly clienteStore = inject(ClienteStore);
 
   constructor(private ragService: RagUnificadoService, private zone: NgZone) {}
 
@@ -197,6 +200,9 @@ export class RagChatComponent implements OnInit, OnDestroy {
           return c;
         });
         this.cargando.set(false);
+        if (res.respuesta.includes('creado correctamente en MetroApp')) {
+          this.clienteStore.refresh();
+        }
       },
       error: () => {
         this.mensajes.update(msgs => {
