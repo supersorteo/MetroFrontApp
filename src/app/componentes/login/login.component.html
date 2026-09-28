@@ -38,18 +38,6 @@
         </div>
       </div>
 
-      <div class="login-card login-card--join" (click)="loginStep = 'join'">
-        <div class="login-card__glow"></div>
-        <div class="login-card__visual">
-          <img src="assets/archi-quiero-unirme.webp" alt="Archi invitando a unirse" />
-        </div>
-        <div class="login-card__content">
-          <h3 class="login-card__title">Quiero unirme</h3>
-          <p class="login-card__desc">Obtené tu membresía y empezá hoy</p>
-          <span class="login-card__cta">Ver opciones</span>
-        </div>
-      </div>
-
     </div>
 
   </div>
@@ -71,21 +59,21 @@
 
         <button class="login-demo-country__btn" (click)="activarModoPrueba('Argentina')">
           <span class="login-demo-country__flag-scene">
-            <span class="login-demo-country__flag login-demo-country__flag--emoji">🇦🇷</span>
+            <span class="fi fi-ar login-demo-country__flag"></span>
           </span>
           <span class="login-demo-country__name">Argentina</span>
         </button>
 
         <button class="login-demo-country__btn" (click)="activarModoPrueba('Colombia')">
           <span class="login-demo-country__flag-scene">
-            <span class="login-demo-country__flag login-demo-country__flag--emoji">🇨🇴</span>
+            <span class="fi fi-co login-demo-country__flag"></span>
           </span>
           <span class="login-demo-country__name">Colombia</span>
         </button>
 
         <button class="login-demo-country__btn" (click)="activarModoPrueba('Uruguay')">
           <span class="login-demo-country__flag-scene">
-            <span class="login-demo-country__flag login-demo-country__flag--emoji">🇺🇾</span>
+            <span class="fi fi-uy login-demo-country__flag"></span>
           </span>
           <span class="login-demo-country__name">Uruguay</span>
         </button>

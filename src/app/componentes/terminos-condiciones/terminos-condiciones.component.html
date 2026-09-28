@@ -1,0 +1,26 @@
+<div class="terms-backdrop" *ngIf="visible" aria-hidden="true"></div>
+
+<section class="terms-modal" *ngIf="visible" role="dialog" aria-modal="true" aria-labelledby="terms-title">
+  <div class="terms-modal__card">
+    <header class="terms-modal__header">
+      <img src="https://www.metroapp.site/metrologo.jpg" alt="Logo de METRO" class="terms-modal__logo">
+      <div>
+        <p class="terms-modal__eyebrow">METRO</p>
+        <h1 id="terms-title">Términos y condiciones</h1>
+        <p class="terms-modal__intro">Leé atentamente las condiciones antes de continuar.</p>
+      </div>
+    </header>
+
+    <div class="terms-modal__body" [innerHTML]="termsHtml"></div>
+
+    <footer class="terms-modal__footer">
+      <label class="terms-modal__check">
+        <input type="checkbox" [(ngModel)]="accepted">
+        <span>Declaro que leí y acepto los Términos y Condiciones de METRO.</span>
+      </label>
+      <button type="button" class="terms-modal__accept" [disabled]="!accepted" (click)="aceptar()">
+        Aceptar y continuar
+      </button>
+    </footer>
+  </div>
+</section>

@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
+import { PrecioArgentinoPipe } from '../../pipes/precio-argentino.pipe';
 
 interface BudgetItem {
   tarea: string;
@@ -41,7 +42,7 @@ interface ClienteData {
 @Component({
   selector: 'app-presupuesto',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PrecioArgentinoPipe],
   templateUrl: './presupuesto.component.html',
   styleUrl: './presupuesto.component.scss'
 })
@@ -201,7 +202,7 @@ export class PresupuestoComponent implements OnInit {
   }
 
   formatCurrency(value: number): string {
-    return value.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return `$${Math.round(value).toLocaleString('es-AR', { maximumFractionDigits: 0 })}`;
   }
 
   // --- Toggles de visibilidad ---

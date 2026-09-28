@@ -14,7 +14,9 @@ import { Empresa, EmpresaService } from '../../servicios/empresa.service';
 import { Cliente, ClienteService } from '../../servicios/cliente.service';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { FilterEmpresaPipe } from '../../pipes/filter-empresa.pipe';
+import { PrecioArgentinoPipe } from '../../pipes/precio-argentino.pipe';
 import { PresupuestosGuardadosComponent } from '../presupuestos-guardados/presupuestos-guardados.component';
+import { TerminosCondicionesComponent } from '../terminos-condiciones/terminos-condiciones.component';
 
 import { firstValueFrom } from 'rxjs';
 //import { SavedPresupuesto } from '../../servicios/budget-storage.service';
@@ -74,7 +76,9 @@ function cleanupBootstrapModals(): void {
     FormsModule,
     RouterModule,
     FilterEmpresaPipe,
-    PresupuestosGuardadosComponent
+    PrecioArgentinoPipe,
+    PresupuestosGuardadosComponent,
+    TerminosCondicionesComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
@@ -382,6 +386,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     area: 1,
     totalCost: 0
   };
+  costoModalTexto = '0';
 
   provincias: Provincia[] = []; // Nuevo
   provinciaSeleccionada: string = '';
@@ -1864,8 +1869,35 @@ if (this.trialMode) {
 
 
     abrirModal(): void {
+      this.costoModalTexto = this.formatearPrecioArgentino(this.tareaSeleccionada.costo);
       const modal = new bootstrap.Modal(document.getElementById('miModal') as HTMLElement);
       modal.show();
+    }
+
+    actualizarCostoDesdeModal(valor: string): void {
+      this.costoModalTexto = valor;
+      const normalizado = String(valor ?? '')
+        .replace(/\s/g, '')
+        .replace(/[^\d,.-]/g, '')
+        .replace(/\./g, '')
+        .replace(',', '.');
+      const numero = Number(normalizado);
+
+      if (Number.isFinite(numero)) {
+        this.tareaSeleccionada.costo = Math.round(numero);
+        this.tareaSeleccionada.totalCost = this.calcularTotalCosto(this.tareaSeleccionada);
+      }
+    }
+
+    formatearCostoModal(): void {
+      this.costoModalTexto = this.formatearPrecioArgentino(this.tareaSeleccionada.costo);
+    }
+
+    private formatearPrecioArgentino(valor: number | null | undefined): string {
+      const numero = Number(valor);
+      return Number.isFinite(numero)
+        ? Math.round(numero).toLocaleString('es-AR', { maximumFractionDigits: 0 })
+        : '';
     }
 
 
@@ -2122,17 +2154,28 @@ openSaveBudgetModal(): void {
     this.uiDialog.info({ title: 'Modo demo', text: 'Guardar presupuestos no está habilitado en el modo de prueba.' });
     return;
   }
+  if (!this.clienteSeleccionado) {
+    this.uiDialog.info({ title: 'Cliente requerido', text: 'Selecciona un cliente antes de guardar el presupuesto.' });
+    return;
+  }
   if (!this.tareasAgregadas.length) {
     this.uiDialog.info({ title: 'Tareas requeridas', text: 'Agrega al menos una tarea antes de guardar el presupuesto.' });
     return;
   }
-  this.showTareasPanel = false;
-  this.showSavedBudgetsPanel = true;
+  this.nombrePresupuestoModal = this.presupuestoSeleccionado?.name || '';
+  this.showSaveBudgetModal = true;
 }
 
   closeSaveBudgetModal(): void {
   this.showSaveBudgetModal = false;
   this.nombrePresupuestoModal = '';
+}
+
+guardarPresupuestoDesdeModal(): void {
+  const nombre = this.nombrePresupuestoModal.trim();
+  if (!nombre || !this.presupuestosGuardadosComponent) return;
+  this.presupuestosGuardadosComponent.nombreTemporal = nombre;
+  this.presupuestosGuardadosComponent.guardarPresupuestoActual();
 }
 
 
@@ -2534,6 +2577,7 @@ calcularCostoTotal(): number {
     totalCost: 0,
     userCode: this.userCode
   };
+  this.costoModalTexto = this.formatearPrecioArgentino(this.tareaSeleccionada.costo);
 }
 
 
@@ -3483,6 +3527,7 @@ fetchUserData(): void {
 
   cargarTareaReciente(tarea: any): void {
     this.tareaSeleccionada = { ...tarea };
+    this.costoModalTexto = this.formatearPrecioArgentino(this.tareaSeleccionada.costo);
 
     // Close the recent tasks modal
     const modalEl = document.getElementById('recentTasksModal');
@@ -3809,6 +3854,7 @@ fetchUserData(): void {
       categoria: '',
       pais: this.userData?.pais || ''
     };
+    this.costoModalTexto = this.formatearPrecioArgentino(this.tareaSeleccionada.costo);
     this.showTareasPersonalizadasPanel = false;
     this.abrirModal();
   }

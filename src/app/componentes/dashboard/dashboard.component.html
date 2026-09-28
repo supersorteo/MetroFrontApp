@@ -14,6 +14,8 @@
 
   </div-->
 
+<app-terminos-condiciones *ngIf="!trialMode" [userCode]="userCode"></app-terminos-condiciones>
+
 <div class="menu-panel-overlay" *ngIf="showMenuPanel" (click)="toggleMenuPanel()"></div>
 
 <aside class="menu-panel" *ngIf="showMenuPanel" [class.open]="showMenuPanel">
@@ -277,7 +279,7 @@
 
         <span class="tp-catalog-item__name">{{ t.tarea }}</span>
 
-        <span class="tp-catalog-item__cost">{{ t.costo | currency:'USD':'symbol':'1.2-2' }}</span>
+        <span class="tp-catalog-item__cost">{{ t.costo | precioArgentino }}</span>
 
       </div>
 
@@ -593,7 +595,7 @@
 
                       <span class="tp-catalog-item__name">{{ t.tarea }}</span>
 
-                      <span class="tp-catalog-item__cost">{{ t.costo | currency:'USD':'symbol':'1.2-2' }}</span>
+                      <span class="tp-catalog-item__cost">{{ t.costo | precioArgentino }}</span>
 
                     </div>
 
@@ -651,7 +653,7 @@
 
                     <span class="tp-card__name">{{ tp.tarea }}</span>
 
-                    <span class="tp-card__cost">{{ tp.costo | currency:'USD':'symbol':'1.2-2' }}</span>
+                    <span class="tp-card__cost">{{ tp.costo | precioArgentino }}</span>
 
                   </div>
 
@@ -1344,7 +1346,7 @@
 
                   <td style="width:85%; word-break:break-word; white-space:normal;">{{ tarea.tarea }}</td>
 
-                  <td style="width:15%; text-align:right; word-break:break-word; white-space:normal;">{{ tarea.costo | currency:'USD':'symbol':'1.2-2' }}</td>
+                  <td style="width:15%; text-align:right; word-break:break-word; white-space:normal;">{{ tarea.costo | precioArgentino }}</td>
 
                 </tr>
 
@@ -1482,7 +1484,7 @@
 
                     </div>
 
-                    <span class="tp-card__cost">{{ tp.costo | currency:'USD':'symbol':'1.2-2' }}</span>
+                    <span class="tp-card__cost">{{ tp.costo | precioArgentino }}</span>
 
                   </div>
 
@@ -1743,9 +1745,9 @@
 
               <td>{{ tarea.area | number:'1.2-2' }}</td>
 
-              <td>{{ tarea.costo | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td>{{ tarea.costo | precioArgentino }}</td>
 
-              <td>{{ tarea.totalCost | currency:'USD':'symbol':'1.2-2' }}</td>
+              <td>{{ tarea.totalCost | precioArgentino }}</td>
 
             </tr>
 
@@ -1785,7 +1787,7 @@
 
       <div class="tareas-total mt-3">
 
-        Total: {{ calcularCostoTotal() | currency:'USD':'symbol':'1.2-2' }}
+        Total: {{ calcularCostoTotal() | precioArgentino }}
 
       </div>
 
@@ -2005,9 +2007,9 @@
 
                   <label for="modal-cost" class="text">Costo por m2/m3/ml:</label>
 
-                  <input type="number" [(ngModel)]="tareaSeleccionada.costo" name="costo" class="form-control input" id="cost"
+                  <input type="text" [ngModel]="costoModalTexto" (ngModelChange)="actualizarCostoDesdeModal($event)" (blur)="formatearCostoModal()" name="costo" class="form-control input" id="cost"
 
-                    [readonly]="trialMode" style="color: #ab1444; font-weight: bold; text-align: center;" placeholder="Ingresa el costo" step="0.01" required>
+                    [readonly]="trialMode" inputmode="decimal" style="color: #ab1444; font-weight: bold; text-align: center;" placeholder="Ingresa el costo" required>
 
                 </div>
 
@@ -3241,6 +3243,35 @@
 
 
 
+<div class="save-budget-modal-backdrop" *ngIf="showSaveBudgetModal" (click)="closeSaveBudgetModal()">
+  <div class="save-budget-modal" role="dialog" aria-modal="true" aria-labelledby="saveBudgetModalTitle" (click)="$event.stopPropagation()">
+    <div class="save-budget-modal__header">
+      <h5 id="saveBudgetModalTitle">Guardar presupuesto</h5>
+      <button type="button" class="btn-close" aria-label="Cerrar" (click)="closeSaveBudgetModal()"></button>
+    </div>
+    <div class="save-budget-modal__body">
+      <div class="save-budget-modal__details">
+        <div><span>Cliente</span><strong>{{ clienteSeleccionado?.name || 'Sin cliente' }}</strong></div>
+        <div><span>Fecha del presupuesto</span><strong>{{ budgetDate | date:'dd/MM/yyyy' }}</strong></div>
+      </div>
+      <label class="form-label" for="nombrePresupuestoModal">Nombre del presupuesto</label>
+      <input
+        id="nombrePresupuestoModal"
+        class="form-control"
+        type="text"
+        [(ngModel)]="nombrePresupuestoModal"
+        placeholder="Ej.: Presupuesto reforma cocina"
+        maxlength="120"
+        (keyup.enter)="guardarPresupuestoDesdeModal()"
+      />
+    </div>
+    <div class="save-budget-modal__footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="closeSaveBudgetModal()">Cancelar</button>
+      <button type="button" class="btn btn-primary" [disabled]="!nombrePresupuestoModal.trim()" (click)="guardarPresupuestoDesdeModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="weatherModal" tabindex="-1" aria-labelledby="weatherModalLabel" aria-hidden="true">
 
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -3466,7 +3497,7 @@
 
                   <h6 class="card-title mb-0" style="font-weight: 700; font-size: 14px;">{{ rt.tarea }}</h6>
 
-                  <span class="badge bg-light text-dark" style="font-size: 10px;">${{ rt.costo | number:'1.0-0' }}</span>
+                  <span class="badge bg-light text-dark" style="font-size: 10px;">{{ rt.costo | precioArgentino }}</span>
 
                 </div>
 
@@ -3953,7 +3984,7 @@
 
                     <td>{{ t.area | number:'1.2-2' }}</td>
 
-                    <td>${{ t.totalCost | number:'1.2-2' }}</td>
+                    <td>{{ t.totalCost | precioArgentino }}</td>
 
                   </tr>
 
@@ -3995,7 +4026,7 @@
 
                 <ng-container *ngIf="tareasAgregadas.length > 0; else demoTotal">
 
-                  TOTAL: ${{ calcularCostoTotal() | number:'1.2-2' }}
+                    TOTAL: {{ calcularCostoTotal() | precioArgentino }}
 
                 </ng-container>
 
