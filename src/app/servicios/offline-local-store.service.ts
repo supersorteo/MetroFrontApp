@@ -369,8 +369,6 @@ export class OfflineLocalStoreService {
     const record: LocalUserTarea = {
       localId: existing?.localId ?? this.resolveLocalId('user-tarea', data?.localId, serverId),
       serverId,
-      clienteLocalId: data?.clienteLocalId ?? existing?.clienteLocalId ?? this.localRef('cliente', data?.clienteId),
-      clienteServerId: this.toServerId(data?.clienteId ?? data?.clienteServerId) ?? existing?.clienteServerId,
       userCode: data?.userCode ?? existing?.userCode,
       data,
       syncStatus,
@@ -433,6 +431,19 @@ export class OfflineLocalStoreService {
       records.map(r => metroDB.userTareas.update(r.localId, { deletedAt: now, syncStatus: 'pending', updatedAt: now }))
     );
   }
+
+  async markAllUserTareasDeletedByUserCode(userCode: string): Promise<void> {
+    const now = Date.now();
+    const records = await metroDB.userTareas
+      .where('userCode')
+      .equals(userCode)
+      .filter(r => !r.deletedAt)
+      .toArray();
+    await Promise.all(
+      records.map(r => metroDB.userTareas.update(r.localId, { deletedAt: now, syncStatus: 'pending', updatedAt: now }))
+    );
+  }
+
 
   async markUserTareaSynced(localOrServerId: number, remoteData?: any): Promise<void> {
     const record = await this.findUserTareaByAnyId(localOrServerId, remoteData?.id);

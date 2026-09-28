@@ -14,8 +14,7 @@ export interface UserTarea {
   descripcion: string;
   descuento: number;
   totalCost: number;
-  clienteId: number;
-  empresaId?: number;
+  userCode?: string;
   pais: string;
   rubro?: string;
   categoria?: string;
@@ -41,7 +40,7 @@ export class UserTareaService {
     return this.http.get<UserTarea[]>(`${this.apiUrl}/by-user/${userCode}`).pipe(
       map(tareas => tareas ?? []),
       tap(tareas => {
-        void this.cacheTareasByUserCode(userCode, tareas).catch(() => {});
+        void this.cacheUserTareas(this.userCacheKey(userCode), tareas).catch(() => {});
         tareas.forEach(tarea => void this.localStore.upsertUserTarea({ ...tarea, userCode }).catch(() => {}));
       }),
       catchError(() =>
@@ -75,45 +74,6 @@ export class UserTareaService {
     );
   }
 
-  getTareasByClienteId(clienteId: number): Observable<UserTarea[]> {
-    return this.http.get<UserTarea[]>(`${this.apiUrl}/by-cliente/${clienteId}`).pipe(
-      map(tareas => tareas ?? []),
-      tap(tareas => {
-        void this.cacheTareasByClienteId(clienteId, tareas).catch(() => {});
-        tareas.forEach(tarea => void this.localStore.upsertUserTarea({ ...tarea, clienteId }).catch(() => {}));
-      }),
-      catchError(() =>
-        from(this.offlineSync.getCachedUserTareas(this.clienteCacheKey(clienteId))).pipe(
-          mergeMap(cached =>
-            cached
-              ? of(cached as UserTarea[])
-              : throwError(() => new Error('Sin conexión y sin tareas en caché para este cliente.'))
-          )
-        )
-      )
-    );
-  }
-
-  getTareasByClienteAndEmpresa(clienteId: number, empresaId: number): Observable<UserTarea[]> {
-    const cacheKey = this.clienteEmpresaCacheKey(clienteId, empresaId);
-    return this.http.get<UserTarea[]>(`${this.apiUrl}/by-cliente/${clienteId}/empresa/${empresaId}`).pipe(
-      map(tareas => tareas ?? []),
-      tap(tareas => {
-        void this.offlineSync.cacheUserTareas(cacheKey, tareas).catch(() => {});
-        tareas.forEach(tarea => void this.localStore.upsertUserTarea({ ...tarea, clienteId, empresaId }).catch(() => {}));
-      }),
-      catchError(() =>
-        from(this.offlineSync.getCachedUserTareas(cacheKey)).pipe(
-          mergeMap(cached =>
-            cached
-              ? of(cached as UserTarea[])
-              : throwError(() => new Error('Sin conexión y sin tareas en caché para este cliente/empresa.'))
-          )
-        )
-      )
-    );
-  }
-
   updateUserTarea(id: number, userTarea: UserTarea): Observable<UserTarea> {
     const localTask: UserTarea = { ...userTarea, id };
 
@@ -128,69 +88,36 @@ export class UserTareaService {
     );
   }
 
-  deleteUserTarea0(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(catchError(this.handleError));
-  }
-
-  deleteAllTareasByClienteId(clienteId: number): Observable<void> {
-    if (!navigator.onLine) {
-      return throwError(() => new Error('Sin conexión. No es posible eliminar en masa en modo offline.'));
-    }
-    return this.http.delete<void>(`${this.apiUrl}/by-cliente/${clienteId}`).pipe(
-      tap(() => void this.cacheTareasByClienteId(clienteId, []).catch(() => {})),
-      catchError(this.handleError)
-    );
-  }
-
-  deleteAllTareasByClienteAndEmpresa(clienteId: number, empresaId: number): Observable<void> {
-    if (!navigator.onLine) {
-      return throwError(() => new Error('Sin conexión. No es posible eliminar en masa en modo offline.'));
-    }
-    const cacheKey = this.clienteEmpresaCacheKey(clienteId, empresaId);
-    return this.http.delete<void>(`${this.apiUrl}/by-cliente/${clienteId}/empresa/${empresaId}`).pipe(
-      tap(() => void this.offlineSync.cacheUserTareas(cacheKey, []).catch(() => {})),
-      catchError(this.handleError)
-    );
-  }
-
   deleteUserTarea(id: number): Observable<void> {
-    if (!navigator.onLine) {
+    if (!navigator.onLine || id < 0) {
       return this.handleOfflineDelete(id);
     }
 
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       tap(() => void this.localStore.markUserTareaDeleteSynced(id).catch(() => {})),
-      catchError(error => this.handleQueuedDeleteOnNetworkFailure(error, id))
+      catchError(error => {
+        if (Number(error?.status) === 404) {
+          return from(this.localStore.markUserTareaDeleteSynced(id).catch(() => {})).pipe(
+            map(() => void 0 as void)
+          );
+        }
+        return this.handleQueuedDeleteOnNetworkFailure(error, id);
+      })
     );
   }
 
-  async cacheTareasByUserCode(userCode: string, tareas: UserTarea[]): Promise<void> {
-    await this.offlineSync.cacheUserTareas(this.userCacheKey(userCode), tareas);
-  }
-
-  async cacheTareasByClienteId(clienteId: number, tareas: UserTarea[]): Promise<void> {
-    await this.offlineSync.cacheUserTareas(this.clienteCacheKey(clienteId), tareas);
-  }
-
-  private buildLocalTask(userTarea: UserTarea): UserTarea {
-    const numericId = Number(userTarea.id);
-    const localId = Number.isFinite(numericId) && numericId !== 0 ? numericId : -Date.now();
-    return {
-      ...userTarea,
-      id: localId
-    };
+  async cacheUserTareas(cacheKey: string, tareas: UserTarea[]): Promise<void> {
+    await this.offlineSync.cacheUserTareas(cacheKey, tareas);
   }
 
   private userCacheKey(userCode: string): string {
     return `user:${userCode}`;
   }
 
-  private clienteCacheKey(clienteId: number): string {
-    return `cliente:${clienteId}`;
-  }
-
-  private clienteEmpresaCacheKey(clienteId: number, empresaId: number): string {
-    return `cliente:${clienteId}:empresa:${empresaId}`;
+  private buildLocalTask(userTarea: UserTarea): UserTarea {
+    const numericId = Number(userTarea.id);
+    const localId = Number.isFinite(numericId) && numericId !== 0 ? numericId : -Date.now();
+    return { ...userTarea, id: localId };
   }
 
   private handleOfflineUpdate(id: number, userTarea: UserTarea): Observable<UserTarea> {

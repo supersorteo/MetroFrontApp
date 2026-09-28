@@ -29,6 +29,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   @Input() empresaActual: Empresa | null = null;
   @Input() tareasDelCliente: UserTarea[] = [];
   @Input() presupuestoCargado: SavedPresupuesto | null = null;
+  @Input() userCode: string = '';
 
   @Output() cargarPresupuesto = new EventEmitter<SavedPresupuesto>();
   @Output() presupuestoEliminado = new EventEmitter<SavedPresupuesto>();
@@ -62,19 +63,12 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     this.budgetService.presupuestos$.subscribe(presupuestos => {
       this.presupuestos = presupuestos;
     });
-    if (this.clienteActual?.id) {
-      this.cargarPresupuestos();
-    }
+    this.cargarPresupuestos();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    const relevantChange = changes['clienteActual'] || changes['empresaActual'];
-    if (relevantChange) {
-      if (this.clienteActual?.id) {
-        this.cargarPresupuestos();
-      } else {
-        this.budgetService.limpiarPresupuestos();
-      }
+    if (changes['userCode']) {
+      this.cargarPresupuestos();
     }
 
     if (this.presupuestoCargado) {
@@ -88,14 +82,11 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   }
 
   cargarPresupuestos(): void {
-    if (!this.clienteActual?.id) return;
-    this.budgetService.cargarPresupuestosPorCliente(this.clienteActual.id).subscribe({
-      next: () => {},
-      error: () => {
-        console.error('%cFallo la carga de presupuestos', 'color: #F44336');
-        this.appToast.error('No se pudieron cargar los presupuestos de este cliente.');
-      }
-    });
+    if (this.userCode) {
+      this.budgetService.cargarPresupuestosPorUserCode(this.userCode).subscribe();
+    } else {
+      this.budgetService.limpiarPresupuestos();
+    }
   }
 
   guardarPresupuestoActual(): void {
@@ -106,7 +97,6 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       return;
     }
 
-    if (!this.clienteActual?.id) { this.appToast.error('Selecciona un cliente'); return; }
     if (this.tareasActuales.length === 0) { this.appToast.error('Agrega tareas al presupuesto'); return; }
 
     const nombre = this.nombreTemporal.trim();
@@ -120,11 +110,13 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       return;
     }
 
-    const payload = {
+    const payload: any = {
       name: nombre,
-      cliente: { id: this.clienteActual.id },
       tareas: this.tareasActuales.map(t => ({ id: t.id }))
     };
+    if (this.clienteActual?.id) {
+      payload['cliente'] = { id: this.clienteActual.id };
+    }
 
     if (this.presupuestoCargado?.id) {
       if (!this.puedeActualizarPresupuestoCargado) {

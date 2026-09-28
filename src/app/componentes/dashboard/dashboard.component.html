@@ -1605,46 +1605,67 @@
           <div class="tareas-agregadas__title">
 
             <img
-
               *ngIf="currentEmpresaLogoUrl"
-
               [src]="currentEmpresaLogoUrl"
-
               alt="Logo empresa"
-
               class="tareas-agregadas__logo"
-
               style="cursor:pointer"
-
               (click)="openListaEmpresasModal()"
-
             >
+
+            <span
+              *ngIf="selectedEmpresaId && !currentEmpresaLogoUrl"
+              class="tareas-agregadas__empresa-nombre"
+              style="cursor:pointer;font-weight:600;font-size:0.95rem;"
+              (click)="openListaEmpresasModal()"
+            >{{ selectedEmpresaId.name }}</span>
+
+            <button
+              *ngIf="!selectedEmpresaId"
+              type="button"
+              class="btn btn-sm btn-outline-secondary tareas-agregadas__slot-vacio"
+              title="Seleccionar empresa"
+              (click)="openListaEmpresasModal()"
+            >
+              <i class="bi bi-building"></i> Empresa
+            </button>
 
           </div>
 
         </div>
 
-                <div class="tareas-agregadas__cliente" *ngIf="clienteSeleccionado">
-          <div class="tareas-agregadas__cliente-top">
-            <span class="tareas-agregadas__cliente-nombre">{{ presupuestoSeleccionado?.name || clienteSeleccionado.name }}</span>
+        <div class="tareas-agregadas__cliente">
+
+          <ng-container *ngIf="clienteSeleccionado; else sinCliente">
+            <div class="tareas-agregadas__cliente-top">
+              <span class="tareas-agregadas__cliente-nombre">{{ presupuestoSeleccionado?.name || clienteSeleccionado.name }}</span>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary tareas-agregadas__cliente-btn"
+                title="Seleccionar cliente"
+                (click)="$event.stopPropagation(); openListaClientesModal()">
+                <span class="tareas-agregadas__cliente-switch-icon" aria-hidden="true">
+                  <i class="fas fa-user tareas-agregadas__cliente-switch-icon-user tareas-agregadas__cliente-switch-icon-user--top"></i>
+                  <i class="fas fa-user tareas-agregadas__cliente-switch-icon-user tareas-agregadas__cliente-switch-icon-user--bottom"></i>
+                  <i class="bi bi-arrow-left-right tareas-agregadas__cliente-switch-icon-arrows"></i>
+                </span>
+              </button>
+            </div>
+            <small class="tareas-agregadas__cliente-fecha" *ngIf="budgetDate">
+              Presupuesto: {{ budgetDate | date:'dd/MM/yyyy' }}
+            </small>
+          </ng-container>
+
+          <ng-template #sinCliente>
             <button
               type="button"
-              class="btn btn-sm btn-outline-secondary tareas-agregadas__cliente-btn"
+              class="btn btn-sm btn-outline-secondary tareas-agregadas__slot-vacio"
               title="Seleccionar cliente"
-              (click)="$event.stopPropagation(); openListaClientesModal()">
-              <span class="tareas-agregadas__cliente-switch-icon" aria-hidden="true">
-                <i class="fas fa-user tareas-agregadas__cliente-switch-icon-user tareas-agregadas__cliente-switch-icon-user--top"></i>
-                <i class="fas fa-user tareas-agregadas__cliente-switch-icon-user tareas-agregadas__cliente-switch-icon-user--bottom"></i>
-                <i class="bi bi-arrow-left-right tareas-agregadas__cliente-switch-icon-arrows"></i>
-              </span>
+              (click)="$event.stopPropagation(); openListaClientesModal()"
+            >
+              <i class="fas fa-user"></i> Cliente
             </button>
-          </div>
-
-          <small class="tareas-agregadas__cliente-fecha" *ngIf="budgetDate">
-
-            Presupuesto: {{ budgetDate | date:'dd/MM/yyyy' }}
-
-          </small>
+          </ng-template>
 
         </div>
 
@@ -2400,7 +2421,7 @@
 
                         [checked]="clienteSeleccionado?.id === cliente.id"
 
-                        (click)="$event.stopPropagation(); seleccionarCliente(cliente)"
+                        (click)="$event.stopPropagation()"
 
                       >
 
@@ -2838,7 +2859,7 @@
 
                         [checked]="selectedEmpresaId?.id === empresa.id"
 
-                        (click)="$event.stopPropagation(); onEmpresaSeleccionada(empresa)"
+                        (click)="$event.stopPropagation()"
 
                       >
 
@@ -3200,6 +3221,8 @@
 
     [clienteActual]="clienteSeleccionado"
 
+    [userCode]="userCode"
+
     [tareasDelCliente]="tareasAgregadas"
 
     [presupuestoCargado]="presupuestoSeleccionado"
@@ -3216,34 +3239,7 @@
 
 </div>
 
-<div class="save-budget-modal-backdrop" *ngIf="showSaveBudgetModal" (click)="closeSaveBudgetModal()">
-  <div class="save-budget-modal" role="dialog" aria-modal="true" aria-labelledby="saveBudgetModalTitle" (click)="$event.stopPropagation()">
-    <div class="save-budget-modal__header">
-      <h5 id="saveBudgetModalTitle">Guardar presupuesto</h5>
-      <button type="button" class="btn-close" aria-label="Cerrar" (click)="closeSaveBudgetModal()"></button>
-    </div>
-    <div class="save-budget-modal__body">
-      <div class="save-budget-modal__details">
-        <div><span>Cliente</span><strong>{{ clienteSeleccionado?.name || 'Sin cliente' }}</strong></div>
-        <div><span>Fecha del presupuesto</span><strong>{{ budgetDate | date:'dd/MM/yyyy' }}</strong></div>
-      </div>
-      <label class="form-label" for="nombrePresupuestoModal">Nombre del presupuesto</label>
-      <input
-        id="nombrePresupuestoModal"
-        class="form-control"
-        type="text"
-        [(ngModel)]="nombrePresupuestoModal"
-        placeholder="Ej.: Presupuesto reforma cocina"
-        maxlength="120"
-        (keyup.enter)="guardarPresupuestoDesdeModal()"
-      />
-    </div>
-    <div class="save-budget-modal__footer">
-      <button type="button" class="btn btn-outline-secondary" (click)="closeSaveBudgetModal()">Cancelar</button>
-      <button type="button" class="btn btn-primary" [disabled]="!nombrePresupuestoModal.trim()" (click)="guardarPresupuestoDesdeModal()">Guardar</button>
-    </div>
-  </div>
-</div>
+
 
 <div class="modal fade" id="weatherModal" tabindex="-1" aria-labelledby="weatherModalLabel" aria-hidden="true">
 

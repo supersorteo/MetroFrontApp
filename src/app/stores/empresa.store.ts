@@ -81,7 +81,7 @@ export class EmpresaStore {
 
       const savedId = localStorage.getItem('selectedEmpresaId');
       const match = savedId ? list.find(e => String(e.id) === savedId) : null;
-      this._selected.set(match ?? list[0] ?? null);
+      this._selected.set(match ?? null);
       this._pendingSelectedId.set(null);
     }, { allowSignalWrites: true });
   }

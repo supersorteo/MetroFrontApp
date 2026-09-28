@@ -38,6 +38,16 @@ export class BudgetService {
     this.setBudgets([]);
   }
 
+  cargarPresupuestosPorUserCode(userCode: string): Observable<SavedPresupuesto[]> {
+    this.setBudgets([]);
+    if (!userCode || localStorage.getItem('trialMode') === 'true') return of([]);
+    if (!navigator.onLine) return of([]);
+    return this.http.get<SavedPresupuesto[]>(`${this.apiUrl}/user/${userCode}`).pipe(
+      tap(presupuestos => this.setBudgets(presupuestos ?? [])),
+      catchError(() => { this.setBudgets([]); return of([]); })
+    );
+  }
+
   cargarPresupuestosPorCliente(clienteId: number): Observable<SavedPresupuesto[]> {
     this.setBudgets([]);
 
@@ -370,8 +380,7 @@ export class BudgetService {
         descripcion: '',
         descuento: 0,
         totalCost: 1234,
-        clienteId,
-        empresaId: empresa?.id,
+        userCode: 'demo',
         pais: 'Argentina',
         rubro: 'Demo',
         categoria: 'Demo'
@@ -384,8 +393,7 @@ export class BudgetService {
         descripcion: '',
         descuento: 0,
         totalCost: 1234,
-        clienteId,
-        empresaId: empresa?.id,
+        userCode: 'demo',
         pais: 'Argentina',
         rubro: 'Demo',
         categoria: 'Demo'
@@ -398,8 +406,7 @@ export class BudgetService {
         descripcion: '',
         descuento: 0,
         totalCost: 1234,
-        clienteId,
-        empresaId: empresa?.id,
+        userCode: 'demo',
         pais: 'Argentina',
         rubro: 'Demo',
         categoria: 'Demo'

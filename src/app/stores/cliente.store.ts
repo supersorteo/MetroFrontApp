@@ -97,7 +97,7 @@ export class ClienteStore {
 
       const savedId = localStorage.getItem('selectedClienteId');
       const match = savedId ? list.find(c => String(c.id) === savedId) : null;
-      this._selected.set(match ?? list[0] ?? null);
+      this._selected.set(match ?? null);
       this._pendingSelectedId.set(null);
     }, { allowSignalWrites: true });
   }
