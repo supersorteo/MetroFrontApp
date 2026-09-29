@@ -170,7 +170,7 @@ Ciertas áreas del Portal web pueden estar sujetas a términos y condiciones adi
   }
 
   @HostListener('document:keydown.escape', ['$event'])
-  bloquearEscape(event: KeyboardEvent): void {
+  bloquearEscape(event: Event): void {
     if (this.visible) {
       event.preventDefault();
       event.stopPropagation();
