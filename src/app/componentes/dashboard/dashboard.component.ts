@@ -2176,10 +2176,6 @@ openSaveBudgetModal(): void {
     this.uiDialog.info({ title: 'Modo demo', text: 'Guardar presupuestos no está habilitado en el modo de prueba.' });
     return;
   }
-  if (!this.clienteSeleccionado) {
-    this.uiDialog.info({ title: 'Cliente requerido', text: 'Selecciona un cliente antes de guardar el presupuesto.' });
-    return;
-  }
   if (!this.tareasAgregadas.length) {
     this.uiDialog.info({ title: 'Tareas requeridas', text: 'Agrega al menos una tarea antes de guardar el presupuesto.' });
     return;
