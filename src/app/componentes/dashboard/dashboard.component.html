@@ -2537,6 +2537,33 @@
 
 </div>
 
+<!-- Modal: Guardar Presupuesto -->
+<div class="modal fade" id="saveBudgetModal" tabindex="-1" aria-labelledby="saveBudgetModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content modal-zona">
+      <div class="modal-header">
+        <h5 class="modal-title" id="saveBudgetModalLabel">Guardar presupuesto</h5>
+        <button type="button" class="btn-close" (click)="closeSaveBudgetModal()" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <label for="nombrePresupuestoInput" class="form-label">Nombre del presupuesto</label>
+        <input
+          id="nombrePresupuestoInput"
+          type="text"
+          class="form-control"
+          [(ngModel)]="nombrePresupuestoModal"
+          placeholder="Ej: Remodelación cocina"
+          (keyup.enter)="guardarPresupuestoDesdeModal()"
+        />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeSaveBudgetModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="guardarPresupuestoDesdeModal()" [disabled]="!nombrePresupuestoModal.trim()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel">
 
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">

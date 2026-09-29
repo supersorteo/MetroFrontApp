@@ -284,6 +284,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private _reopenListaOnExampleClose = false;
   private _reabrirTareasPanelOnClientesClose = false;
   private _reabrirTareasPanelOnEmpresaClose = false;
+  private _reabrirTareasPanelOnSaveBudgetClose = false;
+  private _presupuestoGuardadoExitosamente = false;
   // Control de modales para empresa e imagen
 
   empresaName: string = '';
@@ -1722,6 +1724,16 @@ ngAfterViewInit() {
     });
   }
 
+  const saveBudgetModalEl = document.getElementById('saveBudgetModal');
+  if (saveBudgetModalEl) {
+    saveBudgetModalEl.addEventListener('hidden.bs.modal', () => {
+      document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+      document.body.classList.remove('modal-open');
+      document.body.style.paddingRight = '';
+      document.body.style.overflow = '';
+    });
+  }
+
   this.initQR();
 }
 
@@ -2136,13 +2148,46 @@ openSaveBudgetModal(): void {
     this.uiDialog.info({ title: 'Tareas requeridas', text: 'Agrega al menos una tarea antes de guardar el presupuesto.' });
     return;
   }
-  this.showTareasPanel = false;
-  this.showSavedBudgetsPanel = true;
+  if (this.showTareasPanel) {
+    this._reabrirTareasPanelOnSaveBudgetClose = true;
+    this.showTareasPanel = false;
+  }
+  this.nombrePresupuestoModal = this.presupuestoSeleccionado?.name || '';
+  this._presupuestoGuardadoExitosamente = false;
+  setTimeout(() => {
+    const modalEl = document.getElementById('saveBudgetModal');
+    if (!modalEl) return;
+    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+    modal.show();
+  }, 300);
 }
 
   closeSaveBudgetModal(): void {
+  const shouldReopen = this._reabrirTareasPanelOnSaveBudgetClose;
+  this._reabrirTareasPanelOnSaveBudgetClose = false;
   this.showSaveBudgetModal = false;
   this.nombrePresupuestoModal = '';
+  const modalEl = document.getElementById('saveBudgetModal');
+  if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+  if (shouldReopen) {
+    setTimeout(() => { this.showTareasPanel = true; }, 400);
+  }
+}
+
+guardarPresupuestoDesdeModal(): void {
+  const nombre = this.nombrePresupuestoModal.trim();
+  if (!nombre || !this.presupuestosGuardadosComponent) return;
+  this.presupuestosGuardadosComponent.nombreTemporal = nombre;
+  this.presupuestosGuardadosComponent.guardarPresupuestoActual();
+  this._reabrirTareasPanelOnSaveBudgetClose = false;
+  this._presupuestoGuardadoExitosamente = false;
+  this.nombrePresupuestoModal = '';
+  const modalEl = document.getElementById('saveBudgetModal');
+  if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+  setTimeout(() => {
+    this.showTareasPanel = false;
+    this.showSavedBudgetsPanel = true;
+  }, 400);
 }
 
 
