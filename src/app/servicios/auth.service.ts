@@ -128,7 +128,9 @@ export class AuthService {
 
   logout(): void {
     const lastCode = localStorage.getItem('userCode');
+    const preserved = this.saveTermsKeys();
     localStorage.clear();
+    this.restoreTermsKeys(preserved);
     localStorage.setItem('trialMode', 'false');
     if (lastCode && lastCode !== 'demo') {
       localStorage.setItem('lastLoginCode', lastCode);
@@ -141,11 +143,28 @@ export class AuthService {
     if (!prevCode || prevCode === newUserCode) return;
 
     const lastLoginCode = localStorage.getItem('lastLoginCode');
+    const preserved = this.saveTermsKeys();
     localStorage.clear();
+    this.restoreTermsKeys(preserved);
     localStorage.setItem('trialMode', 'false');
     if (lastLoginCode) localStorage.setItem('lastLoginCode', lastLoginCode);
 
     metroDB.appState.clear().catch(() => {});
+  }
+
+  private saveTermsKeys(): Record<string, string> {
+    const saved: Record<string, string> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('metro.terms.accepted.')) {
+        saved[key] = localStorage.getItem(key)!;
+      }
+    }
+    return saved;
+  }
+
+  private restoreTermsKeys(saved: Record<string, string>): void {
+    Object.entries(saved).forEach(([key, value]) => localStorage.setItem(key, value));
   }
 
   private handleError1(error: HttpErrorResponse): Observable<never> {
