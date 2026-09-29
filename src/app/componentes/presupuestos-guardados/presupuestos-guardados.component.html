@@ -1,31 +1,9 @@
 <div class="saved-budgets-card">
   <div class="saved-budgets-header">
-    <div class="save-controls">
-      <input
-        class="form-control"
-        type="text"
-        [(ngModel)]="nombreTemporal"
-        placeholder="Nombre del presupuesto"
-      />
-      <button
-        type="button"
-        class="btn btn-primary"
-        (click)="guardarPresupuestoActual()"
-        [disabled]="!puedeEjecutarAccionPrincipal || isSavingBudget"
-        [title]="!puedeEjecutarAccionPrincipal ? getMensajeBotonDeshabilitado() : (presupuestoCargado ? 'Actualizar presupuesto cargado' : 'Guardar presupuesto')"
-      >
-        {{ isSavingBudget ? 'Procesando...' : (presupuestoCargado ? 'Actualizar' : 'Guardar') }}
-      </button>
-      <div>
-        @if (!esModoDemo) {
-          <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
-        }
-      </div>
-    </div>
-
-    @if (nombreTemporal.trim() && nombreYaExiste(nombreTemporal)) {
-      <small class="text-danger">Ya existe un presupuesto con este nombre. Elige otro.</small>
+    @if (!esModoDemo) {
+      <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
     }
+
     @if (!tareasActuales.length) {
       <small class="text-muted">Agrega tareas para poder guardar este presupuesto.</small>
     }
@@ -173,8 +151,8 @@
             <div class="pg-tarea-info">
               <span class="pg-tarea-name">{{ tarea.tarea }}</span>
               <span class="pg-tarea-meta">
-                ${{ tarea.costo | number:'1.2-2' }} × {{ tarea.area }}
-                <span class="pg-tarea-total">= ${{ tarea.totalCost | number:'1.2-2' }}</span>
+                {{ tarea.costo | precioArgentino }} × {{ tarea.area }}
+                <span class="pg-tarea-total">= {{ tarea.totalCost | precioArgentino }}</span>
               </span>
             </div>
             <button class="pg-remove-btn" (click)="confirmarQuitarTarea(i)" title="Quitar tarea">
@@ -210,7 +188,7 @@
           <select class="pg-select" [(ngModel)]="tareaAAgregarId" (change)="onTareaSeleccionadaChange()">
             <option [ngValue]="null">Seleccionar tarea...</option>
             <option *ngFor="let tarea of tareasDisponiblesParaAgregar" [ngValue]="tarea.id">
-              {{ tarea.tarea }} — ${{ tarea.totalCost | number:'1.2-2' }}
+              {{ tarea.tarea }} — {{ tarea.totalCost | precioArgentino }}
             </option>
           </select>
           <button class="pg-add-btn" (click)="agregarTareaAlPresupuesto()" [disabled]="!tareaAAgregarId || isAddingBudgetTask">

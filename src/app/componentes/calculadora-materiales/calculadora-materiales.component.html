@@ -10,11 +10,11 @@
 
 
     <ul class="sidebar-panel__list">
-      <!-- <li class="sidebar-panel__item">
-        <button (click)="irAlDashboard()">
-          <i class="bi bi-grid-1x2-fill"></i> Dashboard
+      <li class="sidebar-panel__item">
+        <button (click)="goBack()">
+          <i class="bi bi-house-door-fill"></i> Inicio
         </button>
-      </li> -->
+      </li>
       <li class="sidebar-panel__item">
         <button (click)="abrirUltimasTareas()">
           <i class="bi bi-clock-history"></i> Últimas tareas
@@ -32,9 +32,11 @@
           }
         </button>
       </li>
-      <li class="sidebar-panel__item"><button disabled><i class="bi bi-collection"></i> Biblioteca</button></li>
-      <li class="sidebar-panel__item"><button disabled><i class="bi bi-question-circle"></i> Ayuda</button></li>
-      <li class="sidebar-panel__item"><button disabled><i class="bi bi-envelope"></i> Contacto</button></li>
+      <li class="sidebar-panel__item">
+        <button (click)="abrirTour()">
+          <i class="bi bi-compass"></i> Tour de uso
+        </button>
+      </li>
     </ul>
   </div>
 
@@ -272,6 +274,75 @@
 
         <div class="calc-welcome-modal__footer">
           <button type="button" class="calc-welcome-modal__cta" (click)="cerrarBienvenida()">Comenzar</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (tourOpen()) {
+    <div class="calc-tour-overlay" (click)="cerrarTour()">
+      @if (tourTarget(); as target) {
+        <div
+          class="calc-tour-spotlight"
+          [style.top.px]="target.top - 8"
+          [style.left.px]="target.left - 8"
+          [style.width.px]="target.width + 16"
+          [style.height.px]="target.height + 16"
+          aria-hidden="true"></div>
+      }
+
+      <div
+        class="calc-tour-bubble"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="calcTourTitle"
+        [style.top.px]="tourBubble().top"
+        [style.left.px]="tourBubble().left"
+        [style.--tour-arrow-left]="tourBubble().arrowLeft + 'px'"
+        (click)="$event.stopPropagation()">
+        <button type="button" class="calc-tour-bubble__close" (click)="cerrarTour()" aria-label="Cerrar tour">
+          <i class="bi bi-x-lg"></i>
+        </button>
+
+        <div class="calc-tour-bubble__topline">
+          <span>Guía rápida</span>
+          <strong>{{ tourStep() + 1 }}/{{ tourSteps.length }}</strong>
+        </div>
+
+        <div class="calc-tour-bubble__icon" aria-hidden="true">
+          <i class="bi {{ tourSteps[tourStep()].icon }}"></i>
+        </div>
+        <h2 id="calcTourTitle" class="calc-tour-bubble__title">{{ tourSteps[tourStep()].title }}</h2>
+        <p class="calc-tour-bubble__text">{{ tourSteps[tourStep()].text }}</p>
+
+        @if (isPremiumMode) {
+          <label class="calc-tour-bubble__preference">
+            <input
+              type="checkbox"
+              [checked]="noMostrarBienvenida()"
+              (change)="actualizarNoMostrarBienvenida($event)">
+            <span>No mostrar este mensaje otra vez</span>
+          </label>
+        }
+
+        <div class="calc-tour-bubble__dots" aria-label="Progreso del tour">
+          @for (step of tourSteps; track step.title; let i = $index) {
+            <button
+              type="button"
+              [class.is-active]="i === tourStep()"
+              [attr.aria-label]="'Ir al paso ' + (i + 1)"
+              (click)="irAlPasoTour(i)"></button>
+          }
+        </div>
+
+        <div class="calc-tour-bubble__footer">
+          <button type="button" class="calc-tour-bubble__secondary" (click)="tourAnterior()" [disabled]="tourStep() === 0">
+            <i class="bi bi-arrow-left"></i> Anterior
+          </button>
+          <button type="button" class="calc-tour-bubble__primary" (click)="tourSiguiente()">
+            {{ tourStep() === tourSteps.length - 1 ? 'Finalizar' : 'Siguiente' }}
+            <i class="bi" [class.bi-check-lg]="tourStep() === tourSteps.length - 1" [class.bi-arrow-right]="tourStep() !== tourSteps.length - 1"></i>
+          </button>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, computed, signal } from '@angular/core';
-import { OnDestroy } from '@angular/core';
+import { HostListener, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -32,6 +32,19 @@ export interface ResultadoMaterial {
   bolsas?: number;
   bolsasLabel?: string;
   detalleDias?: string;
+}
+
+interface TourTargetRect {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
+interface TourBubblePosition {
+  top: number;
+  left: number;
+  arrowLeft: number;
 }
 
 interface TareaResumen {
@@ -727,8 +740,38 @@ export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
   ];
   ultimasTareasOpen = signal(false);
   historialOpen = signal(false);
+  tourOpen = signal(false);
+  tourStep = signal(0);
+  tourTarget = signal<TourTargetRect | null>(null);
+  tourBubble = signal<TourBubblePosition>({ top: 24, left: 16, arrowLeft: 180 });
+  readonly tourSteps = [
+    {
+      icon: 'bi-search',
+      title: 'Elegí una tarea',
+      text: 'Usá el buscador o recorré las categorías para encontrar el trabajo que querés calcular.',
+      target: '.calc-search--floating'
+    },
+    {
+      icon: 'bi-rulers',
+      title: 'Ingresá el área o volumen',
+      text: 'Completá la superficie, longitud o volumen según la unidad que indique la tarea.',
+      target: '.calc-input-row'
+    },
+    {
+      icon: 'bi-calculator',
+      title: 'Calculá los materiales',
+      text: 'Presioná “Calcular” y la aplicación estimará las cantidades necesarias para ese trabajo.',
+      target: '.btn-calc'
+    },
+    {
+      icon: 'bi-list-check',
+      title: 'Revisá y guardá el resultado',
+      text: 'Consultá los materiales, cantidades y horas de trabajo. También podés guardar el cálculo para retomarlo después.',
+      target: '.calc-results'
+    }
+  ] as const;
   noMostrarBienvenida = signal(this.isPremiumMode && localStorage.getItem(this.welcomeDismissedStorageKey) === 'true');
-  welcomeModalOpen = signal(this.isPremiumMode && !this.noMostrarBienvenida());
+  welcomeModalOpen = signal(false);
   tareasVisibles = signal<Tarea[]>(this.isTrialMode ? cargarTareasDemoDesdeStorage() : TAREAS);
   ultimasTareas = signal<TareaResumen[]>([]);
   historialCalculos = signal<CalculoMaterialGuardado[]>([]);
@@ -772,6 +815,7 @@ export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
 
     // Re-read trialMode from localStorage at init time to guard against stale readonly field
     const currentlyTrialMode = this.isTrialMode || localStorage.getItem('trialMode') === 'true';
+    setTimeout(() => this.iniciarTourAutomatico(currentlyTrialMode), 0);
 
     if (currentlyTrialMode) {
       this.initPremiumCtaVisibility();
@@ -965,6 +1009,111 @@ export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
   cerrarUltimasTareas(): void { this.ultimasTareasOpen.set(false); }
   abrirHistorial(): void { this.cerrarSidebar(); this.historialPage.set(1); this.historialOpen.set(true); }
   cerrarHistorial(): void { this.historialOpen.set(false); }
+  abrirTour(): void {
+    this.cerrarSidebar();
+    this.tourStep.set(0);
+    this.tourOpen.set(true);
+    setTimeout(() => this.actualizarTourTarget(), 0);
+  }
+
+  cerrarTour(): void {
+    this.tourOpen.set(false);
+    this.tourTarget.set(null);
+  }
+
+  irAlPasoTour(step: number): void {
+    if (step >= 0 && step < this.tourSteps.length) {
+      this.tourStep.set(step);
+      this.prepararPasoTour(step);
+      setTimeout(() => this.actualizarTourTarget(), 0);
+    }
+  }
+
+  tourAnterior(): void {
+    this.tourStep.update(step => Math.max(0, step - 1));
+    this.prepararPasoTour(this.tourStep());
+    setTimeout(() => this.actualizarTourTarget(), 0);
+  }
+
+  tourSiguiente(): void {
+    if (this.tourStep() >= this.tourSteps.length - 1) {
+      this.cerrarTour();
+      return;
+    }
+    this.tourStep.update(step => step + 1);
+    this.prepararPasoTour(this.tourStep());
+    setTimeout(() => this.actualizarTourTarget(), 0);
+  }
+
+  @HostListener('window:resize')
+  @HostListener('window:scroll')
+  actualizarPosicionTour(): void {
+    if (this.tourOpen()) {
+      this.actualizarTourTarget();
+    }
+  }
+
+  private iniciarTourAutomatico(currentlyTrialMode: boolean): void {
+    if (currentlyTrialMode || !this.noMostrarBienvenida()) {
+      this.abrirTour();
+    }
+  }
+
+  private prepararPasoTour(step: number): void {
+    if (step < 1) {
+      return;
+    }
+
+    const primeraTarea = this.tareasVisibles()[0];
+    if (primeraTarea && !this.isExpanded(primeraTarea.id)) {
+      this.toggleExpand(primeraTarea.id);
+    }
+  }
+
+  private actualizarTourTarget(): void {
+    if (!this.tourOpen()) {
+      return;
+    }
+
+    const step = this.tourSteps[this.tourStep()];
+    const element = document.querySelector(step.target) ??
+      document.querySelector('.calc-card__body') ??
+      document.querySelector('.calc-card');
+    if (!element) {
+      this.tourTarget.set(null);
+      return;
+    }
+
+    const rect = element.getBoundingClientRect();
+    const target = {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height
+    };
+    this.tourTarget.set(target);
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const bubbleWidth = Math.min(360, viewportWidth - 32);
+    const bubbleHeight = 300;
+    const gap = 18;
+    const bubbleLeft = Math.max(
+      16,
+      Math.min(viewportWidth - bubbleWidth - 16, rect.left + rect.width / 2 - bubbleWidth / 2)
+    );
+    let bubbleTop = rect.bottom + gap;
+    if (bubbleTop + bubbleHeight > viewportHeight - 16) {
+      bubbleTop = Math.max(16, rect.top - bubbleHeight - gap);
+    }
+
+    this.tourBubble.set({
+      top: bubbleTop,
+      left: bubbleLeft,
+      arrowLeft: Math.max(22, Math.min(bubbleWidth - 22, rect.left + rect.width / 2 - bubbleLeft))
+    });
+  }
+
   cerrarBienvenida(): void { this.welcomeModalOpen.set(false); }
 
   abrirMetroPremium(): void {

@@ -9,13 +9,14 @@ import { UserTarea } from '../../servicios/user-tarea.service';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
 import { AppToastService } from '../../servicios/app-toast.service';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
+import { PrecioArgentinoPipe, formatPrecioArgentino } from '../../pipes/precio-argentino.pipe';
 
 declare const html2pdf: any;
 
 @Component({
   selector: 'app-presupuestos-guardados',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, DatePipe, PrecioArgentinoPipe],
   templateUrl: './presupuestos-guardados.component.html',
   styleUrl: './presupuestos-guardados.component.scss'
 })
@@ -511,13 +512,13 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
           <tr>
             <td style="border:1px solid #ccc; padding:6px;">${t.tarea}</td>
             <td style="border:1px solid #ccc; padding:6px; text-align:right;">${t.area?.toFixed(2) || '0.00'}</td>
-            <td style="border:1px solid #ccc; padding:6px; text-align:right;">$${t.costo?.toFixed(2) || '0.00'}</td>
-            <td style="border:1px solid #ccc; padding:6px; text-align:right;">$${(t.totalCost || 0).toFixed(2)}</td>
+            <td style="border:1px solid #ccc; padding:6px; text-align:right;">${formatPrecioArgentino(t.costo)}</td>
+            <td style="border:1px solid #ccc; padding:6px; text-align:right;">${formatPrecioArgentino(t.totalCost)}</td>
           </tr>`).join('')}
         </tbody>
         <tfoot><tr>
           <td colspan="3" style="border:1px solid #0d6efd; padding:6px; text-align:right; font-weight:bold;">Total</td>
-          <td style="border:1px solid #0d6efd; padding:6px; text-align:right; font-weight:bold;">$${this.calcularTotal(presupuesto).toFixed(2)}</td>
+          <td style="border:1px solid #0d6efd; padding:6px; text-align:right; font-weight:bold;">${formatPrecioArgentino(this.calcularTotal(presupuesto))}</td>
         </tr></tfoot>
       </table>`;
     return wrapper;

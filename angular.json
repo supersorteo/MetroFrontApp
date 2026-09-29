@@ -28,13 +28,29 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              {
+                "glob": "ar.svg",
+                "input": "node_modules/flag-icons/flags/4x3",
+                "output": "assets/flags"
+              },
+              {
+                "glob": "co.svg",
+                "input": "node_modules/flag-icons/flags/4x3",
+                "output": "assets/flags"
+              },
+              {
+                "glob": "uy.svg",
+                "input": "node_modules/flag-icons/flags/4x3",
+                "output": "assets/flags"
+              }
             ],
             "styles": [
               "src/styles.scss",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
-              "node_modules/@fortawesome/fontawesome-free/css/all.min.css"
+              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
+              "src/styles/flag-icons.scss"
             ],
             "scripts": [
               "node_modules/bootstrap/dist/js/bootstrap.min.js",

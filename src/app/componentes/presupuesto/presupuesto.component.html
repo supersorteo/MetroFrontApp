@@ -129,8 +129,8 @@
                 <td style="text-align: left;" [style.backgroundColor]="empresa.tableBodyColor">{{ tarea.tarea }}</td>
                 <td [style.display]="hideDescription ? 'none' : ''" [style.backgroundColor]="empresa.tableBodyColor">{{ tarea.descripcion }}</td>
                 <td [style.backgroundColor]="empresa.tableBodyColor">{{ tarea.area | number:'1.2-2' }}</td>
-                <td [style.display]="hideCostPerM2 ? 'none' : ''" [style.backgroundColor]="empresa.tableBodyColor">${{ tarea.costo | number:'1.2-2' }}</td>
-                <td [style.backgroundColor]="empresa.tableBodyColor">${{ tarea.totalCost | number:'1.2-2' }}</td>
+                <td [style.display]="hideCostPerM2 ? 'none' : ''" [style.backgroundColor]="empresa.tableBodyColor">{{ tarea.costo | precioArgentino }}</td>
+                <td [style.backgroundColor]="empresa.tableBodyColor">{{ tarea.totalCost | precioArgentino }}</td>
               </tr>
             </tbody>
           </table>
@@ -138,7 +138,7 @@
 
         <!-- Total -->
         <p class="total" *ngIf="!isEmpty" [style.background-image]="'none'" [style.background-color]="empresa.primaryColor" style="color: white; padding: 14px 16px; border-radius: 8px; border: none;">
-          Total: ${{ formatCurrency(totalCosto) }}
+          Total: {{ formatCurrency(totalCosto) }}
         </p>
 
       </div>

@@ -116,6 +116,33 @@ constructor(private authService: AuthService,
     return 'membershipCatalogCache';
   }
 
+  /**
+   * Recupera el código guardado por la versión anterior de METRO.
+   * La cookie solo puede leerse cuando la nueva versión está publicada en
+   * el mismo origen que www.metroapp.site.
+   */
+  private getLegacyAccessCodeFromCookie(): string {
+    if (typeof document === 'undefined') {
+      return '';
+    }
+
+    const cookie = document.cookie
+      .split(';')
+      .map(item => item.trim())
+      .find(item => item.startsWith('password='));
+
+    if (!cookie) {
+      return '';
+    }
+
+    const rawValue = cookie.slice('password='.length);
+    try {
+      return decodeURIComponent(rawValue).trim();
+    } catch {
+      return rawValue.trim();
+    }
+  }
+
   private cacheProvincias(pais: string, provincias: Provincia[]): void {
     if (!pais) {
       return;
@@ -151,8 +178,11 @@ constructor(private authService: AuthService,
 
   ngOnInit(): void {
     this.loadMembershipCatalog();
+    const legacyCode = this.getLegacyAccessCodeFromCookie();
     const lastCode = localStorage.getItem('lastLoginCode');
-    if (lastCode) {
+    if (legacyCode) {
+      this.code = legacyCode;
+    } else if (lastCode) {
       this.code = lastCode;
     }
     this.activatedRoute.queryParamMap.subscribe(params => {
@@ -290,6 +320,7 @@ login(): void {
           next: response => {
             this.uiDialog.success({ title: '¡Éxito!', text: response.message });
             this.clearForm();
+            this.loginStep = 'login';
           },
           error: err => {
             const msg = err?.error?.message || err?.message || 'Error al registrar. Intentá de nuevo.';
