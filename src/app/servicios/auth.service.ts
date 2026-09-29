@@ -30,6 +30,8 @@ export interface AccessCode {
   fechaRegistro?: string;
   fechaVencimiento?: string;
   disabled?: boolean;
+  selectedEmpresaId?: number | null;
+  selectedClienteId?: number | null;
 }
 
 export interface UserDataSummary {
@@ -200,6 +202,11 @@ export class AuthService {
 
   enableCode(code: string): Observable<{ code: string; disabled: boolean }> {
     return this.http.patch<{ code: string; disabled: boolean }>(`${this.apiUrl}/codes/${code}/enable`, {}).pipe(catchError(this.handleError1));
+  }
+
+  updatePreferences(code: string, selectedEmpresaId: number | null, selectedClienteId: number | null): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/codes/${code}/preferences`, { selectedEmpresaId, selectedClienteId })
+      .pipe(catchError(() => of(null)));
   }
 }
 

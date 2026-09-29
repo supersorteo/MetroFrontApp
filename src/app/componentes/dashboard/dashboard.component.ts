@@ -527,6 +527,15 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
     return this.empresas.find(item => Number(item.id) === Number(empresa)) ?? null;
   }
 
+  private syncPreferencesToServer(): void {
+    if (this.trialMode || !this.userCode) return;
+    const empresaId = this.selectedEmpresaId?.id ? Number(this.selectedEmpresaId.id) : null;
+    const clienteId = this.clienteSeleccionado?.id ? Number(this.clienteSeleccionado.id) : null;
+    this.authService.updatePreferences(this.userCode, empresaId, clienteId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
+  }
+
   private syncSelectedClienteStorage(): void {
     if (this.clienteSeleccionado?.id != null) {
       localStorage.setItem('selectedClienteId', String(this.clienteSeleccionado.id));
@@ -1130,6 +1139,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       void this.loadTareasAgregadas();
       this.clienteStore.select(cliente);
     }
+    this.syncPreferencesToServer();
   }
 
   cargarDatosEmpresaSeleccionada() {
@@ -3197,6 +3207,29 @@ fetchUserData(): void {
         this.obtenerTareas();
         this.loadWeather();
       }
+
+      // Restaurar selección empresa/cliente desde el servidor (cross-device)
+      const r = response as any;
+      const sEmpresaId = r.selectedEmpresaId ? Number(r.selectedEmpresaId) : null;
+      const sClienteId = r.selectedClienteId ? Number(r.selectedClienteId) : null;
+
+      if (sEmpresaId) {
+        localStorage.setItem('selectedEmpresaId', String(sEmpresaId));
+        const empresa = this.empresaStore.empresas().find(e => Number(e.id) === sEmpresaId);
+        if (empresa) this.empresaStore.select(empresa);
+      } else {
+        localStorage.removeItem('selectedEmpresaId');
+        if (!this.selectedEmpresaId) this.empresaStore.select(null);
+      }
+
+      if (sClienteId) {
+        localStorage.setItem('selectedClienteId', String(sClienteId));
+        const cliente = this.clienteStore.clientes().find(c => Number(c.id) === sClienteId);
+        if (cliente) this.clienteStore.select(cliente);
+      } else {
+        localStorage.removeItem('selectedClienteId');
+        if (!this.clienteSeleccionado) this.clienteStore.select(null);
+      }
     },
     error: async error => {
       if (hasCachedData) return;
@@ -3284,6 +3317,7 @@ fetchUserData(): void {
       void this.actualizarImagenEmpresa(normalizedEmpresa);
       this.empresaStore.select(normalizedEmpresa);
     }
+    this.syncPreferencesToServer();
   }
 
 
