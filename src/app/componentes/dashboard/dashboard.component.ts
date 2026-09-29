@@ -2226,15 +2226,6 @@ guardarPresupuestoDesdeModal(): void {
   }, 400);
 }
 
-guardarPresupuestoDesdeModal(): void {
-  const nombre = this.nombrePresupuestoModal.trim();
-  if (!nombre || !this.presupuestosGuardadosComponent) return;
-  this.presupuestosGuardadosComponent.nombreTemporal = nombre;
-  this.presupuestosGuardadosComponent.guardarPresupuestoActual();
-}
-
-
-
 toggleTareasPanel(): void {
   // Si el panel ya está abierto, cerrarlo sin validaciones.
   if (this.showTareasPanel) {
