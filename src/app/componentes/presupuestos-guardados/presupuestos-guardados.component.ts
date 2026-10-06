@@ -21,9 +21,11 @@ declare const html2pdf: any;
   styleUrl: './presupuestos-guardados.component.scss'
 })
 export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
-  private static readonly VIP_3_MONTH_LIMIT = 30;
-  private static readonly VIP_6_MONTH_LIMIT = 60;
-  private static readonly VIP_6_MONTH_THRESHOLD_DAYS = 150;
+  private static readonly VIP_3_MONTH_LIMIT  = 30;
+  private static readonly VIP_6_MONTH_LIMIT  = 120;
+  private static readonly VIP_12_MONTH_LIMIT = 250;
+  private static readonly VIP_6_MONTH_THRESHOLD_DAYS  = 150;
+  private static readonly VIP_12_MONTH_THRESHOLD_DAYS = 330;
 
   @Input() tareasActuales: UserTarea[] = [];
   @Input() clienteActual: Cliente | null = null;
@@ -423,19 +425,25 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     const planMonths = this.resolveUserPlanMonths(userData);
 
     if (planMonths !== null) {
-      return planMonths >= 6
-        ? PresupuestosGuardadosComponent.VIP_6_MONTH_LIMIT
-        : PresupuestosGuardadosComponent.VIP_3_MONTH_LIMIT;
+      if (planMonths >= 12) return PresupuestosGuardadosComponent.VIP_12_MONTH_LIMIT;
+      if (planMonths >= 6)  return PresupuestosGuardadosComponent.VIP_6_MONTH_LIMIT;
+      return PresupuestosGuardadosComponent.VIP_3_MONTH_LIMIT;
     }
 
     const planDurationDays = this.resolvePlanDurationDays(
       userData?.['fechaRegistro'],
       userData?.['fechaVencimiento']
     );
-    if (planDurationDays !== null && planDurationDays >= PresupuestosGuardadosComponent.VIP_6_MONTH_THRESHOLD_DAYS) {
-      return PresupuestosGuardadosComponent.VIP_6_MONTH_LIMIT;
+    if (planDurationDays !== null) {
+      if (planDurationDays >= PresupuestosGuardadosComponent.VIP_12_MONTH_THRESHOLD_DAYS)
+        return PresupuestosGuardadosComponent.VIP_12_MONTH_LIMIT;
+      if (planDurationDays >= PresupuestosGuardadosComponent.VIP_6_MONTH_THRESHOLD_DAYS)
+        return PresupuestosGuardadosComponent.VIP_6_MONTH_LIMIT;
     }
 
+    const userCode: string = (userData?.['userCode'] as string) ?? (localStorage.getItem('userCode') ?? '');
+    if (userCode.trim().length >= 7) return PresupuestosGuardadosComponent.VIP_12_MONTH_LIMIT;
+    if (userCode.trim().length >= 6) return PresupuestosGuardadosComponent.VIP_6_MONTH_LIMIT;
     return PresupuestosGuardadosComponent.VIP_3_MONTH_LIMIT;
   }
 

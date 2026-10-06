@@ -423,9 +423,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     demoMaxEmpresas: 3,
     vip3MaxEmpresas: 1,
     vip6MaxEmpresas: 3,
+    vip12MaxEmpresas: 5,
     demoMaxClientes: 6,
-    vip3MaxClientes: 30,
-    vip6MaxClientes: 60
+    vip3MaxClientes: 200,
+    vip6MaxClientes: 500,
+    vip12MaxClientes: 1000,
+    demoMaxPresupuestos: 5,
+    vip3MaxPresupuestos: 30,
+    vip6MaxPresupuestos: 120,
+    vip12MaxPresupuestos: 250
   };
 
   private demoTareasKey(empresaId: number | null | undefined): string {
@@ -4086,23 +4092,19 @@ fetchUserData(): void {
   }
 
   get currentEmpresaLimit(): number {
-    if (this.trialMode) {
-      return this.membershipLimits.demoMaxEmpresas || 3;
-    }
-
-    return this.resolveCurrentPlanMonths() >= 6
-      ? (this.membershipLimits.vip6MaxEmpresas || 3)
-      : (this.membershipLimits.vip3MaxEmpresas || 1);
+    if (this.trialMode) return this.membershipLimits.demoMaxEmpresas || 3;
+    const months = this.resolveCurrentPlanMonths();
+    if (months >= 12) return this.membershipLimits.vip12MaxEmpresas || 5;
+    if (months >= 6)  return this.membershipLimits.vip6MaxEmpresas  || 3;
+    return this.membershipLimits.vip3MaxEmpresas || 1;
   }
 
   get currentClienteLimit(): number {
-    if (this.trialMode) {
-      return this.membershipLimits.demoMaxClientes || 6;
-    }
-
-    return this.resolveCurrentPlanMonths() >= 6
-      ? (this.membershipLimits.vip6MaxClientes || 60)
-      : (this.membershipLimits.vip3MaxClientes || 30);
+    if (this.trialMode) return this.membershipLimits.demoMaxClientes || 6;
+    const months = this.resolveCurrentPlanMonths();
+    if (months >= 12) return this.membershipLimits.vip12MaxClientes || 1000;
+    if (months >= 6)  return this.membershipLimits.vip6MaxClientes  || 500;
+    return this.membershipLimits.vip3MaxClientes || 200;
   }
 
   private loadMembershipLimits(): void {
@@ -4223,7 +4225,9 @@ fetchUserData(): void {
     for (const candidate of directCandidates) {
       const parsed = Number(candidate);
       if (!Number.isNaN(parsed) && parsed > 0) {
-        return parsed >= 6 ? 6 : 3;
+        if (parsed >= 12) return 12;
+        if (parsed >= 6)  return 6;
+        return 3;
       }
     }
 
@@ -4231,15 +4235,15 @@ fetchUserData(): void {
     const fechaVencimiento = this.userData?.fechaVencimiento ? new Date(this.userData.fechaVencimiento) : null;
     if (fechaRegistro && fechaVencimiento && !Number.isNaN(fechaRegistro.getTime()) && !Number.isNaN(fechaVencimiento.getTime())) {
       const diffDays = Math.round((fechaVencimiento.getTime() - fechaRegistro.getTime()) / 86400000);
-      if (diffDays >= 150) {
-        return 6;
-      }
-      if (diffDays > 0) {
-        return 3;
-      }
+      if (diffDays >= 330) return 12;
+      if (diffDays >= 150) return 6;
+      if (diffDays > 0)    return 3;
     }
 
-    return this.userCode?.trim().length >= 6 ? 6 : 3;
+    const codeLen = this.userCode?.trim().length ?? 0;
+    if (codeLen >= 7) return 12;
+    if (codeLen >= 6) return 6;
+    return 3;
   }
 }
 

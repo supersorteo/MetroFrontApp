@@ -10,9 +10,15 @@ export interface MembershipLimits {
   demoMaxEmpresas: number;
   vip3MaxEmpresas: number;
   vip6MaxEmpresas: number;
+  vip12MaxEmpresas: number;
   demoMaxClientes: number;
   vip3MaxClientes: number;
   vip6MaxClientes: number;
+  vip12MaxClientes: number;
+  demoMaxPresupuestos: number;
+  vip3MaxPresupuestos: number;
+  vip6MaxPresupuestos: number;
+  vip12MaxPresupuestos: number;
 }
 
 @Injectable({ providedIn: 'root' })
