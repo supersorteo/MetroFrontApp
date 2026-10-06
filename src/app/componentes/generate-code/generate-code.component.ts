@@ -41,6 +41,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   filterText = '';
   codeCount3 = 1;
   codeCount6 = 1;
+  codeCount12 = 1;
 
   currentPage = 1;
   itemsPerPage = 8;
@@ -48,6 +49,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
 
   showGenerate3Panel = false;
   showGenerate6Panel = false;
+  showGenerate12Panel = false;
   showGeneratedModal = false;
   showEditAdminPanel = false;
   showLimitsPanel = false;
@@ -143,7 +145,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
         this.codes = response
           .map(code => ({
             ...code,
-            tipo: code.code.length === 5 ? '3 meses' : '6 meses',
+            tipo: code.code.length >= 7 ? '12 meses' : code.code.length === 6 ? '6 meses' : '3 meses',
             fechaRegistro: code.fechaRegistro || '',
             fechaVencimiento: code.fechaVencimiento || ''
           }))
@@ -226,8 +228,8 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     });
   }
 
-  async generateCodes(months: 3 | 6): Promise<void> {
-    const count = months === 3 ? this.codeCount3 : this.codeCount6;
+  async generateCodes(months: 3 | 6 | 12): Promise<void> {
+    const count = months === 3 ? this.codeCount3 : months === 6 ? this.codeCount6 : this.codeCount12;
     if (count <= 0) {
       this.uiDialog.warning({ title: 'Cantidad inválida', text: 'La cantidad debe ser mayor a 0.' });
       return;
@@ -242,17 +244,19 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     });
     if (!confirmed) return;
 
-    const length = months === 3 ? 5 : 6;
+    const length = months === 3 ? 5 : months === 6 ? 6 : 7;
+    const tipo = months === 3 ? '3 meses' : months === 6 ? '6 meses' : '12 meses';
     const newCodes: AccessCode[] = Array.from({ length: count }, () => ({
       code: this.randomCode(length),
       email: null,
       pais: this.admin.pais,
-      tipo: months === 3 ? '3 meses' : '6 meses'
+      tipo
     }));
 
     this.generatedCodes = newCodes;
     this.showGenerate3Panel = false;
     this.showGenerate6Panel = false;
+    this.showGenerate12Panel = false;
     this.showGeneratedModal = true;
 
     this.authService.agregarCodes(newCodes).subscribe({
@@ -421,9 +425,15 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       demoMaxEmpresas: 3,
       vip3MaxEmpresas: 1,
       vip6MaxEmpresas: 3,
+      vip12MaxEmpresas: 5,
       demoMaxClientes: 6,
-      vip3MaxClientes: 30,
-      vip6MaxClientes: 60
+      vip3MaxClientes: 200,
+      vip6MaxClientes: 500,
+      vip12MaxClientes: 1000,
+      demoMaxPresupuestos: 5,
+      vip3MaxPresupuestos: 30,
+      vip6MaxPresupuestos: 120,
+      vip12MaxPresupuestos: 250
     };
 
     this.limitsDraft = { ...base };
@@ -446,9 +456,15 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       this.limitsDraft.demoMaxEmpresas,
       this.limitsDraft.vip3MaxEmpresas,
       this.limitsDraft.vip6MaxEmpresas,
+      this.limitsDraft.vip12MaxEmpresas,
       this.limitsDraft.demoMaxClientes,
       this.limitsDraft.vip3MaxClientes,
-      this.limitsDraft.vip6MaxClientes
+      this.limitsDraft.vip6MaxClientes,
+      this.limitsDraft.vip12MaxClientes,
+      this.limitsDraft.demoMaxPresupuestos,
+      this.limitsDraft.vip3MaxPresupuestos,
+      this.limitsDraft.vip6MaxPresupuestos,
+      this.limitsDraft.vip12MaxPresupuestos
     ];
 
     if (values.some(value => Number(value) < 0 || Number.isNaN(Number(value)))) {
