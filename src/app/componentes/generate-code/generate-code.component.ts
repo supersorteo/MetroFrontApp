@@ -50,7 +50,6 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   showGenerate3Panel = false;
   showGenerate6Panel = false;
   showGenerate12Panel = false;
-  showGeneratedModal = false;
   showEditAdminPanel = false;
   showLimitsPanel = false;
 
@@ -257,7 +256,6 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     this.showGenerate3Panel = false;
     this.showGenerate6Panel = false;
     this.showGenerate12Panel = false;
-    this.showGeneratedModal = true;
 
     this.authService.agregarCodes(newCodes).subscribe({
       next: res => {
@@ -433,7 +431,11 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       demoMaxPresupuestos: 5,
       vip3MaxPresupuestos: 30,
       vip6MaxPresupuestos: 120,
-      vip12MaxPresupuestos: 250
+      vip12MaxPresupuestos: 250,
+      precio3Meses: null,
+      precio6Meses: null,
+      precio12Meses: null,
+      moneda: null
     };
 
     this.limitsDraft = { ...base };
@@ -489,6 +491,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
           return;
         }
         this.membershipLimits = updated;
+        localStorage.removeItem('membershipCatalogCache');
         this.uiDialog.success({ title: 'Límites actualizados', text: 'Los límites de membresía fueron guardados correctamente.' });
         this.closeLimitsPanel();
       },

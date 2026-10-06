@@ -10,6 +10,7 @@ import { OfflineLocalStoreService } from '../../servicios/offline-local-store.se
 import { AppToastService } from '../../servicios/app-toast.service';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { PrecioArgentinoPipe, formatPrecioArgentino } from '../../pipes/precio-argentino.pipe';
+import { MembershipLimits } from '../../servicios/membership-limits.service';
 
 declare const html2pdf: any;
 
@@ -33,6 +34,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   @Input() tareasDelCliente: UserTarea[] = [];
   @Input() presupuestoCargado: SavedPresupuesto | null = null;
   @Input() userCode: string = '';
+  @Input() membershipLimits: MembershipLimits | null = null;
 
   @Output() cargarPresupuesto = new EventEmitter<SavedPresupuesto>();
   @Output() presupuestoEliminado = new EventEmitter<SavedPresupuesto>();
@@ -425,9 +427,9 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     const planMonths = this.resolveUserPlanMonths(userData);
 
     if (planMonths !== null) {
-      if (planMonths >= 12) return PresupuestosGuardadosComponent.VIP_12_MONTH_LIMIT;
-      if (planMonths >= 6)  return PresupuestosGuardadosComponent.VIP_6_MONTH_LIMIT;
-      return PresupuestosGuardadosComponent.VIP_3_MONTH_LIMIT;
+      if (planMonths >= 12) return this.membershipLimits?.vip12MaxPresupuestos ?? PresupuestosGuardadosComponent.VIP_12_MONTH_LIMIT;
+      if (planMonths >= 6)  return this.membershipLimits?.vip6MaxPresupuestos  ?? PresupuestosGuardadosComponent.VIP_6_MONTH_LIMIT;
+      return this.membershipLimits?.vip3MaxPresupuestos ?? PresupuestosGuardadosComponent.VIP_3_MONTH_LIMIT;
     }
 
     const planDurationDays = this.resolvePlanDurationDays(
@@ -436,15 +438,15 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     );
     if (planDurationDays !== null) {
       if (planDurationDays >= PresupuestosGuardadosComponent.VIP_12_MONTH_THRESHOLD_DAYS)
-        return PresupuestosGuardadosComponent.VIP_12_MONTH_LIMIT;
+        return this.membershipLimits?.vip12MaxPresupuestos ?? PresupuestosGuardadosComponent.VIP_12_MONTH_LIMIT;
       if (planDurationDays >= PresupuestosGuardadosComponent.VIP_6_MONTH_THRESHOLD_DAYS)
-        return PresupuestosGuardadosComponent.VIP_6_MONTH_LIMIT;
+        return this.membershipLimits?.vip6MaxPresupuestos  ?? PresupuestosGuardadosComponent.VIP_6_MONTH_LIMIT;
     }
 
     const userCode: string = (userData?.['userCode'] as string) ?? (localStorage.getItem('userCode') ?? '');
-    if (userCode.trim().length >= 7) return PresupuestosGuardadosComponent.VIP_12_MONTH_LIMIT;
-    if (userCode.trim().length >= 6) return PresupuestosGuardadosComponent.VIP_6_MONTH_LIMIT;
-    return PresupuestosGuardadosComponent.VIP_3_MONTH_LIMIT;
+    if (userCode.trim().length >= 7) return this.membershipLimits?.vip12MaxPresupuestos ?? PresupuestosGuardadosComponent.VIP_12_MONTH_LIMIT;
+    if (userCode.trim().length >= 6) return this.membershipLimits?.vip6MaxPresupuestos  ?? PresupuestosGuardadosComponent.VIP_6_MONTH_LIMIT;
+    return this.membershipLimits?.vip3MaxPresupuestos ?? PresupuestosGuardadosComponent.VIP_3_MONTH_LIMIT;
   }
 
   private readCurrentUserData(): Record<string, unknown> | null {

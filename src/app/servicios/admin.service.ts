@@ -36,6 +36,10 @@ export interface AdminMembershipLimits {
   vip3MaxPresupuestos: number;
   vip6MaxPresupuestos: number;
   vip12MaxPresupuestos: number;
+  precio3Meses: number | null;
+  precio6Meses: number | null;
+  precio12Meses: number | null;
+  moneda: string | null;
 }
 
 const SESSION_KEY = 'metro_admin_session';
