@@ -971,8 +971,12 @@
       </div>
       <div>
         <label style="display:block;font-size:0.78rem;margin-bottom:0.25rem;">Nueva fecha vencimiento</label>
-        <input class="gen-input" type="date"
-               [(ngModel)]="expiryDate">
+        <input class="gen-input" type="date" [(ngModel)]="expiryDate">
+      </div>
+      <div>
+        <label style="display:block;font-size:0.78rem;margin-bottom:0.25rem;">Contraseña admin</label>
+        <input class="gen-input" type="password" style="width:160px;"
+               [(ngModel)]="expiryAdminPass" placeholder="Tu contraseña de admin">
       </div>
       <button class="gen-btn" style="background:#dc2626;color:#fff;" (click)="applyExpiry()">
         Aplicar

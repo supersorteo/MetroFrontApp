@@ -110,6 +110,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   showExpiryPanel = false;
   expiryCode = '';
   expiryDate = '';
+  expiryAdminPass = '';
 
   private timer: any;
 
@@ -1010,11 +1011,12 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   applyExpiry(): void {
     const code = this.expiryCode.trim().toUpperCase();
     const date = this.expiryDate.trim();
-    if (!code || !date) {
-      this.uiDialog.warning({ title: 'Campos requeridos', text: 'Ingresá el código y la fecha.' });
+    const pass = this.expiryAdminPass.trim();
+    if (!code || !date || !pass) {
+      this.uiDialog.warning({ title: 'Campos requeridos', text: 'Ingresá el código, la fecha y la contraseña de admin.' });
       return;
     }
-    this.authService.setExpiry(code, date).subscribe({
+    this.authService.setExpiry(code, date, this.admin.username, pass).subscribe({
       next: (res: any) => {
         this.uiDialog.success({ title: 'Vencimiento aplicado', text: `Código ${res.code} vence ahora el ${res.fechaVencimiento}.` });
         this.loadCodes();
