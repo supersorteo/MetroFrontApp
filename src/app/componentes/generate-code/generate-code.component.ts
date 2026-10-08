@@ -1028,8 +1028,8 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
 
   async applyExpiry(): Promise<void> {
     const code = this.editingExpiryCode;
-    if (!code || !this.expiryEditVencimiento) {
-      this.uiDialog.warning({ title: 'Campo requerido', text: 'La fecha de vencimiento es obligatoria.' });
+    if (!code || !this.expiryEditRegistro) {
+      this.uiDialog.warning({ title: 'Campo requerido', text: 'La fecha de registro es obligatoria.' });
       return;
     }
     const confirmed = await this.uiDialog.confirm({
