@@ -139,6 +139,9 @@
   max-width: 1100px;
   margin: 0 auto;
   padding: 1.5rem 1.2rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 /* ── Stats ────────────────────────────────────── */
@@ -1017,6 +1020,82 @@
     background: rgba(255,230,80,0.9);
     color: #3b1e6e;
   }
+}
+
+/* ── Legacy toolbar & buttons ────────────────── */
+.legacy-header {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.legacy-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.legacy-search {
+  min-width: 200px;
+  //flex: 1 1 200px;
+
+  .admin-search__input { flex: 1; width: auto; min-width: 0; }
+}
+
+.legacy-btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.gen-btn--warn {
+  background: #fff;
+  color: #b45309;
+  border: 1.5px solid #d97706;
+  padding: 0.45rem 1rem;
+  border-radius: 9px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.18s;
+  &:hover {
+    background: #fef3c7;
+    box-shadow: 0 4px 12px rgba(217,119,6,0.25);
+    transform: translateY(-1px);
+  }
+}
+
+.gen-btn--nuke {
+  background: linear-gradient(135deg, #b91c1c, #dc2626);
+  color: #fff;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: 9px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 3px 10px rgba(185,28,28,0.28);
+  transition: box-shadow 0.18s, transform 0.18s;
+  &:hover {
+    box-shadow: 0 5px 18px rgba(185,28,28,0.45);
+    transform: translateY(-1px);
+  }
+}
+
+@media (max-width: 600px) {
+  .legacy-toolbar { flex-direction: column; align-items: stretch; }
+  .legacy-search { min-width: 0; align-self: flex-start; width: 100%; max-width: 280px; }
+  .legacy-btn-group { justify-content: stretch; }
+  .legacy-btn-group .gen-btn--task,
+  .legacy-btn-group .gen-btn--warn,
+  .legacy-btn-group .gen-btn--nuke { flex: 1; justify-content: center; }
 }
 
 /* ── Modal Ajuste Precios ─────────────────────── */

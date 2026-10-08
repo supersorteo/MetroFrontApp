@@ -16,6 +16,7 @@ import { extractApiErrorMessage } from '../../core/http/api-error.util';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { AppToastService } from '../../servicios/app-toast.service';
 import { AdminService, AdminCountry } from '../../servicios/admin.service';
+import { LegacyCodeService, LegacyCodeDTO } from '../../servicios/legacy-code.service';
 declare var bootstrap: any;
 
 interface Provincia {
@@ -50,7 +51,8 @@ export class LoginComponent implements OnInit{
 
   password: string = '';
   isContentVisible: boolean = false;
-  loginStep: 'home' | 'login' | 'join' | 'register' | 'checkout' | 'adminCountry' | 'adminLogin' | 'demoCountry' = 'home';
+  loginStep: 'home' | 'login' | 'join' | 'register' | 'checkout' | 'adminCountry' | 'adminLogin' | 'demoCountry' | 'legacyRegister' = 'home';
+  legacyData: LegacyCodeDTO | null = null;
   websiteUrl: string = "https://wa.link/9lbeyq";
 
   errorMessage: string = '';
@@ -107,7 +109,8 @@ constructor(private authService: AuthService,
   private payPalPaymentService: PayPalPaymentService,
   private adminService: AdminService,
   private uiDialog: UiDialogService,
-  private appToast: AppToastService){}
+  private appToast: AppToastService,
+  private legacyCodeService: LegacyCodeService){}
 
   private provinciasCacheKey(pais: string): string {
     return `loginProvincias_${pais.toLowerCase()}`;
@@ -269,10 +272,48 @@ login(): void {
         }
       }
 
-      const msg = error.error?.email || error.message || 'Error al iniciar sesión';
-      this.uiDialog.error({ title: 'Error', text: msg });
+      const serverMsg: string = error.error?.email || error.message || '';
+      if (serverMsg === 'Código no encontrado') {
+        this.legacyCodeService.checkCode(this.code).subscribe(legacy => {
+          if (legacy) {
+            this.legacyData = legacy;
+            this.email = '';
+            this.telefono = '';
+            this.provincia = '';
+            this.provinciaService.getProvinciasByPais('argentina').subscribe({
+              next: ps => this.provincias = ps,
+              error: () => this.provincias = this.getCachedProvincias('argentina')
+            });
+            this.loginStep = 'legacyRegister';
+          } else {
+            this.uiDialog.error({ title: 'Error', text: 'Código no encontrado.' });
+          }
+        });
+        return;
+      }
+      this.uiDialog.error({ title: 'Error', text: serverMsg || 'Error al iniciar sesión' });
     }
   );
+}
+
+registerLegacy(): void {
+  if (!this.email.trim() || !this.telefono.trim() || !this.provincia.trim()) {
+    this.uiDialog.error({ title: 'Error', text: 'Completá todos los campos para activar tu código.' });
+    return;
+  }
+  this.legacyCodeService.claimAndActivate(this.code, this.email.trim(), this.telefono.trim(), this.provincia.trim()).subscribe({
+    next: (resp) => {
+      localStorage.setItem('userCode', resp.code);
+      localStorage.setItem('userEmail', resp.email);
+      localStorage.setItem('userData', JSON.stringify(resp));
+      this.uiDialog.success({ title: '¡Bienvenido!', text: 'Tu código fue activado correctamente.' });
+      this.route.navigate(['dashboard']);
+    },
+    error: (err) => {
+      const msg = err?.error?.message || err?.message || 'No se pudo activar el código.';
+      this.uiDialog.error({ title: 'Error', text: msg });
+    }
+  });
 }
 
 

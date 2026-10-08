@@ -229,6 +229,66 @@
   </div>
 
   <!-- ══════════════════════════════════════
+       PASO LEGACY REGISTER: activar código viejo
+  ══════════════════════════════════════ -->
+  <div *ngIf="loginStep === 'legacyRegister'" class="login-step login-step--form">
+
+    <button class="login-back" (click)="loginStep = 'login'">
+      <i class="bi bi-arrow-left"></i> Volver
+    </button>
+
+    <div class="login-form-card login-form-card--wide">
+      <div class="login-form-card__icon"><i class="bi bi-key-fill"></i></div>
+      <h3 class="login-form-card__title">Activá tu código</h3>
+      <p class="login-form-card__sub">
+        Tu código <strong>{{ code }}</strong> corresponde al sistema anterior.
+        Completá tus datos para activarlo.
+        Vence: <strong>{{ legacyData?.fechaVencimiento }}</strong>
+      </p>
+
+      <div class="lf-field">
+        <label class="lf-label">Código</label>
+        <input type="text" class="form-control login-input-field" [value]="code" disabled>
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">País</label>
+        <input type="text" class="form-control login-input-field" value="Argentina" disabled>
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">Email</label>
+        <input type="email" class="form-control login-input-field"
+               [(ngModel)]="email" placeholder="tu@email.com" name="legacyEmail">
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">Provincia</label>
+        <select class="form-select login-input-field" [(ngModel)]="provincia" name="legacyProvincia">
+          <option value="" disabled selected>Seleccioná tu provincia</option>
+          <option *ngFor="let p of provincias" [value]="p.nombre">{{ p.nombre }}</option>
+        </select>
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">Teléfono</label>
+        <input type="tel" class="form-control login-input-field"
+               [(ngModel)]="telefono" placeholder="+54 9 11 1234-5678" name="legacyTelefono">
+      </div>
+
+      <div class="lf-actions">
+        <button type="button" class="btn login-btn-secondary" (click)="loginStep = 'login'">
+          Cancelar
+        </button>
+        <button type="button" class="btn login-btn-primary-full" (click)="registerLegacy()">
+          <i class="bi bi-check-circle me-2"></i>Activar código
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
        PASO JOIN: opciones para unirse
   ══════════════════════════════════════ -->
   <div *ngIf="loginStep === 'join'" class="login-step">

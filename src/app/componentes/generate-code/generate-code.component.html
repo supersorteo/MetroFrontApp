@@ -324,6 +324,150 @@
       </div>
     </div>
 
+    <!-- ── Códigos Legacy (solo Argentina) ────────── -->
+    <div class="admin-table-section" *ngIf="admin.pais === 'argentina'">
+
+      <div class="admin-table-header legacy-header">
+        <div>
+          <h2 class="admin-section-title">
+            Códigos Legacy
+            <span class="admin-section-title__count">{{ filteredLegacyCodes.length }}</span>
+          </h2>
+          <p class="limits-section__lead">Usuarios de la app anterior. Importalos una sola vez.</p>
+        </div>
+        <div class="legacy-toolbar">
+          <div class="admin-search legacy-search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="admin-search__icon">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414zm-5.242 1.6a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"/>
+            </svg>
+            <input type="text" class="admin-search__input" placeholder="Código, email, fecha, estado..."
+                   [(ngModel)]="legacyFilterText" (input)="applyLegacyFilter()">
+          </div>
+          <div class="legacy-btn-group">
+            <button class="gen-btn gen-btn--task" (click)="importLegacyCodes()" [disabled]="legacyImporting">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+              </svg>
+              <span>{{ legacyImporting ? 'Importando...' : 'Importar JSON' }}</span>
+            </button>
+            <button class="gen-btn gen-btn--warn" (click)="deleteExpiredLegacyCodes()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+              </svg>
+              <span>Elim. vencidos</span>
+            </button>
+            <button class="gen-btn gen-btn--nuke" (click)="deleteAllLegacyCodes()" title="Eliminar TODOS los códigos legacy">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 16c3.314 0 6-2 6-5.5 0-1.5-.5-4-2.5-6 .25 1.5-1.25 2-1.25 2C11 4 9 .5 6 0c.357 2 .5 4-2 6-1.25 1-2 2.729-2 4.5C2 14 4.686 16 8 16m0-1c-1.657 0-3-1-3-2.75 0-.75.25-2 1.25-3C6.125 10 7 10.5 7 10.5c-.375-1.25.5-3.25 2-3.5-.179 1-.25 2 1 3 .625.5 1 1.364 1 2.25C11 14 9.657 15 8 15"/>
+              </svg>
+              <span>Eliminar todo</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats legacy -->
+      <div class="admin-stats" style="margin-bottom:12px" *ngIf="legacyStats.total > 0">
+        <div class="stat-card stat-card--total">
+          <span class="stat-card__value">{{ legacyStats.total }}</span>
+          <span class="stat-card__label">Total</span>
+        </div>
+        <div class="stat-card stat-card--active">
+          <span class="stat-card__value">{{ legacyStats.vigentes }}</span>
+          <span class="stat-card__label">Vigentes</span>
+        </div>
+        <div class="stat-card stat-card--expired">
+          <span class="stat-card__value">{{ legacyStats.vencidos }}</span>
+          <span class="stat-card__label">Vencidos</span>
+        </div>
+        <div class="stat-card stat-card--pending">
+          <span class="stat-card__value">{{ legacyStats.reclamados }}</span>
+          <span class="stat-card__label">Reclamados</span>
+        </div>
+      </div>
+
+      <!-- Resultado de importación -->
+      <div *ngIf="legacyImportResult" style="margin-bottom:10px;padding:8px 12px;background:#d1fae5;border-radius:6px;font-size:13px;color:#065f46">
+        Importación: <strong>{{ legacyImportResult.imported }}</strong> nuevos ·
+        <strong>{{ legacyImportResult.skipped }}</strong> ignorados ·
+        <strong>{{ legacyImportResult.total }}</strong> totales
+      </div>
+
+      <!-- Tabla -->
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Plan</th>
+              <th>Adquisición</th>
+              <th>Vencimiento</th>
+              <th>Estado</th>
+              <th>Reclamado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let lc of getPaginatedLegacyCodes()"
+                [class.row--expired]="!isLegacyVigente(lc)"
+                [class.row--pending]="lc.claimed">
+              <td><span class="code-badge">{{ lc.code }}</span></td>
+              <td>
+                <span class="tipo-badge"
+                      [class.tipo-badge--3]="lc.meses === 3"
+                      [class.tipo-badge--6]="lc.meses === 6">
+                  {{ lc.meses }} meses
+                </span>
+              </td>
+              <td class="td--date">{{ lc.fechaAdquisicion || '—' }}</td>
+              <td class="td--date">{{ lc.fechaVencimiento || '—' }}</td>
+              <td>
+                <span class="remaining" [class.remaining--expired]="!isLegacyVigente(lc)">
+                  {{ isLegacyVigente(lc) ? 'Vigente' : 'Vencido' }}
+                </span>
+              </td>
+              <td class="td--email">
+                <span *ngIf="lc.claimed" style="color:#059669">✓ {{ lc.claimedByEmail }}</span>
+                <span *ngIf="!lc.claimed" class="td--pending">No</span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button *ngIf="lc.claimed" class="ra-btn ra-btn--edit" title="Resetear claim (solo para testing)" (click)="resetLegacyClaim(lc)" style="margin-right:4px">
+                    ↺
+                  </button>
+                  <button class="ra-btn ra-btn--delete" title="Eliminar" (click)="deleteLegacyCode(lc)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                      <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredLegacyCodes.length === 0 && legacyCodes.length === 0">
+              <td colspan="7" class="td--empty">Sin códigos importados. Usá el botón "Importar JSON".</td>
+            </tr>
+            <tr *ngIf="filteredLegacyCodes.length === 0 && legacyCodes.length > 0">
+              <td colspan="7" class="td--empty">Sin resultados para "{{ legacyFilterText }}"</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación legacy -->
+      <div class="admin-pagination" *ngIf="legacyTotalPages > 1">
+        <button class="pg-btn" [disabled]="legacyPage === 1" (click)="changeLegacyPage(legacyPage - 1)">&#8249;</button>
+        <button class="pg-btn" *ngFor="let p of legacyPageNumbers"
+                [class.pg-btn--active]="p === legacyPage"
+                (click)="changeLegacyPage(p)">{{ p }}</button>
+        <button class="pg-btn" [disabled]="legacyPage === legacyTotalPages" (click)="changeLegacyPage(legacyPage + 1)">&#8250;</button>
+        <span class="pg-info">{{ legacyPage }} / {{ legacyTotalPages }}</span>
+      </div>
+
+    </div>
+
     <!-- ── Gestión de Tareas ───────────────────────── -->
     <div class="admin-table-section at-tareas" id="tarea-form-section">
 
@@ -337,7 +481,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="admin-search__icon">
               <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414zm-5.242 1.6a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"/>
             </svg>
-            <input type="text" class="admin-search__input" placeholder="Buscar tarea, rubro, categoría..."
+            <input type="text" class="admin-search__input" placeholder="Buscar tarea, rubro, categoría, costo..."
                    [(ngModel)]="tareaFilter" (input)="filtrarTareas()">
           </div>
           <button class="gen-btn gen-btn--price" (click)="showAjustePreciosPanel = true" title="Ajustar precios del catálogo">
@@ -357,7 +501,6 @@
         </div>
       </div>
 
-
       <!-- Tabla de tareas -->
       <div class="admin-table-wrap">
         <table class="admin-table">
@@ -371,7 +514,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let t of filteredTareas">
+            <tr *ngFor="let t of getPaginatedTareas()">
               <td class="td--tarea-name">{{ t.tarea }}</td>
               <td><span class="rubro-badge" *ngIf="t.rubro">{{ t.rubro }}</span><span *ngIf="!t.rubro" class="td--empty-val">—</span></td>
               <td>{{ t.categoria || '—' }}</td>
@@ -397,6 +540,16 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Paginación tareas -->
+      <div class="admin-pagination" *ngIf="tareaTotalPages > 1">
+        <button class="pg-btn" [disabled]="tareaPage === 1" (click)="changeTareaPage(tareaPage - 1)">&#8249;</button>
+        <button class="pg-btn" *ngFor="let p of tareaPageNumbers"
+                [class.pg-btn--active]="p === tareaPage"
+                (click)="changeTareaPage(p)">{{ p }}</button>
+        <button class="pg-btn" [disabled]="tareaPage === tareaTotalPages" (click)="changeTareaPage(tareaPage + 1)">&#8250;</button>
+        <span class="pg-info">{{ tareaPage }} / {{ tareaTotalPages }} · {{ filteredTareas.length }} tareas</span>
       </div>
 
     </div>

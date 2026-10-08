@@ -8,6 +8,7 @@ import { AuthService, UserDataSummary } from '../../servicios/auth.service';
 import { Admin, AdminMembershipLimits, AdminService } from '../../servicios/admin.service';
 import { Tarea, TareaService } from '../../servicios/tarea.service';
 import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
+import { LegacyCodeService, LegacyCodeDTO, LegacyImportResult } from '../../servicios/legacy-code.service';
 
 interface AccessCode {
   code: string;
@@ -56,6 +57,9 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   tareas: Tarea[] = [];
   filteredTareas: Tarea[] = [];
   tareaFilter = '';
+  tareaPage = 1;
+  tareaItemsPerPage = 20;
+  tareaTotalPages = 1;
   showTareaForm = false;
   tareaEditingId: number | null = null;
   tareaSubmitted = false;
@@ -91,6 +95,16 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   expiredCodes = 0;
   unregisteredCodes = 0;
 
+  legacyCodes: LegacyCodeDTO[] = [];
+  filteredLegacyCodes: LegacyCodeDTO[] = [];
+  legacyFilterText = '';
+  legacyPage = 1;
+  legacyItemsPerPage = 10;
+  legacyTotalPages = 0;
+  legacyImporting = false;
+  legacyImportResult: LegacyImportResult | null = null;
+  legacyStats = { total: 0, vigentes: 0, vencidos: 0, reclamados: 0 };
+
   private timer: any;
 
   constructor(
@@ -99,7 +113,8 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     private tareaService: TareaService,
     private router: Router,
     private uiDialog: UiDialogService,
-    private ajustePrecioService: AjustePrecioService
+    private ajustePrecioService: AjustePrecioService,
+    private legacyCodeService: LegacyCodeService
   ) {}
 
   ngOnInit(): void {
@@ -113,6 +128,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     this.loadCodes();
     this.loadTareas();
     this.loadMembershipLimits();
+    if (admin.pais === 'argentina') this.loadLegacyCodes();
     this.timer = setInterval(() => this.updateRemainingTimes(), 1000);
   }
 
@@ -632,9 +648,34 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       ? this.tareas.filter(t =>
           t.tarea.toLowerCase().includes(q) ||
           (t.rubro || '').toLowerCase().includes(q) ||
-          (t.categoria || '').toLowerCase().includes(q)
+          (t.categoria || '').toLowerCase().includes(q) ||
+          (t.descripcion || '').toLowerCase().includes(q) ||
+          String(t.costo).includes(q)
         )
       : [...this.tareas];
+    this.tareaPage = 1;
+    this.tareaTotalPages = Math.max(1, Math.ceil(this.filteredTareas.length / this.tareaItemsPerPage));
+  }
+
+  getPaginatedTareas(): Tarea[] {
+    const start = (this.tareaPage - 1) * this.tareaItemsPerPage;
+    return this.filteredTareas.slice(start, start + this.tareaItemsPerPage);
+  }
+
+  changeTareaPage(page: number): void {
+    if (page < 1 || page > this.tareaTotalPages) return;
+    this.tareaPage = page;
+  }
+
+  get tareaPageNumbers(): number[] {
+    const total = this.tareaTotalPages;
+    const cur = this.tareaPage;
+    const range: number[] = [];
+    const delta = 2;
+    for (let i = Math.max(1, cur - delta); i <= Math.min(total, cur + delta); i++) {
+      range.push(i);
+    }
+    return range;
   }
 
   abrirNuevaTarea(): void {
@@ -731,5 +772,225 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     this.tareaSubmitted = false;
     this.showTareaForm = false;
     this.tareaForm = { tarea: '', descripcion: '', costo: 0, rubro: '', categoria: '', area: 1, descuento: 0 };
+  }
+
+  loadLegacyCodes(): void {
+    this.legacyCodeService.getCodes().subscribe({
+      next: page => {
+        this.legacyCodes = page.content || [];
+        this.applyLegacyFilter();
+        this.computeLegacyStats();
+      },
+      error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron cargar los códigos legacy.' })
+    });
+  }
+
+  applyLegacyFilter(): void {
+    const f = this.legacyFilterText.toLowerCase();
+    this.filteredLegacyCodes = f
+      ? this.legacyCodes.filter(c =>
+          c.code.toLowerCase().includes(f) ||
+          (c.claimedByEmail?.toLowerCase().includes(f) ?? false) ||
+          (c.fechaVencimiento?.includes(f) ?? false) ||
+          (c.fechaAdquisicion?.includes(f) ?? false) ||
+          String(c.meses).includes(f) ||
+          (c.claimed ? 'reclamado' : 'no reclamado').includes(f) ||
+          (this.isLegacyVigente(c) ? 'vigente' : 'vencido').includes(f)
+        )
+      : [...this.legacyCodes];
+    this.legacyPage = 1;
+    this.legacyTotalPages = Math.ceil(this.filteredLegacyCodes.length / this.legacyItemsPerPage);
+  }
+
+  private parseLegacyDate(dateStr: string): Date {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  computeLegacyStats(): void {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    this.legacyStats.total = this.legacyCodes.length;
+    this.legacyStats.reclamados = this.legacyCodes.filter(c => c.claimed).length;
+    this.legacyStats.vigentes = this.legacyCodes.filter(c => {
+      if (!c.fechaVencimiento) return false;
+      return this.parseLegacyDate(c.fechaVencimiento) >= today;
+    }).length;
+    this.legacyStats.vencidos = this.legacyCodes.filter(c => {
+      if (!c.fechaVencimiento) return false;
+      return this.parseLegacyDate(c.fechaVencimiento) < today;
+    }).length;
+  }
+
+  getPaginatedLegacyCodes(): LegacyCodeDTO[] {
+    const start = (this.legacyPage - 1) * this.legacyItemsPerPage;
+    return this.filteredLegacyCodes.slice(start, start + this.legacyItemsPerPage);
+  }
+
+  changeLegacyPage(page: number): void {
+    if (page < 1 || page > this.legacyTotalPages) return;
+    this.legacyPage = page;
+  }
+
+  get legacyPageNumbers(): number[] {
+    const total = this.legacyTotalPages;
+    const cur = this.legacyPage;
+    const range: number[] = [];
+    const delta = 2;
+    for (let i = Math.max(1, cur - delta); i <= Math.min(total, cur + delta); i++) {
+      range.push(i);
+    }
+    return range;
+  }
+
+  isLegacyVigente(lc: LegacyCodeDTO): boolean {
+    if (!lc.fechaVencimiento) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return this.parseLegacyDate(lc.fechaVencimiento) >= today;
+  }
+
+  async deleteLegacyCode(lc: LegacyCodeDTO): Promise<void> {
+    const extra = lc.claimed
+      ? `\n\nEste código fue reclamado por <strong>${lc.claimedByEmail}</strong>. Se eliminarán también todos sus datos de la app.`
+      : '';
+
+    const confirmed = await this.uiDialog.confirm({
+      title: `Eliminar código ${lc.code}`,
+      html: `¿Confirmas eliminar el código legacy <strong>${lc.code}</strong>?${extra}`,
+      confirmText: 'Sí, eliminar',
+      cancelText: 'Cancelar',
+      tone: 'danger',
+      icon: 'warning'
+    });
+    if (!confirmed) return;
+
+    if (lc.claimed) {
+      const secondConfirm = await this.uiDialog.confirm({
+        title: 'Confirmar eliminación de datos',
+        html: `Esta acción eliminará permanentemente la cuenta de <strong>${lc.claimedByEmail}</strong> y todos sus datos. No se puede deshacer.`,
+        confirmText: 'Sí, eliminar todo',
+        cancelText: 'Cancelar',
+        tone: 'danger',
+        icon: 'warning'
+      });
+      if (!secondConfirm) return;
+    }
+
+    this.legacyCodeService.deleteCode(lc.code).subscribe({
+      next: () => {
+        this.uiDialog.success({ title: 'Eliminado', text: `El código ${lc.code} fue eliminado correctamente.` });
+        this.loadLegacyCodes();
+      },
+      error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudo eliminar el código.' })
+    });
+  }
+
+  async importLegacyCodes(): Promise<void> {
+    const confirmed = await this.uiDialog.confirm({
+      title: 'Importar códigos legacy',
+      text: 'Se importarán todos los códigos del sistema anterior de Argentina. Los duplicados serán ignorados. ¿Confirmas?',
+      confirmText: 'Importar',
+      cancelText: 'Cancelar'
+    });
+    if (!confirmed) return;
+
+    this.legacyImporting = true;
+    this.legacyImportResult = null;
+    this.legacyCodeService.importCodes().subscribe({
+      next: result => {
+        this.legacyImporting = false;
+        this.legacyImportResult = result;
+        this.loadLegacyCodes();
+        this.uiDialog.success({
+          title: 'Importación completada',
+          text: `${result.imported} códigos importados, ${result.skipped} ignorados de ${result.total} totales.`
+        });
+      },
+      error: (err) => {
+        this.legacyImporting = false;
+        const detail = err?.error?.error || err?.error?.message || err?.message || '';
+        this.uiDialog.error({ title: 'Error de importación', text: detail || 'No se pudo completar la importación.' });
+      }
+    });
+  }
+
+  async deleteExpiredLegacyCodes(): Promise<void> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const toDelete = this.legacyCodes.filter(c =>
+      !c.claimed && !!c.fechaVencimiento && this.parseLegacyDate(c.fechaVencimiento) < today
+    );
+    const claimedExpired = this.legacyCodes.filter(c =>
+      c.claimed && !!c.fechaVencimiento && this.parseLegacyDate(c.fechaVencimiento) < today
+    );
+
+    let text = `Se eliminarán <strong>${toDelete.length}</strong> código${toDelete.length !== 1 ? 's' : ''} vencido${toDelete.length !== 1 ? 's' : ''} no reclamado${toDelete.length !== 1 ? 's' : ''}.`;
+    if (claimedExpired.length > 0) {
+      text += ` <br><small style="color:#b45309">Nota: ${claimedExpired.length} código${claimedExpired.length !== 1 ? 's' : ''} vencido${claimedExpired.length !== 1 ? 's' : ''} reclamado${claimedExpired.length !== 1 ? 's' : ''} no se eliminarán (usá el botón ↺ para resetear individualmente).</small>`;
+    }
+
+    const confirmed = await this.uiDialog.confirm({
+      title: 'Eliminar vencidos',
+      html: text,
+      confirmText: `Eliminar ${toDelete.length}`,
+      cancelText: 'Cancelar'
+    });
+    if (!confirmed) return;
+
+    this.legacyCodeService.deleteExpired().subscribe({
+      next: (res) => {
+        this.uiDialog.success({ title: 'Listo', text: `${res.deleted} códigos vencidos eliminados.` });
+        this.loadLegacyCodes();
+      },
+      error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron eliminar los códigos vencidos.' })
+    });
+  }
+
+  async deleteAllLegacyCodes(): Promise<void> {
+    const confirmed1 = await this.uiDialog.confirm({
+      title: 'Eliminar TODOS los códigos legacy',
+      html: '¿Estás seguro? Se eliminarán <strong>todos</strong> los códigos legacy, incluyendo los reclamados y sus datos de usuario.',
+      confirmText: 'Continuar',
+      cancelText: 'Cancelar',
+      tone: 'danger',
+      icon: 'warning'
+    });
+    if (!confirmed1) return;
+    const confirmed2 = await this.uiDialog.confirm({
+      title: 'Confirmar eliminación total',
+      html: 'Esta acción <strong>no se puede deshacer</strong>. ¿Confirmas eliminar absolutamente todo?',
+      confirmText: 'Sí, eliminar todo',
+      cancelText: 'Cancelar',
+      tone: 'danger',
+      icon: 'warning'
+    });
+    if (!confirmed2) return;
+    this.legacyCodeService.deleteAllCodes().subscribe({
+      next: (res) => {
+        this.uiDialog.success({ title: 'Listo', text: `${res.deleted} códigos legacy eliminados.` });
+        this.loadLegacyCodes();
+      },
+      error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron eliminar los códigos.' })
+    });
+  }
+
+  async resetLegacyClaim(lc: LegacyCodeDTO): Promise<void> {
+    const confirmed = await this.uiDialog.confirm({
+      title: `Resetear código ${lc.code}`,
+      html: `Se desmarcará como reclamado el código <strong>${lc.code}</strong> y se eliminarán todos los datos del usuario <strong>${lc.claimedByEmail}</strong>.`,
+      confirmText: 'Sí, resetear',
+      cancelText: 'Cancelar',
+      tone: 'danger',
+      icon: 'warning'
+    });
+    if (!confirmed) return;
+    this.legacyCodeService.resetClaim(lc.code).subscribe({
+      next: () => {
+        this.uiDialog.success({ title: 'Listo', text: `Código ${lc.code} reseteado correctamente.` });
+        this.loadLegacyCodes();
+      },
+      error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudo resetear el código.' })
+    });
   }
 }
