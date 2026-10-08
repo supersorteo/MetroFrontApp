@@ -311,6 +311,13 @@
       </div>
 
       <div class="lf-field">
+        <label class="lf-label">Tu email registrado</label>
+        <input type="email" class="form-control login-input-field"
+               [(ngModel)]="reactivateEmail" placeholder="tu@email.com" name="reactivateEmail">
+        <div class="lf-hint">Confirmamos que sos el dueño del código vencido</div>
+      </div>
+
+      <div class="lf-field">
         <label class="lf-label">Nuevo código</label>
         <input type="text" class="form-control login-input-field"
                [(ngModel)]="reactivateNewCode" placeholder="Ingresá tu nuevo código" name="reactivateNew">

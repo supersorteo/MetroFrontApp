@@ -206,8 +206,8 @@ export class AuthService {
   deleteCode1(code: string): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/codes/${code}`); }
   deleteCode(code: string): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/codes/${code}`).pipe(catchError(this.handleError1)); }
 
-  reactivate(expiredCode: string, newCode: string): Observable<AccessCode> {
-    return this.http.post<AccessCode>(`${this.apiUrl}/reactivate`, { expiredCode, newCode })
+  reactivate(expiredCode: string, newCode: string, email: string): Observable<AccessCode> {
+    return this.http.post<AccessCode>(`${this.apiUrl}/reactivate`, { expiredCode, newCode, email })
       .pipe(catchError(this.handleError));
   }
 

@@ -55,6 +55,7 @@ export class LoginComponent implements OnInit{
   legacyData: LegacyCodeDTO | null = null;
   expiredCode: string = '';
   reactivateNewCode: string = '';
+  reactivateEmail: string = '';
   websiteUrl: string = "https://wa.link/9lbeyq";
 
   errorMessage: string = '';
@@ -297,6 +298,7 @@ login(): void {
       if (serverMsg.toLowerCase().includes('vencido')) {
         this.expiredCode = this.code;
         this.reactivateNewCode = '';
+        this.reactivateEmail = '';
         this.loginStep = 'reactivate';
         return;
       }
@@ -333,7 +335,11 @@ registerLegacy(): void {
       this.uiDialog.error({ title: 'Error', text: 'Ingresá el nuevo código.' });
       return;
     }
-    this.authService.reactivate(this.expiredCode, normalizedNew).subscribe({
+    if (!this.reactivateEmail.trim()) {
+      this.uiDialog.error({ title: 'Error', text: 'Ingresá tu email para confirmar tu identidad.' });
+      return;
+    }
+    this.authService.reactivate(this.expiredCode, normalizedNew, this.reactivateEmail.trim()).subscribe({
       next: (newAc) => {
         this.authService.clearStaleSessionIfNeeded(newAc.code);
         localStorage.setItem('userCode', newAc.code);
