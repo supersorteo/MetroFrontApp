@@ -139,7 +139,13 @@
 
       <li class="w-100 d-flex flex-column gap-2 mt-2">
 
-        <button class="btn btn-primary btn-block w-100 animate">BIBLIOTECA</button>
+        <a
+          class="btn btn-primary btn-block w-100 animate"
+          href="https://drive.google.com/drive/folders/1wquwi_wkEBmanhPdmJV7pn5B2AK41xcn"
+          target="_blank"
+          rel="noopener noreferrer">
+          <i class="bi bi-folder2-open" aria-hidden="true" style="margin-right: 6px;"></i>BIBLIOTECA
+        </a>
 
       </li>
 
@@ -762,64 +768,13 @@
         </button>
       </div>
 
-      <!-- Selección de plan -->
-      <div class="planes-modal__plan-section">
-        <p class="planes-modal__plan-title">1. Elegí tu plan</p>
-
-        <div class="text-center py-2" *ngIf="planesLoading">
-          <span class="spinner-border spinner-border-sm text-primary me-2"></span>
-          <span class="small text-muted">Cargando planes...</span>
-        </div>
-
-        <div class="planes-modal__plan-cards" *ngIf="!planesLoading && planesPais">
-          <button
-            *ngFor="let plan of planesPais.plans"
-            class="planes-modal__plan-card"
-            [class.planes-modal__plan-card--selected]="selectedPlanMeses === plan.months"
-            (click)="seleccionarPlan(plan.months)">
-            <span class="planes-modal__plan-months">{{ plan.months }} meses</span>
-            <span class="planes-modal__plan-price">{{ plan.amount | number:'1.0-0' }} {{ planesPais.currency }}</span>
-            <i class="bi bi-check-circle-fill planes-modal__plan-check" *ngIf="selectedPlanMeses === plan.months"></i>
-          </button>
-        </div>
-
-        <p class="planes-modal__no-catalog" *ngIf="!planesLoading && !planesPais">
-          <i class="bi bi-wifi-off me-1"></i> Sin conexión. Contactanos por WhatsApp y te informamos el precio.
-        </p>
-      </div>
-
-      <div class="planes-modal__detail-section" *ngIf="!planesLoading && planesPais">
-        <p class="planes-modal__plan-title">Beneficios de cada plan</p>
-        <div class="planes-modal__detail-cards">
-          <button
-            *ngFor="let plan of planesPais.plans"
-            type="button"
-            class="planes-modal__detail-card"
-            [class.planes-modal__detail-card--selected]="selectedPlanMeses === plan.months"
-            (click)="seleccionarPlan(plan.months)">
-            <div class="planes-modal__detail-card-head">
-              <span class="planes-modal__detail-card-months">Plan {{ plan.months }} meses</span>
-              <span class="planes-modal__detail-card-price">{{ plan.amount | number:'1.0-0' }} {{ planesPais.currency }}</span>
-            </div>
-            <ul class="planes-modal__detail-list">
-              <li><i class="bi bi-check-circle-fill"></i> Calculadora de materiales</li>
-              <li><i class="bi bi-check-circle-fill"></i> Tareas ilimitadas por presupuesto</li>
-              <li><i class="bi bi-check-circle-fill"></i> {{ plan.months >= 6 ? 60 : 30 }} clientes</li>
-              <li><i class="bi bi-check-circle-fill"></i> {{ plan.months >= 6 ? 3 : 1 }} empresa{{ plan.months >= 6 ? 's' : '' }}</li>
-              <li><i class="bi bi-check-circle-fill"></i> Guardado de presupuestos</li>
-              <li><i class="bi bi-check-circle-fill"></i> Precios actualizados por región</li>
-            </ul>
-            <span class="planes-modal__detail-card-cta">
-              {{ selectedPlanMeses === plan.months ? 'Plan seleccionado' : 'Elegir este plan' }}
-              <i class="bi" [class.bi-check-circle-fill]="selectedPlanMeses === plan.months" [class.bi-arrow-right-circle-fill]="selectedPlanMeses !== plan.months"></i>
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Métodos de pago -->
-      <div class="planes-modal__plan-section planes-modal__plan-section--pay" *ngIf="selectedPlanMeses">
-        <p class="planes-modal__plan-title">2. Elegí cómo pagar</p>
+      <div class="planes-modal__plans-stage">
+        <!-- Métodos de pago: se superponen a la tarjeta después de seleccionar un plan -->
+        <div class="planes-modal__plan-section planes-modal__plan-section--pay" *ngIf="selectedPlanMeses">
+        <button type="button" class="planes-modal__back-button" (click)="volverASeleccionarPlan()">
+          <i class="bi bi-arrow-left"></i>
+          Volver a elegir plan
+        </button>
 
         <div class="planes-modal__options">
 
@@ -845,6 +800,61 @@
             <span class="planes-modal__card-cta planes-modal__card-cta--ws">Contactar <i class="bi bi-arrow-right-circle-fill"></i></span>
           </button>
 
+        </div>
+        </div>
+
+        <div class="planes-modal__detail-section" *ngIf="!selectedPlanMeses && !planesLoading && planesPais">
+        <div
+          id="planesPlansCarousel"
+          class="carousel slide planes-modal__plans-carousel"
+          data-bs-interval="false">
+          <div class="carousel-indicators">
+            <button
+              *ngFor="let plan of planesPais.plans; let i = index"
+              type="button"
+              data-bs-target="#planesPlansCarousel"
+              [attr.data-bs-slide-to]="i"
+              [class.active]="i === 0"
+              [attr.aria-label]="'Mostrar plan de ' + plan.months + ' meses'">
+            </button>
+          </div>
+
+          <div class="carousel-inner">
+            <div
+              *ngFor="let plan of planesPais.plans; let i = index"
+              class="carousel-item"
+              [class.active]="i === 0">
+              <button
+                type="button"
+                class="planes-modal__detail-card"
+                [class.planes-modal__detail-card--selected]="selectedPlanMeses === plan.months"
+                (click)="seleccionarPlan(plan.months)">
+                <div class="planes-modal__detail-card-head">
+                  <span class="planes-modal__detail-card-months">Plan {{ plan.months }} meses</span>
+                  <span class="planes-modal__detail-card-price">{{ plan.amount | number:'1.0-0' }} {{ planesPais.currency }}</span>
+                </div>
+                <ul class="planes-modal__detail-list">
+                  <li><i class="bi bi-check-circle-fill"></i> Calculadora de materiales</li>
+                  <li><i class="bi bi-check-circle-fill"></i> Tareas ilimitadas por presupuesto</li>
+                  <li><i class="bi bi-check-circle-fill"></i> {{ plan.months >= 12 ? 1000 : plan.months >= 6 ? 200 : 60 }} clientes</li>
+                  <li><i class="bi bi-check-circle-fill"></i> {{ plan.months >= 12 ? 5 : plan.months >= 6 ? 3 : 1 }} empresa{{ (plan.months >= 6 ? 3 : 1) !== 1 ? 's' : '' }}</li>
+                  <li><i class="bi bi-check-circle-fill"></i> Hasta {{ plan.months >= 12 ? 250 : plan.months >= 6 ? 120 : 30 }} presupuestos guardados</li>
+                  <li><i class="bi bi-check-circle-fill"></i> Precios actualizados por región</li>
+                </ul>
+                <span class="planes-modal__detail-card-cta">
+                  {{ selectedPlanMeses === plan.months ? 'Plan seleccionado' : 'Elegir este plan' }}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <button class="carousel-control-prev" type="button" data-bs-target="#planesPlansCarousel" data-bs-slide="prev" aria-label="Plan anterior">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#planesPlansCarousel" data-bs-slide="next" aria-label="Plan siguiente">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          </button>
+        </div>
         </div>
       </div>
 
@@ -1326,7 +1336,7 @@
 
           <div class="table-responsive">
 
-            <table class="table table-striped">
+            <table id="tabla" class="table table-striped lista-tareas-tabla" [style.font-size.px]="fontSizeLista">
 
               <thead>
 
@@ -1534,7 +1544,7 @@
 
         <button type="button" class="btn btn-success animate flex-grow-1" style="font-weight:bold; height: 42px; border-radius: 10px; box-shadow: 0 2px 8px #0001;" data-bs-toggle="modal" data-bs-target="#provinciaModal">
 
-          <i class="bi bi-geo-alt"></i> Seleccionar provincia
+          <i class="bi bi-geo-alt"></i> {{ provinciaSeleccionada ? 'Provincia: ' + provinciaSeleccionada : 'Seleccionar provincia' }}
 
         </button>
 
@@ -1604,7 +1614,10 @@
 
         <div style="display:flex;align-items:center;gap:8px;">
 
-          <div class="tareas-agregadas__title">
+          <div
+            class="tareas-agregadas__title"
+            [class.tareas-agregadas__title--empty]="!selectedEmpresaId"
+          >
 
             <img
               *ngIf="currentEmpresaLogoUrl"
@@ -1625,11 +1638,11 @@
             <button
               *ngIf="!selectedEmpresaId"
               type="button"
-              class="btn btn-sm btn-outline-secondary tareas-agregadas__slot-vacio"
-              title="Seleccionar empresa"
+              class="btn btn-sm tareas-agregadas__slot-vacio tareas-agregadas__slot-vacio--empresa"
+              title="Crear tu empresa"
               (click)="openListaEmpresasModal()"
             >
-              <i class="bi bi-building"></i> Empresa
+              <i class="bi bi-building"></i> Crea tu empresa
             </button>
 
           </div>
@@ -2451,7 +2464,7 @@
 
                   <p class="card-text mb-2"><strong>Detalles:</strong> {{ cliente.additionalDetails }}</p>
 
-                  <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
+                  <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions" (click)="$event.stopPropagation()">
 
                     <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action" title="Eliminar" aria-label="Eliminar" (click)="cliente.id && solicitarConfirmacionEliminar(cliente.id)"><i class="bi bi-trash3-fill"></i></button>
 
@@ -2888,11 +2901,13 @@
 
                         [checked]="selectedEmpresaId?.id === empresa.id"
 
+                        (change)="onEmpresaCheckboxChange(empresa, $event)"
+
                         (click)="$event.stopPropagation()"
 
                       >
 
-                      <div class="checkmark"></div>
+                      <div class="checkmark" (click)="$event.stopPropagation()"></div>
 
                     </label>
 
@@ -2912,9 +2927,9 @@
 
                   <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
 
-                    <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action" title="Eliminar" aria-label="Eliminar" (click)="empresa.id && solicitarConfirmacionEliminarEmpresa(empresa.id)"><i class="bi bi-trash3-fill" aria-hidden="true"></i></button>
+                    <button class="btn btn-danger btn-xs px-3 py-1 cliente-card__action" title="Eliminar" aria-label="Eliminar" (click)="$event.stopPropagation(); empresa.id && solicitarConfirmacionEliminarEmpresa(empresa.id)"><i class="bi bi-trash3-fill" aria-hidden="true"></i></button>
 
-                    <button class="btn btn-success btn-xs px-3 py-1 cliente-card__action" title="Editar" aria-label="Editar" *ngIf="empresa.id !== undefined" (click)="editarEmpresa(empresa.id)"><i class="bi bi-pencil-square" aria-hidden="true"></i></button>
+                    <button class="btn btn-success btn-xs px-3 py-1 cliente-card__action" title="Editar" aria-label="Editar" *ngIf="empresa.id !== undefined" (click)="$event.stopPropagation(); editarEmpresa(empresa.id)"><i class="bi bi-pencil-square" aria-hidden="true"></i></button>
 
                     <button type="button" class="btn btn-outline-secondary btn-xs px-3 py-1 cliente-card__action cliente-card__palette-action"
                       title="Personalizar colores" aria-label="Personalizar colores"
@@ -3624,11 +3639,11 @@
 
   <div class="modal-dialog modal-dialog-centered" role="document">
 
-    <div class="modal-content" style="border-radius: 16px; border: 1px solid rgba(64,158,255,.2); box-shadow: 0 14px 35px rgba(0,0,0,.18);">
+    <div class="modal-content ajustes-lista__modal-content">
 
-      <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6); border-bottom: 1px solid rgba(11,105,166,.15);">
+      <div class="modal-header ajustes-lista__header">
 
-        <h5 class="modal-title" id="ajustesListaModalLabel" style="color:#0b69a6; font-weight:700;">
+        <h5 class="modal-title ajustes-lista__title" id="ajustesListaModalLabel">
 
           <i class="fas fa-cog" aria-hidden="true" style="margin-right: 8px;"></i>
           Ajustes &mdash; {{ activeTaskTab === 'personalizadas' ? 'Tus tareas' : 'Catálogo' }}
@@ -3639,29 +3654,23 @@
 
       </div>
 
-      <div class="modal-body" style="padding: 14px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9);">
+      <div class="modal-body ajustes-lista__body">
 
-        <p style="margin-bottom: 10px; color:#4b5563; font-size: 13px;">Ajustá precios y tamaño de texto de la lista de tareas.</p>
+        <p class="ajustes-lista__intro">Ajustá los precios y la legibilidad de la lista activa desde un solo lugar.</p>
 
-        <div style="margin-bottom: 10px; background: rgba(103,165,246,.08); border: 1px solid rgba(64,158,255,.16); border-radius: 10px; padding: 10px;">
+        <div class="ajustes-lista__access">
 
-          <div style="font-size: 12px; color:#0b69a6; font-weight:700; margin-bottom: 4px;">
+          <div class="ajustes-lista__section-label">
 
             <i class="fas fa-key" aria-hidden="true" style="margin-right: 6px;"></i>Código de acceso
 
           </div>
 
-          <div style="font-size: 20px; color:#1f2937; word-break: break-all; font-weight: 600;">{{ userCode || 'No disponible' }}</div>
+          <div class="ajustes-lista__access-code">{{ userCode || 'No disponible' }}</div>
 
         </div>
 
-        <p style="font-size: 11px; color: #6b7280; margin-top: -5px; margin-bottom: 15px; padding-left: 5px;">
-
-          <i class="fab fa-whatsapp" style="color: #25D366; margin-right: 4px;"></i> recibirás un WhatsApp para renovar tu acceso el día de vencimiento
-
-        </p>
-
-        <button type="button" class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#faqModalAjustes" data-bs-dismiss="modal">
+        <button type="button" class="btn btn-primary w-100 mb-3 ajustes-lista__faq" data-bs-toggle="modal" data-bs-target="#faqModalAjustes" data-bs-dismiss="modal">
 
           PREGUNTAS FRECUENTES
 
@@ -3675,7 +3684,7 @@
 
         </button-->
 
-        <div class="form-group mb-3 font-size-lista-card">
+        <div class="form-group mb-3 font-size-lista-card ajustes-lista__font-size">
 
           <input type="range" id="fontSizeListaRange" class="form-range" min="10" max="24" step="1" [value]="fontSizeLista" (input)="onFontSizeListaChange($event)" aria-label="Tamaño de fuente de la lista">
 
@@ -3687,7 +3696,7 @@
 
         </div>
 
-        <button type="button" class="btn btn-outline-info w-100 mb-2" (click)="showAjustesListaInfo = !showAjustesListaInfo">
+        <button type="button" class="btn btn-outline-info w-100 mb-2 ajustes-lista__help-toggle" (click)="showAjustesListaInfo = !showAjustesListaInfo">
 
           <i class="fas fa-info-circle" aria-hidden="true" style="margin-right: 6px;"></i>Cómo usar subir/bajar lista
 
@@ -3707,7 +3716,7 @@
 
         </div>
 
-        <div class="form-group mb-2">
+        <div class="form-group mb-2 ajustes-lista__price-control">
 
           <label for="porcentajeBajar" style="color:#0b69a6;">Bajar {{ activeTaskTab === 'personalizadas' ? 'tus tareas' : 'lista' }} (%)</label>
 
@@ -3721,7 +3730,7 @@
 
         </div>
 
-        <div class="form-group mb-3">
+        <div class="form-group mb-3 ajustes-lista__price-control">
 
           <label for="porcentaje" style="color:#0b69a6;">Subir {{ activeTaskTab === 'personalizadas' ? 'tus tareas' : 'lista' }} (%)</label>
 
@@ -3735,7 +3744,7 @@
 
         </div>
 
-        <button type="button" class="btn btn-outline-primary w-100" (click)="reestablecerPreciosOriginalesLista()">
+        <button type="button" class="btn btn-outline-primary w-100 ajustes-lista__reset" (click)="reestablecerPreciosOriginalesLista()">
 
           <i class="fas fa-undo-alt" aria-hidden="true" style="margin-right: 6px;"></i>Reestablecer valor original de lista
 
@@ -3871,7 +3880,7 @@
 
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
 
-                <p style="margin-bottom:0;">Es tu identificador único en el sistema. Lo usás para ingresar a la aplicación y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro. Antes del vencimiento recibirás un WhatsApp para renovarlo.</p>
+                <p style="margin-bottom:0;">Es tu identificador único en el sistema. Lo usás para ingresar a la aplicación y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro.</p>
 
               </div>
 
@@ -3987,7 +3996,7 @@
 
             <!-- Table Preview -->
 
-            <table class="table table-bordered table-sm mb-3" [style.color]="presupuestoColorTexto" style="font-size: 9px; line-height: 1;">
+            <table class="table table-bordered table-sm mb-3 budget-customizer__preview-table" [style.color]="presupuestoColorTexto" style="font-size: 9px; line-height: 1;">
 
               <thead [style.background-color]="presupuestoColorTabla" [style.color]="presupuestoColorTablaTexto">
 
@@ -4083,7 +4092,8 @@
 
           <div class="budget-customizer__controls-grid">
 
-            <div class="form-group mb-0 coolinput budget-customizer__control">
+            <div class="form-group mb-0 coolinput budget-customizer__control budget-customizer__color-slide"
+                 [class.budget-customizer__color-slide--active]="activeColorSlide === 0">
 
               <label class="text">Color Principal (Encabezado/Botones)</label>
 
@@ -4097,7 +4107,8 @@
 
             </div>
 
-            <div class="p-2 border rounded bg-light budget-customizer__control budget-customizer__control--wide">
+            <div class="p-2 border rounded bg-light budget-customizer__control budget-customizer__control--wide budget-customizer__color-slide"
+                 [class.budget-customizer__color-slide--active]="activeColorSlide === 1">
 
               <label class="form-label small fw-bold text-primary mb-2">Fondo (Gradiente)</label>
 
@@ -4141,7 +4152,8 @@
 
             </div>
 
-            <div class="form-group mb-0 coolinput budget-customizer__control">
+            <div class="form-group mb-0 coolinput budget-customizer__control budget-customizer__color-slide"
+                 [class.budget-customizer__color-slide--active]="activeColorSlide === 2">
 
               <label class="text">Color de Texto General</label>
 
@@ -4155,7 +4167,8 @@
 
             </div>
 
-            <div class="form-group mb-0 coolinput budget-customizer__control">
+            <div class="form-group mb-0 coolinput budget-customizer__control budget-customizer__color-slide"
+                 [class.budget-customizer__color-slide--active]="activeColorSlide === 3">
 
               <label class="text">Fondo Encabezado Tabla</label>
 
@@ -4169,7 +4182,8 @@
 
             </div>
 
-            <div class="form-group mb-0 coolinput budget-customizer__control">
+            <div class="form-group mb-0 coolinput budget-customizer__control budget-customizer__color-slide"
+                 [class.budget-customizer__color-slide--active]="activeColorSlide === 4">
 
               <label class="text">Fondo Cuerpo Tabla</label>
 
@@ -4183,7 +4197,8 @@
 
             </div>
 
-            <div class="form-group mb-0 coolinput budget-customizer__control">
+            <div class="form-group mb-0 coolinput budget-customizer__control budget-customizer__color-slide"
+                 [class.budget-customizer__color-slide--active]="activeColorSlide === 5">
 
               <label class="text">Texto Encabezado Tabla</label>
 
@@ -4197,7 +4212,8 @@
 
             </div>
 
-            <div class="form-group mb-0 coolinput budget-customizer__control">
+            <div class="form-group mb-0 coolinput budget-customizer__control budget-customizer__color-slide"
+                 [class.budget-customizer__color-slide--active]="activeColorSlide === 6">
 
               <label class="text">Fondo Cajas Info (Empresa/Cliente)</label>
 
@@ -4210,6 +4226,26 @@
               </div>
 
             </div>
+
+          </div>
+
+          <div class="budget-customizer__color-navigation" aria-label="Navegación de ajustes de color">
+
+            <button type="button" class="budget-customizer__color-nav-btn" (click)="cambiarColorSlide(-1)"
+                    [disabled]="activeColorSlide === 0" aria-label="Ajuste de color anterior">
+              <i class="fas fa-chevron-left" aria-hidden="true"></i>
+              Anterior
+            </button>
+
+            <span class="budget-customizer__color-nav-status" aria-live="polite">
+              {{ activeColorSlide + 1 }} / {{ colorSlideCount }}
+            </span>
+
+            <button type="button" class="budget-customizer__color-nav-btn" (click)="cambiarColorSlide(1)"
+                    [disabled]="activeColorSlide === colorSlideCount - 1" aria-label="Siguiente ajuste de color">
+              Siguiente
+              <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </button>
 
           </div>
 

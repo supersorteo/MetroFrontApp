@@ -66,6 +66,7 @@ export class LoginComponent implements OnInit{
    { nombre: 'Colombia', codigo: 'CO', flag: 'https://flagcdn.com/co.svg' },
    { nombre: 'Uruguay', codigo: 'UY', flag: 'https://flagcdn.com/uy.svg' }
   ];
+  private readonly unavailableCountries = new Set(['colombia', 'uruguay']);
   membershipCountries: MembershipCountryOption[] = [];
   purchaseCountryCode: string | null = null;
   purchasePlanMonths: number | null = 3;
@@ -277,6 +278,15 @@ login(): void {
 
 
   register(): void {
+    if (!this.isCountryAvailable(this.pais)) {
+      this.uiDialog.warning({ title: 'País no disponible', text: 'Por ahora solo está disponible Argentina.' });
+      this.pais = null;
+      this.provincia = '';
+      this.provincias = [];
+      this.validateForm();
+      return;
+    }
+
     this.validateForm();
     if (!this.isFormValid) {
       this.uiDialog.error({ title: 'Error', text: this.codeCountryErrorMessage || this.telefonoErrorMessage || 'Completa correctamente los datos del registro.' });
@@ -342,7 +352,7 @@ login(): void {
       this.email.trim().length > 0 &&
       phoneValidation.valid &&
       this.provincia.trim().length > 0 &&
-      this.pais !== null &&
+      this.isCountryAvailable(this.pais) &&
       !this.codeCountryErrorMessage;
     }
 
@@ -452,7 +462,24 @@ login(): void {
     this.isContentVisible = false;
   }
 
+  isCountryAvailable(pais: string | null | undefined): boolean {
+    return !!pais && !this.unavailableCountries.has(pais.trim().toLowerCase());
+  }
+
+  isDemoCountryAvailable(pais: string): boolean {
+    return this.isCountryAvailable(pais);
+  }
+
+  get registrationCountries(): Country[] {
+    return this.countries.filter(country => this.isCountryAvailable(country.nombre));
+  }
+
   activarModoPrueba(pais: string = 'Argentina'): void {
+  if (!this.isCountryAvailable(pais)) {
+    this.appToast.info(`${pais} estará disponible próximamente.`);
+    return;
+  }
+
   ['demoEmpresas', 'demoTareas', 'selectedEmpresaId', 'selectedEmpresa',
    'selectedClienteId', 'selectedCliente', 'tareasAgregadas', 'userData']
     .forEach(k => localStorage.removeItem(k));

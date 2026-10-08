@@ -16,7 +16,7 @@
       <div class="login-card login-card--trial" (click)="loginStep = 'demoCountry'">
         <div class="login-card__glow"></div>
         <div class="login-card__visual">
-          <img src="assets/archi-probar-sistema.webp" alt="Archi probando el sistema" />
+          <img src="assets/archi-probar-sistema-v2.png" alt="Archi probando el sistema" />
         </div>
         <div class="login-card__content">
           <span class="login-card__badge-new">¡GRATIS!</span>
@@ -34,7 +34,7 @@
           <span class="login-card__cta">Ingresar</span>
         </div>
         <div class="login-card__visual">
-          <img src="assets/archi-ya-soy-miembro.webp" alt="Archi indicando que ya es miembro" />
+          <img src="assets/archi-ya-soy-miembro-v2.png" alt="Archi indicando que ya es miembro" />
         </div>
       </div>
 
@@ -64,18 +64,32 @@
           <span class="login-demo-country__name">Argentina</span>
         </button>
 
-        <button class="login-demo-country__btn" (click)="activarModoPrueba('Colombia')">
+        <button
+          type="button"
+          class="login-demo-country__btn"
+          [class.login-demo-country__btn--disabled]="!isDemoCountryAvailable('Colombia')"
+          [disabled]="!isDemoCountryAvailable('Colombia')"
+          (click)="activarModoPrueba('Colombia')"
+        >
           <span class="login-demo-country__flag-scene">
             <span class="fi fi-co login-demo-country__flag"></span>
           </span>
           <span class="login-demo-country__name">Colombia</span>
+          <span class="login-demo-country__coming-soon">Próximamente</span>
         </button>
 
-        <button class="login-demo-country__btn" (click)="activarModoPrueba('Uruguay')">
+        <button
+          type="button"
+          class="login-demo-country__btn"
+          [class.login-demo-country__btn--disabled]="!isDemoCountryAvailable('Uruguay')"
+          [disabled]="!isDemoCountryAvailable('Uruguay')"
+          (click)="activarModoPrueba('Uruguay')"
+        >
           <span class="login-demo-country__flag-scene">
             <span class="fi fi-uy login-demo-country__flag"></span>
           </span>
           <span class="login-demo-country__name">Uruguay</span>
+          <span class="login-demo-country__coming-soon">Próximamente</span>
         </button>
 
       </div>
@@ -153,7 +167,7 @@
       <div class="lf-field">
         <label class="lf-label">País</label>
         <ng-select
-          [items]="countries"
+          [items]="registrationCountries"
           bindLabel="nombre"
           bindValue="nombre"
           [(ngModel)]="pais"
@@ -376,7 +390,7 @@
           [disabled]="!canStartCheckout || isStartingCheckout"
           (click)="startMembershipCheckout()"
         >
-          <i class="bi bi-bag-check me-2"></i>
+          <img class="lf-pay-logo lf-pay-logo--mp" src="assets/mercadopago-logo.png" alt="" aria-hidden="true">
           {{ isStartingCheckout ? 'Redirigiendo...' : 'Pagar con Mercado Pago' }}
         </button>
 

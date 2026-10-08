@@ -195,21 +195,23 @@
 
       <!-- ===== ESTADO VACÍO ===== -->
       <div class="empty-state" [class.is-visible]="!tareasAgregadas || tareasAgregadas.length === 0">
-        <div class="empty-state__icon"><i class="fas fa-file-invoice"></i></div>
+        <div class="empty-state__icon">
+          <img
+            class="empty-state__sprite"
+            src="assets/empty-state-casco-metro-cinta.png"
+            alt="Casco de obra METRO y cinta métrica"
+          />
+        </div>
         <h3>Presupuesto vacío</h3>
         <p>Todavía no agregaste tareas. Volvé al panel y cargá al menos una para ver la vista previa.</p>
       </div>
 
       <!-- ===== TABLA DE TAREAS ===== -->
       <div class="table-section" *ngIf="tareasAgregadas && tareasAgregadas.length > 0">
-        <div class="table-section__title" [style.color]="colorScheme.primaryColor">
-          <i class="fas fa-list-check"></i> Detalle de trabajos
-        </div>
         <div class="table-scroll-wrapper">
           <table class="budget-table" id="budgetListPrint" [style.backgroundColor]="colorScheme.tableBodyColor">
             <thead>
               <tr [style.background]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">
-                <th class="col-tarea"  [style.background]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">#</th>
                 <th class="col-name"   [style.background]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Tipo de trabajo</th>
                 <th class="col-desc"   [style.display]="hideDescription ? 'none' : ''" [style.background]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Descripción</th>
                 <th class="col-num"    [style.background]="colorScheme.accentColor" [style.color]="colorScheme.tableTextColor">Área m²/m³</th>
@@ -225,7 +227,6 @@
                   [style.backgroundColor]="colorScheme.tableBodyColor"
                   [style.color]="colorScheme.textColor"
                   (click)="abrirEditarTarea(i)">
-                <td class="col-tarea" [style.backgroundColor]="colorScheme.tableBodyColor" [style.color]="colorScheme.textColor">{{ i + 1 }}</td>
                 <td class="col-name"  [style.backgroundColor]="colorScheme.tableBodyColor" [style.color]="colorScheme.textColor">{{ tarea.tarea }}</td>
                 <td class="col-desc"  [style.backgroundColor]="colorScheme.tableBodyColor" [style.display]="hideDescription ? 'none' : ''" [style.color]="colorScheme.textColor">{{ tarea.descripcion }}</td>
                 <td class="col-num"   [style.backgroundColor]="colorScheme.tableBodyColor" [style.color]="colorScheme.textColor">{{ tarea.area | number:'1.2-2' }}</td>
@@ -244,7 +245,7 @@
         <!-- BARRA TOTAL -->
         <div class="total-bar"
           [style.background]="'linear-gradient(135deg, ' + colorScheme.primaryColor + ' 0%, ' + colorScheme.accentColor + ' 100%)'">
-          <span class="total-bar__label"><i class="fas fa-calculator"></i> TOTAL PRESUPUESTO</span>
+          <span class="total-bar__label"><i class="fas fa-calculator"></i> TOTAL</span>
           <span class="total-bar__amount">${{ formatCurrency(calcularCostoTotal()) }}</span>
         </div>
 

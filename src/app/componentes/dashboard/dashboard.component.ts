@@ -120,6 +120,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   presupuestoColorTablaCuerpo: string = '#ffffff';
   presupuestoInfoBoxColorHex: string = '#f8f9fa';
   presupuestoInfoBoxOpacity: number = 1;
+  activeColorSlide = 0;
+  readonly colorSlideCount = 7;
+
+  cambiarColorSlide(delta: number): void {
+    this.activeColorSlide = Math.min(
+      this.colorSlideCount - 1,
+      Math.max(0, this.activeColorSlide + delta)
+    );
+  }
 
   getBackgroundColorRgba(hex: string, alpha: number): string {
     if (!hex || hex.length < 7) return `rgba(248, 249, 250, ${alpha})`;
@@ -230,6 +239,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   seleccionarPlan(meses: number): void {
     this.selectedPlanMeses = meses;
+  }
+
+  volverASeleccionarPlan(): void {
+    this.selectedPlanMeses = null;
   }
 
   pagarPorWhatsApp(): void {
@@ -3402,6 +3415,15 @@ fetchUserData(): void {
     this.syncPreferencesToServer();
   }
 
+  onEmpresaCheckboxChange(empresa: Empresa, event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    const isSelected = Number(this.selectedEmpresaId?.id) === Number(empresa.id);
+
+    if (checked !== isSelected) {
+      this.onEmpresaSeleccionada(empresa);
+    }
+  }
+
 
 
 
@@ -3660,7 +3682,9 @@ fetchUserData(): void {
 
   abrirPaletaDesdeEmpresa(empresa: Empresa, event: Event): void {
     event.stopPropagation();
-    this.onEmpresaSeleccionada(empresa);
+    if (Number(this.selectedEmpresaId?.id) !== Number(empresa.id)) {
+      this.onEmpresaSeleccionada(empresa);
+    }
     this.abrirModalPaleta();
   }
 
@@ -3683,26 +3707,39 @@ fetchUserData(): void {
   aplicarPaletaManual(): void {
     if (!this.selectedEmpresaId) return;
 
-    this.selectedEmpresaId.primaryColor = this.presupuestoColorPrimario;
-    this.selectedEmpresaId.secondaryColor = this.presupuestoColorSecundario;
-    this.selectedEmpresaId.secondaryColor2 = this.presupuestoColorSecundario2;
-    this.selectedEmpresaId.gradientAngle = this.presupuestoGradienteAngulo;
-    this.selectedEmpresaId.textColor = this.presupuestoColorTexto;
-    this.selectedEmpresaId.tableColor = this.presupuestoColorTabla;
-    this.selectedEmpresaId.tableTextColor = this.presupuestoColorTablaTexto;
-    this.selectedEmpresaId.tableBodyColor = this.presupuestoColorTablaCuerpo;
-    this.selectedEmpresaId.infoBoxColorHex = this.presupuestoInfoBoxColorHex;
-    this.selectedEmpresaId.infoBoxOpacity = this.presupuestoInfoBoxOpacity;
+    const updatedEmpresa: Empresa = {
+      ...this.selectedEmpresaId,
+      primaryColor: this.presupuestoColorPrimario,
+      secondaryColor: this.presupuestoColorSecundario,
+      secondaryColor2: this.presupuestoColorSecundario2,
+      gradientAngle: this.presupuestoGradienteAngulo,
+      textColor: this.presupuestoColorTexto,
+      tableColor: this.presupuestoColorTabla,
+      tableTextColor: this.presupuestoColorTablaTexto,
+      tableBodyColor: this.presupuestoColorTablaCuerpo,
+      infoBoxColorHex: this.presupuestoInfoBoxColorHex,
+      infoBoxOpacity: this.presupuestoInfoBoxOpacity
+    };
 
-    localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
+    this.selectedEmpresaId = updatedEmpresa;
+    this.syncSelectedEmpresaStorage(updatedEmpresa);
+
+    const empresaIndex = this.empresas.findIndex(
+      empresa => Number(empresa.id) === Number(updatedEmpresa.id)
+    );
+    if (empresaIndex !== -1) {
+      this.empresas[empresaIndex] = updatedEmpresa;
+      this.empresas = [...this.empresas];
+      this.updatePaginatedEmpresas();
+    }
 
     if (this.trialMode) {
       const demoEmpresasStr = localStorage.getItem('demoEmpresas');
       if (demoEmpresasStr) {
         const demoEmpresas = JSON.parse(demoEmpresasStr);
-        const index = demoEmpresas.findIndex((e: any) => e.id === this.selectedEmpresaId?.id);
+        const index = demoEmpresas.findIndex((e: any) => e.id === updatedEmpresa.id);
         if (index !== -1) {
-          demoEmpresas[index] = this.selectedEmpresaId;
+          demoEmpresas[index] = updatedEmpresa;
           localStorage.setItem('demoEmpresas', JSON.stringify(demoEmpresas));
         }
       }
@@ -3710,9 +3747,16 @@ fetchUserData(): void {
       return;
     }
 
-    if (this.selectedEmpresaId.id) {
-      this.empresaService.updateEmpresa(this.selectedEmpresaId.id, this.selectedEmpresaId).subscribe({
-        next: () => this.uiDialog.success({ title: 'Paleta guardada', text: 'Colores guardados correctamente.' }),
+    if (updatedEmpresa.id) {
+      this.empresaService.updateEmpresa(updatedEmpresa.id, updatedEmpresa).subscribe({
+        next: (empresaActualizada) => {
+          const mergedEmpresa: Empresa = { ...updatedEmpresa, ...empresaActualizada };
+          this.selectedEmpresaId = mergedEmpresa;
+          this.applySavedEmpresa(mergedEmpresa);
+          this.syncSelectedEmpresaStorage(mergedEmpresa);
+          this.empresaStore.select(mergedEmpresa);
+          this.uiDialog.success({ title: 'Paleta guardada', text: 'Colores guardados correctamente.' });
+        },
         error: (err) => this.uiDialog.error({ title: 'Error al guardar colores', text: err.message })
       });
     }

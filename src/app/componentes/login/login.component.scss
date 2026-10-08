@@ -270,12 +270,17 @@
 
     .login-card__visual {
       order: 1;
-      height: 270px;
-      min-height: 270px;
-      margin: -24px 0 -14px;
+      height: 340px;
+      min-height: 340px;
+      margin: -10px 0 0;
       width: 100%;
 
-      img { height: 300px; }
+      img {
+        width: auto;
+        max-width: 100%;
+        height: 340px;
+        transform: none;
+      }
     }
 
     .login-card__content {
@@ -284,6 +289,10 @@
     }
 
     .login-card__desc { max-width: none; }
+  }
+
+  .login-cards--home .login-card:nth-child(2) .login-card__visual {
+    margin-top: 0;
   }
 }
 
@@ -594,10 +603,10 @@
   &:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
   &--mp {
-    background: linear-gradient(135deg, #00b87a, #00965e);
+    background: linear-gradient(135deg, #00b1ea, #007eb5);
     color: #fff;
-    box-shadow: 0 4px 16px rgba(0,184,122,0.3);
-    &:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(0,184,122,0.4); }
+    box-shadow: 0 4px 16px rgba(0, 158, 227, .32);
+    &:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(0, 126, 181, .42); }
   }
 
   &--pp {
@@ -606,6 +615,17 @@
     box-shadow: 0 4px 16px rgba(245,166,35,0.25);
     &:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(245,166,35,0.35); }
   }
+}
+
+.lf-pay-logo {
+  width: 36px;
+  height: 30px;
+  flex: 0 0 36px;
+  margin-right: .55rem;
+  border-radius: 6px;
+  background: #fff;
+  object-fit: contain;
+  box-shadow: 0 2px 7px rgba(0, 71, 112, .22);
 }
 
 .lf-note {
@@ -957,6 +977,24 @@
 
     &:active { transform: translateY(-1px) scale(0.97); }
 
+    &--disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
+      filter: grayscale(0.35);
+
+      &:hover,
+      &:active {
+        transform: none;
+        box-shadow: none;
+        border-color: rgba(15,28,63,0.1);
+        background: rgba(255,255,255,0.85);
+      }
+
+      .login-demo-country__flag {
+        animation-play-state: paused;
+      }
+    }
+
     &:nth-child(1) .login-demo-country__flag { animation-delay: 0s; }
     &:nth-child(2) .login-demo-country__flag { animation-delay: 0.9s; }
     &:nth-child(3) .login-demo-country__flag { animation-delay: 1.8s; }
@@ -990,5 +1028,17 @@
     font-weight: 700;
     color: #0f1c3f;
     letter-spacing: 0.2px;
+  }
+
+  &__coming-soon {
+    margin-top: -10px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: rgba(15,28,63,0.08);
+    color: rgba(15,28,63,0.65);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.35px;
+    text-transform: uppercase;
   }
 }

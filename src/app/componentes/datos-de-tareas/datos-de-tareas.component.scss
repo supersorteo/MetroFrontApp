@@ -253,9 +253,18 @@
   &.is-visible { display: block; }
 
   &__icon {
-    font-size: 48px;
-    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 110px;
     margin-bottom: 16px;
+  }
+
+  &__sprite {
+    display: block;
+    width: min(230px, 100%);
+    max-height: 130px;
+    object-fit: contain;
   }
 
   h3 {
@@ -276,20 +285,6 @@
 /* ============ SECCIÓN TABLA ============ */
 .table-section {
   margin-top: 4px;
-}
-
-.table-section__title {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  opacity: 0.85;
-
-  i { font-size: 14px; }
 }
 
 /* ---- TABLA ---- */
@@ -346,14 +341,6 @@
   }
 
   // ---- Clases de columna (aplican a th Y td) ----
-  .col-tarea {
-    width: 40px;
-    text-align: center;
-    font-size: 11px;
-    font-weight: 600;
-    opacity: 0.55;
-  }
-
   .col-name {
     text-align: left;
     font-weight: 500;
@@ -465,8 +452,10 @@
   }
 
   &--back {
-    top: 14px;
-    left: 14px;
+    top: auto;
+    left: auto;
+    right: 16px;
+    bottom: 16px;
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -481,7 +470,7 @@
 
   &--download {
     bottom: 16px;
-    right: 16px;
+    right: 72px;
     padding: 10px 16px;
     border-radius: 50px;
     background: linear-gradient(135deg, #2563eb, #409eff);
@@ -876,7 +865,7 @@
 
   .fab-btn--download {
     left: auto;
-    right: 10px;
+    right: 58px;
     width: 30%;
     min-width: 108px;
     max-width: 140px;
@@ -884,6 +873,13 @@
     justify-content: center;
     bottom: 16px;
     padding: 10px 12px;
+  }
+
+  .fab-btn--back {
+    top: auto;
+    left: auto;
+    right: 10px;
+    bottom: 16px;
   }
 
   .total-bar {
