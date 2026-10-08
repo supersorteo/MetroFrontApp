@@ -106,6 +106,11 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   legacyImportResult: LegacyImportResult | null = null;
   legacyStats = { total: 0, vigentes: 0, vencidos: 0, reclamados: 0 };
 
+  // TEST ONLY — comentar tras pruebas
+  showExpiryPanel = false;
+  expiryCode = '';
+  expiryDate = '';
+
   private timer: any;
 
   constructor(
@@ -998,6 +1003,26 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
         this.loadLegacyCodes();
       },
       error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron eliminar los códigos.' })
+    });
+  }
+
+  // TEST ONLY — comentar tras pruebas
+  applyExpiry(): void {
+    const code = this.expiryCode.trim().toUpperCase();
+    const date = this.expiryDate.trim();
+    if (!code || !date) {
+      this.uiDialog.warning({ title: 'Campos requeridos', text: 'Ingresá el código y la fecha.' });
+      return;
+    }
+    this.authService.setExpiry(code, date).subscribe({
+      next: (res: any) => {
+        this.uiDialog.success({ title: 'Vencimiento aplicado', text: `Código ${res.code} vence ahora el ${res.fechaVencimiento}.` });
+        this.loadCodes();
+      },
+      error: (err: any) => {
+        const msg = err?.message || 'No se pudo aplicar el vencimiento.';
+        this.uiDialog.error({ title: 'Error', text: msg });
+      }
     });
   }
 

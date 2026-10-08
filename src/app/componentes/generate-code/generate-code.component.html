@@ -956,5 +956,29 @@
       </div>
     </div>
   </div>
+
+  <!-- TEST ONLY — comentar tras pruebas -->
+  <div class="admin-section" style="margin-top:2rem;border:2px dashed #f59e0b;padding:1rem;border-radius:8px;">
+    <button class="gen-btn" style="background:#f59e0b;color:#000;font-weight:700;margin-bottom:0.75rem;"
+            (click)="showExpiryPanel = !showExpiryPanel">
+      ⚠ DEV — Modificar vencimiento de código
+    </button>
+    <div *ngIf="showExpiryPanel" style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;">
+      <div>
+        <label style="display:block;font-size:0.78rem;margin-bottom:0.25rem;">Código</label>
+        <input class="gen-input" style="width:140px;text-transform:uppercase;"
+               [(ngModel)]="expiryCode" placeholder="Ej: ABC12">
+      </div>
+      <div>
+        <label style="display:block;font-size:0.78rem;margin-bottom:0.25rem;">Nueva fecha vencimiento</label>
+        <input class="gen-input" type="date"
+               [(ngModel)]="expiryDate">
+      </div>
+      <button class="gen-btn" style="background:#dc2626;color:#fff;" (click)="applyExpiry()">
+        Aplicar
+      </button>
+    </div>
+  </div>
+
 </div>
 
