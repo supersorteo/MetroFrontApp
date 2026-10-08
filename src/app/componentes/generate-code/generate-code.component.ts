@@ -107,10 +107,9 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   legacyStats = { total: 0, vigentes: 0, vencidos: 0, reclamados: 0 };
 
   // TEST ONLY — comentar tras pruebas
-  showExpiryPanel = false;
-  expiryCode = '';
-  expiryDate = '';
-  expiryAdminPass = '';
+  editingExpiryCode: string | null = null;
+  expiryEditRegistro = '';
+  expiryEditVencimiento = '';
 
   private timer: any;
 
@@ -1008,22 +1007,39 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   }
 
   // TEST ONLY — comentar tras pruebas
+  openExpiryEdit(item: AccessCode): void {
+    this.editingExpiryCode = item.code;
+    this.expiryEditRegistro  = item.fechaRegistro  ?? '';
+    this.expiryEditVencimiento = item.fechaVencimiento ?? '';
+  }
+
+  closeExpiryEdit(): void {
+    this.editingExpiryCode = null;
+  }
+
+  onExpiryRegistroChange(): void {
+    if (!this.expiryEditRegistro || !this.editingExpiryCode) return;
+    const len = this.editingExpiryCode.length;
+    const months = len === 5 ? 3 : len === 6 ? 6 : 12;
+    const d = new Date(this.expiryEditRegistro + 'T00:00:00');
+    d.setMonth(d.getMonth() + months);
+    this.expiryEditVencimiento = d.toISOString().split('T')[0];
+  }
+
   applyExpiry(): void {
-    const code = this.expiryCode.trim().toUpperCase();
-    const date = this.expiryDate.trim();
-    const pass = this.expiryAdminPass.trim();
-    if (!code || !date || !pass) {
-      this.uiDialog.warning({ title: 'Campos requeridos', text: 'Ingresá el código, la fecha y la contraseña de admin.' });
+    const code = this.editingExpiryCode;
+    if (!code || !this.expiryEditVencimiento) {
+      this.uiDialog.warning({ title: 'Campo requerido', text: 'La fecha de vencimiento es obligatoria.' });
       return;
     }
-    this.authService.setExpiry(code, date, this.admin.username, pass).subscribe({
+    this.authService.setExpiry(code, this.expiryEditVencimiento, this.expiryEditRegistro || undefined).subscribe({
       next: (res: any) => {
-        this.uiDialog.success({ title: 'Vencimiento aplicado', text: `Código ${res.code} vence ahora el ${res.fechaVencimiento}.` });
+        this.uiDialog.success({ title: 'Fechas actualizadas', text: `Código ${res.code} — vence el ${res.fechaVencimiento}.` });
+        this.editingExpiryCode = null;
         this.loadCodes();
       },
       error: (err: any) => {
-        const msg = err?.message || 'No se pudo aplicar el vencimiento.';
-        this.uiDialog.error({ title: 'Error', text: msg });
+        this.uiDialog.error({ title: 'Error', text: err?.message || 'No se pudo actualizar.' });
       }
     });
   }

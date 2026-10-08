@@ -259,7 +259,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of getPaginatedCodes()" [class.row--expired]="item.remainingTime === 'Expirado'" [class.row--pending]="!item.email" [class.row--disabled]="item.disabled">
+            <ng-container *ngFor="let item of getPaginatedCodes()">
+            <tr [class.row--expired]="item.remainingTime === 'Expirado'" [class.row--pending]="!item.email" [class.row--disabled]="item.disabled">
               <td>
                 <span class="code-badge">{{ item.code }}</span>
               </td>
@@ -287,6 +288,14 @@
                       <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
                     </svg>
                   </button>
+                  <!-- TEST ONLY — comentar tras pruebas -->
+                  <button *ngIf="item.email" class="ra-btn" style="color:#f59e0b;"
+                          [title]="editingExpiryCode === item.code ? 'Cerrar editor' : 'Editar fechas (DEV)'"
+                          (click)="editingExpiryCode === item.code ? closeExpiryEdit() : openExpiryEdit(item)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+                    </svg>
+                  </button>
                   <button class="ra-btn" [class.ra-btn--disable]="!item.disabled" [class.ra-btn--enable]="item.disabled"
                     [title]="item.disabled ? 'Activar código' : 'Desactivar código'"
                     (click)="toggleDisableCode(item)">
@@ -306,6 +315,27 @@
                 </div>
               </td>
             </tr>
+            <!-- TEST ONLY — comentar tras pruebas -->
+            <tr *ngIf="editingExpiryCode === item.code" style="background:rgba(245,158,11,0.08);">
+              <td colspan="7" style="padding:0.6rem 1rem;">
+                <div style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;">
+                  <div>
+                    <label style="display:block;font-size:0.75rem;color:#f59e0b;margin-bottom:0.2rem;">F. Registro</label>
+                    <input class="gen-input" type="date" style="width:150px;"
+                           [(ngModel)]="expiryEditRegistro" (change)="onExpiryRegistroChange()">
+                  </div>
+                  <div>
+                    <label style="display:block;font-size:0.75rem;color:#f59e0b;margin-bottom:0.2rem;">F. Vencimiento</label>
+                    <input class="gen-input" type="date" style="width:150px;"
+                           [(ngModel)]="expiryEditVencimiento">
+                  </div>
+                  <button class="ra-btn" style="background:#22c55e;color:#fff;padding:0.3rem 0.75rem;border-radius:6px;font-size:0.8rem;" (click)="applyExpiry()">Guardar</button>
+                  <button class="ra-btn" style="background:#6b7280;color:#fff;padding:0.3rem 0.75rem;border-radius:6px;font-size:0.8rem;" (click)="closeExpiryEdit()">Cancelar</button>
+                  <span style="font-size:0.72rem;color:#9ca3af;align-self:center;">Cambiar F. Registro recalcula el vencimiento automáticamente</span>
+                </div>
+              </td>
+            </tr>
+            </ng-container>
             <tr *ngIf="filteredCodes.length === 0">
               <td colspan="7" class="td--empty">No hay códigos para mostrar</td>
             </tr>
@@ -957,32 +987,6 @@
     </div>
   </div>
 
-  <!-- TEST ONLY — comentar tras pruebas -->
-  <div class="admin-section" style="margin-top:2rem;border:2px dashed #f59e0b;padding:1rem;border-radius:8px;">
-    <button class="gen-btn" style="background:#f59e0b;color:#000;font-weight:700;margin-bottom:0.75rem;"
-            (click)="showExpiryPanel = !showExpiryPanel">
-      ⚠ DEV — Modificar vencimiento de código
-    </button>
-    <div *ngIf="showExpiryPanel" style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;">
-      <div>
-        <label style="display:block;font-size:0.78rem;margin-bottom:0.25rem;">Código</label>
-        <input class="gen-input" style="width:140px;text-transform:uppercase;"
-               [(ngModel)]="expiryCode" placeholder="Ej: ABC12">
-      </div>
-      <div>
-        <label style="display:block;font-size:0.78rem;margin-bottom:0.25rem;">Nueva fecha vencimiento</label>
-        <input class="gen-input" type="date" [(ngModel)]="expiryDate">
-      </div>
-      <div>
-        <label style="display:block;font-size:0.78rem;margin-bottom:0.25rem;">Contraseña admin</label>
-        <input class="gen-input" type="password" style="width:160px;"
-               [(ngModel)]="expiryAdminPass" placeholder="Tu contraseña de admin">
-      </div>
-      <button class="gen-btn" style="background:#dc2626;color:#fff;" (click)="applyExpiry()">
-        Aplicar
-      </button>
-    </div>
-  </div>
 
 </div>
 
