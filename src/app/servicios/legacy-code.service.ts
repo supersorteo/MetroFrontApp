@@ -50,6 +50,12 @@ export class LegacyCodeService {
     return this.http.post<LegacyImportResult>(`${this.adminBase}/import`, {});
   }
 
+  importCodesFromFile(file: File): Observable<LegacyImportResult> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<LegacyImportResult>(`${this.adminBase}/import-file`, formData);
+  }
+
   getCodes(): Observable<LegacyPage> {
     return this.http.get<LegacyPage>(`${this.adminBase}?page=0&size=2000`);
   }

@@ -102,6 +102,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   legacyItemsPerPage = 10;
   legacyTotalPages = 0;
   legacyImporting = false;
+  legacyImportingFile = false;
   legacyImportResult: LegacyImportResult | null = null;
   legacyStats = { total: 0, vigentes: 0, vencidos: 0, reclamados: 0 };
 
@@ -911,6 +912,31 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
         this.legacyImporting = false;
         const detail = err?.error?.error || err?.error?.message || err?.message || '';
         this.uiDialog.error({ title: 'Error de importación', text: detail || 'No se pudo completar la importación.' });
+      }
+    });
+  }
+
+  onLegacyFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    input.value = '';
+    this.legacyImportingFile = true;
+    this.legacyImportResult = null;
+    this.legacyCodeService.importCodesFromFile(file).subscribe({
+      next: result => {
+        this.legacyImportingFile = false;
+        this.legacyImportResult = result;
+        this.loadLegacyCodes();
+        this.uiDialog.success({
+          title: 'Importación completada',
+          text: `${result.imported} nuevos · ${result.skipped} ignorados · ${result.total} total`
+        });
+      },
+      error: (err) => {
+        this.legacyImportingFile = false;
+        const detail = err?.error?.error || err?.error?.message || err?.message || '';
+        this.uiDialog.error({ title: 'Error al subir archivo', text: detail || 'No se pudo procesar el archivo.' });
       }
     });
   }
