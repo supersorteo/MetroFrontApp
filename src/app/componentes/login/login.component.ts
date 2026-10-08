@@ -51,8 +51,10 @@ export class LoginComponent implements OnInit{
 
   password: string = '';
   isContentVisible: boolean = false;
-  loginStep: 'home' | 'login' | 'join' | 'register' | 'checkout' | 'adminCountry' | 'adminLogin' | 'demoCountry' | 'legacyRegister' = 'home';
+  loginStep: 'home' | 'login' | 'join' | 'register' | 'checkout' | 'adminCountry' | 'adminLogin' | 'demoCountry' | 'legacyRegister' | 'reactivate' = 'home';
   legacyData: LegacyCodeDTO | null = null;
+  expiredCode: string = '';
+  reactivateNewCode: string = '';
   websiteUrl: string = "https://wa.link/9lbeyq";
 
   errorMessage: string = '';
@@ -246,7 +248,8 @@ login(): void {
         this.authService.clearStaleSessionIfNeeded(this.code);
         localStorage.setItem('userCode', this.code);
         localStorage.setItem('userEmail', this.email);
-        localStorage.setItem('userData', JSON.stringify(response));
+        const userData: any = { ...response };
+        localStorage.setItem('userData', JSON.stringify(userData));
         this.route.navigate(['dashboard']);
         this.uiDialog.success({ title: 'Éxito', text: 'Login exitoso' });
       } else {
@@ -291,6 +294,12 @@ login(): void {
         });
         return;
       }
+      if (serverMsg.toLowerCase().includes('vencido')) {
+        this.expiredCode = this.code;
+        this.reactivateNewCode = '';
+        this.loginStep = 'reactivate';
+        return;
+      }
       this.uiDialog.error({ title: 'Error', text: serverMsg || 'Error al iniciar sesión' });
     }
   );
@@ -317,6 +326,28 @@ registerLegacy(): void {
 }
 
 
+
+  reactivate(): void {
+    const normalizedNew = this.accessCodeService.normalizeCode(this.reactivateNewCode);
+    if (!normalizedNew) {
+      this.uiDialog.error({ title: 'Error', text: 'Ingresá el nuevo código.' });
+      return;
+    }
+    this.authService.reactivate(this.expiredCode, normalizedNew).subscribe({
+      next: (newAc) => {
+        this.authService.clearStaleSessionIfNeeded(newAc.code);
+        localStorage.setItem('userCode', newAc.code);
+        localStorage.setItem('userEmail', newAc.email!);
+        localStorage.setItem('userData', JSON.stringify(newAc));
+        this.uiDialog.success({ title: '¡Reactivado!', text: 'Tus datos fueron recuperados con éxito.' });
+        this.route.navigate(['dashboard']);
+      },
+      error: (err) => {
+        const msg = err?.message || 'No se pudo reactivar la sesión.';
+        this.uiDialog.error({ title: 'Error', text: msg });
+      }
+    });
+  }
 
   register(): void {
     if (!this.isCountryAvailable(this.pais)) {

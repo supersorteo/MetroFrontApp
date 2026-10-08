@@ -15,7 +15,9 @@ export interface AuthResponse {
   email: string;
   telefono: string;
   pais?: string;
-  provincia: string
+  provincia: string;
+  fechaVencimiento?: string;
+  fechaRegistro?: string;
 }
 
 
@@ -203,6 +205,11 @@ export class AuthService {
 
   deleteCode1(code: string): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/codes/${code}`); }
   deleteCode(code: string): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/codes/${code}`).pipe(catchError(this.handleError1)); }
+
+  reactivate(expiredCode: string, newCode: string): Observable<AccessCode> {
+    return this.http.post<AccessCode>(`${this.apiUrl}/reactivate`, { expiredCode, newCode })
+      .pipe(catchError(this.handleError));
+  }
 
   getUserDataSummary(code: string): Observable<UserDataSummary | null> {
     return this.http.get<UserDataSummary>(`${this.apiUrl}/codes/${code}/summary`, { observe: 'response' }).pipe(

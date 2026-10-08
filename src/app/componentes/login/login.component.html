@@ -289,6 +289,46 @@
   </div>
 
   <!-- ══════════════════════════════════════
+       PASO REACTIVATE: código vencido → nuevo código
+  ══════════════════════════════════════ -->
+  <div *ngIf="loginStep === 'reactivate'" class="login-step login-step--form">
+
+    <button class="login-back" (click)="loginStep = 'login'">
+      <i class="bi bi-arrow-left"></i> Volver
+    </button>
+
+    <div class="login-form-card login-form-card--wide">
+      <div class="login-form-card__icon"><i class="bi bi-arrow-repeat"></i></div>
+      <h3 class="login-form-card__title">Reactivar sesión</h3>
+      <p class="login-form-card__sub">
+        Tu código <strong>{{ expiredCode }}</strong> venció.<br>
+        Si ya tenés un nuevo código, ingresalo para recuperar todos tus datos.
+      </p>
+
+      <div class="lf-field">
+        <label class="lf-label">Código vencido</label>
+        <input type="text" class="form-control login-input-field" [value]="expiredCode" disabled>
+      </div>
+
+      <div class="lf-field">
+        <label class="lf-label">Nuevo código</label>
+        <input type="text" class="form-control login-input-field"
+               [(ngModel)]="reactivateNewCode" placeholder="Ingresá tu nuevo código" name="reactivateNew">
+      </div>
+
+      <div class="lf-actions">
+        <button type="button" class="btn login-btn-secondary" (click)="loginStep = 'login'">
+          Cancelar
+        </button>
+        <button type="button" class="btn login-btn-primary-full" (click)="reactivate()">
+          <i class="bi bi-arrow-repeat me-2"></i>Reactivar y recuperar datos
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════
        PASO JOIN: opciones para unirse
   ══════════════════════════════════════ -->
   <div *ngIf="loginStep === 'join'" class="login-step">
