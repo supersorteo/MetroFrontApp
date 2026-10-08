@@ -1026,17 +1026,27 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     this.expiryEditVencimiento = d.toISOString().split('T')[0];
   }
 
-  applyExpiry(): void {
+  async applyExpiry(): Promise<void> {
     const code = this.editingExpiryCode;
     if (!code || !this.expiryEditVencimiento) {
       this.uiDialog.warning({ title: 'Campo requerido', text: 'La fecha de vencimiento es obligatoria.' });
       return;
     }
+    const confirmed = await this.uiDialog.confirm({
+      title: 'Modificar fechas',
+      html: `¿Confirmás cambiar las fechas del código <strong>${code}</strong>?<br><small style="color:#b45309">El código quedará vencido y se desactivará la sesión activa.</small>`,
+      confirmText: 'Sí, aplicar',
+      cancelText: 'Cancelar',
+      tone: 'warning',
+      icon: 'warning'
+    });
+    if (!confirmed) return;
+
     this.authService.setExpiry(code, this.expiryEditVencimiento, this.expiryEditRegistro || undefined).subscribe({
       next: (res: any) => {
-        this.uiDialog.success({ title: 'Fechas actualizadas', text: `Código ${res.code} — vence el ${res.fechaVencimiento}.` });
         this.editingExpiryCode = null;
         this.loadCodes();
+        this.uiDialog.success({ title: 'Fechas actualizadas', text: `Código ${res.code} — vence el ${res.fechaVencimiento}.` });
       },
       error: (err: any) => {
         this.uiDialog.error({ title: 'Error', text: err?.message || 'No se pudo actualizar.' });

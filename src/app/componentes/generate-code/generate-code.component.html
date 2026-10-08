@@ -289,11 +289,10 @@
                     </svg>
                   </button>
                   <!-- TEST ONLY — comentar tras pruebas -->
-                  <button *ngIf="item.email" class="ra-btn" style="color:#f59e0b;"
-                          [title]="editingExpiryCode === item.code ? 'Cerrar editor' : 'Editar fechas (DEV)'"
-                          (click)="editingExpiryCode === item.code ? closeExpiryEdit() : openExpiryEdit(item)">
+                  <button *ngIf="item.email" class="ra-btn ra-btn--expiry" title="Editar fechas (DEV)"
+                          (click)="openExpiryEdit(item)">
                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
-                      <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+                      <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
                     </svg>
                   </button>
                   <button class="ra-btn" [class.ra-btn--disable]="!item.disabled" [class.ra-btn--enable]="item.disabled"
@@ -312,26 +311,6 @@
                       <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
                     </svg>
                   </button>
-                </div>
-              </td>
-            </tr>
-            <!-- TEST ONLY — comentar tras pruebas -->
-            <tr *ngIf="editingExpiryCode === item.code" style="background:rgba(245,158,11,0.08);">
-              <td colspan="7" style="padding:0.6rem 1rem;">
-                <div style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;">
-                  <div>
-                    <label style="display:block;font-size:0.75rem;color:#f59e0b;margin-bottom:0.2rem;">F. Registro</label>
-                    <input class="gen-input" type="date" style="width:150px;"
-                           [(ngModel)]="expiryEditRegistro" (change)="onExpiryRegistroChange()">
-                  </div>
-                  <div>
-                    <label style="display:block;font-size:0.75rem;color:#f59e0b;margin-bottom:0.2rem;">F. Vencimiento</label>
-                    <input class="gen-input" type="date" style="width:150px;"
-                           [(ngModel)]="expiryEditVencimiento">
-                  </div>
-                  <button class="ra-btn" style="background:#22c55e;color:#fff;padding:0.3rem 0.75rem;border-radius:6px;font-size:0.8rem;" (click)="applyExpiry()">Guardar</button>
-                  <button class="ra-btn" style="background:#6b7280;color:#fff;padding:0.3rem 0.75rem;border-radius:6px;font-size:0.8rem;" (click)="closeExpiryEdit()">Cancelar</button>
-                  <span style="font-size:0.72rem;color:#9ca3af;align-self:center;">Cambiar F. Registro recalcula el vencimiento automáticamente</span>
                 </div>
               </td>
             </tr>
@@ -987,6 +966,63 @@
     </div>
   </div>
 
+  <!-- TEST ONLY — comentar tras pruebas ── Modal editar fechas ── -->
+  <div class="admin-overlay" *ngIf="editingExpiryCode" (click)="closeExpiryEdit()">
+    <div class="expiry-modal" (click)="$event.stopPropagation()">
+
+      <div class="expiry-modal__header">
+        <div class="expiry-modal__header-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="expiry-modal__title">Editar fechas <span class="expiry-modal__code-badge">{{ editingExpiryCode }}</span></h3>
+          <p class="expiry-modal__subtitle">Solo para pruebas — establecé una fecha pasada para simular vencimiento</p>
+        </div>
+        <button class="limits-modal__close" type="button" (click)="closeExpiryEdit()">&#x00D7;</button>
+      </div>
+
+      <div class="expiry-modal__body">
+        <div class="expiry-modal__field-group">
+          <div class="expiry-modal__field">
+            <label class="expiry-modal__label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+              </svg>
+              Fecha de registro
+            </label>
+            <input class="gen-input expiry-modal__input" type="date"
+                   [(ngModel)]="expiryEditRegistro" (change)="onExpiryRegistroChange()">
+            <span class="expiry-modal__hint">Al cambiarla se recalcula el vencimiento automáticamente</span>
+          </div>
+
+          <div class="expiry-modal__field">
+            <label class="expiry-modal__label expiry-modal__label--alert">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+              </svg>
+              Fecha de vencimiento
+            </label>
+            <input class="gen-input expiry-modal__input expiry-modal__input--alert" type="date"
+                   [(ngModel)]="expiryEditVencimiento">
+            <span class="expiry-modal__hint expiry-modal__hint--alert">Debe ser una fecha anterior a hoy para simular expiración</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="expiry-modal__footer">
+        <button class="ea-btn ea-btn--cancel" type="button" (click)="closeExpiryEdit()">Cancelar</button>
+        <button class="ea-btn expiry-modal__save-btn" type="button" (click)="applyExpiry()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+          </svg>
+          Guardar fechas
+        </button>
+      </div>
+    </div>
+  </div>
 
 </div>
 
