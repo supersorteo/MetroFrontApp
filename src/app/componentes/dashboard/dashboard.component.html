@@ -1220,6 +1220,32 @@
 
   <div id="successAlert" style="display: none;" class="alert alert-success">Datos guardados</div>
 
+  <div class="expiry-banner expiry-banner--warning" *ngIf="!codeExpired && daysUntilExpiry <= 7 && daysUntilExpiry > 0 && !bannerDismissed">
+    <div class="expiry-banner__body">
+      <span class="expiry-banner__icon">⏰</span>
+      <div class="expiry-banner__content">
+        <p class="expiry-banner__title">Tu cuenta vence en <strong>{{ daysUntilExpiry }} día{{ daysUntilExpiry !== 1 ? 's' : '' }}</strong>.</p>
+        <button class="expiry-banner__cta expiry-banner__cta--warning" (click)="abrirModalPlanesRenovar()">Renovar membresía <span aria-hidden="true">→</span></button>
+      </div>
+      <button class="expiry-banner__close" (click)="dismissExpiryBanner()" aria-label="Cerrar aviso">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="expiry-banner expiry-banner--expired" *ngIf="codeExpired && !bannerDismissed">
+    <div class="expiry-banner__body">
+      <span class="expiry-banner__icon">🔒</span>
+      <div class="expiry-banner__content">
+        <p class="expiry-banner__title">Tu código <strong>venció</strong>. Las funciones de edición están deshabilitadas.</p>
+        <button class="expiry-banner__cta expiry-banner__cta--expired" (click)="abrirModalPlanesRenovar()">Renovar membresía <span aria-hidden="true">→</span></button>
+      </div>
+      <button class="expiry-banner__close" (click)="dismissExpiryBanner()" aria-label="Cerrar aviso">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+
   <div class="card dashboard-card">
 
 <div class="card table-card mt-2 mb-3">
@@ -2804,7 +2830,7 @@
 
 
 
-            <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Lómite alcanzado para tu plan' : null">
+            <button type="submit" class="btn btn-primary" [disabled]="empresaForm.invalid || isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Límite alcanzado para tu plan' : null">
 
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16" style="margin-right:4px">
 
@@ -3100,7 +3126,7 @@
 
         <input type="text" class="form-control flex-grow-1" placeholder="Filtrar empresa..." [(ngModel)]="filtroEmpresa">
 
-        <button type="button" class="btn btn-primary btn-sm empresa-list__create flex-shrink-0" (click)="abrirFormularioNuevaEmpresa()" [disabled]="isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Limite alcanzado para tu plan' : null"><i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Crear</button>
+        <button type="button" class="btn btn-primary btn-sm empresa-list__create flex-shrink-0" (click)="abrirFormularioNuevaEmpresa()" [disabled]="isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Límite alcanzado para tu plan' : null"><i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Crear</button>
 
       </div>
 
@@ -3114,7 +3140,7 @@
 
   <div class="floating-toolbar">
 
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--presupuesto" (click)="verPresupuesto()" type="button" aria-label="Ver presupuesto">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--presupuesto" (click)="verPresupuesto()" type="button" aria-label="Ver presupuesto" title="Ver presupuesto">
 
       <span class="toolbar-item__icon" aria-hidden="true">
 
@@ -3160,7 +3186,7 @@
 
     </button>
 
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--gestor" (click)="toggleSavedBudgetsPanel()" type="button" aria-label="Gestor de presupuestos">
+    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--gestor" (click)="toggleSavedBudgetsPanel()" type="button" aria-label="Gestor de presupuestos" title="Gestor de presupuestos">
 
       <span class="toolbar-item__icon" aria-hidden="true">
 
@@ -4369,6 +4395,45 @@
 
   </div>
 
+</div>
+
+<!-- Modal reactivación desde dashboard (flujo WhatsApp) -->
+<div class="dash-reactivate-overlay" *ngIf="showDashboardReactivateModal" (click)="closeDashboardReactivateModal()">
+  <div class="dash-reactivate-modal" (click)="$event.stopPropagation()">
+    <div class="dash-reactivate-modal__header">
+      <div class="dash-reactivate-modal__header-icon">🔑</div>
+      <div class="dash-reactivate-modal__header-text">
+        <h5 class="dash-reactivate-modal__title">Reactivar membresía</h5>
+        <p class="dash-reactivate-modal__subtitle">Ingresá el código que recibiste por WhatsApp</p>
+      </div>
+      <button class="dash-reactivate-modal__close" (click)="closeDashboardReactivateModal()" aria-label="Cerrar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="dash-reactivate-modal__body">
+      <p class="dash-reactivate-modal__info">Tu código fue enviado por WhatsApp. Ingresalo aquí para activar tu membresía sin salir de la app.</p>
+      <div class="dash-reactivate-modal__field">
+        <label>Código vencido</label>
+        <input type="text" class="form-control" [value]="userCode" disabled />
+      </div>
+      <div class="dash-reactivate-modal__field">
+        <label>Tu email</label>
+        <input type="email" class="form-control" [(ngModel)]="dashReactivateEmail" placeholder="tu@email.com" />
+      </div>
+      <div class="dash-reactivate-modal__field">
+        <label>Nuevo código recibido</label>
+        <input type="text" class="form-control" [(ngModel)]="dashReactivateNewCode" placeholder="XXXXXXXX" style="text-transform:uppercase;" />
+      </div>
+      <p class="dash-reactivate-modal__error" *ngIf="dashReactivateError">{{ dashReactivateError }}</p>
+    </div>
+    <div class="dash-reactivate-modal__footer">
+      <button class="btn btn-secondary btn-sm" (click)="closeDashboardReactivateModal()" [disabled]="dashReactivateLoading">Cancelar</button>
+      <button class="btn btn-primary btn-sm" (click)="dashboardReactivar()" [disabled]="dashReactivateLoading">
+        <span *ngIf="dashReactivateLoading" class="spinner-border spinner-border-sm me-1"></span>
+        Activar código
+      </button>
+    </div>
+  </div>
 </div>
 
 

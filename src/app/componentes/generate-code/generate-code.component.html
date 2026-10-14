@@ -274,7 +274,7 @@
                 <span *ngIf="!item.email" class="td--pending">Sin registrar</span>
               </td>
               <td>{{ item.provincia || '—' }}</td>
-              <td class="td--date">{{ item.fechaRegistro || '—' }}</td>
+              <td class="td--date">{{ formatDate(item.fechaRegistro) }}</td>
               <td>
                 <span class="remaining" [class.remaining--expired]="item.remainingTime === 'Expirado'">
                   {{ item.remainingTime || '—' }}
@@ -438,8 +438,8 @@
                   {{ lc.meses }} meses
                 </span>
               </td>
-              <td class="td--date">{{ lc.fechaAdquisicion || '—' }}</td>
-              <td class="td--date">{{ lc.fechaVencimiento || '—' }}</td>
+              <td class="td--date">{{ formatDate(lc.fechaAdquisicion) }}</td>
+              <td class="td--date">{{ formatDate(lc.fechaVencimiento) }}</td>
               <td>
                 <span class="remaining" [class.remaining--expired]="!isLegacyVigente(lc)">
                   {{ isLegacyVigente(lc) ? 'Vigente' : 'Vencido' }}
@@ -988,13 +988,14 @@
         <div class="expiry-modal__field">
           <label class="expiry-modal__label">Fecha de registro</label>
           <input class="gen-input expiry-modal__input" type="date"
-                 [(ngModel)]="expiryEditRegistro" (change)="onExpiryRegistroChange()">
-          <span class="expiry-modal__hint">Usá una fecha pasada — el vencimiento se calculará según el tipo de código</span>
+                 [(ngModel)]="expiryEditRegistro" [max]="today"
+                 (change)="onExpiryRegistroChange()">
+          <span class="expiry-modal__hint">La fecha de registro no puede ser posterior a hoy. El vencimiento se calcula según el tipo de código (5 dígitos = 3 m · 6 = 6 m · 7+ = 12 m).</span>
         </div>
 
         <div class="expiry-modal__result" *ngIf="expiryEditVencimiento">
           <span class="expiry-modal__result-label">Vencimiento calculado</span>
-          <span class="expiry-modal__result-value">{{ expiryEditVencimiento }}</span>
+          <span class="expiry-modal__result-value">{{ formatDate(expiryEditVencimiento) }}</span>
         </div>
 
       </div>

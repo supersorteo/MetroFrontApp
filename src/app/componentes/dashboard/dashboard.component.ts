@@ -17,6 +17,7 @@ import { FilterEmpresaPipe } from '../../pipes/filter-empresa.pipe';
 import { PrecioArgentinoPipe } from '../../pipes/precio-argentino.pipe';
 import { PresupuestosGuardadosComponent } from '../presupuestos-guardados/presupuestos-guardados.component';
 import { TerminosCondicionesComponent } from '../terminos-condiciones/terminos-condiciones.component';
+import { termsStorageKey, TERMS_VERSION } from '../../core/terms/terms.util';
 
 import { firstValueFrom } from 'rxjs';
 //import { SavedPresupuesto } from '../../servicios/budget-storage.service';
@@ -271,6 +272,60 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const phone = '5491128634744';
     const nativeUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
     window.open(nativeUrl, '_blank');
+
+    if (this.planesModal) this.planesModal.hide();
+    this.dashReactivateEmail = this.userData?.email || '';
+    this.dashReactivateNewCode = '';
+    this.dashReactivateError = '';
+    setTimeout(() => { this.showDashboardReactivateModal = true; }, 350);
+  }
+
+  closeDashboardReactivateModal(): void {
+    this.showDashboardReactivateModal = false;
+    this.dashReactivateError = '';
+  }
+
+  dashboardReactivar(): void {
+    this.dashReactivateError = '';
+    const newCode = this.dashReactivateNewCode.trim().toUpperCase();
+    const email = this.dashReactivateEmail.trim();
+    if (!newCode || !email) {
+      this.dashReactivateError = 'Ingresá el nuevo código y tu email.';
+      return;
+    }
+    this.dashReactivateLoading = true;
+    this.authService.reactivate(this.userCode, newCode, email).subscribe({
+      next: (ac) => {
+        this.dashReactivateLoading = false;
+        // Carry over terms acceptance so returning user doesn't see T&C again
+        const oldTermsVal = localStorage.getItem(termsStorageKey(this.userCode));
+        if (oldTermsVal) localStorage.setItem(termsStorageKey(ac.code), oldTermsVal);
+
+        localStorage.setItem('userCode', ac.code);
+        localStorage.setItem('userEmail', ac.email);
+        const userData = {
+          email: ac.email,
+          pais: ac.pais,
+          provincia: ac.provincia,
+          telefono: ac.telefono,
+          fechaVencimiento: ac.fechaVencimiento,
+          fechaRegistro: ac.fechaRegistro,
+          selectedEmpresaId: ac.selectedEmpresaId,
+          selectedClienteId: ac.selectedClienteId,
+        };
+        localStorage.setItem('userData', JSON.stringify(userData));
+        this.userCode = ac.code;
+        this.userData = userData;
+        this.codeExpired = false;
+        this.bannerDismissed = false;
+        this.showDashboardReactivateModal = false;
+        this.uiDialog.success({ title: '¡Reactivación exitosa!', text: 'Tu membresía fue renovada correctamente.' });
+      },
+      error: (err) => {
+        this.dashReactivateLoading = false;
+        this.dashReactivateError = err?.error?.email || err?.error?.message || 'Error al reactivar. Verificá el código ingresado.';
+      }
+    });
   }
 
   irAlCheckout(): void {
@@ -279,6 +334,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const countryEntry = this.DEMO_COUNTRIES.find(c => c.nombre === demoPais);
     const params: Record<string, any> = { step: 'checkout', plan: this.selectedPlanMeses };
     if (countryEntry?.codigo) params['country'] = countryEntry.codigo;
+    if (this.userData?.email) params['email'] = this.userData.email;
+    if (this.userData?.telefono) params['phone'] = this.userData.telefono;
+    if (this.userData?.provincia) params['province'] = this.userData.provincia;
     if (this.planesModal) {
       this.planesModal.hide();
       setTimeout(() => this.route.navigate(['/'], { queryParams: params }), 320);
@@ -305,10 +363,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   editarCliente(id: number) {
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     this.route.navigate([`/editar-clientes`, id]);
   }
 
   editarEmpresa(id: number) {
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     this.route.navigate([`/editar-empresa`, id]);
   }
 
@@ -344,6 +404,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   userCode: string = '';
   userData: any | null = null;
   remainingTime: string = '';
+  codeExpired = false;
+  daysUntilExpiry = 9999;
+  bannerDismissed = false;
+
+  showDashboardReactivateModal = false;
+  dashReactivateNewCode = '';
+  dashReactivateEmail = '';
+  dashReactivateLoading = false;
+  dashReactivateError = '';
 
   @ViewChild('imageInput') imageInput!: ElementRef<HTMLInputElement>;
   @ViewChild('modalImagePreview') modalImagePreview!: ElementRef<HTMLImageElement>;
@@ -1307,6 +1376,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   }
 
   abrirFormularioNuevaEmpresa(): void {
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     this.limpiarEmpresaForm();
     this._reopenListaOnExampleClose = true;
 
@@ -1360,6 +1430,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   }
 
   solicitarConfirmacionEliminarEmpresa(id: number): void {
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     this.uiDialog.confirmDelete('empresa', '¿Deseas eliminar esta empresa? Esta acción no se puede deshacer.').then(confirmed => {
       if (!confirmed) return;
 
@@ -1419,6 +1490,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   }
 
   async solicitarConfirmacionEliminar(id: number): Promise<void> {
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     const confirmed = await this.uiDialog.confirmDelete('cliente', '¿Deseas eliminar este cliente? Esta acción no se puede deshacer.');
     if (!confirmed) return;
 
@@ -2018,6 +2090,7 @@ actualizarTarea(): void {
 
 
 agregarTarea(): void {
+  if (this.codeExpired) { this.showExpiredMessage(); return; }
 
 if (this.trialMode) {
   const demoEmpresaId = this.selectedEmpresaId?.id ?? null;
@@ -2103,6 +2176,7 @@ if (this.trialMode) {
   }
 
   async verPresupuesto(): Promise<void> {
+  if (this.codeExpired) { this.showExpiredMessage(); return; }
   // Permitir vista previa incluso sin empresa o cliente seleccionados.
     localStorage.removeItem('selectedPresupuestoName');
   if (this.clienteSeleccionado) {
@@ -2138,6 +2212,7 @@ if (this.trialMode) {
 
 
 async cargarPresupuestoDesdeLista(presupuesto: SavedPresupuesto): Promise<void> {
+  if (this.codeExpired) { this.showExpiredMessage(); return; }
   console.debug('[dashboard] cargarPresupuestoDesdeLista', presupuesto.id, presupuesto.name);
   await this.aplicarPresupuestoGuardado(presupuesto, { scrollToTable: true });
 }
@@ -2217,6 +2292,7 @@ private async aplicarPresupuestoGuardado(
 
 
 toggleSavedBudgetsPanel(): void {
+  if (this.codeExpired) { this.showExpiredMessage(); return; }
   const nextState = !this.showSavedBudgetsPanel;
   this.showSavedBudgetsPanel = nextState;
   if (nextState) {
@@ -2225,6 +2301,7 @@ toggleSavedBudgetsPanel(): void {
 }
 
 openSaveBudgetModal(): void {
+  if (this.codeExpired) { this.showExpiredMessage(); return; }
   if (this.trialMode) {
     this.uiDialog.info({ title: 'Modo demo', text: 'Guardar presupuestos no está habilitado en el modo de prueba.' });
     return;
@@ -2246,6 +2323,7 @@ openSaveBudgetModal(): void {
 }
 
 guardarPresupuestoDesdeModal(): void {
+  if (this.codeExpired) { this.showExpiredMessage(); return; }
   const nombre = this.nombrePresupuestoModal.trim();
   if (!nombre || !this.presupuestosGuardadosComponent) return;
   this.presupuestosGuardadosComponent.nombreTemporal = nombre;
@@ -2297,6 +2375,7 @@ onPresupuestoEliminado(p: SavedPresupuesto) {
 
 
 async eliminarTodasLasTareas(): Promise<void> {
+  if (this.codeExpired) { this.showExpiredMessage(); return; }
   const confirmed = await this.uiDialog.confirmDelete(
     'todas las tareas',
     'Se eliminarán todas las tareas del presupuesto actual. Esta acción no se puede deshacer.'
@@ -2693,6 +2772,7 @@ abrirModalClientes(): void {
 }
 
 openClientModal(): void {
+  if (this.codeExpired) { this.showExpiredMessage(); return; }
   if (this.trialMode && this.getDemoClientesCount() >= this.currentClienteLimit) {
     this.uiDialog.info({
       title: 'Límite alcanzado',
@@ -2729,6 +2809,7 @@ openClientModal(): void {
 
 
 solicitarConfirmacionEliminarTarea(tarea: UserTarea): void {
+  if (this.codeExpired) { this.showExpiredMessage(); return; }
   if (!tarea?.id) {
     return;
   }
@@ -2742,6 +2823,7 @@ solicitarConfirmacionEliminarTarea(tarea: UserTarea): void {
 
 
 confirmarEliminarTarea(): void {
+  if (this.codeExpired) { this.showExpiredMessage(); return; }
   if (this.tareaAEliminar == null) {
     return;
   }
@@ -2955,7 +3037,7 @@ calcularCostoTotal(): number {
 
 
  uploadImage(): void {
-
+  if (this.codeExpired) { this.showExpiredMessage(); return; }
   if (this.trialMode) {
   const fileInput = this.imageInput?.nativeElement as HTMLInputElement;
   const file = fileInput?.files?.[0];
@@ -3022,7 +3104,7 @@ onImageChange(event: Event): void {
 
 
     saveFormData(): void {
-
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
  if (this.trialMode) {
   const demoEmpresasRaw = localStorage.getItem('demoEmpresas');
   const demoEmpresas = demoEmpresasRaw ? JSON.parse(demoEmpresasRaw) : [];
@@ -3210,7 +3292,7 @@ onImageChange(event: Event): void {
 
 
     saveClientData(form: NgForm): void {
-
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     if (!this.validateForm(form)) {
       return;
     }
@@ -3684,14 +3766,35 @@ fetchUserData(): void {
         const timeDiff = expiryDate - now;
         if (timeDiff <= 0) {
           this.remainingTime = 'Código expirado';
+          this.codeExpired = true;
+          this.daysUntilExpiry = 0;
           return;
         }
+        this.codeExpired = false;
         const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
         this.remainingTime = `${days}d ${hours}h ${minutes}m ${seconds}s restantes`;
-        //console.log('Tiempo restante:', this.remainingTime);
+        this.daysUntilExpiry = days;
+      }
+
+      private showExpiredMessage(): void {
+        this.uiDialog.warning({
+          title: 'Código vencido',
+          text: 'Tu código expiró. Reactivá tu membresía para continuar usando estas funciones.'
+        });
+      }
+
+      dismissExpiryBanner(): void {
+        this.bannerDismissed = true;
+      }
+
+      abrirModalPlanesRenovar(): void {
+        if (!localStorage.getItem('demoPais') && this.userData?.pais) {
+          localStorage.setItem('demoPais', this.userData.pais);
+        }
+        this.abrirModalPlanes();
       }
 
   private _logoResolveToken: symbol | null = null;
@@ -4048,6 +4151,7 @@ fetchUserData(): void {
   }
 
   async tpGuardar(): Promise<void> {
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     this.tpSubmitted = true;
     if (!this.tpForm.tarea.trim()) {
       this.appToast.warning('El nombre de la tarea es obligatorio', 'Campo requerido');
@@ -4140,6 +4244,7 @@ fetchUserData(): void {
   }
 
   tpEditar(tp: TareaPersonalizada): void {
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     this.tpEditingId = tp.id ?? null;
     this.tpSubmitted = false;
     this.tpForm = { tarea: tp.tarea, descripcion: tp.descripcion, costo: tp.costo };
@@ -4156,6 +4261,7 @@ fetchUserData(): void {
   }
 
   abrirTpEditor(): void {
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     this.tpCancelarEdicion();
     this.showTpEditorModal = true;
   }
@@ -4179,6 +4285,7 @@ fetchUserData(): void {
 
   tpEliminar(tp: TareaPersonalizada): void {
     if (tp.id == null) return;
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     this.uiDialog.confirmDelete(tp.tarea, 'Se eliminará de tu lista de tareas personalizadas.').then(confirmed => {
       if (!confirmed) return;
       if (this.trialMode) {
@@ -4199,6 +4306,7 @@ fetchUserData(): void {
   }
 
   tpAgregarAlPresupuesto(tp: TareaPersonalizada): void {
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     this.tareaSeleccionada = {
       id: undefined,
       tarea: tp.tarea,
@@ -4217,6 +4325,7 @@ fetchUserData(): void {
   }
 
   tpImportarDelCatalogo(tarea: Tarea): void {
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     const limit = this.trialMode ? this.TP_LIMIT_DEMO : this.TP_LIMIT_VIP;
     if (this.tareasPersonalizadas.length >= limit) {
       this.uiDialog.warning({ title: 'Límite alcanzado', text: `Alcanzaste el límite de ${limit} tareas personalizadas.` });

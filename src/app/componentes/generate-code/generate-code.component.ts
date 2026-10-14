@@ -110,6 +110,14 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   editingExpiryCode: string | null = null;
   expiryEditRegistro = '';
   expiryEditVencimiento = '';
+  readonly today = new Date().toISOString().split('T')[0];
+
+  formatDate(dateStr: string | undefined | null): string {
+    if (!dateStr) return '—';
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
 
   private timer: any;
 
@@ -1019,6 +1027,9 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
 
   onExpiryRegistroChange(): void {
     if (!this.expiryEditRegistro || !this.editingExpiryCode) return;
+    if (this.expiryEditRegistro > this.today) {
+      this.expiryEditRegistro = this.today;
+    }
     const len = this.editingExpiryCode.length;
     const months = len === 5 ? 3 : len === 6 ? 6 : 12;
     const d = new Date(this.expiryEditRegistro + 'T00:00:00');
@@ -1034,7 +1045,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     }
     const confirmed = await this.uiDialog.confirm({
       title: 'Modificar fechas',
-      html: `¿Confirmás cambiar las fechas del código <strong>${code}</strong>?<br><small style="color:#b45309">El código quedará vencido y se desactivará la sesión activa.</small>`,
+      html: `¿Confirmás cambiar las fechas del código <strong>${code}</strong>?<br><small>Registro: ${this.formatDate(this.expiryEditRegistro)} · Vence: ${this.formatDate(this.expiryEditVencimiento)}</small>`,
       confirmText: 'Sí, aplicar',
       cancelText: 'Cancelar',
       tone: 'warning',
@@ -1046,7 +1057,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         this.editingExpiryCode = null;
         this.loadCodes();
-        this.uiDialog.success({ title: 'Fechas actualizadas', text: `Código ${res.code} — vence el ${res.fechaVencimiento}.` });
+        this.uiDialog.success({ title: 'Fechas actualizadas', text: `Código ${res.code} — vence el ${this.formatDate(res.fechaVencimiento)}.` });
       },
       error: (err: any) => {
         this.uiDialog.error({ title: 'Error', text: err?.message || 'No se pudo actualizar.' });

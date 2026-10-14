@@ -9,6 +9,7 @@ import {
   TareaCalculadaResumen
 } from '../../servicios/calculadora-materiales.service';
 import { AppToastService } from '../../servicios/app-toast.service';
+import { UiDialogService } from '../../core/services/ui-dialog.service';
 
 export interface Material {
   nombre: string;
@@ -720,6 +721,14 @@ export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
   readonly userCode = (localStorage.getItem('userCode') || '').trim();
   readonly userEmail = (localStorage.getItem('userEmail') || '').trim();
   readonly isPremiumMode = !this.isTrialMode;
+  readonly codeExpired: boolean = (() => {
+    const userData = localStorage.getItem('userData');
+    if (!userData) return false;
+    try {
+      const parsed = JSON.parse(userData);
+      return parsed?.fechaVencimiento ? new Date(parsed.fechaVencimiento) < new Date() : false;
+    } catch { return false; }
+  })();
   private premiumCtaTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly welcomeDismissedStorageKey = `calculadoraWelcomeDismissed_${this.userCode || this.userEmail || 'premium'}`;
 
@@ -804,7 +813,8 @@ export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
   constructor(
     private calculadoraMaterialesService: CalculadoraMaterialesService,
     private toast: AppToastService,
-    private router: Router
+    private router: Router,
+    private uiDialog: UiDialogService
   ) {}
 
   ngOnInit(): void {
@@ -883,7 +893,15 @@ export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
     this.inputValues.update(v => ({ ...v, [id]: value }));
   }
 
+  private showExpiredMessage(): void {
+    this.uiDialog.warning({
+      title: 'Código vencido',
+      text: 'Tu código expiró. Reactivá tu membresía para continuar usando estas funciones.'
+    });
+  }
+
   calcular(tarea: Tarea): void {
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     const val = this.getInputValue(tarea.id);
     if (val === null || isNaN(val) || val <= 0) return;
     if (this.isTrialMode && this.isTrialCalculationLimitReached()) {
@@ -928,6 +946,7 @@ export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
   }
 
   async confirmarBorrado(id: number): Promise<void> {
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     if (!this.hasResultados(id) && this.getInputValue(id) === null) {
       return;
     }
@@ -1219,6 +1238,7 @@ export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
   }
 
   confirmarGuardado(tarea: Tarea): void {
+    if (this.codeExpired) { this.showExpiredMessage(); return; }
     const valorIngresado = this.getInputValue(tarea.id);
     const resultados = this.getResultados(tarea.id);
 

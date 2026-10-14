@@ -224,6 +224,12 @@ constructor(private authService: AuthService,
         } else if (months && !isNaN(months)) {
           this.purchasePlanMonths = months;
         }
+        const emailParam = params.get('email');
+        const phoneParam = params.get('phone');
+        const provinceParam = params.get('province');
+        if (emailParam) this.purchaseEmail = emailParam;
+        if (phoneParam) this.purchasePhone = phoneParam;
+        if (provinceParam) this.purchaseProvince = provinceParam;
       }
     });
   }
@@ -293,13 +299,6 @@ login(): void {
             this.uiDialog.error({ title: 'Error', text: 'Código no encontrado.' });
           }
         });
-        return;
-      }
-      if (serverMsg.toLowerCase().includes('vencido')) {
-        this.expiredCode = this.code;
-        this.reactivateNewCode = '';
-        this.reactivateEmail = '';
-        this.loginStep = 'reactivate';
         return;
       }
       this.uiDialog.error({ title: 'Error', text: serverMsg || 'Error al iniciar sesión' });
@@ -576,7 +575,10 @@ registerLegacy(): void {
 
 
 volverDesdeCheckout(): void {
-  if (localStorage.getItem('trialMode') === 'true') {
+  const storedCode = localStorage.getItem('userCode');
+  if (storedCode && storedCode !== 'demo') {
+    this.route.navigate(['/dashboard']);
+  } else if (localStorage.getItem('trialMode') === 'true') {
     this.route.navigate(['/dashboard']);
   } else {
     this.loginStep = 'join';
