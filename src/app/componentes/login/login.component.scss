@@ -335,6 +335,8 @@
 
 /* ── Card variantes ── */
 .login-card--member {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.14) 0%, rgba(59, 130, 246, 0.1) 100%);
+
   .login-card__glow { background: radial-gradient(circle at 50% 0%, rgba(37,117,252,0.2), transparent 70%); }
   .login-card__icon { color: #1d4ed8; }
   .login-card__cta  { color: #2563eb; }
@@ -461,6 +463,18 @@
     line-height: 1.4;
     text-align: center;
   }
+}
+
+.login-form-card__back-row {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: 380px;
+  margin-top: 10px;
+}
+
+.login-form-card__back-row .login-back {
+  margin-bottom: 0;
 }
 
 /* ── Campos de formulario inline ── */
@@ -708,6 +722,14 @@
     border: none !important;
     box-shadow: 0 4px 16px rgba(37,117,252,0.3) !important;
   }
+
+  &--whatsapp {
+    background: linear-gradient(135deg, #25d366, #128c7e) !important;
+    border: none !important;
+    color: #fff !important;
+    font-size: 10px !important;
+    box-shadow: 0 4px 16px rgba(18, 140, 126, 0.28) !important;
+  }
 }
 
 /* ── Divider "o" ── */
@@ -948,6 +970,15 @@
     gap: 20px;
     flex-wrap: wrap;
     justify-content: center;
+  }
+
+  &__back-row {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    margin-top: 12px;
+
+    .login-back { margin-bottom: 0; }
   }
 
   &__btn {

@@ -56,6 +56,23 @@ interface ColorScheme {
   tableTextColor: string;
 }
 
+type ColorPickerTarget =
+  | 'primary'
+  | 'secondary'
+  | 'secondary2'
+  | 'text'
+  | 'table'
+  | 'tableBody'
+  | 'tableText'
+  | 'infoBox';
+
+interface ColorPickerDraft {
+  hex: string;
+  hue: number;
+  saturation: number;
+  value: number;
+}
+
 
 function cleanupBootstrapModals(): void {
   document.body.classList.remove('modal-open');
@@ -300,8 +317,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private reabrirEmpresaModal = false;
   private _reopenListaOnExampleClose = false;
   private _reabrirTareasPanelOnClientesClose = false;
-  private _reabrirTareasPanelOnEmpresaClose = false;
-  private _reabrirTareasPanelOnSaveBudgetClose = false;
   private _presupuestoGuardadoExitosamente = false;
   // Control de modales para empresa e imagen
 
@@ -388,6 +403,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   };
   colorScheme: ColorScheme = { ...this.defaultColorScheme };
   private readonly colorSchemeStorageKey = 'metroColorScheme';
+  colorPickerOpen = false;
+  colorPickerTarget: ColorPickerTarget | null = null;
+  colorPickerPointerMode: 'square' | 'hue' | null = null;
+  colorPickerDraft: ColorPickerDraft = {
+    hex: '#ffffff',
+    hue: 0,
+    saturation: 0,
+    value: 1
+  };
 
 
     tareaSeleccionada: Tarea = {
@@ -1245,11 +1269,27 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   }
 
 
-  openListaEmpresasModal(): void {
-    if (this.showTareasPanel) {
-      this._reabrirTareasPanelOnEmpresaClose = true;
-      this.showTareasPanel = false;
+  private mostrarModalSobrePanel(modalElement: HTMLElement): void {
+    const sobrePanel = this.showTareasPanel;
+    const elevarBackdrop = (): void => {
+      if (!sobrePanel) return;
+      const backdrops = Array.from(document.querySelectorAll<HTMLElement>('.modal-backdrop'));
+      backdrops.at(-1)?.style.setProperty('z-index', '9015');
+    };
+
+    if (sobrePanel) {
+      modalElement.style.setProperty('z-index', '9020');
+      modalElement.addEventListener('hidden.bs.modal', () => {
+        modalElement.style.removeProperty('z-index');
+      }, { once: true });
     }
+
+    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+    modal.show();
+    setTimeout(elevarBackdrop, 0);
+  }
+
+  openListaEmpresasModal(): void {
     this.getEmpresasByUserCode();
     // Cierra el modal de empresa usando la forma nativa de Bootstrap
     const empresaModalEl = document.getElementById('exampleModal');
@@ -1263,8 +1303,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       this.appToast.error('Error al abrir la lista de empresas');
       return;
     }
-    const listaEmpresasModalInstance = bootstrap.Modal.getInstance(listaEmpresasModalEl) || new bootstrap.Modal(listaEmpresasModalEl);
-    listaEmpresasModalInstance.show();
+    this.mostrarModalSobrePanel(listaEmpresasModalEl);
   }
 
   abrirFormularioNuevaEmpresa(): void {
@@ -1284,8 +1323,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
         return;
       }
 
-      const empresaModalInstance = bootstrap.Modal.getInstance(empresaModalEl) || new bootstrap.Modal(empresaModalEl);
-      empresaModalInstance.show();
+      this.mostrarModalSobrePanel(empresaModalEl);
     }, 450);
   }
 
@@ -1718,16 +1756,12 @@ ngAfterViewInit() {
     });
   }
 
-  // Al cerrar listaEmpresasModal: solo limpiar backdrops, no abrir exampleModal automáticamente
+  // Al cerrar listaEmpresasModal: solo limpiar backdrops.
   const listaEmpresasModal = document.getElementById('listaEmpresasModal');
   if (listaEmpresasModal) {
     listaEmpresasModal.addEventListener('hidden.bs.modal', () => {
       const backdrops = document.querySelectorAll('.modal-backdrop');
       backdrops.forEach(backdrop => backdrop.remove());
-      if (this._reabrirTareasPanelOnEmpresaClose) {
-        this._reabrirTareasPanelOnEmpresaClose = false;
-        setTimeout(() => { this.showTareasPanel = true; }, 300);
-      }
     });
   }
 
@@ -2199,30 +2233,16 @@ openSaveBudgetModal(): void {
     this.uiDialog.info({ title: 'Tareas requeridas', text: 'Agrega al menos una tarea antes de guardar el presupuesto.' });
     return;
   }
-  if (this.showTareasPanel) {
-    this._reabrirTareasPanelOnSaveBudgetClose = true;
-    this.showTareasPanel = false;
-  }
   this.nombrePresupuestoModal = this.presupuestoSeleccionado?.name || '';
   this._presupuestoGuardadoExitosamente = false;
-  setTimeout(() => {
-    const modalEl = document.getElementById('saveBudgetModal');
-    if (!modalEl) return;
-    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-    modal.show();
-  }, 300);
+  this.showSaveBudgetModal = true;
 }
 
   closeSaveBudgetModal(): void {
-  const shouldReopen = this._reabrirTareasPanelOnSaveBudgetClose;
-  this._reabrirTareasPanelOnSaveBudgetClose = false;
   this.showSaveBudgetModal = false;
   this.nombrePresupuestoModal = '';
   const modalEl = document.getElementById('saveBudgetModal');
   if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
-  if (shouldReopen) {
-    setTimeout(() => { this.showTareasPanel = true; }, 400);
-  }
 }
 
 guardarPresupuestoDesdeModal(): void {
@@ -2230,7 +2250,6 @@ guardarPresupuestoDesdeModal(): void {
   if (!nombre || !this.presupuestosGuardadosComponent) return;
   this.presupuestosGuardadosComponent.nombreTemporal = nombre;
   this.presupuestosGuardadosComponent.guardarPresupuestoActual();
-  this._reabrirTareasPanelOnSaveBudgetClose = false;
   this._presupuestoGuardadoExitosamente = false;
   this.nombrePresupuestoModal = '';
   const modalEl = document.getElementById('saveBudgetModal');
@@ -2393,6 +2412,212 @@ openColorSchemeModal(): void {
   }
 }
 
+  abrirSelectorColor(target: ColorPickerTarget): void {
+    const hex = this.normalizarColorHex(this.obtenerColorPickerValue(target), '#ffffff');
+    const hsv = this.hexToHsv(hex);
+    this.colorPickerTarget = target;
+    this.colorPickerDraft = { hex, ...hsv };
+    this.colorPickerPointerMode = null;
+    this.colorPickerOpen = true;
+  }
+
+  cerrarSelectorColor(): void {
+    this.colorPickerOpen = false;
+    this.colorPickerTarget = null;
+    this.colorPickerPointerMode = null;
+  }
+
+  aplicarSelectorColor(): void {
+    const hex = this.normalizarColorHex(this.colorPickerDraft.hex, '');
+    if (!hex) {
+      this.appToast.warning('Ingresá un color HEX válido, por ejemplo #409EFF.');
+      return;
+    }
+    if (this.colorPickerTarget) this.asignarColorPickerValue(this.colorPickerTarget, hex);
+    this.cerrarSelectorColor();
+  }
+
+  async copiarColorPicker(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(this.colorPickerDraft.hex);
+      this.appToast.info('Color copiado al portapapeles.');
+    } catch {
+      this.appToast.warning('No se pudo copiar el color automáticamente.');
+    }
+  }
+
+  onColorPickerHexChange(value: string): void {
+    const hex = this.normalizarColorHex(value, '');
+    if (!hex) {
+      this.colorPickerDraft = { ...this.colorPickerDraft, hex: value.toUpperCase() };
+      return;
+    }
+    this.colorPickerDraft = {
+      hex,
+      ...this.hexToHsv(hex)
+    };
+  }
+
+  iniciarColorPickerSuperficie(mode: 'square' | 'hue', event: PointerEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.colorPickerPointerMode = mode;
+    this.actualizarColorPickerDesdePunto(event, mode);
+  }
+
+  @HostListener('document:pointermove', ['$event'])
+  onColorPickerPointerMove(event: PointerEvent): void {
+    if (this.colorPickerPointerMode) {
+      this.actualizarColorPickerDesdePunto(event, this.colorPickerPointerMode);
+    }
+  }
+
+  @HostListener('document:pointerup')
+  onColorPickerPointerUp(): void {
+    this.colorPickerPointerMode = null;
+  }
+
+  get colorPickerSquareBackground(): string {
+    return `linear-gradient(to top, #000000, transparent), linear-gradient(to right, #ffffff, hsl(${this.colorPickerDraft.hue} 100% 50%))`;
+  }
+
+  get colorPickerHueBackground(): string {
+    return 'linear-gradient(to bottom, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%)';
+  }
+
+  get colorPickerTargetLabel(): string {
+    switch (this.colorPickerTarget) {
+      case 'primary': return 'Color principal';
+      case 'secondary': return 'Fondo del gradiente · Color 1';
+      case 'secondary2': return 'Fondo del gradiente · Color 2';
+      case 'text': return 'Color de texto general';
+      case 'table': return 'Fondo del encabezado de tabla';
+      case 'tableBody': return 'Fondo del cuerpo de tabla';
+      case 'tableText': return 'Texto del encabezado de tabla';
+      case 'infoBox': return 'Fondo de cajas de información';
+      default: return 'Seleccionar color';
+    }
+  }
+
+  get colorPickerRgb(): { red: number; green: number; blue: number } {
+    const { red, green, blue } = this.hsvToRgb(
+      this.colorPickerDraft.hue,
+      this.colorPickerDraft.saturation,
+      this.colorPickerDraft.value
+    );
+    return { red, green, blue };
+  }
+
+  private actualizarColorPickerDesdePunto(event: PointerEvent, mode: 'square' | 'hue'): void {
+    const elementId = mode === 'square' ? 'colorPickerSquare' : 'colorPickerHue';
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    const rect = element.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+
+    const x = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+    const y = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height));
+    const next = mode === 'square'
+      ? {
+          ...this.colorPickerDraft,
+          saturation: x,
+          value: 1 - y,
+          hex: this.hsvToHex(this.colorPickerDraft.hue, x, 1 - y)
+        }
+      : {
+          ...this.colorPickerDraft,
+          hue: Math.round(y * 360) % 360,
+          hex: this.hsvToHex(Math.round(y * 360) % 360, this.colorPickerDraft.saturation, this.colorPickerDraft.value)
+        };
+    this.colorPickerDraft = next;
+  }
+
+  private obtenerColorPickerValue(target: ColorPickerTarget): string {
+    switch (target) {
+      case 'primary': return this.presupuestoColorPrimario;
+      case 'secondary': return this.presupuestoColorSecundario;
+      case 'secondary2': return this.presupuestoColorSecundario2;
+      case 'text': return this.presupuestoColorTexto;
+      case 'table': return this.presupuestoColorTabla;
+      case 'tableBody': return this.presupuestoColorTablaCuerpo;
+      case 'tableText': return this.presupuestoColorTablaTexto;
+      case 'infoBox': return this.presupuestoInfoBoxColorHex;
+    }
+  }
+
+  private asignarColorPickerValue(target: ColorPickerTarget, value: string): void {
+    switch (target) {
+      case 'primary': this.presupuestoColorPrimario = value; break;
+      case 'secondary': this.presupuestoColorSecundario = value; break;
+      case 'secondary2': this.presupuestoColorSecundario2 = value; break;
+      case 'text': this.presupuestoColorTexto = value; break;
+      case 'table': this.presupuestoColorTabla = value; break;
+      case 'tableBody': this.presupuestoColorTablaCuerpo = value; break;
+      case 'tableText': this.presupuestoColorTablaTexto = value; break;
+      case 'infoBox': this.presupuestoInfoBoxColorHex = value; break;
+    }
+  }
+
+  private normalizarColorHex(value: string, fallback: string): string {
+    const raw = String(value || '').trim().replace(/^#/, '');
+    if (/^[\da-f]{3}$/i.test(raw)) {
+      return `#${raw.split('').map(char => char + char).join('').toUpperCase()}`;
+    }
+    if (/^[\da-f]{6}$/i.test(raw)) return `#${raw.toUpperCase()}`;
+    return fallback;
+  }
+
+  private hexToHsv(hex: string): Omit<ColorPickerDraft, 'hex'> {
+    const normalized = this.normalizarColorHex(hex, '#ffffff').slice(1);
+    const red = parseInt(normalized.slice(0, 2), 16) / 255;
+    const green = parseInt(normalized.slice(2, 4), 16) / 255;
+    const blue = parseInt(normalized.slice(4, 6), 16) / 255;
+    const max = Math.max(red, green, blue);
+    const min = Math.min(red, green, blue);
+    const delta = max - min;
+    let hue = 0;
+
+    if (delta !== 0) {
+      if (max === red) hue = 60 * (((green - blue) / delta) % 6);
+      else if (max === green) hue = 60 * ((blue - red) / delta + 2);
+      else hue = 60 * ((red - green) / delta + 4);
+    }
+    if (hue < 0) hue += 360;
+
+    return {
+      hue: Math.round(hue) % 360,
+      saturation: max === 0 ? 0 : delta / max,
+      value: max
+    };
+  }
+
+  private hsvToRgb(hue: number, saturation: number, value: number): { red: number; green: number; blue: number } {
+    const chroma = value * saturation;
+    const x = chroma * (1 - Math.abs((hue / 60) % 2 - 1));
+    const match = value - chroma;
+    let red = 0;
+    let green = 0;
+    let blue = 0;
+
+    if (hue < 60) [red, green, blue] = [chroma, x, 0];
+    else if (hue < 120) [red, green, blue] = [x, chroma, 0];
+    else if (hue < 180) [red, green, blue] = [0, chroma, x];
+    else if (hue < 240) [red, green, blue] = [0, x, chroma];
+    else if (hue < 300) [red, green, blue] = [x, 0, chroma];
+    else [red, green, blue] = [chroma, 0, x];
+
+    return {
+      red: Math.round((red + match) * 255),
+      green: Math.round((green + match) * 255),
+      blue: Math.round((blue + match) * 255)
+    };
+  }
+
+  private hsvToHex(hue: number, saturation: number, value: number): string {
+    const { red, green, blue } = this.hsvToRgb(hue, saturation, value);
+    return `#${[red, green, blue].map(channel => channel.toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+  }
+
 saveColorScheme(): void {
   try {
     localStorage.setItem(this.colorSchemeStorageKey, JSON.stringify(this.colorScheme));
@@ -2418,17 +2643,39 @@ private loadColorScheme(): ColorScheme {
   return { ...this.defaultColorScheme };
 }
 
-      buscar(event: Event): void {
-    const filtro = (event.target as HTMLInputElement).value.toLowerCase();
-    this.tareasFiltradas = this.tareas.filter(tarea =>
-      tarea.tarea.toLowerCase().includes(filtro) ||
-      tarea.descripcion.toLowerCase().includes(filtro) ||
-      tarea.rubro.toLowerCase().includes(filtro) ||
-      tarea.categoria.toLowerCase().includes(filtro) ||
-      tarea.costo.toString().includes(filtro) ||
-      tarea.area.toString().includes(filtro) ||
-      tarea.descuento.toString().includes(filtro)
-    );
+  private normalizarTextoBusqueda(valor: unknown): string {
+    return String(valor ?? '')
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .toLocaleLowerCase('es')
+      .replace(/[^\p{L}\p{N}]+/gu, ' ')
+      .trim();
+  }
+
+  buscar(event: Event): void {
+    const valor = (event.target as HTMLInputElement).value;
+    const fragmentos = this.normalizarTextoBusqueda(valor).split(/\s+/).filter(Boolean);
+
+    if (fragmentos.length === 0) {
+      this.tareasFiltradas = [...this.tareas];
+      return;
+    }
+
+    this.tareasFiltradas = this.tareas.filter(tarea => {
+      const textoBuscable = this.normalizarTextoBusqueda([
+        tarea.tarea,
+        tarea.descripcion,
+        tarea.rubro,
+        tarea.categoria,
+        tarea.pais,
+        tarea.costo,
+        tarea.area,
+        tarea.descuento,
+        tarea.totalCost
+      ].join(' '));
+
+      return fragmentos.every(fragmento => textoBuscable.includes(fragmento));
+    });
   }
 
 
@@ -2473,8 +2720,7 @@ openClientModal(): void {
     if (!modalElement) {
       return;
     }
-    const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-    modalInstance.show();
+    this.mostrarModalSobrePanel(modalElement);
   }, 200);
 }
 
@@ -3249,10 +3495,6 @@ getClientesByUserCode(): void {
 
 
 openListaClientesModal(): void {
-    if (this.showTareasPanel) {
-      this._reabrirTareasPanelOnClientesClose = true;
-      this.showTareasPanel = false;
-    }
     if (this.trialMode) {
       this.loadDemoClientesGlobales();
     } else {
@@ -3264,8 +3506,7 @@ openListaClientesModal(): void {
       this.appToast.error('Error al abrir la lista de clientes');
       return;
     }
-    const listaModal = new bootstrap.Modal(modalElement);
-    listaModal.show();
+    this.mostrarModalSobrePanel(modalElement);
 }
 
 
@@ -4119,16 +4360,25 @@ fetchUserData(): void {
     return this.trialMode ? this.TP_LIMIT_DEMO : this.TP_LIMIT_VIP;
   }
 
-    get tareasPersonalizadasFiltradas(): TareaPersonalizada[] {
-    const query = this.tpBusquedaPersonalizada.trim().toLowerCase();
-    if (!query) {
+  get tareasPersonalizadasFiltradas(): TareaPersonalizada[] {
+    const fragmentos = this.normalizarTextoBusqueda(this.tpBusquedaPersonalizada)
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (fragmentos.length === 0) {
       return this.tareasPersonalizadas;
     }
 
-    return this.tareasPersonalizadas.filter(tp =>
-      tp.tarea.toLowerCase().includes(query) ||
-      (tp.descripcion || '').toLowerCase().includes(query)
-    );
+    return this.tareasPersonalizadas.filter(tp => {
+      const textoBuscable = this.normalizarTextoBusqueda([
+        tp.tarea,
+        tp.descripcion,
+        tp.costo,
+        tp.id
+      ].join(' '));
+
+      return fragmentos.every(fragmento => textoBuscable.includes(fragmento));
+    });
   }
 
   get isEmpresaCreateLimitReached(): boolean {

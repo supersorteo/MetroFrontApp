@@ -1306,7 +1306,7 @@
 
           <div class="inputGroup task-search-input-group">
 
-            <input type="text" id="busqueda" required="" autocomplete="off" (input)="buscar($event)">
+            <input type="search" id="busqueda" required="" autocomplete="off" spellcheck="false" aria-label="Buscar tareas por texto, categoría o costo" (input)="buscar($event)">
 
             <label for="busqueda">Buscar tarea</label>
 
@@ -1324,11 +1324,13 @@
 
           <div class="task-help-row">
 
-            <button type="button" class="task-help-btn task-help-btn--compact" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="C???mo usar el buscador">
+            <small class="task-search-hint">Ej.: pintura interior, hormigon, 2500</small>
+
+            <button type="button" class="task-help-btn task-help-btn--compact" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="Cómo usar el buscador">
 
               <i class="fas fa-info-circle" aria-hidden="true"></i>
 
-              <span>C??mo buscar</span>
+              <span>Cómo buscar</span>
 
             </button>
 
@@ -1404,7 +1406,7 @@
 
               <div class="inputGroup tp-toolbar__search">
 
-                <input type="text" id="busquedaPersonalizada" required="" autocomplete="off" [(ngModel)]="tpBusquedaPersonalizada">
+                <input type="search" id="busquedaPersonalizada" required="" autocomplete="off" spellcheck="false" aria-label="Buscar tareas personalizadas por texto o costo" [(ngModel)]="tpBusquedaPersonalizada">
 
                 <label for="busquedaPersonalizada">Buscar tarea personalizada</label>
 
@@ -2571,6 +2573,7 @@
           (keyup.enter)="guardarPresupuestoDesdeModal()"
         />
       </div>
+
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeSaveBudgetModal()">Cancelar</button>
         <button type="button" class="btn btn-primary" (click)="guardarPresupuestoDesdeModal()" [disabled]="!nombrePresupuestoModal.trim()">Guardar</button>
@@ -3294,9 +3297,26 @@
       <button type="button" class="btn-close" aria-label="Cerrar" (click)="closeSaveBudgetModal()"></button>
     </div>
     <div class="save-budget-modal__body">
+      <div class="save-budget-modal__brand">
+        <div class="save-budget-modal__logo" [class.save-budget-modal__logo--fallback]="!currentEmpresaLogoUrl && !selectedEmpresaId?.logoUrl">
+          <img
+            *ngIf="currentEmpresaLogoUrl || selectedEmpresaId?.logoUrl"
+            [src]="currentEmpresaLogoUrl || selectedEmpresaId?.logoUrl"
+            [alt]="'Logo de ' + (selectedEmpresaId?.name || empresaName || 'la empresa')"
+          />
+          <i *ngIf="!currentEmpresaLogoUrl && !selectedEmpresaId?.logoUrl" class="bi bi-building" aria-hidden="true"></i>
+        </div>
+        <div class="save-budget-modal__brand-copy">
+          <span class="save-budget-modal__eyebrow">Resumen de guardado</span>
+          <strong>{{ selectedEmpresaId?.name || empresaName || 'Sin empresa' }}</strong>
+          <small>Revisá los datos antes de guardar este presupuesto.</small>
+        </div>
+      </div>
+
       <div class="save-budget-modal__details">
-        <div><span>Cliente</span><strong>{{ clienteSeleccionado?.name || 'Sin cliente' }}</strong></div>
-        <div><span>Fecha del presupuesto</span><strong>{{ budgetDate | date:'dd/MM/yyyy' }}</strong></div>
+        <div><span>Empresa</span><strong>{{ selectedEmpresaId?.name || empresaName || 'Sin empresa' }}</strong></div>
+        <div><span>Cliente</span><strong>{{ clienteSeleccionado?.name || clientName || 'Sin cliente' }}</strong></div>
+        <div><span>Fecha del presupuesto</span><strong>{{ (budgetDate || clienteSeleccionado?.budgetDate) ? ((budgetDate || clienteSeleccionado?.budgetDate) | date:'dd/MM/yyyy') : 'Sin fecha' }}</strong></div>
       </div>
       <label class="form-label" for="nombrePresupuestoModal">Nombre del presupuesto</label>
       <input
@@ -4099,7 +4119,7 @@
 
               <div class="d-flex gap-2 align-items-center">
 
-                <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorPrimario" style="width: 50px;">
+                <button type="button" class="custom-color-trigger" [style.background-color]="presupuestoColorPrimario" (click)="abrirSelectorColor('primary')" aria-label="Seleccionar color principal" title="Seleccionar color"></button>
 
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorPrimario" style="font-size: 12px;">
 
@@ -4118,7 +4138,7 @@
 
                   <label class="x-small mb-1">Color 1</label>
 
-                  <input type="color" class="form-control form-control-color w-100" [(ngModel)]="presupuestoColorSecundario">
+                  <button type="button" class="custom-color-trigger custom-color-trigger--wide" [style.background-color]="presupuestoColorSecundario" (click)="abrirSelectorColor('secondary')" aria-label="Seleccionar color 1 del gradiente" title="Seleccionar color"></button>
 
                 </div>
 
@@ -4126,7 +4146,7 @@
 
                   <label class="x-small mb-1">Color 2</label>
 
-                  <input type="color" class="form-control form-control-color w-100" [(ngModel)]="presupuestoColorSecundario2">
+                  <button type="button" class="custom-color-trigger custom-color-trigger--wide" [style.background-color]="presupuestoColorSecundario2" (click)="abrirSelectorColor('secondary2')" aria-label="Seleccionar color 2 del gradiente" title="Seleccionar color"></button>
 
                 </div>
 
@@ -4136,13 +4156,13 @@
 
                   <select class="form-select form-select-sm" [(ngModel)]="presupuestoGradienteAngulo">
 
-                    <option value="to bottom">Abajo ?</option>
+                    <option value="to bottom">Abajo</option>
 
-                    <option value="to top">Arriba ?</option>
+                    <option value="to top">Arriba</option>
 
-                    <option value="to right">Derecha ?</option>
+                    <option value="to right">Derecha</option>
 
-                    <option value="to left">Izquierda ?</option>
+                    <option value="to left">Izquierda</option>
 
                   </select>
 
@@ -4159,7 +4179,7 @@
 
               <div class="d-flex gap-2 align-items-center">
 
-                <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorTexto" style="width: 50px;">
+                <button type="button" class="custom-color-trigger" [style.background-color]="presupuestoColorTexto" (click)="abrirSelectorColor('text')" aria-label="Seleccionar color de texto general" title="Seleccionar color"></button>
 
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTexto" style="font-size: 12px;">
 
@@ -4174,7 +4194,7 @@
 
               <div class="d-flex gap-2 align-items-center">
 
-                <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorTabla" style="width: 50px;">
+                <button type="button" class="custom-color-trigger" [style.background-color]="presupuestoColorTabla" (click)="abrirSelectorColor('table')" aria-label="Seleccionar fondo del encabezado de tabla" title="Seleccionar color"></button>
 
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTabla" style="font-size: 12px;">
 
@@ -4189,7 +4209,7 @@
 
               <div class="d-flex gap-2 align-items-center">
 
-                <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorTablaCuerpo" style="width: 50px;">
+                <button type="button" class="custom-color-trigger" [style.background-color]="presupuestoColorTablaCuerpo" (click)="abrirSelectorColor('tableBody')" aria-label="Seleccionar fondo del cuerpo de tabla" title="Seleccionar color"></button>
 
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTablaCuerpo" style="font-size: 12px;">
 
@@ -4204,7 +4224,7 @@
 
               <div class="d-flex gap-2 align-items-center">
 
-                <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoColorTablaTexto" style="width: 50px;">
+                <button type="button" class="custom-color-trigger" [style.background-color]="presupuestoColorTablaTexto" (click)="abrirSelectorColor('tableText')" aria-label="Seleccionar texto del encabezado de tabla" title="Seleccionar color"></button>
 
                 <input type="text" class="form-control input" [(ngModel)]="presupuestoColorTablaTexto" style="font-size: 12px;">
 
@@ -4219,7 +4239,7 @@
 
               <div class="d-flex gap-2 align-items-center">
 
-                <input type="color" class="form-control form-control-color" [(ngModel)]="presupuestoInfoBoxColorHex" style="width: 50px;">
+                <button type="button" class="custom-color-trigger" [style.background-color]="presupuestoInfoBoxColorHex" (click)="abrirSelectorColor('infoBox')" aria-label="Seleccionar fondo de cajas de información" title="Seleccionar color"></button>
 
                 <input type="range" class="form-range flex-grow-1" min="0" max="1" step="0.05" [(ngModel)]="presupuestoInfoBoxOpacity" title="Transparencia">
 
@@ -4248,6 +4268,85 @@
             </button>
 
           </div>
+
+          <div class="custom-color-picker-backdrop" *ngIf="colorPickerOpen" (click)="cerrarSelectorColor()"></div>
+
+          <section
+            class="custom-color-picker"
+            *ngIf="colorPickerOpen"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="customColorPickerTitle"
+            (click)="$event.stopPropagation()">
+
+            <div class="custom-color-picker__header">
+              <div>
+                <span class="custom-color-picker__eyebrow">Selector de color</span>
+                <h5 id="customColorPickerTitle">{{ colorPickerTargetLabel }}</h5>
+              </div>
+              <button type="button" class="btn-close" (click)="cerrarSelectorColor()" aria-label="Cerrar selector de color"></button>
+            </div>
+
+            <div class="custom-color-picker__body">
+              <div class="custom-color-picker__visuals">
+                <div
+                  id="colorPickerSquare"
+                  class="custom-color-picker__square"
+                  [style.background]="colorPickerSquareBackground"
+                  (pointerdown)="iniciarColorPickerSuperficie('square', $event)"
+                  aria-label="Saturación y luminosidad">
+                  <span
+                    class="custom-color-picker__square-handle"
+                    [style.left.%]="colorPickerDraft.saturation * 100"
+                    [style.top.%]="(1 - colorPickerDraft.value) * 100"></span>
+                </div>
+
+                <div
+                  id="colorPickerHue"
+                  class="custom-color-picker__hue"
+                  [style.background]="colorPickerHueBackground"
+                  (pointerdown)="iniciarColorPickerSuperficie('hue', $event)"
+                  aria-label="Tono">
+                  <span
+                    class="custom-color-picker__hue-handle"
+                    [style.top.%]="(colorPickerDraft.hue / 360) * 100"></span>
+                </div>
+              </div>
+
+              <div class="custom-color-picker__values">
+                <label class="custom-color-picker__hex-field">
+                  <span>HEX</span>
+                  <input
+                    type="text"
+                    maxlength="7"
+                    spellcheck="false"
+                    [ngModel]="colorPickerDraft.hex"
+                    (ngModelChange)="onColorPickerHexChange($event)"
+                    aria-label="Valor hexadecimal del color">
+                </label>
+
+                <div class="custom-color-picker__metric-grid">
+                  <div><span>H</span><output>{{ colorPickerDraft.hue }}</output><small>°</small></div>
+                  <div><span>S</span><output>{{ colorPickerDraft.saturation * 100 | number:'1.0-0' }}</output><small>%</small></div>
+                  <div><span>V</span><output>{{ colorPickerDraft.value * 100 | number:'1.0-0' }}</output><small>%</small></div>
+                  <div><span>R</span><output>{{ colorPickerRgb.red }}</output></div>
+                  <div><span>G</span><output>{{ colorPickerRgb.green }}</output></div>
+                  <div><span>B</span><output>{{ colorPickerRgb.blue }}</output></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="custom-color-picker__preview-row">
+              <span class="custom-color-picker__preview" [style.background-color]="colorPickerDraft.hex"></span>
+              <code>{{ colorPickerDraft.hex }}</code>
+              <button type="button" class="custom-color-picker__copy" (click)="copiarColorPicker()">Copiar</button>
+            </div>
+
+            <div class="custom-color-picker__actions">
+              <button type="button" class="btn btn-light" (click)="cerrarSelectorColor()">Cancelar</button>
+              <button type="button" class="btn btn-primary" (click)="aplicarSelectorColor()">Aplicar color</button>
+            </div>
+          </section>
 
         </div>
 

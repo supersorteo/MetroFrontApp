@@ -41,6 +41,8 @@ export class DatosDeTareasComponent implements OnInit {
   hideCostPerM2: boolean = false;
   hideDescription: boolean = false;
   showDownloadModal: boolean = false;
+  showTextBudgetModal: boolean = false;
+  textoPresupuestoEditable: string = '';
   readonly PREVIEW_OPTIONS_KEY = 'metroBudgetPreviewVisibility';
 
   // Modal de edición de tarea
@@ -140,6 +142,12 @@ export class DatosDeTareasComponent implements OnInit {
 
   formatCurrency(value: number): string {
     return value.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  private formatBudgetDate(value: string | undefined): string {
+    if (!value) return '';
+    const isoDate = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return isoDate ? `${isoDate[3]}/${isoDate[2]}/${isoDate[1]}` : value;
   }
 
   // ============ NAVEGACIÓN ============
@@ -319,13 +327,22 @@ export class DatosDeTareasComponent implements OnInit {
 
   // ============ DESCARGA HTML ============
   descargarHTML(): void {
+    const exportElement = document.getElementById('export-presupuesto');
+    if (!exportElement) {
+      this.appToast.error('No se encontró el contenido del presupuesto para exportar.', 'Error');
+      return;
+    }
+
     const scheme = this.loadColorScheme();
-    // Crear copia sin elementos no imprimibles
-    const clone = document.documentElement.cloneNode(true) as HTMLElement;
-    
-    // Inyectar estilos específicos para asegurar que los colores se mantengan sin CSS externo
-    const styleTag = document.createElement('style');
-    styleTag.innerHTML = `
+    // Exportar únicamente el presupuesto evita incluir componentes globales como ARCHI.
+    const clone = exportElement.cloneNode(true) as HTMLElement;
+    clone.querySelectorAll('.no-print').forEach(el => el.remove());
+    this.replaceExportCardIcons(clone);
+
+    const exportStyles = this.collectExportStyles();
+    const exportOverrides = `
+      html, body { margin: 0; padding: 0; background: #fff; }
+      #export-presupuesto { min-height: auto; background: #fff; }
       #export-presupuesto .info-section {
         background: linear-gradient(${scheme.gradientAngle}, ${scheme.secondaryColor}, ${scheme.secondaryColor2}) !important;
         color: ${scheme.primaryColor} !important;
@@ -350,11 +367,26 @@ export class DatosDeTareasComponent implements OnInit {
         color: ${scheme.primaryColor} !important;
         border-color: ${scheme.primaryColor}33 !important;
       }
+      #export-presupuesto .export-inline-icon {
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        vertical-align: -0.12em;
+        fill: currentColor;
+        overflow: visible;
+      }
     `;
-    clone.querySelector('head')?.appendChild(styleTag);
-    
-    clone.querySelectorAll('.no-print').forEach(el => el.remove());
-    const htmlContent = '<!DOCTYPE html>\n' + clone.outerHTML;
+
+    const htmlContent = `<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Presupuesto - ${this.escapeHtml(this.clienteSeleccionado?.name || 'cliente')}</title>
+    <style>${exportStyles}\n${exportOverrides}</style>
+  </head>
+  <body>${clone.outerHTML}</body>
+</html>`;
     
     const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -366,6 +398,119 @@ export class DatosDeTareasComponent implements OnInit {
     a.remove();
     URL.revokeObjectURL(url);
     this.appToast.success('Presupuesto descargado como HTML', 'Descargado');
+  }
+
+  private collectExportStyles(): string {
+    return Array.from(document.styleSheets)
+      .map(styleSheet => {
+        try {
+          return Array.from(styleSheet.cssRules).map(rule => rule.cssText).join('\n');
+        } catch {
+          return '';
+        }
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  private replaceExportCardIcons(root: HTMLElement): void {
+    const iconContents: Record<string, string> = {
+      'fa-phone-alt': '<path d="M3.654 1.328a.678.678 0 0 1 1.015-.063l2.29 2.29a.678.678 0 0 1 .063.882l-1.12 1.497a.678.678 0 0 0 .078.846l3.25 3.25a.678.678 0 0 0 .846.078l1.497-1.12a.678.678 0 0 1 .882.063l2.29 2.29a.678.678 0 0 1-.063 1.015l-1.01.757c-.77.578-1.75.765-2.67.505-2.36-.67-4.67-2.2-6.72-4.25S1.4 5.55.73 3.19c-.26-.92-.073-1.9.505-2.67z"/>',
+      'fa-envelope': '<path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h11A1.5 1.5 0 0 1 15 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5zM2.5 3a.5.5 0 0 0-.5.5v.217l6 3.6 6-3.6V3.5a.5.5 0 0 0-.5-.5zM14 4.883l-5.743 3.446a.5.5 0 0 1-.514 0L2 4.883V12.5a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5z"/>',
+      'fa-id-card': '<path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><circle cx="5" cy="8" r="1.5"/><path d="M8 6.5h5v1H8zm0 2h5v1H8z"/>',
+      'fa-id-badge': '<path d="M6.5 0a.5.5 0 0 0-.5.5V1H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-2V.5a.5.5 0 0 0-.5-.5zM10 2h2a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h2v1h4z"/><circle cx="8" cy="7" r="2"/><path d="M4.5 13a3.5 3.5 0 0 1 7 0z"/>',
+      'fa-map-marker-alt': '<path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>',
+      'fa-calendar-alt': '<path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h.5A1.5 1.5 0 0 1 15 2.5v11a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 13.5v-11A1.5 1.5 0 0 1 2.5 1H3V.5a.5.5 0 0 1 .5-.5M2 4v9.5a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5V4z"/>',
+      'fa-file-invoice': '<path d="M4 0h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2m0 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/><path d="M4 4h8v1H4zm0 2h8v1H4zm0 3h5v1H4z"/>',
+      'fa-calculator': '<rect x="3" y="1" width="10" height="14" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="5" y="3" width="6" height="2" rx=".3"/><path d="M5 7h1v1H5zm2 0h1v1H7zm2 0h1v1H9zM5 9h1v1H5zm2 0h1v1H7zm2 0h1v1H9zM5 11h1v1H5zm2 0h1v1H7zm2 0h1v1H9z"/>',
+      'fa-sticky-note': '<path d="M5 0h6a2 2 0 0 1 2 2v8.586L9.586 14H5a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2m0 1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h4v-3a1 1 0 0 1 1-1h3V2a1 1 0 0 0-1-1z"/>',
+      'fa-globe': '<path d="M8 16a8 8 0 1 0 0-16 8 8 0 0 0 0 16M1 8h14M8 1c2 2.2 2 11.8 0 14M8 1C6 3.2 6 12.8 8 15" fill="none" stroke="currentColor" stroke-width="1"/>',
+      'fa-user-tie': '<circle cx="8" cy="5" r="3"/><path d="M2 15a6 6 0 0 1 12 0z"/>',
+      'bi-tiktok': '<path d="M9 0h2c.2 1.3.8 2.3 2.2 3.2.6.4 1.2.6 1.8.7v2c-1.2 0-2.3-.4-3.2-1.1V11a5 5 0 1 1-5-5v2a3 3 0 1 0 3 3z"/>',
+      'bi-instagram': '<path d="M5 0C2.2 0 0 2.2 0 5v6c0 2.8 2.2 5 5 5h6c2.8 0 5-2.2 5-5V5c0-2.8-2.2-5-5-5zm0 1h6c2.2 0 4 1.8 4 4v6c0 2.2-1.8 4-4 4H5c-2.2 0-4-1.8-4-4V5c0-2.2 1.8-4 4-4m6.5 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2M8 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8m0 1a3 3 0 1 1 0 6 3 3 0 0 1 0-6"/>',
+      'bi-facebook': '<path d="M8.5 0H11v3H8.5C7.7 3 7 3.7 7 4.5V6h3l-.5 3H7v7H4V9H2V6h2V4.5A4.5 4.5 0 0 1 8.5 0"/>'
+    };
+
+    root.querySelectorAll<HTMLElement>('.company-card i, .client-card i, .total-bar i').forEach(icon => {
+      const iconName = Array.from(icon.classList).find(className => iconContents[className]);
+      const content = iconName ? iconContents[iconName] : '<circle cx="8" cy="8" r="6"/>';
+      const className = icon.classList.contains('detail-icon')
+        ? 'detail-icon export-inline-icon'
+        : 'export-inline-icon';
+      icon.outerHTML = `<svg class="${className}" viewBox="0 0 16 16" aria-hidden="true">${content}</svg>`;
+    });
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  // ============ PRESUPUESTO SOLO TEXTO ============
+  abrirPresupuestoSoloTexto(): void {
+    this.textoPresupuestoEditable = this.generarTextoPresupuesto();
+    this.showDownloadModal = false;
+    this.showTextBudgetModal = true;
+  }
+
+  cerrarPresupuestoSoloTexto(): void {
+    this.showTextBudgetModal = false;
+  }
+
+  private generarTextoPresupuesto(): string {
+    const empresa = this.empresaSeleccionada?.name || 'Sin empresa';
+    const cliente = this.clienteSeleccionado?.name || 'Sin cliente';
+    const fecha = this.formatBudgetDate(this.clienteSeleccionado?.budgetDate);
+    const lineasTareas = this.tareasAgregadas.map((tarea, index) => {
+      const descripcion = tarea.descripcion ? `\n   ${tarea.descripcion}` : '';
+      const area = this.formatCurrency(tarea.area || 0);
+      const costo = this.formatCurrency(tarea.costo || 0);
+      const total = this.formatCurrency(tarea.totalCost || 0);
+      const unitario = this.hideCostPerM2 ? '' : ` | Unitario: $${costo}`;
+      return `${index + 1}. ${tarea.tarea}${descripcion}\n   Cantidad: ${area}${unitario} | Total: $${total}`;
+    });
+
+    return [
+      empresa,
+      this.presupuestoNombre ? `Presupuesto: ${this.presupuestoNombre}` : 'Presupuesto',
+      `Cliente: ${cliente}`,
+      ...(fecha ? [`Fecha: ${fecha}`] : []),
+      '',
+      'DETALLE',
+      ...(lineasTareas.length ? lineasTareas : ['Sin tareas cargadas']),
+      '',
+      `TOTAL: $${this.formatCurrency(this.calcularCostoTotal())}`
+    ].join('\n');
+  }
+
+  async copiarPresupuestoSoloTexto(): Promise<void> {
+    const texto = this.textoPresupuestoEditable.trim();
+    if (!texto) {
+      this.appToast.warning('No hay texto para copiar.');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(texto);
+      this.appToast.success('Texto copiado al portapapeles.');
+    } catch {
+      this.appToast.error('No se pudo copiar el texto automáticamente.');
+    }
+  }
+
+  abrirWhatsAppConPresupuesto(): void {
+    const texto = this.textoPresupuestoEditable.trim();
+    if (!texto) {
+      this.appToast.warning('Escribí un texto antes de abrir WhatsApp.');
+      return;
+    }
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }
 
   // ============ COLOR SCHEME ============

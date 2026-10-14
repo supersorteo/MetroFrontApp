@@ -39,8 +39,44 @@
         <button type="button" class="dl-btn dl-btn--html" (click)="descargarHTML(); showDownloadModal = false">
           <i class="fas fa-code"></i> HTML
         </button>
+        <button type="button" class="dl-btn dl-btn--text" (click)="abrirPresupuestoSoloTexto()">
+          <i class="fas fa-comment-alt"></i> Solo texto
+        </button>
         <button type="button" class="dl-btn dl-btn--cancel" (click)="showDownloadModal = false">
           <i class="fas fa-times"></i> Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL DE PRESUPUESTO SOLO TEXTO ============ -->
+  <div class="text-budget-overlay no-print" [class.is-open]="showTextBudgetModal" (click)="cerrarPresupuestoSoloTexto()">
+    <div class="text-budget-card" (click)="$event.stopPropagation()">
+      <div class="text-budget-card__header">
+        <div class="text-budget-card__header-icon"><i class="fas fa-align-left"></i></div>
+        <div>
+          <h5 class="text-budget-card__title">Presupuesto para WhatsApp</h5>
+          <p class="text-budget-card__sub">Podés editar el texto antes de copiarlo o enviarlo.</p>
+        </div>
+        <button type="button" class="text-budget-card__close" (click)="cerrarPresupuestoSoloTexto()" aria-label="Cerrar">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="text-budget-card__body">
+        <textarea
+          class="text-budget-card__textarea"
+          [(ngModel)]="textoPresupuestoEditable"
+          aria-label="Texto del presupuesto"
+          spellcheck="false"></textarea>
+      </div>
+
+      <div class="text-budget-card__footer">
+        <button type="button" class="text-budget-btn text-budget-btn--copy" (click)="copiarPresupuestoSoloTexto()">
+          <i class="fas fa-copy"></i> Copiar
+        </button>
+        <button type="button" class="text-budget-btn text-budget-btn--whatsapp" (click)="abrirWhatsAppConPresupuesto()">
+          <i class="fab fa-whatsapp"></i> Abrir WhatsApp
         </button>
       </div>
     </div>
@@ -133,22 +169,18 @@
               <h2 class="company-card__name" [style.color]="colorScheme.primaryColor">
                 {{ empresaSeleccionada?.name || 'Sin empresa' }}
               </h2>
-              <div class="company-card__meta">
-                <span *ngIf="empresaSeleccionada?.cuilCuit" class="meta-chip">
-                  <i class="fas fa-id-card"></i> {{ empresaSeleccionada?.cuilCuit }}
-                </span>
-                <span *ngIf="empresaSeleccionada?.website" class="meta-chip">
-                  <i class="fas fa-globe"></i> {{ empresaSeleccionada?.website }}
-                </span>
-              </div>
+              <p *ngIf="empresaSeleccionada?.description" class="company-desc">
+                {{ empresaSeleccionada?.description }}
+              </p>
             </div>
           </div>
-          <div class="company-card__details" *ngIf="empresaSeleccionada?.phone || empresaSeleccionada?.email || empresaSeleccionada?.description">
+          <div class="company-card__details" *ngIf="empresaSeleccionada?.phone || empresaSeleccionada?.email || empresaSeleccionada?.cuilCuit">
             <p *ngIf="empresaSeleccionada?.phone"><i class="fas fa-phone-alt detail-icon"></i>{{ empresaSeleccionada?.phone }}</p>
             <p *ngIf="empresaSeleccionada?.email"><i class="fas fa-envelope detail-icon"></i>{{ empresaSeleccionada?.email }}</p>
-            <p *ngIf="empresaSeleccionada?.description" class="company-desc">{{ empresaSeleccionada?.description }}</p>
+            <p *ngIf="empresaSeleccionada?.cuilCuit"><i class="fas fa-id-card detail-icon"></i>CUIT/L {{ empresaSeleccionada?.cuilCuit }}</p>
           </div>
-          <div class="company-card__social" *ngIf="empresaSeleccionada?.tiktok || empresaSeleccionada?.instagram || empresaSeleccionada?.facebook">
+          <div class="company-card__social" *ngIf="empresaSeleccionada?.website || empresaSeleccionada?.tiktok || empresaSeleccionada?.instagram || empresaSeleccionada?.facebook">
+            <span *ngIf="empresaSeleccionada?.website" class="social-pill"><i class="fas fa-globe"></i>{{ empresaSeleccionada?.website }}</span>
             <span *ngIf="empresaSeleccionada?.tiktok" class="social-pill"><i class="bi bi-tiktok"></i>{{ empresaSeleccionada?.tiktok }}</span>
             <span *ngIf="empresaSeleccionada?.instagram" class="social-pill"><i class="bi bi-instagram"></i>{{ empresaSeleccionada?.instagram }}</span>
             <span *ngIf="empresaSeleccionada?.facebook" class="social-pill"><i class="bi bi-facebook"></i>{{ empresaSeleccionada?.facebook }}</span>
@@ -171,7 +203,7 @@
               <i class="fas fa-envelope"></i><span>{{ clienteSeleccionado?.email }}</span>
             </div>
             <div *ngIf="clienteSeleccionado?.clave" class="client-row">
-              <i class="fas fa-id-badge"></i><span>{{ clienteSeleccionado?.clave }}</span>
+              <i class="fas fa-id-badge"></i><span>CUIT/L {{ clienteSeleccionado?.clave }}</span>
             </div>
             <div *ngIf="clienteSeleccionado?.direccion" class="client-row">
               <i class="fas fa-map-marker-alt"></i><span>{{ clienteSeleccionado?.direccion }}</span>

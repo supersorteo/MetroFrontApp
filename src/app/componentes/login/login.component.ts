@@ -595,6 +595,13 @@ openWebsite(): void {
   }
 }
 
+pedirCodigoPorWhatsApp(): void {
+  const phone = '5491128634744';
+  const text = 'Quiero mi código de acceso para la web';
+  const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+}
+
     clearForm(): void {
       this.code = '';
       this.email = '';

@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy, signal, computed, NgZone, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NavigationEnd, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { RagUnificadoService, RagUnificadoResponse } from '../../servicios/rag-unificado.service';
 import { ClienteStore } from '../../stores/cliente.store';
 
@@ -21,6 +23,7 @@ export class RagChatComponent implements OnInit, OnDestroy {
   readonly userCode = (localStorage.getItem('userCode') || '').trim();
 
   visible = signal(localStorage.getItem('archi-visible') !== 'false');
+  dashboardVisible = signal(false);
 
   private readonly SHOW_SEQ = ['a', 'r', 'c', 'h', 'i'];
   private showKeyBuf: string[] = [];
@@ -46,6 +49,7 @@ export class RagChatComponent implements OnInit, OnDestroy {
   );
 
   private previousVersionBubbleTimer: ReturnType<typeof setTimeout> | null = null;
+  private routerSubscription: Subscription | null = null;
 
   panelStyle = computed(() => {
     const { x, y } = this.fabPos();
@@ -95,9 +99,20 @@ export class RagChatComponent implements OnInit, OnDestroy {
 
   private readonly clienteStore = inject(ClienteStore);
 
-  constructor(private ragService: RagUnificadoService, private zone: NgZone) {}
+  constructor(
+    private ragService: RagUnificadoService,
+    private zone: NgZone,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
+    this.updateDashboardVisibility(this.router.url);
+    this.routerSubscription = this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.updateDashboardVisibility(event.urlAfterRedirects);
+      }
+    });
+
     try {
       const saved = localStorage.getItem(this.STORAGE_KEY);
       const pos   = saved ? JSON.parse(saved) : null;
@@ -112,9 +127,22 @@ export class RagChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.routerSubscription?.unsubscribe();
     this.removeDrag();
     if (this.previousVersionBubbleTimer) {
       clearTimeout(this.previousVersionBubbleTimer);
+    }
+  }
+
+  private updateDashboardVisibility(url: string): void {
+    const isDashboard = url.split(/[?#]/, 1)[0] === '/dashboard';
+    this.dashboardVisible.set(isDashboard);
+
+    if (!isDashboard) {
+      this.abierto.set(false);
+      this.showPreviousVersionBubble.set(false);
+    } else if (this.isDemoMode()) {
+      this.schedulePreviousVersionBubble();
     }
   }
 
