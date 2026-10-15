@@ -130,12 +130,16 @@ export class AuthService {
 
   logout(): void {
     const lastCode = localStorage.getItem('userCode');
+    const existingLastLoginCode = localStorage.getItem('lastLoginCode');
     const preserved = this.saveTermsKeys();
     localStorage.clear();
     this.restoreTermsKeys(preserved);
     localStorage.setItem('trialMode', 'false');
     if (lastCode && lastCode !== 'demo') {
       localStorage.setItem('lastLoginCode', lastCode);
+    } else if (existingLastLoginCode) {
+      // logout desde demo mode — preservar el código real previo
+      localStorage.setItem('lastLoginCode', existingLastLoginCode);
     }
   }
 
