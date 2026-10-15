@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { Component, ElementRef, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
 import { AccessCodeService } from '../../servicios/access-code.service';
@@ -38,7 +38,7 @@ interface Country {
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
-export class LoginComponent implements OnInit{
+export class LoginComponent implements OnInit, OnDestroy {
 
   code: string = '';
   email: string = '';
@@ -185,6 +185,26 @@ constructor(private authService: AuthService,
     }
   }
 
+  private originalManifestHref: string | null = null;
+
+  private swapToAdminManifest(): void {
+    const link = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (!link) return;
+    this.originalManifestHref = link.getAttribute('href');
+    link.setAttribute('href', '/manifest.admin.webmanifest');
+  }
+
+  private restoreManifest(): void {
+    const link = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (link && this.originalManifestHref) {
+      link.setAttribute('href', this.originalManifestHref);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.restoreManifest();
+  }
+
   ngOnInit(): void {
     this.loadMembershipCatalog();
     const legacyCode = this.getLegacyAccessCodeFromCookie();
@@ -205,6 +225,7 @@ constructor(private authService: AuthService,
         this.appToast.success('Tu código ya está activado. Ingresa con el código recibido.', 'Pago confirmado');
       }
       if (adminShortcut === '1') {
+        this.swapToAdminManifest();
         if (this.adminService.isLoggedIn()) {
           this.route.navigate(['/admin-generate-code']);
           return;

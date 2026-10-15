@@ -6,7 +6,7 @@
   "background_color": "#0d1b4b",
   "display": "standalone",
   "scope": "/",
-  "start_url": "/admin-generate-code",
+  "start_url": "/?admin=1",
   "icons": [
     {
       "src": "assets/icons/icon-96x96.png",
