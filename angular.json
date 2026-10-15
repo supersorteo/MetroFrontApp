@@ -29,6 +29,7 @@
               "src/favicon.ico",
               "src/assets",
               "src/manifest.webmanifest",
+              "src/manifest.admin.webmanifest",
               {
                 "glob": "ar.svg",
                 "input": "node_modules/flag-icons/flags/4x3",
@@ -154,7 +155,8 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              "src/manifest.admin.webmanifest"
             ],
             "styles": [
               "src/styles.scss"

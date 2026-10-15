@@ -131,6 +131,23 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     private legacyCodeService: LegacyCodeService
   ) {}
 
+  private readonly ADMIN_MANIFEST = '/manifest.admin.webmanifest';
+  private originalManifestHref: string | null = null;
+
+  private swapManifest(href: string): void {
+    const link = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (!link) return;
+    this.originalManifestHref = link.href;
+    link.href = href;
+  }
+
+  private restoreManifest(): void {
+    const link = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (link && this.originalManifestHref) {
+      link.href = this.originalManifestHref;
+    }
+  }
+
   ngOnInit(): void {
     const admin = this.adminService.getCurrentAdmin();
     if (!admin) {
@@ -138,6 +155,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.swapManifest(this.ADMIN_MANIFEST);
     this.admin = admin;
     this.loadCodes();
     this.loadTareas();
@@ -148,6 +166,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.timer) clearInterval(this.timer);
+    this.restoreManifest();
   }
 
   logout(): void {

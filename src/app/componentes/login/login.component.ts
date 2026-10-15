@@ -602,8 +602,10 @@ openWebsite(): void {
 pedirCodigoPorWhatsApp(): void {
   const phone = '5491128634744';
   const text = 'Quiero mi código de acceso para la web';
-  const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-  window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  const nativeUrl  = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
+  const fallbackUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
+  window.location.href = nativeUrl;
+  setTimeout(() => { window.location.href = fallbackUrl; }, 1500);
 }
 
     clearForm(): void {
