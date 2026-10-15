@@ -33,6 +33,7 @@ interface AccessCode {
 })
 export class GenerateCodeComponent implements OnInit, OnDestroy {
   admin!: Admin;
+  readonly isPwa = window.matchMedia('(display-mode: standalone)').matches;
 
   code = '';
   codes: AccessCode[] = [];
