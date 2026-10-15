@@ -226,6 +226,11 @@ constructor(private authService: AuthService,
       }
       if (adminShortcut === '1') {
         this.swapToAdminManifest();
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+          || (window.navigator as any).standalone === true;
+        if (isStandalone) {
+          sessionStorage.setItem('adminPwaSession', '1');
+        }
         if (this.adminService.isLoggedIn()) {
           this.route.navigate(['/admin-generate-code']);
           return;
