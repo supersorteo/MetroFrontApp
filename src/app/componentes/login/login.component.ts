@@ -52,6 +52,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   password: string = '';
   isContentVisible: boolean = false;
   loginStep: 'home' | 'login' | 'join' | 'register' | 'checkout' | 'adminCountry' | 'adminLogin' | 'demoCountry' | 'legacyRegister' | 'reactivate' = 'home';
+  isAdminPwaSession = false;
   legacyData: LegacyCodeDTO | null = null;
   expiredCode: string = '';
   reactivateNewCode: string = '';
@@ -227,6 +228,7 @@ constructor(private authService: AuthService,
       if (adminShortcut === '1') {
         this.swapToAdminManifest();
         sessionStorage.setItem('adminPwaSession', '1');
+        this.isAdminPwaSession = true;
         if (this.adminService.isLoggedIn()) {
           this.route.navigate(['/admin-generate-code']);
           return;
