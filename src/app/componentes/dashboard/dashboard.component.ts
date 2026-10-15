@@ -330,8 +330,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   irAlCheckout(): void {
     if (!this.selectedPlanMeses) return;
-    const demoPais = localStorage.getItem('demoPais') || '';
-    const countryEntry = this.DEMO_COUNTRIES.find(c => c.nombre === demoPais);
+    const pais = this.userData?.pais || localStorage.getItem('demoPais') || '';
+    const countryEntry = this.DEMO_COUNTRIES.find(c => c.nombre.toLowerCase() === pais.toLowerCase());
     const params: Record<string, any> = { step: 'checkout', plan: this.selectedPlanMeses };
     if (countryEntry?.codigo) params['country'] = countryEntry.codigo;
     if (this.userData?.email) params['email'] = this.userData.email;

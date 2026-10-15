@@ -77,6 +77,8 @@ export class LoginComponent implements OnInit{
   purchasePlanMonths: number | null = 3;
   private pendingCountryCode: string | null = null;
   private pendingPlanMonths: number | null = null;
+  private pendingPhone: string | null = null;
+  private pendingProvince: string | null = null;
   purchaseName: string = '';
   purchaseEmail: string = '';
   purchasePhone: string = '';
@@ -228,8 +230,8 @@ constructor(private authService: AuthService,
         const phoneParam = params.get('phone');
         const provinceParam = params.get('province');
         if (emailParam) this.purchaseEmail = emailParam;
-        if (phoneParam) this.purchasePhone = phoneParam;
-        if (provinceParam) this.purchaseProvince = provinceParam;
+        if (phoneParam) { this.purchasePhone = phoneParam; this.pendingPhone = phoneParam; }
+        if (provinceParam) { this.purchaseProvince = provinceParam; this.pendingProvince = provinceParam; }
       }
     });
   }
@@ -648,7 +650,14 @@ pedirCodigoPorWhatsApp(): void {
       if (!this.pendingCountryCode || this.membershipCountries.length === 0) return;
       this.purchaseCountryCode = this.pendingCountryCode;
       this.pendingCountryCode = null;
+      const phone = this.pendingPhone || this.purchasePhone || null;
+      const province = this.pendingProvince || this.purchaseProvince || null;
       this.onPurchaseCountryChange();
+      // onPurchaseCountryChange() limpia phone y province — los restauramos
+      if (phone) this.purchasePhone = phone;
+      if (province) this.purchaseProvince = province;
+      this.pendingPhone = null;
+      this.pendingProvince = null;
       if (this.pendingPlanMonths) {
         this.purchasePlanMonths = this.pendingPlanMonths;
         this.pendingPlanMonths = null;
