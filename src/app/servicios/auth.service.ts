@@ -275,6 +275,16 @@ export class AuthService {
       .pipe(catchError(this.handleError1));
   }
 
+  getActiveSessions(code: string): Observable<{ active: number; limit: number }> {
+    return this.http.get<{ active: number; limit: number }>(`${this.apiUrl}/codes/${code}/sessions`)
+      .pipe(catchError(() => of({ active: 0, limit: 2 })));
+  }
+
+  terminateAllSessions(code: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/codes/${code}/sessions`)
+      .pipe(catchError(this.handleError1));
+  }
+
   disableCode(code: string): Observable<{ code: string; disabled: boolean }> {
     return this.http.patch<{ code: string; disabled: boolean }>(`${this.apiUrl}/codes/${code}/disable`, {}).pipe(catchError(this.handleError1));
   }

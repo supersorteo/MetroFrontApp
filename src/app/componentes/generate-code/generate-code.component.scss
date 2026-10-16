@@ -1769,6 +1769,26 @@
   &:hover { background: rgba(124,58,237,0.1); }
 }
 
+.ra-btn--kick {
+  color: #dc2626;
+  &:hover { background: rgba(220,38,38,0.15); }
+}
+
+.session-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 8px;
+  margin-left: 5px;
+  vertical-align: middle;
+  letter-spacing: 0.2px;
+
+  &--off    { background: rgba(100,116,139,0.12); color: #64748b; }
+  &--partial{ background: rgba(234,179,8,0.15);   color: #b45309; }
+  &--full   { background: rgba(220,38,38,0.12);   color: #dc2626; }
+}
+
 .expiry-modal {
   width: 100%;
   max-width: 440px;

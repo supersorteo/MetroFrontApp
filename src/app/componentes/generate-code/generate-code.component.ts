@@ -115,6 +115,9 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
 
   editingMaxDevicesCode: string | null = null;
   maxDevicesDraft: number = 2;
+
+  activeSessions: Map<string, number> = new Map();
+  sessionLimits: Map<string, number> = new Map();
   readonly today = new Date().toISOString().split('T')[0];
 
   formatDate(dateStr: string | undefined | null): string {
@@ -210,6 +213,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
           });
         this.applyFilter();
         this.computeStats();
+        this.loadActiveSessions();
       },
       error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron cargar los códigos.' })
     });
@@ -1106,12 +1110,52 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
         this.editingMaxDevicesCode = null;
         const item = this.codes.find(c => c.code === code);
         if (item) item.maxDevices = res.maxDevices;
+        this.sessionLimits.set(code, res.maxDevices);
         this.uiDialog.success({ title: 'Límite actualizado', text: `Código ${res.code} — máximo ${res.maxDevices} dispositivo${res.maxDevices === 1 ? '' : 's'}.` });
       },
       error: (err: any) => {
         this.uiDialog.error({ title: 'Error', text: err?.message || 'No se pudo actualizar.' });
       }
     });
+  }
+
+  loadActiveSessions(): void {
+    this.codes.filter(c => c.email).forEach(c => {
+      this.authService.getActiveSessions(c.code).subscribe(r => {
+        this.activeSessions.set(c.code, r.active);
+        this.sessionLimits.set(c.code, r.limit);
+      });
+    });
+  }
+
+  async terminateAllSessions(item: AccessCode): Promise<void> {
+    const active = this.activeSessions.get(item.code) ?? 0;
+    const confirmed = await this.uiDialog.confirm({
+      title: 'Cerrar sesiones',
+      html: `Se cerrarán las <strong>${active}</strong> sesión${active === 1 ? '' : 'es'} activa${active === 1 ? '' : 's'} del código <strong>${item.code}</strong>. Los dispositivos conectados serán desconectados en el próximo ciclo.`,
+      confirmText: 'Sí, cerrar sesiones',
+      cancelText: 'Cancelar',
+      tone: 'warning',
+      icon: 'warning'
+    });
+    if (!confirmed) return;
+    this.authService.terminateAllSessions(item.code).subscribe({
+      next: () => {
+        this.activeSessions.set(item.code, 0);
+        this.uiDialog.success({ title: 'Sesiones cerradas', text: `Todos los dispositivos del código ${item.code} fueron desconectados.` });
+      },
+      error: (err: any) => {
+        this.uiDialog.error({ title: 'Error', text: err?.message || 'No se pudo cerrar las sesiones.' });
+      }
+    });
+  }
+
+  getSessionBadgeClass(code: string): string {
+    const active = this.activeSessions.get(code) ?? 0;
+    const limit = this.sessionLimits.get(code) ?? 2;
+    if (active === 0) return 'session-badge session-badge--off';
+    if (active >= limit) return 'session-badge session-badge--full';
+    return 'session-badge session-badge--partial';
   }
 
   async resetLegacyClaim(lc: LegacyCodeDTO): Promise<void> {
