@@ -22,6 +22,7 @@ interface AccessCode {
   fechaVencimiento?: any;
   remainingTime?: string;
   disabled?: boolean;
+  maxDevices?: number | null;
 }
 
 @Component({
