@@ -18,6 +18,7 @@ export interface AuthResponse {
   provincia: string;
   fechaVencimiento?: string;
   fechaRegistro?: string;
+  sessionToken?: string;
 }
 
 
@@ -63,12 +64,22 @@ export class AuthService {
 }
 
 
-      login(code: string): Observable<AuthResponse> {
-        const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
-        return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { code }, { headers }) .pipe(
-          catchError(this.handleError)
-        );
-       }
+  private getOrCreateDeviceId(): string {
+    let id = localStorage.getItem('deviceId');
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem('deviceId', id);
+    }
+    return id;
+  }
+
+  login(code: string): Observable<AuthResponse> {
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const deviceId = this.getOrCreateDeviceId();
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { code, deviceId }, { headers }).pipe(
+      catchError(this.handleError)
+    );
+  }
 
 
 
@@ -103,13 +114,17 @@ export class AuthService {
     } else {
       if (error.error && error.error.email) {
         errorMessage = error.error.email;
+      } else if (error.status === 409) {
+        errorMessage = error.error?.error ?? 'Máximo 2 dispositivos activos';
       } else if (error.status === 401) {
         errorMessage = 'Código no encontrado o no asignado';
       } else {
         errorMessage = extractApiErrorMessage(error);
       }
     }
-    return throwError(() => new Error(errorMessage));
+    const enriched: any = new Error(errorMessage);
+    enriched.status = error.status;
+    return throwError(() => enriched);
   }
 
 
@@ -131,10 +146,18 @@ export class AuthService {
   logout(): void {
     const lastCode = localStorage.getItem('userCode');
     const existingLastLoginCode = localStorage.getItem('lastLoginCode');
+    const sessionToken = localStorage.getItem('sessionToken');
+    const deviceId = localStorage.getItem('deviceId');
     const preserved = this.saveTermsKeys();
+
+    if (sessionToken) {
+      this.http.delete(`${this.apiUrl}/session/${sessionToken}`).subscribe({ error: () => {} });
+    }
+
     localStorage.clear();
     this.restoreTermsKeys(preserved);
     localStorage.setItem('trialMode', 'false');
+    if (deviceId) localStorage.setItem('deviceId', deviceId);
     if (lastCode && lastCode !== 'demo') {
       localStorage.setItem('lastLoginCode', lastCode);
     } else if (existingLastLoginCode) {
@@ -149,11 +172,19 @@ export class AuthService {
     if (!prevCode || prevCode === newUserCode) return;
 
     const lastLoginCode = localStorage.getItem('lastLoginCode');
+    const deviceId = localStorage.getItem('deviceId');
+    const prevSessionToken = localStorage.getItem('sessionToken');
     const preserved = this.saveTermsKeys();
+
+    if (prevSessionToken) {
+      this.http.delete(`${this.apiUrl}/session/${prevSessionToken}`).subscribe({ error: () => {} });
+    }
+
     localStorage.clear();
     this.restoreTermsKeys(preserved);
     localStorage.setItem('trialMode', 'false');
     if (lastLoginCode) localStorage.setItem('lastLoginCode', lastLoginCode);
+    if (deviceId) localStorage.setItem('deviceId', deviceId);
 
     metroDB.appState.clear().catch(() => {});
   }
@@ -203,7 +234,13 @@ export class AuthService {
 
   getCodesByPais(pais: string): Observable<AccessCode[]> { return this.http.get<AccessCode[]>(`${this.apiUrl}/codes/pais/${pais}`).pipe(catchError(this.handleError1)); }
 
-  getUserCode(code: string): Observable<AccessCode> { return this.http.get<AccessCode>(`${this.apiUrl}/codes/${code}`) .pipe( catchError(this.handleError1) ); }
+  getUserCode(code: string, extraHeaders?: Record<string, string>): Observable<AccessCode> {
+    let headers = new HttpHeaders();
+    if (extraHeaders) {
+      Object.entries(extraHeaders).forEach(([k, v]) => { headers = headers.set(k, v); });
+    }
+    return this.http.get<AccessCode>(`${this.apiUrl}/codes/${code}`, { headers }).pipe(catchError(this.handleError1));
+  }
 
   addCode(accessCode: AccessCode): Observable<AccessCode> { return this.http.post<AccessCode>(`${this.apiUrl}/codes`, accessCode); }
 

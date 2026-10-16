@@ -281,6 +281,7 @@ login(): void {
         this.authService.clearStaleSessionIfNeeded(this.code);
         localStorage.setItem('userCode', this.code);
         localStorage.setItem('userEmail', this.email);
+        if (response.sessionToken) localStorage.setItem('sessionToken', response.sessionToken);
         const userData: any = { ...response };
         localStorage.setItem('userData', JSON.stringify(userData));
         this.route.navigate(['dashboard']);
@@ -308,6 +309,10 @@ login(): void {
         }
       }
 
+      if ((error as any).status === 409) {
+        this.uiDialog.warning({ title: 'Límite de dispositivos', text: error.message ?? 'Máximo 2 dispositivos activos. Cerrá sesión en otro dispositivo para continuar.' });
+        return;
+      }
       const serverMsg: string = error.error?.email || error.message || '';
       if (serverMsg === 'Código no encontrado') {
         this.legacyCodeService.checkCode(this.code).subscribe(legacy => {

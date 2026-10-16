@@ -46,7 +46,9 @@ export class AppComponent implements OnInit {
       filter(() => this.authService.isLoggedIn()),
       switchMap(() => {
         const code = localStorage.getItem('userCode')!;
-        return this.authService.getUserCode(code).pipe(catchError(() => of(null)));
+        const sessionToken = localStorage.getItem('sessionToken');
+        const headers = sessionToken ? { 'X-Session-Token': sessionToken } : undefined;
+        return this.authService.getUserCode(code, headers).pipe(catchError(() => of(null)));
       }),
       filter(ac => !!ac && ac.disabled === true)
     ).subscribe(() => {
