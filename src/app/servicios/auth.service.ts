@@ -35,6 +35,7 @@ export interface AccessCode {
   disabled?: boolean;
   selectedEmpresaId?: number | null;
   selectedClienteId?: number | null;
+  maxDevices?: number | null;
 }
 
 export interface UserDataSummary {
@@ -267,6 +268,11 @@ export class AuthService {
 
   deleteUserData(code: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/codes/${code}/full`).pipe(catchError(this.handleError1));
+  }
+
+  updateMaxDevices(code: string, maxDevices: number | null): Observable<{ code: string; maxDevices: number }> {
+    return this.http.patch<{ code: string; maxDevices: number }>(`${this.apiUrl}/codes/${code}/max-devices`, { maxDevices })
+      .pipe(catchError(this.handleError1));
   }
 
   disableCode(code: string): Observable<{ code: string; disabled: boolean }> {

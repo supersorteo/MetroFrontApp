@@ -111,6 +111,9 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   editingExpiryCode: string | null = null;
   expiryEditRegistro = '';
   expiryEditVencimiento = '';
+
+  editingMaxDevicesCode: string | null = null;
+  maxDevicesDraft: number = 2;
   readonly today = new Date().toISOString().split('T')[0];
 
   formatDate(dateStr: string | undefined | null): string {
@@ -1078,6 +1081,31 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
         this.editingExpiryCode = null;
         this.loadCodes();
         this.uiDialog.success({ title: 'Fechas actualizadas', text: `Código ${res.code} — vence el ${this.formatDate(res.fechaVencimiento)}.` });
+      },
+      error: (err: any) => {
+        this.uiDialog.error({ title: 'Error', text: err?.message || 'No se pudo actualizar.' });
+      }
+    });
+  }
+
+  openMaxDevicesEdit(item: AccessCode): void {
+    this.editingMaxDevicesCode = item.code;
+    this.maxDevicesDraft = item.maxDevices ?? 2;
+  }
+
+  closeMaxDevicesEdit(): void {
+    this.editingMaxDevicesCode = null;
+  }
+
+  applyMaxDevices(): void {
+    const code = this.editingMaxDevicesCode;
+    if (!code) return;
+    this.authService.updateMaxDevices(code, this.maxDevicesDraft).subscribe({
+      next: (res) => {
+        this.editingMaxDevicesCode = null;
+        const item = this.codes.find(c => c.code === code);
+        if (item) item.maxDevices = res.maxDevices;
+        this.uiDialog.success({ title: 'Límite actualizado', text: `Código ${res.code} — máximo ${res.maxDevices} dispositivo${res.maxDevices === 1 ? '' : 's'}.` });
       },
       error: (err: any) => {
         this.uiDialog.error({ title: 'Error', text: err?.message || 'No se pudo actualizar.' });

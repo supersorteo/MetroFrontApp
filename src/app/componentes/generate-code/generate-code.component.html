@@ -295,6 +295,12 @@
                       <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
                     </svg>
                   </button>
+                  <button *ngIf="item.email" class="ra-btn ra-btn--devices" title="Editar límite de dispositivos"
+                          (click)="openMaxDevicesEdit(item)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M4 0a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h1v1H2.5A1.5 1.5 0 0 0 1 7.5v1A1.5 1.5 0 0 0 2.5 10H4v1H2a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h5a2 2 0 0 0 2-2v-1h1.5A1.5 1.5 0 0 0 12 11.5v-1A1.5 1.5 0 0 0 10.5 9H9V8h1.5A1.5 1.5 0 0 0 12 6.5v-1A1.5 1.5 0 0 0 10.5 4H9V3a2 2 0 0 0 2-2V0H4zm1 3V0h5v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm-1 5V5h5v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zm0 5v-3h5v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/>
+                    </svg>
+                  </button>
                   <button class="ra-btn" [class.ra-btn--disable]="!item.disabled" [class.ra-btn--enable]="item.disabled"
                     [title]="item.disabled ? 'Activar código' : 'Desactivar código'"
                     (click)="toggleDisableCode(item)">
@@ -1003,6 +1009,49 @@
       <div class="expiry-modal__footer">
         <button class="ea-btn ea-btn--cancel" type="button" (click)="closeExpiryEdit()">Cancelar</button>
         <button class="ea-btn expiry-modal__save-btn" type="button" (click)="applyExpiry()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+          </svg>
+          Aplicar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: editar límite de dispositivos -->
+  <div class="admin-overlay" *ngIf="editingMaxDevicesCode" (click)="closeMaxDevicesEdit()">
+    <div class="expiry-modal" (click)="$event.stopPropagation()">
+
+      <div class="expiry-modal__header">
+        <div class="at-modal__header-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4 0a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h1v1H2.5A1.5 1.5 0 0 0 1 7.5v1A1.5 1.5 0 0 0 2.5 10H4v1H2a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h5a2 2 0 0 0 2-2v-1h1.5A1.5 1.5 0 0 0 12 11.5v-1A1.5 1.5 0 0 0 10.5 9H9V8h1.5A1.5 1.5 0 0 0 12 6.5v-1A1.5 1.5 0 0 0 10.5 4H9V3a2 2 0 0 0 2-2V0H4z"/>
+          </svg>
+        </div>
+        <div class="at-modal__header-text">
+          <h3 class="at-modal__title">Límite de dispositivos</h3>
+          <span class="at-modal__subtitle">Código: {{ editingMaxDevicesCode }}</span>
+        </div>
+        <button class="at-modal__close" type="button" (click)="closeMaxDevicesEdit()">&#x00D7;</button>
+      </div>
+
+      <div class="expiry-modal__body">
+        <div class="expiry-modal__field">
+          <label class="expiry-modal__label">Máximo de dispositivos simultáneos</label>
+          <select class="gen-input expiry-modal__input" [(ngModel)]="maxDevicesDraft">
+            <option [value]="1">1 dispositivo</option>
+            <option [value]="2">2 dispositivos (default)</option>
+            <option [value]="3">3 dispositivos</option>
+            <option [value]="4">4 dispositivos</option>
+            <option [value]="5">5 dispositivos</option>
+          </select>
+          <span class="expiry-modal__hint">Controla cuántos dispositivos pueden usar este código al mismo tiempo. El default global es 2.</span>
+        </div>
+      </div>
+
+      <div class="expiry-modal__footer">
+        <button class="ea-btn ea-btn--cancel" type="button" (click)="closeMaxDevicesEdit()">Cancelar</button>
+        <button class="ea-btn expiry-modal__save-btn" type="button" (click)="applyMaxDevices()">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
             <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
           </svg>
