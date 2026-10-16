@@ -128,6 +128,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   }
 
   private timer: any;
+  private sessionPollInterval: any;
 
   constructor(
     private authService: AuthService,
@@ -170,10 +171,12 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     this.loadMembershipLimits();
     if (admin.pais === 'argentina') this.loadLegacyCodes();
     this.timer = setInterval(() => this.updateRemainingTimes(), 1000);
+    this.sessionPollInterval = setInterval(() => this.loadActiveSessions(), 30000);
   }
 
   ngOnDestroy(): void {
     if (this.timer) clearInterval(this.timer);
+    if (this.sessionPollInterval) clearInterval(this.sessionPollInterval);
     this.restoreManifest();
   }
 
