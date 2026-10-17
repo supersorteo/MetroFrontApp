@@ -17,8 +17,19 @@ export interface SavedPresupuesto {
   tareas: UserTarea[];
 }
 
+export interface PresupuestoListItem {
+  id: number;
+  name: string;
+  createdAt: string;
+  clienteId: number;
+  clienteName: string;
+  empresaId?: number | null;
+  empresaName?: string | null;
+  tareasCount: number;
+}
+
 interface PresupuestosPage {
-  content: SavedPresupuesto[];
+  content: PresupuestoListItem[];
   totalElements: number;
   totalPages: number;
   number: number;
@@ -28,6 +39,7 @@ interface PresupuestosPage {
 export class BudgetService {
   private apiUrl = `${APP_API_URL}/presupuestos`;
   private presupuestosSubject = new BehaviorSubject<SavedPresupuesto[]>([]);
+  private presupuestosPageSubject = new BehaviorSubject<PresupuestoListItem[]>([]);
   private totalPagesSubject = new BehaviorSubject<number>(1);
   private currentPageSubject = new BehaviorSubject<number>(0);
 
@@ -35,6 +47,7 @@ export class BudgetService {
   currentPage$ = this.currentPageSubject.asObservable();
 
   presupuestos$ = this.presupuestosSubject.asObservable();
+  presupuestosPage$ = this.presupuestosPageSubject.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -48,37 +61,42 @@ export class BudgetService {
 
   limpiarPresupuestos(): void {
     this.setBudgets([]);
+    this.presupuestosPageSubject.next([]);
   }
 
-  cargarPresupuestosPorUserCode(userCode: string): Observable<SavedPresupuesto[]> {
-    this.setBudgets([]);
+  cargarPresupuestosPorUserCode(userCode: string): Observable<PresupuestoListItem[]> {
+    this.presupuestosPageSubject.next([]);
     this.currentPageSubject.next(0);
     if (!userCode || localStorage.getItem('trialMode') === 'true') return of([]);
     if (!navigator.onLine) return of([]);
     return this.http.get<PresupuestosPage>(`${this.apiUrl}/user/${userCode}?page=0&size=20`).pipe(
       tap(r => {
-        this.setBudgets(r.content ?? []);
+        this.presupuestosPageSubject.next(r.content ?? []);
         this.totalPagesSubject.next(r.totalPages ?? 1);
         this.currentPageSubject.next(0);
       }),
       map(r => r.content ?? []),
-      catchError(() => { this.setBudgets([]); return of([]); })
+      catchError(() => { this.presupuestosPageSubject.next([]); return of([]); })
     );
   }
 
-  cargarMasPresupuestos(userCode: string): Observable<SavedPresupuesto[]> {
+  cargarMasPresupuestos(userCode: string): Observable<PresupuestoListItem[]> {
     const nextPage = this.currentPageSubject.value + 1;
     if (!userCode || !navigator.onLine) return of([]);
     return this.http.get<PresupuestosPage>(`${this.apiUrl}/user/${userCode}?page=${nextPage}&size=20`).pipe(
       tap(r => {
-        const actual = this.presupuestosSubject.value;
-        this.setBudgets([...actual, ...(r.content ?? [])]);
+        const actual = this.presupuestosPageSubject.value;
+        this.presupuestosPageSubject.next([...actual, ...(r.content ?? [])]);
         this.totalPagesSubject.next(r.totalPages ?? 1);
         this.currentPageSubject.next(nextPage);
       }),
       map(r => r.content ?? []),
       catchError(() => of([]))
     );
+  }
+
+  getPresupuestoById(id: number): Observable<SavedPresupuesto> {
+    return this.http.get<SavedPresupuesto>(`${this.apiUrl}/${id}`);
   }
 
   get hayMasPaginas(): boolean {

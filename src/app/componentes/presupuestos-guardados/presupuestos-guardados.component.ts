@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Cliente } from '../../servicios/cliente.service';
 import { Empresa } from '../../servicios/empresa.service';
-import { BudgetService, SavedPresupuesto } from '../../servicios/budget.service';
+import { BudgetService, PresupuestoListItem, SavedPresupuesto } from '../../servicios/budget.service';
 import { UserTarea } from '../../servicios/user-tarea.service';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
 import { AppToastService } from '../../servicios/app-toast.service';
@@ -43,7 +43,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
 
   nombreTemporal = '';
   filtro = '';
-  presupuestos: SavedPresupuesto[] = [];
+  presupuestos: PresupuestoListItem[] = [];
   cargandoMas = false;
   presupuestoEditando: SavedPresupuesto | null = null;
   tareaAAgregarId: number | null = null;
@@ -66,7 +66,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   ) {}
 
   ngOnInit(): void {
-    this.budgetService.presupuestos$.subscribe(presupuestos => {
+    this.budgetService.presupuestosPage$.subscribe(presupuestos => {
       this.presupuestos = presupuestos;
     });
     this.cargarPresupuestos();
@@ -174,14 +174,19 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     });
   }
 
-  cargar(presupuesto: SavedPresupuesto): void {
+  cargar(presupuesto: PresupuestoListItem): void {
     if (this.shouldSkipBudgetAction('load', presupuesto.id)) return;
     this.presupuestoHabilitadoParaActualizarId = presupuesto.id;
-    this.cargarPresupuesto.emit(presupuesto);
-    this.uiDialog.success({ title: 'Listo', text: `Presupuesto "${presupuesto.name}" cargado correctamente.` });
+    this.budgetService.getPresupuestoById(presupuesto.id).subscribe({
+      next: (full) => {
+        this.cargarPresupuesto.emit(full);
+        this.uiDialog.success({ title: 'Listo', text: `Presupuesto "${presupuesto.name}" cargado correctamente.` });
+      },
+      error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudo cargar el presupuesto.' })
+    });
   }
 
-  async eliminar(presupuesto: SavedPresupuesto): Promise<void> {
+  async eliminar(presupuesto: PresupuestoListItem): Promise<void> {
     if (!presupuesto.id) return;
     const confirmed = await this.uiDialog.confirmDelete(
       presupuesto.name,
@@ -189,26 +194,31 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     );
     if (!confirmed) return;
     this.budgetService.eliminarPresupuesto(presupuesto.id).subscribe({
-      next: () => { this.notifyBudgetDeleted(presupuesto); this.presupuestoEliminado.emit(presupuesto); },
+      next: () => { this.notifyBudgetDeleted(presupuesto); this.presupuestoEliminado.emit(presupuesto as unknown as SavedPresupuesto); },
       error: () => this.uiDialog.error({ title: 'Error al eliminar', text: 'No se pudo eliminar el presupuesto.' })
     });
   }
 
-  editarPresupuesto(presupuesto: SavedPresupuesto): void {
+  editarPresupuesto(presupuesto: PresupuestoListItem): void {
     if (!this.esPresupuestoCargado(presupuesto)) {
       this.uiDialog.info({ title: 'Cargar presupuesto', text: 'Debe cargar este presupuesto antes de poder editarlo.' });
       return;
     }
-    this.presupuestoEditando = {
-      ...presupuesto,
-      cliente: {
-        ...presupuesto.cliente,
-        name: presupuesto.cliente?.name || this.clienteActual?.name || ''
+    this.budgetService.getPresupuestoById(presupuesto.id).subscribe({
+      next: (full) => {
+        this.presupuestoEditando = {
+          ...full,
+          cliente: {
+            ...full.cliente,
+            name: full.cliente?.name || this.clienteActual?.name || ''
+          },
+          tareas: full.tareas ? [...full.tareas] : []
+        };
+        this.tareaAAgregarId = null;
+        this.showEditModal = true;
       },
-      tareas: presupuesto.tareas ? [...presupuesto.tareas] : []
-    };
-    this.tareaAAgregarId = null;
-    this.showEditModal = true;
+      error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudo cargar el presupuesto.' })
+    });
   }
 
   cancelarEdicion(): void {
@@ -330,12 +340,12 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
 
   get limiteAlcanzado(): boolean { return this.totalGuardados >= this.maxItems; }
 
-  get presupuestosFiltrados(): SavedPresupuesto[] {
+  get presupuestosFiltrados(): PresupuestoListItem[] {
     if (!this.filtro?.trim()) return this.presupuestos;
     const termino = this.filtro.toLowerCase();
     return this.presupuestos.filter(p =>
       p.name.toLowerCase().includes(termino) ||
-      p.cliente?.name?.toLowerCase().includes(termino)
+      p.clienteName?.toLowerCase().includes(termino)
     );
   }
 
@@ -343,7 +353,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     if (!nombre.trim()) return false;
     const nombreLower = nombre.trim().toLowerCase();
     if (this.presupuestoCargado && this.presupuestoCargado.name?.toLowerCase() === nombreLower) return false;
-    return this.presupuestosFiltrados.some(p => p.name.toLowerCase() === nombreLower);
+    return this.presupuestos.some(p => p.name.toLowerCase() === nombreLower);
   }
 
   getMensajeBotonDeshabilitado(): string {
@@ -356,37 +366,47 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     return 'Guardar presupuesto';
   }
 
-  esPendienteDeSync(presupuesto: SavedPresupuesto | null | undefined): boolean { return Number(presupuesto?.id) < 0; }
+  esPendienteDeSync(presupuesto: { id?: number | null } | null | undefined): boolean { return Number(presupuesto?.id) < 0; }
 
-  esPresupuestoCargado(presupuesto: SavedPresupuesto | null | undefined): boolean {
+  esPresupuestoCargado(presupuesto: { id?: number | null } | null | undefined): boolean {
     return Number(presupuesto?.id) > 0 && Number(this.presupuestoCargado?.id) === Number(presupuesto?.id);
   }
 
   // ── PDF ────────────────────────────────────────────────────
 
-  async descargarPDF(presupuesto: SavedPresupuesto): Promise<void> {
-    const printable = this.buildPrintableDocument(presupuesto);
-    document.body.appendChild(printable);
-    try {
-      await html2pdf()
-        .set({ margin: 10, filename: `${presupuesto.name}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } })
-        .from(printable).save();
-    } catch (error) {
-      console.error('Error al generar PDF', error);
-      this.appToast.error('No se pudo descargar el PDF');
-    } finally {
-      document.body.removeChild(printable);
-    }
+  async descargarPDF(presupuesto: PresupuestoListItem): Promise<void> {
+    this.budgetService.getPresupuestoById(presupuesto.id).subscribe({
+      next: async (full) => {
+        const printable = this.buildPrintableDocument(full);
+        document.body.appendChild(printable);
+        try {
+          await html2pdf()
+            .set({ margin: 10, filename: `${full.name}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } })
+            .from(printable).save();
+        } catch (error) {
+          console.error('Error al generar PDF', error);
+          this.appToast.error('No se pudo descargar el PDF');
+        } finally {
+          document.body.removeChild(printable);
+        }
+      },
+      error: () => this.appToast.error('No se pudo descargar el PDF')
+    });
   }
 
-  async verPresupuesto(presupuesto: SavedPresupuesto): Promise<void> {
-    const preview = { presupuesto, empresa: presupuesto.empresa || this.empresaActual, cliente: presupuesto.cliente, tareas: presupuesto.tareas, name: presupuesto.name, budgetDate: presupuesto.createdAt };
-    await this.localStore.setState('budget:active-preview', preview);
-    localStorage.setItem('selectedEmpresa', JSON.stringify(preview.empresa));
-    localStorage.setItem('selectedCliente', JSON.stringify(preview.cliente));
-    localStorage.setItem('selectedTareas', JSON.stringify(preview.tareas));
-    localStorage.setItem('selectedPresupuestoName', preview.name);
-    this.router.navigate(['/presupuesto']);
+  async verPresupuesto(presupuesto: PresupuestoListItem): Promise<void> {
+    this.budgetService.getPresupuestoById(presupuesto.id).subscribe({
+      next: async (full) => {
+        const preview = { presupuesto: full, empresa: full.empresa || this.empresaActual, cliente: full.cliente, tareas: full.tareas, name: full.name, budgetDate: full.createdAt };
+        await this.localStore.setState('budget:active-preview', preview);
+        localStorage.setItem('selectedEmpresa', JSON.stringify(preview.empresa));
+        localStorage.setItem('selectedCliente', JSON.stringify(preview.cliente));
+        localStorage.setItem('selectedTareas', JSON.stringify(preview.tareas));
+        localStorage.setItem('selectedPresupuestoName', preview.name);
+        this.router.navigate(['/presupuesto']);
+      },
+      error: () => this.appToast.error('No se pudo cargar el presupuesto.')
+    });
   }
 
   // ── Private helpers ────────────────────────────────────────
@@ -400,7 +420,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     this.uiDialog.success({ title: 'Listo', text: `Presupuesto ${action} correctamente.` });
   }
 
-  private notifyBudgetDeleted(presupuesto: SavedPresupuesto): void {
+  private notifyBudgetDeleted(presupuesto: { id?: number | null }): void {
     if (this.esPendienteDeSync(presupuesto) || this.isOffline) {
       this.showBudgetInfo('Presupuesto eliminado localmente. El cambio se sincronizará cuando vuelva la conexión.', 'Eliminado offline');
       return;
