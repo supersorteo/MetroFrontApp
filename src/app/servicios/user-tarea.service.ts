@@ -42,6 +42,8 @@ export class UserTareaService {
       tap(tareas => {
         void this.cacheUserTareas(this.userCacheKey(userCode), tareas).catch(() => {});
         tareas.forEach(tarea => void this.localStore.upsertUserTarea({ ...tarea, userCode }).catch(() => {}));
+        const serverIds = tareas.map(t => Number(t.id)).filter(id => id > 0);
+        void this.localStore.reconcileUserTareasWithServer(userCode, serverIds).catch(() => {});
       }),
       catchError(() =>
         from(this.offlineSync.getCachedUserTareas(this.userCacheKey(userCode))).pipe(
