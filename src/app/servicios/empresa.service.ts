@@ -113,14 +113,15 @@ export class EmpresaService {
   }
 
   deleteEmpresa(id: number): Observable<void> {
+    const userCode = localStorage.getItem('userCode') ?? '';
     if (!navigator.onLine) {
-      return this.queueDelete(id);
+      return this.queueDelete(id, userCode);
     }
-    return this.http.delete<void>(`${this.apiUrl}/id/${id}`).pipe(
+    return this.http.delete<void>(`${this.apiUrl}/id/${id}?userCode=${encodeURIComponent(userCode)}`).pipe(
       tap(() => void this.localStore.markEmpresaDeleteSynced(id).catch(() => {})),
       catchError(error =>
         this.isOfflineLikeError(error)
-          ? this.queueDelete(id)
+          ? this.queueDelete(id, userCode)
           : this.handleError(error)
       )
     );
@@ -183,11 +184,11 @@ export class EmpresaService {
     ).pipe(map(() => localEmpresa));
   }
 
-  private queueDelete(id: number): Observable<void> {
+  private queueDelete(id: number, userCode: string): Observable<void> {
     return from(
       Promise.all([
         this.localStore.markEmpresaDeleted(id, 'pending'),
-        this.offlineSync.addToQueue('empresa', 'delete', { id }, `${this.apiUrl}/id/${id}`, 'DELETE')
+        this.offlineSync.addToQueue('empresa', 'delete', { id }, `${this.apiUrl}/id/${id}?userCode=${encodeURIComponent(userCode)}`, 'DELETE')
       ])
     ).pipe(map(() => void 0));
   }

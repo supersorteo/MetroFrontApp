@@ -17,10 +17,22 @@ export interface SavedPresupuesto {
   tareas: UserTarea[];
 }
 
+interface PresupuestosPage {
+  content: SavedPresupuesto[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class BudgetService {
   private apiUrl = `${APP_API_URL}/presupuestos`;
   private presupuestosSubject = new BehaviorSubject<SavedPresupuesto[]>([]);
+  private totalPagesSubject = new BehaviorSubject<number>(1);
+  private currentPageSubject = new BehaviorSubject<number>(0);
+
+  totalPages$ = this.totalPagesSubject.asObservable();
+  currentPage$ = this.currentPageSubject.asObservable();
 
   presupuestos$ = this.presupuestosSubject.asObservable();
 
@@ -40,12 +52,37 @@ export class BudgetService {
 
   cargarPresupuestosPorUserCode(userCode: string): Observable<SavedPresupuesto[]> {
     this.setBudgets([]);
+    this.currentPageSubject.next(0);
     if (!userCode || localStorage.getItem('trialMode') === 'true') return of([]);
     if (!navigator.onLine) return of([]);
-    return this.http.get<SavedPresupuesto[]>(`${this.apiUrl}/user/${userCode}`).pipe(
-      tap(presupuestos => this.setBudgets(presupuestos ?? [])),
+    return this.http.get<PresupuestosPage>(`${this.apiUrl}/user/${userCode}?page=0&size=20`).pipe(
+      tap(r => {
+        this.setBudgets(r.content ?? []);
+        this.totalPagesSubject.next(r.totalPages ?? 1);
+        this.currentPageSubject.next(0);
+      }),
+      map(r => r.content ?? []),
       catchError(() => { this.setBudgets([]); return of([]); })
     );
+  }
+
+  cargarMasPresupuestos(userCode: string): Observable<SavedPresupuesto[]> {
+    const nextPage = this.currentPageSubject.value + 1;
+    if (!userCode || !navigator.onLine) return of([]);
+    return this.http.get<PresupuestosPage>(`${this.apiUrl}/user/${userCode}?page=${nextPage}&size=20`).pipe(
+      tap(r => {
+        const actual = this.presupuestosSubject.value;
+        this.setBudgets([...actual, ...(r.content ?? [])]);
+        this.totalPagesSubject.next(r.totalPages ?? 1);
+        this.currentPageSubject.next(nextPage);
+      }),
+      map(r => r.content ?? []),
+      catchError(() => of([]))
+    );
+  }
+
+  get hayMasPaginas(): boolean {
+    return this.currentPageSubject.value + 1 < this.totalPagesSubject.value;
   }
 
   cargarPresupuestosPorCliente(clienteId: number): Observable<SavedPresupuesto[]> {
@@ -156,7 +193,8 @@ export class BudgetService {
       return this.deleteBudgetOffline(id, clienteId);
     }
 
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+    const userCode = localStorage.getItem('userCode') ?? '';
+    return this.http.delete<void>(`${this.apiUrl}/${id}?userCode=${encodeURIComponent(userCode)}`).pipe(
       tap(() => {
         const actualizados = this.presupuestosSubject.value.filter(p => p.id !== id);
         this.setBudgets(actualizados);
@@ -279,6 +317,7 @@ export class BudgetService {
 
   private deleteBudgetOffline(id: number, clienteId: number): Observable<void> {
     const actualizados = this.presupuestosSubject.value.filter(item => item.id !== id);
+    const userCode = localStorage.getItem('userCode') ?? '';
 
     const pendingOperation = id < 0
       ? Promise.all([
@@ -287,7 +326,7 @@ export class BudgetService {
         ])
       : Promise.all([
           this.localStore.markPresupuestoDeleted(id, 'pending'),
-          this.offlineSync.addToQueue('presupuesto', 'delete', { id }, `${this.apiUrl}/${id}`, 'DELETE')
+          this.offlineSync.addToQueue('presupuesto', 'delete', { id }, `${this.apiUrl}/${id}?userCode=${encodeURIComponent(userCode)}`, 'DELETE')
         ]);
 
     return from(pendingOperation).pipe(

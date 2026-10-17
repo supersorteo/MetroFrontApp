@@ -106,14 +106,15 @@ export class ClienteService {
   }
 
   deleteCliente(id: number): Observable<void> {
+    const userCode = localStorage.getItem('userCode') ?? '';
     if (!navigator.onLine) {
-      return this.queueDelete(id);
+      return this.queueDelete(id, userCode);
     }
-    return this.http.delete<void>(`${this.apiUrl}/id/${id}`).pipe(
+    return this.http.delete<void>(`${this.apiUrl}/id/${id}?userCode=${encodeURIComponent(userCode)}`).pipe(
       tap(() => void this.localStore.markClienteDeleteSynced(id).catch(() => {})),
       catchError(error =>
         this.isOfflineLikeError(error)
-          ? this.queueDelete(id)
+          ? this.queueDelete(id, userCode)
           : this.handleError(error)
       )
     );
@@ -150,11 +151,11 @@ export class ClienteService {
     ).pipe(map(() => localCliente));
   }
 
-  private queueDelete(id: number): Observable<void> {
+  private queueDelete(id: number, userCode: string): Observable<void> {
     return from(
       Promise.all([
         this.localStore.markClienteDeleted(id, 'pending'),
-        this.offlineSync.addToQueue('cliente', 'delete', { id }, `${this.apiUrl}/id/${id}`, 'DELETE')
+        this.offlineSync.addToQueue('cliente', 'delete', { id }, `${this.apiUrl}/id/${id}?userCode=${encodeURIComponent(userCode)}`, 'DELETE')
       ])
     ).pipe(map(() => void 0));
   }

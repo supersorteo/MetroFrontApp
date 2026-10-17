@@ -303,6 +303,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
         localStorage.setItem('userCode', ac.code);
         localStorage.setItem('userEmail', ac.email);
+        if (ac.sessionToken) localStorage.setItem('sessionToken', ac.sessionToken);
         const userData = {
           email: ac.email,
           pais: ac.pais,
@@ -323,6 +324,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       },
       error: (err) => {
         this.dashReactivateLoading = false;
+        console.error('[REACTIVAR] Error completo:', err);
+        console.error('[REACTIVAR] Body:', err?.error);
         this.dashReactivateError = err?.error?.email || err?.error?.message || 'Error al reactivar. Verificá el código ingresado.';
       }
     });

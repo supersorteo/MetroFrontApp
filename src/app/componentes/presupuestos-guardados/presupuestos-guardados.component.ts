@@ -44,6 +44,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   nombreTemporal = '';
   filtro = '';
   presupuestos: SavedPresupuesto[] = [];
+  cargandoMas = false;
   presupuestoEditando: SavedPresupuesto | null = null;
   tareaAAgregarId: number | null = null;
   presupuestoHabilitadoParaActualizarId: number | null = null;
@@ -92,6 +93,19 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     } else {
       this.budgetService.limpiarPresupuestos();
     }
+  }
+
+  get hayMasPaginas(): boolean {
+    return this.budgetService.hayMasPaginas;
+  }
+
+  cargarMas(): void {
+    if (this.cargandoMas || !this.userCode) return;
+    this.cargandoMas = true;
+    this.budgetService.cargarMasPresupuestos(this.userCode).subscribe({
+      complete: () => { this.cargandoMas = false; },
+      error: () => { this.cargandoMas = false; }
+    });
   }
 
   guardarPresupuestoActual(): void {

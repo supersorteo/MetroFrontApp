@@ -36,6 +36,7 @@ export interface AccessCode {
   selectedEmpresaId?: number | null;
   selectedClienteId?: number | null;
   maxDevices?: number | null;
+  sessionToken?: string;
 }
 
 export interface UserDataSummary {
@@ -255,7 +256,8 @@ export class AuthService {
   }
 
   reactivate(expiredCode: string, newCode: string, email: string): Observable<AccessCode> {
-    return this.http.post<AccessCode>(`${this.apiUrl}/reactivate`, { expiredCode, newCode, email })
+    const deviceId = localStorage.getItem('deviceId') ?? undefined;
+    return this.http.post<AccessCode>(`${this.apiUrl}/reactivate`, { expiredCode, newCode, email, deviceId })
       .pipe(catchError(this.handleError));
   }
 

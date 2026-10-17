@@ -67,6 +67,16 @@
         </div>
       }
     </div>
+    @if (hayMasPaginas) {
+      <div class="load-more-container">
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cargarMas()" [disabled]="cargandoMas">
+          @if (cargandoMas) {
+            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+          }
+          Cargar más
+        </button>
+      </div>
+    }
   } @else {
     <div class="empty-state">
       <p class="empty-state__message">Consigue acceso a metro y guarda clientes y presupuestos</p>

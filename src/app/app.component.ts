@@ -41,7 +41,7 @@ export class AppComponent implements OnInit {
   }
 
   private startSessionGuard(): void {
-    interval(20_000).pipe(
+    interval(60_000).pipe(
       takeUntilDestroyed(this.destroyRef),
       filter(() => this.authService.isLoggedIn()),
       switchMap(() => {
