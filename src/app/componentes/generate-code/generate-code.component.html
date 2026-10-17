@@ -223,7 +223,8 @@
         <label class="admin-manual__label">Código manual personalizado</label>
         <div class="admin-manual__row">
           <input type="text" class="admin-manual__input" [(ngModel)]="code"
-                 placeholder="Ej: ABC12" maxlength="10">
+                 placeholder="Ej: ABC12" maxlength="10"
+                 (input)="code = code.toUpperCase()">
           <button class="gp-btn gp-btn--ok" (click)="validateAndGenerateCode()">Agregar</button>
         </div>
       </div>
