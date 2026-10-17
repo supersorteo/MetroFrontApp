@@ -50,10 +50,14 @@ export class AppComponent implements OnInit {
         const headers = sessionToken ? { 'X-Session-Token': sessionToken } : undefined;
         return this.authService.getUserCode(code, headers).pipe(catchError(() => of(null)));
       }),
-      filter(ac => !!ac && ac.disabled === true)
-    ).subscribe(() => {
+      filter(ac => !!ac && (ac.disabled === true || (ac as any).sessionKicked === true))
+    ).subscribe(ac => {
       this.authService.logout();
-      this.toast.error('Tu acceso fue desactivado por el administrador. Contactá al soporte.', 'Sesión desactivada');
+      if ((ac as any)?.sessionKicked) {
+        this.toast.warning('Tu sesión fue cerrada por el administrador.', 'Sesión terminada');
+      } else {
+        this.toast.error('Tu acceso fue desactivado por el administrador. Contactá al soporte.', 'Sesión desactivada');
+      }
       this.router.navigate(['/']);
     });
   }
