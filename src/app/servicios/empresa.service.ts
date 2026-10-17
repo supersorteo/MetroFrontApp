@@ -75,8 +75,7 @@ export class EmpresaService {
           mergeMap(cached =>
             cached.length > 0
               ? of(cached as Empresa[])
-              // : throwError(() => new Error('Sin conexión y sin datos en caché para la empresa.'))
-              : of([])
+              : throwError(() => new Error('Sin conexión y sin datos en caché para la empresa.'))
           )
         )
       )
