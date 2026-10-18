@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit, HostListener, effect, inject } from '@angular/core';
-import { interval, Subject } from 'rxjs';
+import { interval, lastValueFrom, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { FormsModule, NgForm } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
@@ -2385,13 +2385,18 @@ async eliminarTodasLasTareas(): Promise<void> {
   );
   if (!confirmed) return;
 
-  // 1. Limpiar IDB (todas las capas de caché del usuario)
+  // 1. Persistir en backend
+  if (this.userCode) {
+    await lastValueFrom(this.userTareaService.deleteAllByUserCode(this.userCode)).catch(() => {});
+  }
+
+  // 2. Limpiar IDB (todas las capas de caché del usuario)
   if (this.userCode) {
     await this.localStore.markAllUserTareasDeletedByUserCode(this.userCode).catch(() => {});
     void this.userTareaService.cacheUserTareas(`user:${this.userCode}`, []).catch(() => {});
   }
 
-  // 2. Limpiar estado local + localStorage
+  // 3. Limpiar estado local + localStorage
   this.tareasAgregadas = [];
   this.tareasAgregadasPaginadas = [];
   this.tareasCurrentPage = 1;

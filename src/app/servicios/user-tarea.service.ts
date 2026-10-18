@@ -90,6 +90,12 @@ export class UserTareaService {
     );
   }
 
+  deleteAllByUserCode(userCode: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/by-user/${userCode}`).pipe(
+      catchError(error => this.isOfflineLikeError(error) ? of(void 0) : this.handleError(error))
+    );
+  }
+
   deleteUserTarea(id: number): Observable<void> {
     if (!navigator.onLine || id < 0) {
       return this.handleOfflineDelete(id);
