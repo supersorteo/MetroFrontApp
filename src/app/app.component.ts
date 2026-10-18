@@ -7,7 +7,7 @@ import { OfflineStatusService } from './servicios/offline-status.service';
 import { OfflineSyncService } from './servicios/offline-sync.service';
 import { AppToastService } from './servicios/app-toast.service';
 import { AuthService } from './servicios/auth.service';
-import { interval, of } from 'rxjs';
+import { fromEvent, interval, of } from 'rxjs';
 import { catchError, filter, switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -38,27 +38,63 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.startSessionGuard();
+    this.registerSessionIfNeeded();
+    this.setupBeforeUnload();
   }
 
   private startSessionGuard(): void {
+    // Heartbeat periódico cada 60s
     interval(60_000).pipe(
       takeUntilDestroyed(this.destroyRef),
       filter(() => this.authService.isLoggedIn()),
-      switchMap(() => {
-        const code = localStorage.getItem('userCode')!;
-        const sessionToken = localStorage.getItem('sessionToken');
-        const headers = sessionToken ? { 'X-Session-Token': sessionToken } : undefined;
-        return this.authService.getUserCode(code, headers).pipe(catchError(() => of(null)));
-      }),
-      filter(ac => !!ac && (ac.disabled === true || (ac as any).sessionKicked === true))
-    ).subscribe(ac => {
+      switchMap(() => this.doHeartbeat())
+    ).subscribe(ac => this.handleSessionResponse(ac));
+
+    // Heartbeat inmediato al volver al tab desde segundo plano
+    fromEvent(document, 'visibilitychange').pipe(
+      takeUntilDestroyed(this.destroyRef),
+      filter(() => document.visibilityState === 'visible' && this.authService.isLoggedIn()),
+      switchMap(() => this.doHeartbeat())
+    ).subscribe(ac => this.handleSessionResponse(ac));
+  }
+
+  private doHeartbeat() {
+    const code = localStorage.getItem('userCode')!;
+    const sessionToken = localStorage.getItem('sessionToken');
+    const headers = sessionToken ? { 'X-Session-Token': sessionToken } : undefined;
+    return this.authService.getUserCode(code, headers).pipe(catchError(() => of(null)));
+  }
+
+  private handleSessionResponse(ac: any): void {
+    if (!ac) return;
+    if (ac.disabled === true || ac.sessionKicked === true) {
       this.authService.logout();
-      if ((ac as any)?.sessionKicked) {
+      if (ac.sessionKicked) {
         this.toast.warning('Tu sesión fue cerrada por el administrador.', 'Sesión terminada');
       } else {
         this.toast.error('Tu acceso fue desactivado por el administrador. Contactá al soporte.', 'Sesión desactivada');
       }
       this.router.navigate(['/']);
+    }
+  }
+
+  private registerSessionIfNeeded(): void {
+    if (!this.authService.isLoggedIn()) return;
+    if (localStorage.getItem('sessionToken')) return;
+    const code = localStorage.getItem('userCode');
+    if (!code) return;
+
+    this.authService.registerSession(code).subscribe({
+      next: (res) => {
+        if (res?.sessionToken) localStorage.setItem('sessionToken', res.sessionToken);
+      },
+      error: () => {}
+    });
+  }
+
+  private setupBeforeUnload(): void {
+    window.addEventListener('beforeunload', () => {
+      this.authService.sendBeaconTerminate();
     });
   }
 

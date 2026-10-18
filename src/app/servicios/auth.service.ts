@@ -277,6 +277,28 @@ export class AuthService {
       .pipe(catchError(this.handleError1));
   }
 
+  registerSession(code: string): Observable<{ sessionToken: string | null }> {
+    const deviceId = this.getOrCreateDeviceId();
+    return this.http.post<{ sessionToken: string }>(
+      `${this.apiUrl}/session/register`,
+      { code, deviceId },
+      { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) }
+    ).pipe(
+      map(res => ({ sessionToken: res.sessionToken || null })),
+      catchError(() => of({ sessionToken: null }))
+    );
+  }
+
+  sendBeaconTerminate(): void {
+    const sessionToken = localStorage.getItem('sessionToken');
+    if (!sessionToken || !navigator.sendBeacon) return;
+    const payload = new Blob(
+      [JSON.stringify({ sessionToken })],
+      { type: 'application/json' }
+    );
+    navigator.sendBeacon(`${this.apiUrl}/session/terminate`, payload);
+  }
+
   getActiveSessions(code: string): Observable<{ active: number; limit: number }> {
     return this.http.get<{ active: number; limit: number }>(`${this.apiUrl}/codes/${code}/sessions`)
       .pipe(catchError(() => of({ active: 0, limit: 2 })));
