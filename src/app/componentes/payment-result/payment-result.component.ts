@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { MembershipPaymentService, MembershipPaymentStatusResponse } from '../../servicios/membership-payment.service';
 import { PayPalPaymentService, PayPalPaymentStatusResponse } from '../../servicios/paypal-payment.service';
+import { AuthService } from '../../servicios/auth.service';
 
 type UnifiedOrder = MembershipPaymentStatusResponse | PayPalPaymentStatusResponse;
 
@@ -31,7 +32,8 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private membershipPaymentService: MembershipPaymentService,
-    private payPalPaymentService: PayPalPaymentService
+    private payPalPaymentService: PayPalPaymentService,
+    private authService: AuthService
   ) {}
 
   private cacheKey(provider: 'mercadopago' | 'paypal', externalId: string): string {
@@ -233,7 +235,27 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
 
   useAccessCode(): void {
     if (!this.order?.accessCode) return;
-    this.router.navigate(['/'], { queryParams: { code: this.order.accessCode, paid: '1' } });
+    const code = this.order.accessCode;
+
+    if (localStorage.getItem('userCode') === code) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
+
+    this.authService.login(code).subscribe({
+      next: (res) => {
+        this.authService.clearStaleSessionIfNeeded(res.code);
+        localStorage.setItem('userCode', res.code);
+        localStorage.setItem('userEmail', res.email);
+        if (res.sessionToken) localStorage.setItem('sessionToken', res.sessionToken);
+        localStorage.setItem('userData', JSON.stringify(res));
+        localStorage.setItem('trialMode', 'false');
+        this.router.navigate(['/dashboard']);
+      },
+      error: () => {
+        this.router.navigate(['/'], { queryParams: { code, paid: '1' } });
+      }
+    });
   }
 
 }
