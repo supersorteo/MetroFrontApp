@@ -39,7 +39,6 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this.startSessionGuard();
     this.registerSessionIfNeeded();
-    this.setupBeforeUnload();
   }
 
   private startSessionGuard(): void {
@@ -89,12 +88,6 @@ export class AppComponent implements OnInit {
         if (res?.sessionToken) localStorage.setItem('sessionToken', res.sessionToken);
       },
       error: () => {}
-    });
-  }
-
-  private setupBeforeUnload(): void {
-    window.addEventListener('beforeunload', () => {
-      this.authService.sendBeaconTerminate();
     });
   }
 
