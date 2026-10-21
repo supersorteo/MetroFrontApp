@@ -299,9 +299,9 @@ export class AuthService {
     navigator.sendBeacon(`${this.apiUrl}/session/terminate`, payload);
   }
 
-  getActiveSessions(code: string): Observable<{ active: number; limit: number }> {
+  getActiveSessions(code: string): Observable<{ active: number; limit: number } | null> {
     return this.http.get<{ active: number; limit: number }>(`${this.apiUrl}/codes/${code}/sessions`)
-      .pipe(catchError(() => of({ active: 0, limit: 2 })));
+      .pipe(catchError(() => of(null)));
   }
 
   terminateAllSessions(code: string): Observable<void> {

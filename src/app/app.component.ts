@@ -81,7 +81,7 @@ export class AppComponent implements OnInit {
       const code = localStorage.getItem('userCode');
       if (!code) { this.authService.logout(); this.router.navigate(['/']); return; }
 
-      localStorage.removeItem('sessionToken');
+      // No remover el token viejo hasta tener el nuevo — evita window donde heartbeats van sin token
       this.authService.registerSession(code).subscribe({
         next: (res) => {
           if (res?.sessionToken) {

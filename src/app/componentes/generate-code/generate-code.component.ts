@@ -1125,8 +1125,10 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   loadActiveSessions(): void {
     this.codes.filter(c => c.email).forEach(c => {
       this.authService.getActiveSessions(c.code).subscribe(r => {
-        this.activeSessions.set(c.code, r.active);
-        this.sessionLimits.set(c.code, r.limit);
+        if (r !== null) {
+          this.activeSessions.set(c.code, r.active);
+          this.sessionLimits.set(c.code, r.limit);
+        }
       });
     });
   }

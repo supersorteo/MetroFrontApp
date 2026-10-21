@@ -3846,12 +3846,12 @@ fetchUserData(): void {
   }
 
   async loadWeather(): Promise<void> {
-    const location = this.getLocationName();
-    if (!location) {
+    const primaryLocation = this.getLocationName();
+    if (!primaryLocation) {
       this.weatherError = 'Sin ubicación configurada';
       return;
     }
-    const cachedWeather = this.getCachedWeather(location);
+    const cachedWeather = this.getCachedWeather(primaryLocation);
     if (!navigator.onLine && cachedWeather) {
       this.currentWeather = cachedWeather.currentWeather;
       this.dailyForecast = cachedWeather.dailyForecast;
@@ -3860,10 +3860,20 @@ fetchUserData(): void {
     }
     this.weatherLoading = true;
     this.weatherError = '';
+    // Cadena de fallback: provincia → pais → Buenos Aires
+    const fallbacks = [
+      this.userData?.provincia,
+      this.userData?.pais,
+      'Buenos Aires'
+    ].filter((v): v is string => !!v?.trim());
+    const location = primaryLocation;
+    let place: any = null;
+    for (const loc of fallbacks) {
+      const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(loc)}&count=1&language=es&format=json`;
+      const geoResponse: any = await firstValueFrom(this.http.get(geoUrl)).catch(() => null);
+      if (geoResponse?.results?.[0]) { place = geoResponse.results[0]; break; }
+    }
     try {
-      const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=es&format=json`;
-      const geoResponse: any = await firstValueFrom(this.http.get(geoUrl));
-      const place = geoResponse?.results?.[0];
       if (!place) {
         throw new Error('Ubicación no encontrada');
       }
