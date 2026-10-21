@@ -67,14 +67,37 @@ export class AppComponent implements OnInit {
 
   private handleSessionResponse(ac: any): void {
     if (!ac) return;
-    if (ac.disabled === true || ac.sessionKicked === true) {
+
+    if (ac.disabled === true) {
       this.authService.logout();
-      if (ac.sessionKicked) {
-        this.toast.warning('Tu sesión fue cerrada por el administrador.', 'Sesión terminada');
-      } else {
-        this.toast.error('Tu acceso fue desactivado por el administrador. Contactá al soporte.', 'Sesión desactivada');
-      }
+      this.toast.error('Tu acceso fue desactivado por el administrador. Contactá al soporte.', 'Sesión desactivada');
       this.router.navigate(['/']);
+      return;
+    }
+
+    if (ac.sessionKicked === true) {
+      // La sesión no existe en DB: puede ser expiración natural o kick real por admin.
+      // Intentar re-registrarla — si el límite de dispositivos está lleno fue un kick real.
+      const code = localStorage.getItem('userCode');
+      if (!code) { this.authService.logout(); this.router.navigate(['/']); return; }
+
+      localStorage.removeItem('sessionToken');
+      this.authService.registerSession(code).subscribe({
+        next: (res) => {
+          if (res?.sessionToken) {
+            // Expiración natural — restaurar silenciosamente
+            localStorage.setItem('sessionToken', res.sessionToken);
+          } else {
+            // Límite de dispositivos alcanzado → kick real por admin
+            this.authService.logout();
+            this.toast.warning('Tu sesión fue cerrada por el administrador.', 'Sesión terminada');
+            this.router.navigate(['/']);
+          }
+        },
+        error: () => {
+          // Error de red — no cerrar sesión localmente
+        }
+      });
     }
   }
 
