@@ -1,46 +1,84 @@
 <section class="payment-result">
   <div class="payment-result__card">
-    <h1 class="payment-result__title">Estado del pago</h1>
+    <div class="payment-result__brand" aria-label="METRO">
+      <img class="payment-result__logo" src="assets/icons/metro-logo-transparent.png" alt="Logo de METRO" />
+    </div>
+
+    <h1 class="payment-result__title">Bienvenido a METRO</h1>
 
     <p *ngIf="loading" class="payment-result__state">Confirmando tu pago...</p>
     <p *ngIf="!loading && errorMessage" class="payment-result__error">{{ errorMessage }}</p>
 
     <ng-container *ngIf="!loading && order">
-      <p class="payment-result__state">
+      <p class="payment-result__state" *ngIf="order.status !== 'PAID'">
         Estado: <strong>{{ order.status }}</strong>
       </p>
 
-      <p class="payment-result__detail">{{ paymentMessage }}</p>
+      <p class="payment-result__detail" [class.payment-result__success-message]="order.status === 'PAID'">
+        {{ paymentMessage }}
+      </p>
 
       <p class="payment-result__detail" *ngIf="order.statusDetail">
         {{ order.statusDetail }}
       </p>
 
       <div class="payment-result__summary">
-        <div>Pais: {{ order.countryCode }}</div>
-        <div>Plan: {{ order.planMonths }} meses</div>
-        <div>Monto: {{ order.amount | number:'1.0-2' }} {{ order.currencyCode }}</div>
+        <div>
+          <span>País</span>
+          <strong>{{ order.countryCode }}</strong>
+        </div>
+        <div>
+          <span>Plan</span>
+          <strong>{{ order.planMonths }} meses</strong>
+        </div>
+        <div>
+          <span>Monto</span>
+          <strong>{{ order.amount | number:'1.0-2' }} {{ order.currencyCode }}</strong>
+        </div>
       </div>
 
       <ng-container *ngIf="order.status === 'PAID' && order.accessCode">
         <div class="payment-result__code-box">
-          <span class="payment-result__label">Tu codigo de acceso</span>
+          <div class="payment-result__code-header">
+            <span class="payment-result__label">Tu codigo de acceso</span>
+            <button
+              type="button"
+              class="payment-result__copy-button"
+              [class.payment-result__copy-button--copied]="codigoCopiado"
+              [attr.aria-label]="codigoCopiado ? 'Código copiado' : 'Copiar código'"
+              [attr.title]="codigoCopiado ? 'Código copiado' : 'Copiar código'"
+              (click)="copiarCodigo()">
+              <svg *ngIf="!codigoCopiado" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="8" y="8" width="11" height="12" rx="2"></rect>
+                <path d="M16 8V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h1"></path>
+              </svg>
+              <svg *ngIf="codigoCopiado" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m5 12 4 4L19 6"></path>
+              </svg>
+              <span>{{ codigoCopiado ? 'Copiado' : 'Copiar' }}</span>
+            </button>
+          </div>
           <strong class="payment-result__code">{{ order.accessCode }}</strong>
         </div>
 
-        <div *ngIf="whatsappUrl" class="payment-result__whatsapp">
-          <p class="small text-muted">Te enviamos el codigo por WhatsApp:</p>
-          <button type="button" class="btn btn-success w-100" (click)="sendWhatsApp()">
-            &#128242; Enviar codigo por WhatsApp
+        <p class="payment-result__saved-notice">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path>
+            <path d="m19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.42 1.42-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20h-2v-.48a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-1.42-1.42.06-.06A1.7 1.7 0 0 0 9.4 15a1.7 1.7 0 0 0-1.56-1.03H7.36v-2h.48A1.7 1.7 0 0 0 9.4 10.94a1.7 1.7 0 0 0-.34-1.88L9 9l1.42-1.42.06.06a1.7 1.7 0 0 0 1.88.34A1.7 1.7 0 0 0 13.39 6.4V6h2v.48a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.78 9l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.56 1.03h.48v2h-.48A1.7 1.7 0 0 0 19.4 15Z"></path>
+          </svg>
+          <span>TU CÓDIGO QUEDA GUARDADO EN AJUSTE</span>
+        </p>
+
+        <div class="payment-result__actions payment-result__actions--primary">
+          <button type="button" class="btn btn-primary" (click)="useAccessCode()">
+            IR A METRO PREMIUM
           </button>
         </div>
+
       </ng-container>
 
-      <div class="payment-result__actions">
-        <button type="button" class="btn btn-primary" *ngIf="order.accessCode" (click)="useAccessCode()">
-          Usar este codigo ahora
-        </button>
-        <button type="button" class="btn btn-outline-primary" *ngIf="!order.accessCode" (click)="retryCheck()">
+      <div class="payment-result__actions" *ngIf="!order.accessCode">
+        <button type="button" class="btn btn-outline-primary" (click)="retryCheck()">
           Reconsultar estado
         </button>
       </div>

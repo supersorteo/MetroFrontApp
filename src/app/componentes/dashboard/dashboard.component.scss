@@ -3268,7 +3268,11 @@ p {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   gap: 6px;
+  min-height: 74px;
+  box-sizing: border-box;
+  position: relative;
   border: none;
   background: #e9f1ff;
   color: #0f2d54;
@@ -3325,12 +3329,29 @@ p {
   height: 100%;
 }
 
+// El icono de Presupuesto necesita mayor presencia visual que los demás accesos.
+.toolbar-item--presupuesto .toolbar-item__icon {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 56px;
+  height: 56px;
+  padding: 7px;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
 .toolbar-item__label {
-    line-height: 1.1;
-    font-size: 0.72rem;
-    font-weight: 500;
-    color: #3674ce;
-    text-align: center;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 1.1em;
+  margin-top: auto;
+  line-height: 1.1;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #3674ce;
+  text-align: center;
 }
 
 .tareas-agregadas__title {
@@ -3357,6 +3378,17 @@ p {
   .toolbar-item__icon {
     width: 30px;
     height: 30px;
+    padding: 6px;
+  }
+
+  .toolbar-item {
+    min-height: 62px;
+  }
+
+  .toolbar-item--presupuesto .toolbar-item__icon {
+    top: -6px;
+    width: 42px;
+    height: 42px;
     padding: 6px;
   }
 

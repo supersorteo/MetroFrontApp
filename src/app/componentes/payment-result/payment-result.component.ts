@@ -23,6 +23,7 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
   provider: 'mercadopago' | 'paypal' = 'mercadopago';
   loading    = true;
   errorMessage = '';
+  codigoCopiado = false;
 
   private pollInterval: any    = null;
   private pollCount            = 0;
@@ -214,23 +215,37 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
     }
   }
 
-  get whatsappUrl(): string | null {
+  async copiarCodigo(): Promise<void> {
     const accessCode = this.order?.accessCode;
-    const phone      = (this.order as any)?.payerPhone as string | null;
-    if (!accessCode || !phone) return null;
+    if (!accessCode) return;
 
-    const cleaned = phone.replace(/\D/g, '');
-    const message = encodeURIComponent(
-      `¡Hola! Tu codigo de acceso Metro es: *${accessCode}*\n` +
-      `Plan: ${this.order!.planMonths} meses\n` +
-      `Ingresa en la app con este codigo.`
-    );
-    return `https://wa.me/${cleaned}?text=${message}`;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(accessCode);
+      } else if (!this.copiarCodigoConFallback(accessCode)) {
+        return;
+      }
+      this.codigoCopiado = true;
+      window.setTimeout(() => this.codigoCopiado = false, 1800);
+    } catch {
+      this.codigoCopiado = this.copiarCodigoConFallback(accessCode);
+      if (this.codigoCopiado) {
+        window.setTimeout(() => this.codigoCopiado = false, 1800);
+      }
+    }
   }
 
-  sendWhatsApp(): void {
-    const url = this.whatsappUrl;
-    if (url) window.open(url, '_blank');
+  private copiarCodigoConFallback(accessCode: string): boolean {
+    const input = document.createElement('textarea');
+    input.value = accessCode;
+    input.setAttribute('readonly', '');
+    input.style.position = 'fixed';
+    input.style.opacity = '0';
+    document.body.appendChild(input);
+    input.select();
+    const copied = document.execCommand('copy');
+    input.remove();
+    return copied;
   }
 
   useAccessCode(): void {

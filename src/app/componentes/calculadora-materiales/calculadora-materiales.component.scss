@@ -1093,6 +1093,7 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
     border-radius: 12px;
     color: $gray-600;
     background: rgba(18, 43, 68, .08);
+    font-size: .9rem;
     cursor: pointer;
 
     &:hover { color: $gray-800; background: rgba(18, 43, 68, .14); }
@@ -1101,7 +1102,7 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
   &__topline {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     margin-bottom: 1.1rem;
     color: $gray-600;
     font-size: .78rem;
@@ -1211,8 +1212,12 @@ $shadow-lg:  0 8px 32px rgba(0,0,0,.14);
   &__primary {
     border: 0;
     color: $white;
-    background: linear-gradient(135deg, $primary 0%, #2167aa 100%);
-    box-shadow: 0 8px 18px rgba(40, 120, 216, .22);
+    background: linear-gradient(135deg, #123b78 0%, #1d4ed8 56%, #3b82f6 100%);
+    box-shadow: 0 8px 18px rgba(29, 78, 216, .28);
+
+    &:hover {
+      background: linear-gradient(135deg, #0f3266 0%, #1e40af 56%, #2563eb 100%);
+    }
   }
 }
 
