@@ -159,6 +159,16 @@
 
       </li>
 
+      <li class="w-100 mt-2 text-center" *ngIf="tienePreciosMateriales">
+
+        <button class="btn btn-primary btn-block w-100 animate" (click)="abrirPreciosMateriales(); toggleMenuPanel()">
+
+          <i class="bi bi-tags" aria-hidden="true" style="margin-right: 6px;"></i>PRECIOS DE MATERIALES
+
+        </button>
+
+      </li>
+
       <li class="w-100 mt-2 text-center" *ngIf="deferredPrompt">
 
         <button class="btn btn-warning btn-block w-100 animate" (click)="installPwa()" style="font-weight: bold; background-color: #ffc107; border-color: #ffc107; color: #000;">
