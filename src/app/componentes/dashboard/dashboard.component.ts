@@ -3136,6 +3136,14 @@ calcularCostoTotal(): number {
 
 
 
+  abrirPdfVivienda() {
+    const modal = document.getElementById('pdfViviendaModal');
+    if (modal) {
+      const bsModal = new (window as any).bootstrap.Modal(modal);
+      bsModal.show();
+    }
+  }
+
   abrirGoogleSheets2() {
     const url = "https://drive.google.com/file/d/1dZcSD_5lt3OsDE44SN91t5NcUyvQtl-N/view?usp=sharing";
     window.open(url, "_blank");

@@ -7177,3 +7177,33 @@ p {
   border-top: 1px solid rgba(52,105,181,0.12);
   flex-shrink: 0;
 }
+// ── Modal PDF Vivienda ────────────────────────────────────────────────────
+.pdf-vivienda-dialog {
+  max-width: 960px;
+  margin: 1.5rem auto;
+}
+.pdf-vivienda-content {
+  display: flex;
+  flex-direction: column;
+  height: 90vh;
+  overflow: hidden;
+  border-radius: 15px;
+}
+.pdf-vivienda-header {
+  flex-shrink: 0;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid rgba(52,105,181,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.pdf-vivienda-body {
+  flex: 1;
+  min-height: 0;
+}
+.pdf-vivienda-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}

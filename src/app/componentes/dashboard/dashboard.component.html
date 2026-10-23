@@ -133,7 +133,9 @@
 
       <li class="w-100 mt-3">
 
-        <button (click)="abrirGoogleSheets2()" class="btn btn-primary btn-block animate w-100">PDF valor vivienda JULIO/2025</button>
+        <button (click)="abrirPdfVivienda()" class="btn btn-primary btn-block animate w-100">
+          <i class="bi bi-file-earmark-pdf me-1"></i>PDF Valor Vivienda OCT/2026
+        </button>
 
       </li>
 
@@ -4639,6 +4641,37 @@
           <i class="bi bi-info-circle me-1"></i>Fuente: MEPREC · {{ preciosFecha }}
         </small>
         <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PDF VALOR VIVIENDA OCT/2026 -->
+<div class="modal fade" id="pdfViviendaModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered pdf-vivienda-dialog">
+    <div class="modal-content modal-zona pdf-vivienda-content">
+
+      <div class="modal-header pdf-vivienda-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-file-earmark-pdf-fill fs-5 text-danger"></i>
+          <h5 class="modal-title mb-0">PDF Valor Vivienda — Octubre 2026</h5>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <a href="assets/pdf-vivienda-oct2026.pdf" download="PDF-Valor-Vivienda-Oct2026.pdf"
+             class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-download me-1"></i>Descargar
+          </a>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+      </div>
+
+      <div class="modal-body pdf-vivienda-body p-0">
+        <iframe src="assets/pdf-vivienda-oct2026.pdf"
+                class="pdf-vivienda-iframe"
+                type="application/pdf"
+                title="PDF Valor Vivienda Octubre 2026">
+        </iframe>
       </div>
 
     </div>
