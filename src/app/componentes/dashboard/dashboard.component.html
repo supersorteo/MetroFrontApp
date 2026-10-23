@@ -1,4 +1,4 @@
-  <!--div-- class="fixed-image-container">
+﻿  <!--div-- class="fixed-image-container">
 
     <img
 
@@ -4432,6 +4432,197 @@
         <span *ngIf="dashReactivateLoading" class="spinner-border spinner-border-sm me-1"></span>
         Activar código
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL PRECIOS DE MATERIALES
+══════════════════════════════════════ -->
+<div class="modal fade" id="preciosMaterialesModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl pm-dialog">
+    <div class="modal-content modal-zona pm-content" (click)="cerrarDropdownFiltro()">
+
+      <div class="modal-header pm-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-tags-fill text-primary"></i>
+          <h5 class="modal-title mb-0">Precios de Materiales</h5>
+          <span class="badge bg-primary-subtle text-primary-emphasis">ARS</span>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <!-- TOOLBAR: búsqueda + filtro multi-select -->
+      <div class="pm-toolbar">
+        <div class="pm-toolbar__row">
+
+          <div class="pm-search" (click)="$event.stopPropagation()">
+            <i class="bi bi-search pm-search__icon"></i>
+            <input type="text"
+                   class="form-control pm-search__input"
+                   placeholder="Buscar material..."
+                   [(ngModel)]="busquedaPrecio"
+                   (ngModelChange)="filtrarPrecios()">
+            <button *ngIf="busquedaPrecio"
+                    class="btn btn-link pm-search__clear"
+                    (click)="busquedaPrecio=''; filtrarPrecios()"
+                    type="button">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+
+          <div class="pm-filter-wrap" (click)="$event.stopPropagation()">
+            <button type="button"
+                    class="pm-filter-btn"
+                    [class.pm-filter-btn--active]="categoriasSeleccionadas.length > 0"
+                    (click)="abrirDropdownFiltro($event)">
+              <i class="bi bi-funnel-fill"></i>
+              <span>{{ preciosLabelCategoria }}</span>
+              <span *ngIf="categoriasSeleccionadas.length > 0" class="pm-filter-count">
+                {{ categoriasSeleccionadas.length }}
+              </span>
+              <i class="bi ms-auto"
+                 [class.bi-chevron-down]="!filtroDropdownOpen"
+                 [class.bi-chevron-up]="filtroDropdownOpen"></i>
+            </button>
+
+            <!-- Dropdown multi-select de categorías -->
+            <div class="pm-dropdown" *ngIf="filtroDropdownOpen">
+              <div class="pm-dropdown__header">
+                <button type="button" class="pm-dropdown__link" (click)="seleccionarTodasTemp()">
+                  <i class="bi bi-check-all"></i> Todas
+                </button>
+                <button type="button" class="pm-dropdown__link pm-dropdown__link--muted" (click)="limpiarCategoriasTemp()">
+                  <i class="bi bi-x"></i> Ninguna
+                </button>
+              </div>
+              <div class="pm-dropdown__list">
+                <label *ngFor="let cat of categorias" class="pm-dropdown__item">
+                  <input type="checkbox"
+                         class="form-check-input pm-dropdown__check"
+                         [checked]="isCategoriaTemp(cat)"
+                         (change)="toggleCategoriaTemp(cat)">
+                  <span class="pm-dropdown__label">{{ cat }}</span>
+                </label>
+              </div>
+              <div class="pm-dropdown__footer">
+                <span class="pm-dropdown__summary">
+                  {{ categoriasTemp.length === 0 ? 'Todas las categorías' : categoriasTemp.length + ' seleccionadas' }}
+                </span>
+                <button type="button" class="btn btn-primary btn-sm pm-dropdown__apply" (click)="aplicarFiltro()">
+                  Aplicar
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Chips de filtros activos -->
+        <div class="pm-active-filters" *ngIf="categoriasSeleccionadas.length > 0 || busquedaPrecio">
+          <span class="pm-active-filters__label">Filtrando:</span>
+          <div class="pm-active-filters__chips">
+            <span *ngFor="let cat of categoriasSeleccionadas" class="pm-chip-active">
+              {{ cat }}
+              <button type="button" class="pm-chip-active__x" (click)="quitarCategoria(cat)">
+                <i class="bi bi-x"></i>
+              </button>
+            </span>
+          </div>
+          <button type="button" class="pm-active-filters__clear" (click)="limpiarFiltros()">
+            Limpiar todo
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-body pm-body">
+
+        <div *ngIf="preciosLoading" class="pm-loading">
+          <div class="spinner-border text-primary" role="status"></div>
+          <span class="text-muted small">Cargando precios...</span>
+        </div>
+
+        <ng-container *ngIf="!preciosLoading">
+
+          <div class="pm-range-bar">
+            <span class="pm-range-info">
+              <ng-container *ngIf="preciosFiltrados.length > 0; else sinRes">
+                Mostrando <strong>{{ preciosRangoInfo }}</strong>
+              </ng-container>
+              <ng-template #sinRes>Sin resultados para este filtro</ng-template>
+            </span>
+            <div class="pm-page-size">
+              <span class="pm-page-size__label">Filas:</span>
+              <button *ngFor="let sz of preciosTamanoPaginaOpciones"
+                      type="button"
+                      class="pm-page-size__btn"
+                      [class.pm-page-size__btn--active]="preciosTamanoPagina === sz"
+                      (click)="cambiarTamanoPagina(sz)">{{ sz }}</button>
+            </div>
+          </div>
+
+          <div class="table-responsive pm-table-wrap">
+            <table class="table pm-table">
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th class="text-center pm-col-unit">Unidad</th>
+                  <th class="text-end pm-col-price">Precio</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let p of preciosPaginados">
+                  <td>
+                    <div class="pm-cell-material">
+                      <span class="pm-nombre">{{ p.nombre }}</span>
+                      <span class="pm-cat">{{ p.categoriaNombre }}</span>
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    <span class="pm-unit-badge" [title]="p.nombreUnidad">{{ p.unidad }}</span>
+                  </td>
+                  <td class="text-end pm-cell-price">{{ p.precio | precioArgentino }}</td>
+                </tr>
+                <tr *ngIf="preciosFiltrados.length === 0">
+                  <td colspan="3" class="text-center text-muted py-5">
+                    <i class="bi bi-search fs-2 d-block mb-2 opacity-25"></i>
+                    Sin resultados para "{{ busquedaPrecio }}"
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginación -->
+          <nav class="pm-pagination" *ngIf="preciosTotalPaginas > 1">
+            <button type="button" class="pm-page-btn pm-page-btn--nav"
+                    [disabled]="preciosPagina === 1"
+                    (click)="irAPagina(preciosPagina - 1)">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+            <ng-container *ngFor="let pg of preciosPaginasArray">
+              <span *ngIf="pg === null" class="pm-page-ellipsis">…</span>
+              <button *ngIf="pg !== null" type="button" class="pm-page-btn"
+                      [class.pm-page-btn--active]="pg === preciosPagina"
+                      (click)="irAPagina(pg)">{{ pg }}</button>
+            </ng-container>
+            <button type="button" class="pm-page-btn pm-page-btn--nav"
+                    [disabled]="preciosPagina === preciosTotalPaginas"
+                    (click)="irAPagina(preciosPagina + 1)">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </nav>
+
+        </ng-container>
+      </div>
+
+      <div class="modal-footer pm-footer">
+        <small class="text-muted me-auto">
+          <i class="bi bi-info-circle me-1"></i>Fuente: MEPREC · {{ preciosFecha }}
+        </small>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+
     </div>
   </div>
 </div>
