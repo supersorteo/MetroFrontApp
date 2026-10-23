@@ -33,6 +33,7 @@ import { AppToastService } from '../../servicios/app-toast.service';
 import { MembershipLimits, MembershipLimitsService } from '../../servicios/membership-limits.service';
 import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
 import { MembershipPaymentService } from '../../servicios/membership-payment.service';
+import { PrecioMaterial, PrecioMaterialService } from '../../servicios/precio-material.service';
 import { mapMembershipCountryOption, MembershipCountryOption } from '../../core/membership/membership-checkout.util';
 
 
@@ -1137,7 +1138,8 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private uiDialog: UiDialogService,
     private budgetService: BudgetService,
     private membershipPaymentService: MembershipPaymentService,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private precioMaterialService: PrecioMaterialService
   ) {
     // Sync empresas IDB → lista local + paginación
     effect(() => {
