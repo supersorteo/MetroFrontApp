@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { APP_API_URL } from '../core/api/api.config';
 
 export interface PrecioMaterial {
@@ -18,11 +19,14 @@ export interface PrecioMaterial {
 
 @Injectable({ providedIn: 'root' })
 export class PrecioMaterialService {
-  private readonly base = `${APP_API_URL}/precios-materiales`;
+  private readonly apiUrl = `${APP_API_URL}/precios-materiales`;
+  private cache = new Map<string, PrecioMaterial[]>();
 
   constructor(private http: HttpClient) {}
 
   getByPais(pais: string): Observable<PrecioMaterial[]> {
-    return this.http.get<PrecioMaterial[]>(`${this.base}?pais=${encodeURIComponent(pais)}`);
+    if (this.cache.has(pais)) return of(this.cache.get(pais)!);
+    return this.http.get<PrecioMaterial[]>(`${this.apiUrl}?pais=${encodeURIComponent(pais)}`)
+      .pipe(tap(data => this.cache.set(pais, data)));
   }
 }
