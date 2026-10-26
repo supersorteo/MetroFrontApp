@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, AfterViewInit, HostListener, effect, inject } from '@angular/core';
 import { interval, lastValueFrom, Subject } from 'rxjs';
@@ -33,6 +33,7 @@ import { AppToastService } from '../../servicios/app-toast.service';
 import { MembershipLimits, MembershipLimitsService } from '../../servicios/membership-limits.service';
 import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
 import { MembershipPaymentService } from '../../servicios/membership-payment.service';
+import { PrecioMaterial, PrecioMaterialService } from '../../servicios/precio-material.service';
 import { mapMembershipCountryOption, MembershipCountryOption } from '../../core/membership/membership-checkout.util';
 
 
@@ -179,6 +180,146 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const text = `METRO, la app con precios de la construccion. Hace tus presupuestos mas facil y rapido. ${url}`;
     const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(text)}`;
     window.location.href = whatsappUrl;
+  }
+
+  // --- PRECIOS DE MATERIALES ---
+  precios: PrecioMaterial[] = [];
+  preciosFiltrados: PrecioMaterial[] = [];
+  categorias: string[] = [];
+  categoriasSeleccionadas: string[] = [];
+  categoriasTemp: string[] = [];
+  filtroDropdownOpen = false;
+  busquedaPrecio = '';
+  preciosLoading = false;
+  preciosFecha = 'ago. 2026';
+  preciosPagina = 1;
+  preciosTamanoPagina = 25;
+  readonly preciosTamanoPaginaOpciones = [25, 50, 100];
+
+  get preciosPaginados(): PrecioMaterial[] {
+    const start = (this.preciosPagina - 1) * this.preciosTamanoPagina;
+    return this.preciosFiltrados.slice(start, start + this.preciosTamanoPagina);
+  }
+
+  get preciosTotalPaginas(): number {
+    return Math.ceil(this.preciosFiltrados.length / this.preciosTamanoPagina);
+  }
+
+  get preciosPaginasArray(): (number | null)[] {
+    const total = this.preciosTotalPaginas;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const p = this.preciosPagina;
+    const pages: (number | null)[] = [1];
+    if (p > 3) pages.push(null);
+    for (let i = Math.max(2, p - 1); i <= Math.min(total - 1, p + 1); i++) pages.push(i);
+    if (p < total - 2) pages.push(null);
+    pages.push(total);
+    return pages;
+  }
+
+  get preciosLabelCategoria(): string {
+    if (this.categoriasSeleccionadas.length === 0) return 'Categorías';
+    if (this.categoriasSeleccionadas.length === 1) return this.categoriasSeleccionadas[0];
+    return `${this.categoriasSeleccionadas.length} categorías`;
+  }
+
+  get preciosRangoInfo(): string {
+    const total = this.preciosFiltrados.length;
+    if (total === 0) return '0 materiales';
+    const start = (this.preciosPagina - 1) * this.preciosTamanoPagina + 1;
+    const end = Math.min(this.preciosPagina * this.preciosTamanoPagina, total);
+    return `${start}–${end} de ${total.toLocaleString('es-AR')} materiales`;
+  }
+
+  get tienePreciosMateriales(): boolean {
+    return this.userData?.pais === 'Argentina';
+  }
+
+  abrirPreciosMateriales(): void {
+    const el = document.getElementById('preciosMaterialesModal');
+    if (!el) return;
+    new (window as any).bootstrap.Modal(el).show();
+    if (this.precios.length > 0) return;
+    this.preciosLoading = true;
+    this.precioMaterialService.getByPais(this.userData.pais).subscribe({
+      next: data => {
+        this.precios = data;
+        this.categorias = Array.from(new Set(data.map(p => p.categoriaNombre)))
+          .sort((a, b) => a.localeCompare(b, 'es'));
+        this.filtrarPrecios();
+        this.preciosLoading = false;
+      },
+      error: () => { this.preciosLoading = false; }
+    });
+  }
+
+  abrirDropdownFiltro(event: Event): void {
+    event.stopPropagation();
+    this.filtroDropdownOpen = !this.filtroDropdownOpen;
+    if (this.filtroDropdownOpen) this.categoriasTemp = [...this.categoriasSeleccionadas];
+  }
+
+  cerrarDropdownFiltro(): void {
+    this.filtroDropdownOpen = false;
+  }
+
+  isCategoriaTemp(cat: string): boolean {
+    return this.categoriasTemp.includes(cat);
+  }
+
+  toggleCategoriaTemp(cat: string): void {
+    if (this.categoriasTemp.includes(cat))
+      this.categoriasTemp = this.categoriasTemp.filter(c => c !== cat);
+    else
+      this.categoriasTemp = [...this.categoriasTemp, cat];
+  }
+
+  seleccionarTodasTemp(): void {
+    this.categoriasTemp = [...this.categorias];
+  }
+
+  limpiarCategoriasTemp(): void {
+    this.categoriasTemp = [];
+  }
+
+  aplicarFiltro(): void {
+    this.categoriasSeleccionadas = [...this.categoriasTemp];
+    this.filtroDropdownOpen = false;
+    this.filtrarPrecios();
+  }
+
+  quitarCategoria(cat: string): void {
+    this.categoriasSeleccionadas = this.categoriasSeleccionadas.filter(c => c !== cat);
+    this.categoriasTemp = [...this.categoriasSeleccionadas];
+    this.filtrarPrecios();
+  }
+
+  limpiarFiltros(): void {
+    this.categoriasSeleccionadas = [];
+    this.categoriasTemp = [];
+    this.busquedaPrecio = '';
+    this.filtrarPrecios();
+  }
+
+  filtrarPrecios(): void {
+    const busq = this.busquedaPrecio.toLowerCase().trim();
+    this.preciosFiltrados = this.precios.filter(p => {
+      const matchCat = this.categoriasSeleccionadas.length === 0 ||
+                       this.categoriasSeleccionadas.includes(p.categoriaNombre);
+      const matchBusq = !busq || p.nombre.toLowerCase().includes(busq);
+      return matchCat && matchBusq;
+    });
+    this.preciosPagina = 1;
+  }
+
+  irAPagina(p: number | null): void {
+    if (p === null || p < 1 || p > this.preciosTotalPaginas) return;
+    this.preciosPagina = p;
+  }
+
+  cambiarTamanoPagina(size: number): void {
+    this.preciosTamanoPagina = size;
+    this.preciosPagina = 1;
   }
 
   private planesModal: any = null;
@@ -997,7 +1138,8 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private uiDialog: UiDialogService,
     private budgetService: BudgetService,
     private membershipPaymentService: MembershipPaymentService,
-    private activatedRoute: ActivatedRoute
+    private activatedRoute: ActivatedRoute,
+    private precioMaterialService: PrecioMaterialService
   ) {
     // Sync empresas IDB → lista local + paginación
     effect(() => {

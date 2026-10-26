@@ -9,6 +9,8 @@ import { Admin, AdminMembershipLimits, AdminService } from '../../servicios/admi
 import { Tarea, TareaService } from '../../servicios/tarea.service';
 import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
 import { LegacyCodeService, LegacyCodeDTO, LegacyImportResult } from '../../servicios/legacy-code.service';
+import { PrecioMaterial } from '../../servicios/precio-material.service';
+import { AdminPrecioMaterialService } from '../../servicios/admin-precio-material.service';
 
 interface AccessCode {
   code: string;
@@ -129,6 +131,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
 
   private timer: any;
   private sessionPollInterval: any;
+  private preciosBuscarTimer: any;
 
   constructor(
     private authService: AuthService,
@@ -137,7 +140,8 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     private router: Router,
     private uiDialog: UiDialogService,
     private ajustePrecioService: AjustePrecioService,
-    private legacyCodeService: LegacyCodeService
+    private legacyCodeService: LegacyCodeService,
+    private adminPrecioMaterialService: AdminPrecioMaterialService
   ) {}
 
   private readonly ADMIN_MANIFEST = '/manifest.admin.webmanifest';
@@ -170,6 +174,8 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     this.loadTareas();
     this.loadMembershipLimits();
     if (admin.pais === 'argentina') this.loadLegacyCodes();
+    this.loadAdminPrecios();
+    this.loadAdminPreciosCategorias();
     this.timer = setInterval(() => this.updateRemainingTimes(), 1000);
     this.sessionPollInterval = setInterval(() => this.loadActiveSessions(), 30000);
   }
@@ -177,6 +183,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.timer) clearInterval(this.timer);
     if (this.sessionPollInterval) clearInterval(this.sessionPollInterval);
+    if (this.preciosBuscarTimer) clearTimeout(this.preciosBuscarTimer);
     this.restoreManifest();
   }
 
@@ -817,6 +824,212 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     this.tareaSubmitted = false;
     this.showTareaForm = false;
     this.tareaForm = { tarea: '', descripcion: '', costo: 0, rubro: '', categoria: '', area: 1, descuento: 0 };
+  }
+
+  // ── PRECIOS DE MATERIALES ADMIN ──────────────────────────────────────
+  adminPrecios: PrecioMaterial[] = [];
+  adminPreciosTotal = 0;
+  adminPreciosTotalPages = 1;
+  adminPreciosPagina = 0;
+  adminPreciosTamanoPagina = 50;
+  adminPreciosBuscar = '';
+  adminPreciosLoading = false;
+  adminPreciosCategorias: string[] = [];
+  adminPreciosCategoriasSeleccionadas: string[] = [];
+  adminPreciosCategoriasTemp: string[] = [];
+  adminPreciosFiltroOpen = false;
+  showPrecioForm = false;
+  precioEditingId: number | null = null;
+  precioSubmitted = false;
+  precioForm = {
+    nombre: '', categoriaNombre: '', categoriaId: '',
+    unidad: '', nombreUnidad: '', precio: 0, moneda: 'ARS', pais: ''
+  };
+
+  get adminPreciosPaginasArray(): (number | null)[] {
+    const total = this.adminPreciosTotalPages;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+    const p = this.adminPreciosPagina;
+    const pages: (number | null)[] = [0];
+    if (p > 2) pages.push(null);
+    for (let i = Math.max(1, p - 1); i <= Math.min(total - 2, p + 1); i++) pages.push(i);
+    if (p < total - 3) pages.push(null);
+    pages.push(total - 1);
+    return pages;
+  }
+
+  get adminPreciosFiltroLabel(): string {
+    const n = this.adminPreciosCategoriasSeleccionadas.length;
+    if (n === 0) return 'Categoría';
+    if (n === 1) return this.adminPreciosCategoriasSeleccionadas[0];
+    return `${n} categorías`;
+  }
+
+  abrirFiltroPrecios(event: Event): void {
+    event.stopPropagation();
+    this.adminPreciosCategoriasTemp = [...this.adminPreciosCategoriasSeleccionadas];
+    this.adminPreciosFiltroOpen = !this.adminPreciosFiltroOpen;
+  }
+
+  cerrarFiltroPrecios(): void {
+    this.adminPreciosFiltroOpen = false;
+  }
+
+  isCategoriaTemp(cat: string): boolean {
+    return this.adminPreciosCategoriasTemp.includes(cat);
+  }
+
+  toggleCategoriaTemp(cat: string): void {
+    const idx = this.adminPreciosCategoriasTemp.indexOf(cat);
+    if (idx === -1) {
+      this.adminPreciosCategoriasTemp = [...this.adminPreciosCategoriasTemp, cat];
+    } else {
+      this.adminPreciosCategoriasTemp = this.adminPreciosCategoriasTemp.filter(c => c !== cat);
+    }
+  }
+
+  seleccionarTodasCategorias(): void {
+    this.adminPreciosCategoriasTemp = this.adminPreciosCategorias.slice();
+  }
+
+  limpiarCategoriasTemp(): void {
+    this.adminPreciosCategoriasTemp = [];
+  }
+
+  aplicarFiltroPrecios(): void {
+    this.adminPreciosCategoriasSeleccionadas = this.adminPreciosCategoriasTemp.slice();
+    this.adminPreciosFiltroOpen = false;
+    this.adminPreciosPagina = 0;
+    this.loadAdminPrecios();
+  }
+
+  quitarCategoriaAdmin(cat: string): void {
+    this.adminPreciosCategoriasSeleccionadas = this.adminPreciosCategoriasSeleccionadas.filter(c => c !== cat);
+    this.adminPreciosPagina = 0;
+    this.loadAdminPrecios();
+  }
+
+  limpiarFiltrosAdmin(): void {
+    this.adminPreciosCategoriasSeleccionadas = [];
+    this.adminPreciosCategoriasTemp = [];
+    this.adminPreciosBuscar = '';
+    this.adminPreciosPagina = 0;
+    this.loadAdminPrecios();
+  }
+
+  onAdminPreciosBuscar(): void {
+    if (this.preciosBuscarTimer) clearTimeout(this.preciosBuscarTimer);
+    this.preciosBuscarTimer = setTimeout(() => {
+      this.adminPreciosPagina = 0;
+      this.loadAdminPrecios();
+    }, 400);
+  }
+
+  trackByPrecioId(_: number, p: PrecioMaterial): number {
+    return p.id;
+  }
+
+  loadAdminPrecios(): void {
+    this.adminPreciosLoading = true;
+    this.adminPrecioMaterialService.getPage(
+      this.admin.pais, this.adminPreciosPagina, this.adminPreciosTamanoPagina,
+      this.adminPreciosBuscar, this.adminPreciosCategoriasSeleccionadas
+    ).subscribe({
+      next: page => {
+        this.adminPrecios = page.content;
+        this.adminPreciosTotal = page.totalElements;
+        this.adminPreciosTotalPages = page.totalPages;
+        this.adminPreciosLoading = false;
+      },
+      error: () => {
+        this.adminPreciosLoading = false;
+        this.uiDialog.error({ title: 'Error', text: 'No se pudieron cargar los materiales.' });
+      }
+    });
+  }
+
+  loadAdminPreciosCategorias(): void {
+    this.adminPrecioMaterialService.getCategorias(this.admin.pais).subscribe({
+      next: cats => this.adminPreciosCategorias = cats,
+      error: () => {}
+    });
+  }
+
+  changeAdminPreciosPage(p: number): void {
+    if (p < 0 || p >= this.adminPreciosTotalPages) return;
+    this.adminPreciosPagina = p;
+    this.loadAdminPrecios();
+  }
+
+  abrirNuevoPrecio(): void {
+    this.precioReset();
+    this.precioForm.pais = this.admin.pais;
+    this.showPrecioForm = true;
+  }
+
+  precioEditar(p: PrecioMaterial): void {
+    this.precioEditingId = p.id ?? null;
+    this.precioForm = {
+      nombre: p.nombre,
+      categoriaNombre: p.categoriaNombre,
+      categoriaId: p.categoriaId,
+      unidad: p.unidad,
+      nombreUnidad: p.nombreUnidad,
+      precio: p.precio,
+      moneda: p.moneda || 'ARS',
+      pais: p.pais
+    };
+    this.showPrecioForm = true;
+  }
+
+  precioGuardar(): void {
+    this.precioSubmitted = true;
+    if (!this.precioForm.nombre.trim() || !this.precioForm.categoriaNombre.trim() ||
+        !this.precioForm.unidad.trim() || this.precioForm.precio <= 0) return;
+
+    const payload: Partial<PrecioMaterial> = { ...this.precioForm } as any;
+
+    if (this.precioEditingId != null) {
+      this.adminPrecioMaterialService.update(this.precioEditingId, payload).subscribe({
+        next: () => {
+          this.precioReset();
+          this.loadAdminPrecios();
+          this.uiDialog.success({ title: 'Material actualizado', text: 'Los cambios fueron guardados.' });
+        },
+        error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudo actualizar el material.' })
+      });
+    } else {
+      this.adminPrecioMaterialService.create(payload).subscribe({
+        next: () => {
+          this.precioReset();
+          this.loadAdminPrecios();
+          this.loadAdminPreciosCategorias();
+          this.uiDialog.success({ title: 'Material creado', text: 'El material fue agregado al catálogo.' });
+        },
+        error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudo crear el material.' })
+      });
+    }
+  }
+
+  precioEliminar(p: PrecioMaterial): void {
+    if (p.id == null) return;
+    this.uiDialog.confirmDelete(p.nombre).then(confirmed => {
+      if (!confirmed) return;
+      this.adminPrecioMaterialService.delete(p.id!).subscribe({
+        next: () => {
+          this.uiDialog.success({ title: 'Material eliminado', text: `"${p.nombre}" fue eliminado del catálogo.` });
+          this.loadAdminPrecios();
+        },
+        error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudo eliminar el material.' })
+      });
+    });
+  }
+
+  precioReset(): void {
+    this.precioEditingId = null;
+    this.precioSubmitted = false;
+    this.showPrecioForm = false;
+    this.precioForm = { nombre: '', categoriaNombre: '', categoriaId: '', unidad: '', nombreUnidad: '', precio: 0, moneda: 'ARS', pais: '' };
   }
 
   loadLegacyCodes(): void {

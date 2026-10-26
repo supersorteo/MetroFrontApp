@@ -588,6 +588,149 @@
 
     </div>
 
+    <!-- ── Gestión de Precios de Materiales ──────────── -->
+    <div class="admin-table-section at-tareas" id="precio-form-section" (click)="cerrarFiltroPrecios()">
+
+      <div class="admin-table-header">
+        <h2 class="admin-section-title">
+          Materiales · {{ admin.pais | titlecase }}
+          <span class="admin-section-title__count">{{ adminPreciosTotal }}</span>
+        </h2>
+        <div class="at-tareas__header-actions">
+
+          <!-- Búsqueda -->
+          <div class="admin-search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="admin-search__icon">
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414zm-5.242 1.6a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"/>
+            </svg>
+            <input type="text" class="admin-search__input" placeholder="Buscar por nombre, categoría, unidad..."
+                   [(ngModel)]="adminPreciosBuscar"
+                   (input)="onAdminPreciosBuscar()"
+                   style="min-width:220px">
+          </div>
+
+          <!-- Filtro categorías dropdown -->
+          <div class="apm-filter-wrap" (click)="$event.stopPropagation()">
+            <button class="apm-filter-btn"
+                    [class.apm-filter-btn--active]="adminPreciosCategoriasSeleccionadas.length > 0"
+                    (click)="abrirFiltroPrecios($event)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5"/>
+              </svg>
+              {{ adminPreciosFiltroLabel }}
+              <span *ngIf="adminPreciosCategoriasSeleccionadas.length > 0" class="apm-filter-count">{{ adminPreciosCategoriasSeleccionadas.length }}</span>
+            </button>
+
+            <!-- Dropdown panel -->
+            <div class="apm-dropdown" *ngIf="adminPreciosFiltroOpen">
+              <div class="apm-dropdown__header">
+                <button class="apm-dropdown__link" (click)="seleccionarTodasCategorias()">Todas</button>
+                <button class="apm-dropdown__link" (click)="limpiarCategoriasTemp()">Ninguna</button>
+              </div>
+              <ul class="apm-dropdown__list">
+                <li class="apm-dropdown__item" *ngFor="let cat of adminPreciosCategorias">
+                  <label class="apm-dropdown__label">
+                    <input type="checkbox" class="apm-dropdown__check"
+                           [checked]="isCategoriaTemp(cat)"
+                           (change)="toggleCategoriaTemp(cat)">
+                    {{ cat }}
+                  </label>
+                </li>
+              </ul>
+              <div class="apm-dropdown__footer">
+                <span class="apm-dropdown__summary">
+                  {{ adminPreciosCategoriasTemp.length === 0 ? 'Todas las categorías' : adminPreciosCategoriasTemp.length + ' seleccionadas' }}
+                </span>
+                <button class="apm-dropdown__apply" (click)="aplicarFiltroPrecios()">Aplicar</button>
+              </div>
+            </div>
+          </div>
+
+          <button class="gen-btn gen-btn--task" (click)="abrirNuevoPrecio()">
+            <span class="gen-btn__icon">➕</span>
+            <span class="gen-btn__text">Nuevo material</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Chips de categorías activas -->
+      <div class="apm-active-filters" *ngIf="adminPreciosCategoriasSeleccionadas.length > 0 || adminPreciosBuscar">
+        <ng-container *ngFor="let cat of adminPreciosCategoriasSeleccionadas">
+          <span class="apm-chip">{{ cat }} <button class="apm-chip__remove" (click)="quitarCategoriaAdmin(cat)">&#x00D7;</button></span>
+        </ng-container>
+        <span *ngIf="adminPreciosBuscar" class="apm-chip apm-chip--search">"{{ adminPreciosBuscar }}"
+          <button class="apm-chip__remove" (click)="adminPreciosBuscar = ''; adminPreciosPagina = 0; loadAdminPrecios()">&#x00D7;</button>
+        </span>
+        <button class="apm-clear-all" (click)="limpiarFiltrosAdmin()">Limpiar todo</button>
+      </div>
+
+      <!-- Tabla de materiales -->
+      <div class="admin-table-wrap apm-table-wrap">
+        <!-- Overlay de carga: flota sobre la tabla sin colapsar su altura -->
+        <div class="apm-loading-overlay" *ngIf="adminPreciosLoading">
+          <span class="apm-spinner"></span>
+        </div>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th>Categoría</th>
+              <th>Unidad</th>
+              <th>Precio (ARS)</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of adminPrecios; trackBy: trackByPrecioId">
+              <td class="td--tarea-name">{{ p.nombre }}</td>
+              <td><span class="rubro-badge">{{ p.categoriaNombre }}</span></td>
+              <td><span class="rubro-badge rubro-badge--unit">{{ p.unidad }}</span></td>
+              <td><span class="cost-val">{{ p.precio | number:'1.0-0' }}</span></td>
+              <td>
+                <div class="row-actions">
+                  <button class="ra-btn ra-btn--edit" title="Editar" type="button" (click)="precioEditar(p)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+                    </svg>
+                  </button>
+                  <button class="ra-btn ra-btn--delete" title="Eliminar" type="button" (click)="precioEliminar(p)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                      <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="!adminPreciosLoading && adminPrecios.length === 0">
+              <td colspan="5" class="td--empty">Sin resultados para los filtros aplicados</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación inteligente -->
+      <div class="admin-pagination apm-pagination" *ngIf="adminPreciosTotalPages > 1">
+        <button class="pg-btn" [disabled]="adminPreciosPagina === 0"
+                (click)="changeAdminPreciosPage(adminPreciosPagina - 1)">&#8249;</button>
+
+        <ng-container *ngFor="let p of adminPreciosPaginasArray">
+          <span *ngIf="p === null" class="pg-ellipsis">…</span>
+          <button *ngIf="p !== null" class="pg-btn"
+                  [class.pg-btn--active]="p === adminPreciosPagina"
+                  (click)="changeAdminPreciosPage(p)">{{ p + 1 }}</button>
+        </ng-container>
+
+        <button class="pg-btn" [disabled]="adminPreciosPagina === adminPreciosTotalPages - 1"
+                (click)="changeAdminPreciosPage(adminPreciosPagina + 1)">&#8250;</button>
+        <span class="pg-info">
+          Pág. {{ adminPreciosPagina + 1 }} / {{ adminPreciosTotalPages }}
+          &nbsp;·&nbsp; {{ adminPreciosTotal | number }} materiales
+        </span>
+      </div>
+
+    </div>
+
   </div><!-- /admin-body -->
 
   <!-- ── Modal Ajuste de Precios ──────────────────── -->
@@ -761,6 +904,94 @@
             <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
           </svg>
           {{ tareaEditingId != null ? 'Actualizar tarea' : 'Guardar tarea' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Modal Precio Material ──────────────────── -->
+  <div class="admin-overlay at-modal-overlay" *ngIf="showPrecioForm" (click)="precioReset()">
+    <div class="at-modal" (click)="$event.stopPropagation()">
+
+      <div class="at-modal__header">
+        <div class="at-modal__header-icon">
+          <svg *ngIf="precioEditingId == null" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+          </svg>
+          <svg *ngIf="precioEditingId != null" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+          </svg>
+        </div>
+        <div class="at-modal__header-text">
+          <h3 class="at-modal__title">{{ precioEditingId != null ? 'Editar material' : 'Nuevo material' }}</h3>
+          <small class="at-modal__subtitle">{{ admin.pais | titlecase }} · ARS</small>
+        </div>
+        <button class="at-modal__close" (click)="precioReset()" aria-label="Cerrar">&#x00D7;</button>
+      </div>
+
+      <div class="at-modal__body">
+        <div class="at-form__grid">
+
+          <div class="at-field at-field--full">
+            <label class="at-label">Nombre del material <span class="at-req">*</span></label>
+            <input class="at-input" [ngClass]="{'at-input--invalid': precioSubmitted && !precioForm.nombre.trim()}"
+                   type="text" placeholder="Ej: Cemento portland 50kg" [(ngModel)]="precioForm.nombre" autofocus>
+            <span *ngIf="precioSubmitted && !precioForm.nombre.trim()" class="at-error">Campo obligatorio</span>
+          </div>
+
+          <div class="at-field">
+            <label class="at-label">Categoría <span class="at-req">*</span></label>
+            <select class="at-input" [(ngModel)]="precioForm.categoriaNombre"
+                    [ngClass]="{'at-input--invalid': precioSubmitted && !precioForm.categoriaNombre.trim()}">
+              <option value="">Seleccionar o escribir abajo</option>
+              <option *ngFor="let cat of adminPreciosCategorias" [value]="cat">{{ cat }}</option>
+            </select>
+            <input class="at-input" style="margin-top:4px" type="text" placeholder="O escribir categoría nueva"
+                   [(ngModel)]="precioForm.categoriaNombre">
+            <span *ngIf="precioSubmitted && !precioForm.categoriaNombre.trim()" class="at-error">Campo obligatorio</span>
+          </div>
+
+          <div class="at-field">
+            <label class="at-label">Unidad (símbolo) <span class="at-req">*</span></label>
+            <input class="at-input" [ngClass]="{'at-input--invalid': precioSubmitted && !precioForm.unidad.trim()}"
+                   type="text" placeholder="Ej: m², kg, u" [(ngModel)]="precioForm.unidad">
+            <span *ngIf="precioSubmitted && !precioForm.unidad.trim()" class="at-error">Campo obligatorio</span>
+          </div>
+
+          <div class="at-field">
+            <label class="at-label">Nombre de la unidad</label>
+            <input class="at-input" type="text" placeholder="Ej: Metro cuadrado, Kilogramo"
+                   [(ngModel)]="precioForm.nombreUnidad">
+          </div>
+
+          <div class="at-field">
+            <label class="at-label">Precio (ARS) <span class="at-req">*</span></label>
+            <input class="at-input" [ngClass]="{'at-input--invalid': precioSubmitted && precioForm.precio <= 0}"
+                   type="number" min="0" step="1" placeholder="Ej: 12500" [(ngModel)]="precioForm.precio">
+            <span *ngIf="precioSubmitted && precioForm.precio <= 0" class="at-error">Debe ser mayor a 0</span>
+          </div>
+
+          <div class="at-field">
+            <label class="at-label">Moneda</label>
+            <input class="at-input" type="text" [value]="precioForm.moneda" readonly>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="at-modal__footer">
+        <button class="at-modal__btn at-modal__btn--cancel" (click)="precioReset()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+          </svg>
+          Cancelar
+        </button>
+        <button class="at-modal__btn at-modal__btn--save" (click)="precioGuardar()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+          </svg>
+          {{ precioEditingId != null ? 'Actualizar material' : 'Guardar material' }}
         </button>
       </div>
 
