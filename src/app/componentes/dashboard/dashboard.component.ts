@@ -1059,7 +1059,9 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 
   private applyImageUrl(url: string): void {
     this.logoUrl = url;
-    this.currentEmpresaLogoUrl = url;
+    if (this.empresaEditId) {
+      this.currentEmpresaLogoUrl = url;
+    }
 
     if (this.selectedEmpresaId) {
       this.selectedEmpresaId = {
@@ -2501,6 +2503,7 @@ toggleTareasPanel(): void {
   }
 
   if (!this.tareasAgregadas || this.tareasAgregadas.length === 0) {
+    if (this.userTareaStore.loading()) return;
     this.uiDialog.info({ title: 'Sin tareas', text: 'Aún no agregaste tareas. Agrega al menos una para poder ver el panel.' });
     return;
   }
@@ -3426,6 +3429,7 @@ onImageChange(event: Event): void {
     this.empresaCuilCuit = '';
     this.showSocialFields = false;
     this.logoUrl = '';
+    localStorage.removeItem('demoEmpresaLogo');
     if (this.modalImagePreview) {
       this.modalImagePreview.nativeElement.style.display = 'none';
     }

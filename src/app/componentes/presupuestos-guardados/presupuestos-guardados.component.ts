@@ -136,6 +136,9 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     if (this.clienteActual?.id) {
       payload['cliente'] = { id: this.clienteActual.id };
     }
+    if (this.empresaActual?.id) {
+      payload['empresa'] = { id: this.empresaActual.id };
+    }
 
     if (this.presupuestoCargado?.id) {
       if (!this.puedeActualizarPresupuestoCargado) {

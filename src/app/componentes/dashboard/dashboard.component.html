@@ -1266,7 +1266,7 @@
 
     <div class="containerbuscar">
 
-      <div class="task-brand-row mb-2" *ngIf="currentEmpresaLogoUrl">
+      <div class="task-brand-row mb-2" *ngIf="selectedEmpresaId && currentEmpresaLogoUrl">
 
         <div class="fixed-image-container" *ngIf="currentEmpresaLogoUrl">
 
@@ -1660,7 +1660,7 @@
           >
 
             <img
-              *ngIf="currentEmpresaLogoUrl"
+              *ngIf="selectedEmpresaId && currentEmpresaLogoUrl"
               [src]="currentEmpresaLogoUrl"
               alt="Logo empresa"
               class="tareas-agregadas__logo"
