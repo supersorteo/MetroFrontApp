@@ -1,8 +1,32 @@
 <div class="saved-budgets-card">
   <div class="saved-budgets-header">
-    @if (!esModoDemo) {
-      <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
-    }
+    <div class="saved-budgets-header__top">
+      @if (!esModoDemo) {
+        <span class="capacity-chip">{{ totalGuardados }}/{{ maxItems }} disponibles</span>
+      }
+
+      @if (totalPaginas > 1) {
+        <div class="saved-budgets-pagination" aria-label="Paginación de presupuestos">
+          <button
+            type="button"
+            class="saved-budgets-pagination__button"
+            (click)="cambiarPagina(-1)"
+            [disabled]="!puedeIrPaginaAnterior"
+            aria-label="Página anterior">
+            <i class="bi bi-chevron-left" aria-hidden="true"></i>
+          </button>
+          <span class="saved-budgets-pagination__status">Página {{ paginaActual }}/{{ totalPaginas }}</span>
+          <button
+            type="button"
+            class="saved-budgets-pagination__button"
+            (click)="cambiarPagina(1)"
+            [disabled]="!puedeIrPaginaSiguiente"
+            aria-label="Página siguiente">
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      }
+    </div>
 
     @if (!tareasActuales.length) {
       <small class="text-muted">Agrega tareas para poder guardar este presupuesto.</small>
@@ -70,25 +94,17 @@
         </div>
       }
     </div>
-    @if (hayMasPaginas) {
-      <div class="load-more-container">
-        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cargarMas()" [disabled]="cargandoMas">
-          @if (cargandoMas) {
-            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-          }
-          Cargar más
-        </button>
-      </div>
-    }
   } @else {
     <div class="empty-state">
-      <p class="empty-state__message">Consigue acceso a metro y guarda clientes y presupuestos</p>
+      @if (esModoDemo) {
+        <p class="empty-state__message">Consigue acceso a metro y guarda clientes y presupuestos</p>
+      }
       <img
         class="empty-state__sprite"
         src="assets/archi-explicando-presupuestos.webp"
         alt="Archi explicando cómo guardar presupuestos"
       />
-      <p class="empty-state__hint">Todavía no hay presupuestos guardados para este cliente.</p>
+      <p class="empty-state__hint">Todavía no hay presupuesto guardados.</p>
     </div>
   }
 

@@ -45,6 +45,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   filtro = '';
   presupuestos: SavedPresupuesto[] = [];
   cargandoMas = false;
+  cargandoPagina = false;
   presupuestoEditando: SavedPresupuesto | null = null;
   tareaAAgregarId: number | null = null;
   presupuestoHabilitadoParaActualizarId: number | null = null;
@@ -97,6 +98,35 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
 
   get hayMasPaginas(): boolean {
     return this.budgetService.hayMasPaginas;
+  }
+
+  get paginaActual(): number {
+    return this.budgetService.currentPageValue + 1;
+  }
+
+  get totalPaginas(): number {
+    return this.budgetService.totalPagesValue;
+  }
+
+  get puedeIrPaginaAnterior(): boolean {
+    return this.paginaActual > 1 && !this.cargandoPagina;
+  }
+
+  get puedeIrPaginaSiguiente(): boolean {
+    return this.paginaActual < this.totalPaginas && !this.cargandoPagina;
+  }
+
+  cambiarPagina(delta: number): void {
+    if (this.cargandoPagina || !this.userCode) return;
+
+    const pagina = this.paginaActual - 1 + delta;
+    if (pagina < 0 || pagina >= this.totalPaginas) return;
+
+    this.cargandoPagina = true;
+    this.budgetService.cargarPaginaPresupuestos(this.userCode, pagina).subscribe({
+      complete: () => { this.cargandoPagina = false; },
+      error: () => { this.cargandoPagina = false; }
+    });
   }
 
   cargarMas(): void {
@@ -174,8 +204,22 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     });
   }
 
-  cargar(presupuesto: SavedPresupuesto): void {
+  async cargar(presupuesto: SavedPresupuesto): Promise<void> {
     if (this.shouldSkipBudgetAction('load', presupuesto.id)) return;
+
+    const tieneTareasSinGuardar = this.tareasActuales.length > 0;
+    const confirmed = await this.uiDialog.confirm({
+      title: '¿Cargar presupuesto?',
+      text: tieneTareasSinGuardar
+        ? 'Las tareas agregadas actualmente en el panel se perderán si no las guardas antes. ¿Deseas continuar?'
+        : 'Se reemplazará el contenido actual del panel de tareas con este presupuesto. ¿Deseas continuar?',
+      confirmText: 'Cargar presupuesto',
+      cancelText: 'Cancelar',
+      tone: 'warning',
+      icon: 'warning'
+    });
+    if (!confirmed) return;
+
     this.presupuestoHabilitadoParaActualizarId = presupuesto.id;
     this.cargarPresupuesto.emit(presupuesto);
     this.uiDialog.success({ title: 'Listo', text: `Presupuesto "${presupuesto.name}" cargado correctamente.` });

@@ -1165,26 +1165,22 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       this.updatePaginatedClientes();
     });
 
-    // Sync cliente seleccionado → estado local + presupuesto pendiente
+    // Sync cliente seleccionado → estado local.
+    // La restauración de presupuestos se ejecuta desde restorePendingBudget(),
+    // fuera de este effect, para evitar ciclos de escritura en ClienteStore.
     effect(() => {
       if (this.trialMode) return;
-      this.clienteSeleccionado = this.clienteStore.selected();
-      if (!this.clienteSeleccionado || !this.presupuestoPendiente) return;
-      const mismoCliente =
-        this.presupuestoPendiente.cliente?.id &&
-        this.presupuestoPendiente.cliente.id === this.clienteSeleccionado.id;
-      if (mismoCliente) {
-        void this.aplicarPresupuestoGuardado(this.presupuestoPendiente, {
-          scrollToTable: false
-        });
-        this.presupuestoPendiente = null;
-      }
+      const clienteActual = this.clienteStore.selected();
+      this.clienteSeleccionado = clienteActual;
     });
 
     // Sync user-tareas IDB → tareasAgregadas (solo modo autenticado)
     effect(() => {
       if (this.trialMode) return;
-      this.tareasAgregadas = [...this.userTareaStore.tareas()];
+      const tareasDelUsuario = this.userTareaStore.tareas();
+      if (this.presupuestoSeleccionado) return;
+
+      this.tareasAgregadas = [...tareasDelUsuario];
       this.mostrarTabla = this.tareasAgregadas.length > 0;
       this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
       this.updatePaginatedTareasPanel();
@@ -1236,12 +1232,26 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     localStorage.removeItem('reloadClientes');
   }
 
-  // -- Presupuesto pendiente: leer antes de initEmpresas para que el --------
-  //    callback de clientes lo encuentre en this.presupuestoPendiente --------
+  // -- Presupuesto pendiente: restaurar el estado completo fuera de effects -
   private restorePendingBudget(): void {
     const stored = localStorage.getItem('presupuestoCargado');
     if (stored) {
-      this.presupuestoPendiente = JSON.parse(stored) as SavedPresupuesto;
+      try {
+        const presupuesto = JSON.parse(stored) as SavedPresupuesto;
+        this.presupuestoPendiente = presupuesto;
+        const clienteDelPresupuesto = presupuesto.cliente;
+        if (clienteDelPresupuesto?.id) {
+          const clienteDisponible = this.clienteStore.clientes().find(cliente =>
+            Number(cliente.id) === Number(clienteDelPresupuesto.id)
+          );
+          this.clienteStore.select(clienteDisponible || clienteDelPresupuesto);
+        }
+        void this.aplicarPresupuestoGuardado(presupuesto, {
+          scrollToTable: false
+        });
+      } catch {
+        this.presupuestoPendiente = null;
+      }
     }
   }
 
@@ -2323,9 +2333,14 @@ if (this.trialMode) {
   async verPresupuesto(): Promise<void> {
   if (this.codeExpired) { this.showExpiredMessage(); return; }
   // Permitir vista previa incluso sin empresa o cliente seleccionados.
-    localStorage.removeItem('selectedPresupuestoName');
-  if (this.clienteSeleccionado) {
-    localStorage.setItem('selectedCliente', JSON.stringify(this.clienteSeleccionado));
+    const presupuestoActivo = this.presupuestoSeleccionado;
+    const clienteParaPreview = presupuestoActivo?.cliente || this.clienteSeleccionado;
+    const tareasParaPreview = this.tareasAgregadas.length > 0
+      ? this.tareasAgregadas
+      : (presupuestoActivo?.tareas || []);
+
+  if (clienteParaPreview) {
+    localStorage.setItem('selectedCliente', JSON.stringify(clienteParaPreview));
   } else {
     localStorage.removeItem('selectedCliente');
   }
@@ -2336,13 +2351,19 @@ if (this.trialMode) {
     localStorage.removeItem('selectedEmpresa');
   }
 
-  localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas ?? []));
+  if (presupuestoActivo?.name) {
+    localStorage.setItem('selectedPresupuestoName', presupuestoActivo.name);
+  } else {
+    localStorage.removeItem('selectedPresupuestoName');
+  }
+
+  localStorage.setItem('selectedTareas', JSON.stringify(tareasParaPreview));
   await this.localStore.setState('budget:active-preview', {
-    presupuesto: this.presupuestoSeleccionado,
+    presupuesto: presupuestoActivo,
     empresa: this.selectedEmpresaId ?? null,
-    cliente: this.clienteSeleccionado ?? null,
-    tareas: this.tareasAgregadas ?? [],
-    name: this.presupuestoSeleccionado?.name || '',
+    cliente: clienteParaPreview ?? null,
+    tareas: tareasParaPreview,
+    name: presupuestoActivo?.name || '',
     budgetDate: this.budgetDate || new Date().toISOString()
   });
   this.route.navigate(['/presupuesto']);
@@ -2401,11 +2422,11 @@ private async aplicarPresupuestoGuardado(
     // Buscar si el cliente ya está en la lista cargada
     const clienteEncontrado = this.clientes.find(c => c.id === presupuesto.cliente.id);
 
-    if (clienteEncontrado) {
-      this.clienteSeleccionado = clienteEncontrado;
-    } else {
-      // Si no está en la lista local, usar el que viene del backend
-      this.clienteSeleccionado = presupuesto.cliente;
+    this.clienteSeleccionado = clienteEncontrado || presupuesto.cliente;
+
+    // El store es la fuente de verdad de la selección autenticada.
+    if (!this.trialMode) {
+      this.clienteStore.select(this.clienteSeleccionado);
     }
 
     // Guardar en localStorage
@@ -3790,7 +3811,18 @@ fetchUserData(): void {
         if (!this.selectedEmpresaId) this.empresaStore.select(null);
       }
 
-      if (sClienteId) {
+      const clienteActivoId = Number(
+        this.presupuestoSeleccionado?.cliente?.id ??
+        this.presupuestoPendiente?.cliente?.id ??
+        0
+      );
+
+      if (clienteActivoId) {
+        const clienteActivo = this.clienteStore.clientes().find(c => Number(c.id) === clienteActivoId)
+          ?? this.presupuestoSeleccionado?.cliente
+          ?? this.presupuestoPendiente?.cliente;
+        if (clienteActivo) this.clienteStore.select(clienteActivo);
+      } else if (sClienteId) {
         localStorage.setItem('selectedClienteId', String(sClienteId));
         const cliente = this.clienteStore.clientes().find(c => Number(c.id) === sClienteId);
         if (cliente) this.clienteStore.select(cliente);

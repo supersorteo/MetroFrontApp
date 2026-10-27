@@ -46,6 +46,14 @@ export class BudgetService {
     return this.presupuestosSubject.value;
   }
 
+  get currentPageValue(): number {
+    return this.currentPageSubject.value;
+  }
+
+  get totalPagesValue(): number {
+    return this.totalPagesSubject.value;
+  }
+
   limpiarPresupuestos(): void {
     this.setBudgets([]);
   }
@@ -75,6 +83,20 @@ export class BudgetService {
         this.setBudgets([...actual, ...(r.content ?? [])]);
         this.totalPagesSubject.next(r.totalPages ?? 1);
         this.currentPageSubject.next(nextPage);
+      }),
+      map(r => r.content ?? []),
+      catchError(() => of([]))
+    );
+  }
+
+  cargarPaginaPresupuestos(userCode: string, page: number): Observable<SavedPresupuesto[]> {
+    if (!userCode || !navigator.onLine || page < 0) return of([]);
+
+    return this.http.get<PresupuestosPage>(`${this.apiUrl}/user/${userCode}?page=${page}&size=20`).pipe(
+      tap(r => {
+        this.setBudgets(r.content ?? []);
+        this.totalPagesSubject.next(r.totalPages ?? 1);
+        this.currentPageSubject.next(page);
       }),
       map(r => r.content ?? []),
       catchError(() => of([]))

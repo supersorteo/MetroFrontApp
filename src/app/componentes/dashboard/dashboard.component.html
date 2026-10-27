@@ -1691,7 +1691,7 @@
 
           <ng-container *ngIf="clienteSeleccionado; else sinCliente">
             <div class="tareas-agregadas__cliente-top">
-              <span class="tareas-agregadas__cliente-nombre">{{ presupuestoSeleccionado?.name || clienteSeleccionado.name }}</span>
+              <span class="tareas-agregadas__cliente-nombre">{{ clienteSeleccionado.name }}</span>
               <button
                 type="button"
                 class="btn btn-sm btn-outline-secondary tareas-agregadas__cliente-btn"
