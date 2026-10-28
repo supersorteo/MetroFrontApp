@@ -77,11 +77,10 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       this.cargarPresupuestos();
     }
 
-    if (this.presupuestoCargado) {
+    if (this.presupuestoCargado?.id) {
       this.nombreTemporal = this.presupuestoCargado.name || '';
-      if (this.presupuestoCargado.cliente?.id !== this.clienteActual?.id) {
-        this.presupuestoHabilitadoParaActualizarId = null;
-      }
+      // Habilitar actualización siempre que haya un presupuesto cargado con id válido
+      this.presupuestoHabilitadoParaActualizarId = this.presupuestoCargado.id;
     } else {
       this.presupuestoHabilitadoParaActualizarId = null;
     }
@@ -131,14 +130,10 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
 
     const payload: any = {
       name: nombre,
-      tareas: this.tareasActuales.map(t => ({ id: t.id }))
+      tareas: this.tareasActuales.map(t => ({ id: t.id })),
+      cliente: this.clienteActual?.id ? { id: this.clienteActual.id } : null,
+      empresa: this.empresaActual?.id ? { id: this.empresaActual.id } : null
     };
-    if (this.clienteActual?.id) {
-      payload['cliente'] = { id: this.clienteActual.id };
-    }
-    if (this.empresaActual?.id) {
-      payload['empresa'] = { id: this.empresaActual.id };
-    }
 
     if (this.presupuestoCargado?.id) {
       if (!this.puedeActualizarPresupuestoCargado) {
@@ -255,7 +250,8 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
 
       const payload = {
         name: this.presupuestoEditando!.name.trim(),
-        cliente: { id: this.presupuestoEditando!.cliente.id },
+        cliente: this.presupuestoEditando!.cliente?.id ? { id: this.presupuestoEditando!.cliente.id } : null,
+        empresa: this.empresaActual?.id ? { id: this.empresaActual.id } : null,
         tareas: this.presupuestoEditando!.tareas.map(t => ({ id: t.id }))
       };
 

@@ -143,8 +143,8 @@ export class BudgetService {
       tap(nuevo => {
         const empresa = this.getSelectedEmpresa();
         const cliente = this.getSelectedCliente();
-        const withEmpresa = empresa && !nuevo.empresa?.name ? { ...nuevo, empresa } : nuevo;
-        const enriched = cliente && withEmpresa.cliente?.id === cliente.id && !withEmpresa.cliente?.name
+        const withEmpresa = empresa && nuevo.empresa?.id && !nuevo.empresa?.name ? { ...nuevo, empresa } : nuevo;
+        const enriched = cliente && withEmpresa.cliente?.id && withEmpresa.cliente?.id === cliente.id && !withEmpresa.cliente?.name
           ? { ...withEmpresa, cliente }
           : withEmpresa;
         const actualizados = [enriched, ...this.presupuestosSubject.value.filter(p => p.id !== enriched.id)];
@@ -172,8 +172,8 @@ export class BudgetService {
       tap(actualizado => {
         const empresa = this.getSelectedEmpresa();
         const cliente = this.getSelectedCliente();
-        const withEmpresa = empresa && !actualizado.empresa?.name ? { ...actualizado, empresa } : actualizado;
-        const enriched = cliente && withEmpresa.cliente?.id === cliente.id && !withEmpresa.cliente?.name
+        const withEmpresa = empresa && actualizado.empresa?.id && !actualizado.empresa?.name ? { ...actualizado, empresa } : actualizado;
+        const enriched = cliente && withEmpresa.cliente?.id && withEmpresa.cliente?.id === cliente.id && !withEmpresa.cliente?.name
           ? { ...withEmpresa, cliente }
           : withEmpresa;
         const actuales = [...this.presupuestosSubject.value];
