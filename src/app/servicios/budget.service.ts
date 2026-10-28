@@ -142,7 +142,11 @@ export class BudgetService {
     return this.http.post<SavedPresupuesto>(this.apiUrl, payload).pipe(
       tap(nuevo => {
         const empresa = this.getSelectedEmpresa();
-        const enriched = empresa && !nuevo.empresa ? { ...nuevo, empresa } : nuevo;
+        const cliente = this.getSelectedCliente();
+        const withEmpresa = empresa && nuevo.empresa?.id && !nuevo.empresa?.name ? { ...nuevo, empresa } : nuevo;
+        const enriched = cliente && withEmpresa.cliente?.id && withEmpresa.cliente?.id === cliente.id && !withEmpresa.cliente?.name
+          ? { ...withEmpresa, cliente }
+          : withEmpresa;
         const actualizados = [enriched, ...this.presupuestosSubject.value.filter(p => p.id !== enriched.id)];
         this.setBudgets(actualizados);
         this.persistBudgets(clienteId, actualizados, this.resolveEmpresaId(enriched));
@@ -167,7 +171,11 @@ export class BudgetService {
     return this.http.put<SavedPresupuesto>(`${this.apiUrl}/${id}`, payload).pipe(
       tap(actualizado => {
         const empresa = this.getSelectedEmpresa();
-        const enriched = empresa && !actualizado.empresa ? { ...actualizado, empresa } : actualizado;
+        const cliente = this.getSelectedCliente();
+        const withEmpresa = empresa && actualizado.empresa?.id && !actualizado.empresa?.name ? { ...actualizado, empresa } : actualizado;
+        const enriched = cliente && withEmpresa.cliente?.id && withEmpresa.cliente?.id === cliente.id && !withEmpresa.cliente?.name
+          ? { ...withEmpresa, cliente }
+          : withEmpresa;
         const actuales = [...this.presupuestosSubject.value];
         const indice = actuales.findIndex(p => p.id === id);
         if (indice !== -1) {

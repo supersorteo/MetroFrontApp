@@ -111,6 +111,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   filtroEmpresa: string = '';
   selectedEmpresaId: any = null;
   selectedEmpresa: Empresa | null = null;
+  presupuestoModeBaselineIds: Set<number> = new Set();
+  private empresaBeforePresupuesto: any = null;
   empresaEditId: number | null = null; // ID de empresa en edición
   // --- EMPRESAS ---
 
@@ -1059,7 +1061,9 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 
   private applyImageUrl(url: string): void {
     this.logoUrl = url;
-    this.currentEmpresaLogoUrl = url;
+    if (this.empresaEditId) {
+      this.currentEmpresaLogoUrl = url;
+    }
 
     if (this.selectedEmpresaId) {
       this.selectedEmpresaId = {
@@ -1153,9 +1157,14 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     effect(() => {
       if (this.trialMode) return;
       const empresa = this.empresaStore.selected();
-      this.selectedEmpresaId = empresa;
+      if (this.presupuestoSeleccionado) return;
+      // Guard: si localStorage no tiene selectedEmpresaId, el store puede tener dato stale
+      // (race condition IDB tras quitar carga) → no aplicar el valor del store
+      const lsEmpresaId = localStorage.getItem('selectedEmpresaId');
+      const resolvedEmpresa = lsEmpresaId ? empresa : null;
+      this.selectedEmpresaId = resolvedEmpresa;
       this.cargarDatosEmpresaSeleccionada();
-      void this.actualizarImagenEmpresa(empresa);
+      void this.actualizarImagenEmpresa(resolvedEmpresa);
     });
 
     // Sync clientes IDB → lista local + paginación
@@ -1168,14 +1177,21 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     // Sync cliente seleccionado → estado local + presupuesto pendiente
     effect(() => {
       if (this.trialMode) return;
-      this.clienteSeleccionado = this.clienteStore.selected();
-      if (!this.clienteSeleccionado || !this.presupuestoPendiente) return;
+      const storeCliente = this.clienteStore.selected();
+      // No sobreescribir cliente cuando hay presupuesto cargado
+      if (!this.presupuestoSeleccionado) {
+        // Guard: si localStorage no tiene selectedCliente, el store puede tener dato stale
+        // (race condition IDB tras quitar carga) → no aplicar el valor del store
+        const lsCliente = localStorage.getItem('selectedCliente');
+        this.clienteSeleccionado = lsCliente ? storeCliente : null;
+      }
+      if (!storeCliente || !this.presupuestoPendiente) return;
       const mismoCliente =
         this.presupuestoPendiente.cliente?.id &&
-        this.presupuestoPendiente.cliente.id === this.clienteSeleccionado.id;
+        this.presupuestoPendiente.cliente.id === storeCliente.id;
       if (mismoCliente) {
         void this.aplicarPresupuestoGuardado(this.presupuestoPendiente, {
-          scrollToTable: false
+          scrollToTable: false, useStoredBaseline: true
         });
         this.presupuestoPendiente = null;
       }
@@ -1184,7 +1200,30 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     // Sync user-tareas IDB → tareasAgregadas (solo modo autenticado)
     effect(() => {
       if (this.trialMode) return;
-      this.tareasAgregadas = [...this.userTareaStore.tareas()];
+      const storeTareas = this.userTareaStore.tareas();
+      if (this.presupuestoSeleccionado) {
+        // Modo presupuesto: solo agregar tareas verdaderamente nuevas (post-baseline)
+        const existingInPresupuesto = new Set(this.tareasAgregadas.map(t => t.id));
+        const trulyNew = storeTareas.filter(t =>
+          t.id &&
+          !this.presupuestoModeBaselineIds.has(t.id) &&
+          !existingInPresupuesto.has(t.id)
+        );
+        console.log('[PRESUPUESTO] UserTareaStore effect en modo presupuesto', {
+          storeTareas: storeTareas.length,
+          baselineIds: [...this.presupuestoModeBaselineIds],
+          existingInPresupuesto: [...existingInPresupuesto],
+          trulyNew: trulyNew.map(t => ({ id: t.id, tarea: t.tarea }))
+        });
+        if (trulyNew.length > 0) {
+          this.tareasAgregadas = [...this.tareasAgregadas, ...trulyNew];
+          this.mostrarTabla = true;
+          this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
+          this.updatePaginatedTareasPanel();
+        }
+        return;
+      }
+      this.tareasAgregadas = [...storeTareas];
       this.mostrarTabla = this.tareasAgregadas.length > 0;
       this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
       this.updatePaginatedTareasPanel();
@@ -1242,6 +1281,21 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     const stored = localStorage.getItem('presupuestoCargado');
     if (stored) {
       this.presupuestoPendiente = JSON.parse(stored) as SavedPresupuesto;
+      // Restaurar baseline guardado para que el effect no agregue tareas del usuario
+      const baselineStored = localStorage.getItem('presupuestoBaselineIds');
+      if (baselineStored) {
+        this.presupuestoModeBaselineIds = new Set(JSON.parse(baselineStored) as number[]);
+      }
+      console.log('[PRESUPUESTO] restorePendingBudget - localStorage tiene:', {
+        id: this.presupuestoPendiente.id,
+        name: this.presupuestoPendiente.name,
+        cliente: this.presupuestoPendiente.cliente,
+        empresa: this.presupuestoPendiente.empresa,
+        tareas: this.presupuestoPendiente.tareas?.map(t => ({ id: t.id, tarea: t.tarea })),
+        baselineRestaurado: [...this.presupuestoModeBaselineIds]
+      });
+    } else {
+      console.log('[PRESUPUESTO] restorePendingBudget - no hay presupuesto en localStorage');
     }
   }
 
@@ -1400,7 +1454,9 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     } else {
       this.clienteSeleccionado = cliente;
       this.syncSelectedClienteStorage();
-      void this.loadTareasAgregadas();
+      if (!this.presupuestoSeleccionado) {
+        void this.loadTareasAgregadas();
+      }
       this.clienteStore.select(cliente);
     }
     this.syncPreferencesToServer();
@@ -1881,6 +1937,17 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   }
 
 ngAfterViewInit() {
+  // Restaurar presupuesto pendiente (con o sin cliente) después de que los stores IDB inicialicen
+  if (this.presupuestoPendiente) {
+    console.log('[PRESUPUESTO] ngAfterViewInit - hay pendiente, programando restauración en 300ms', this.presupuestoPendiente.id);
+    setTimeout(() => {
+      console.log('[PRESUPUESTO] ngAfterViewInit timeout - pendiente:', this.presupuestoPendiente?.id, '| seleccionado:', this.presupuestoSeleccionado?.id);
+      if (this.presupuestoPendiente && !this.presupuestoSeleccionado) {
+        void this.aplicarPresupuestoGuardado(this.presupuestoPendiente, { scrollToTable: false, useStoredBaseline: true });
+        this.presupuestoPendiente = null;
+      }
+    }, 300);
+  }
   this.restaurarTamanoFuenteLista();
   const menuBtn = document.getElementById('menuToggleBtn');
   const offcanvasElement = document.getElementById('offcanvasMenu');
@@ -2364,72 +2431,101 @@ async cargarPresupuestoDesdeLista(presupuesto: SavedPresupuesto): Promise<void> 
 
 private async aplicarPresupuestoGuardado(
   presupuesto: SavedPresupuesto,
-  options: { scrollToTable?: boolean } = {}
+  options: { scrollToTable?: boolean; useStoredBaseline?: boolean } = {}
 ): Promise<void> {
-   const { scrollToTable = true } = options;
-   this.presupuestoPendiente = null;
-   this.presupuestoSeleccionado = presupuesto;
-   localStorage.setItem('presupuestoCargado', JSON.stringify(presupuesto));
-   localStorage.setItem('selectedPresupuestoName', presupuesto.name);
-   await this.localStore.setState('budget:active-preview', {
-     presupuesto,
-     empresa: presupuesto.empresa || this.selectedEmpresaId || null,
-     cliente: presupuesto.cliente || null,
-     tareas: presupuesto.tareas || [],
-     name: presupuesto.name,
-     budgetDate: presupuesto.createdAt || new Date().toISOString()
-   });
+  const { scrollToTable = true, useStoredBaseline = false } = options;
+  const esPrimeraCarga = !this.presupuestoSeleccionado;
+  this.presupuestoPendiente = null;
+  this.presupuestoSeleccionado = presupuesto;
 
+  console.log('[PRESUPUESTO] aplicarPresupuestoGuardado - iniciando', {
+    id: presupuesto.id,
+    name: presupuesto.name,
+    cliente: presupuesto.cliente,
+    empresa: presupuesto.empresa,
+    tareas: presupuesto.tareas?.map(t => ({ id: t.id, tarea: t.tarea }))
+  });
 
-  // 1. CARGAR TAREAS DEL PRESUPUESTO
+  // Todo el estado de UI ANTES del await para evitar race conditions con effects
+
+  // 1. TAREAS
   this.tareasAgregadas = (presupuesto.tareas || []).map(tarea => ({
     ...tarea,
-    // Aseguramos que totalCost sea número (por si viene como string)
     totalCost: Number(tarea.totalCost) || 0
   }));
-
   this.mostrarTabla = this.tareasAgregadas.length > 0;
-
-  // Guardar en localStorage y servicio global
   localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
   this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
   this.tareasCurrentPage = 1;
-  this.updatePaginatedTareasPanel();
 
-  // 2. CARGAR CLIENTE DEL PRESUPUESTO
+  // 2. BASELINE: al restaurar tras refresh se usa el guardado en localStorage (IDB aún no cargó)
+  if (!useStoredBaseline) {
+    const storeTareasSnapshot = this.userTareaStore.tareas();
+    this.presupuestoModeBaselineIds = new Set(
+      storeTareasSnapshot.map(t => t.id).filter((id): id is number => !!id)
+    );
+    localStorage.setItem('presupuestoBaselineIds', JSON.stringify([...this.presupuestoModeBaselineIds]));
+    console.log('[PRESUPUESTO] baseline NUEVO - store tiene', storeTareasSnapshot.length, 'tareas, ids:', [...this.presupuestoModeBaselineIds]);
+  } else {
+    console.log('[PRESUPUESTO] baseline RESTAURADO desde localStorage:', [...this.presupuestoModeBaselineIds]);
+  }
+
+  // 3. CLIENTE — busca en lista local primero, luego en signal del store, fallback al objeto del presupuesto
   if (presupuesto.cliente && presupuesto.cliente.id) {
-    // Buscar si el cliente ya está en la lista cargada
-    const clienteEncontrado = this.clientes.find(c => c.id === presupuesto.cliente.id);
-
-    if (clienteEncontrado) {
-      this.clienteSeleccionado = clienteEncontrado;
-    } else {
-      // Si no está en la lista local, usar el que viene del backend
-      this.clienteSeleccionado = presupuesto.cliente;
-    }
-
-    // Guardar en localStorage
-    this.syncSelectedClienteStorage();
+    const clienteId = presupuesto.cliente.id;
+    const clienteEncontrado =
+      this.clientes.find(c => c.id === clienteId && c.name) ??
+      this.clienteStore.clientes().find(c => c.id === clienteId && c.name);
+    this.clienteSeleccionado = clienteEncontrado ?? presupuesto.cliente;
   } else {
     this.clienteSeleccionado = null;
-    this.syncSelectedClienteStorage();
-    console.warn('El presupuesto no tiene cliente asociado');
   }
+  this.syncSelectedClienteStorage();
+
+  // 4. EMPRESA (guardar la del usuario para restaurar al quitar carga)
+  // Solo en la primera carga del presupuesto, no al re-aplicar tras guardar/editar.
+  // Si la empresa actual coincide con la del presupuesto, guardamos null: el usuario
+  // no la seleccionó explícitamente (vino de preferencias del servidor) y "quitar carga"
+  // debe limpiar el logo en lugar de restaurar la misma empresa.
+  if (esPrimeraCarga) {
+    const presupuestoEmpresaId = presupuesto.empresa?.id != null ? Number(presupuesto.empresa.id) : null;
+    const currentEmpresaId = this.selectedEmpresaId?.id != null ? Number(this.selectedEmpresaId.id) : null;
+    const mismaEmpresa = presupuestoEmpresaId != null && currentEmpresaId === presupuestoEmpresaId;
+    this.empresaBeforePresupuesto = mismaEmpresa ? null : this.selectedEmpresaId;
+  }
+  const empresaRaw = presupuesto.empresa || null;
+  // Preferir la empresa del store local (tiene logoUrl y userCode completos)
+  const empresaDelPresupuesto = empresaRaw?.id
+    ? (this.empresas.find(e => e.id === empresaRaw.id) ?? empresaRaw)
+    : null;
+  this.selectedEmpresaId = empresaDelPresupuesto;
+  this.syncSelectedEmpresaStorage(empresaDelPresupuesto);
+  this.cargarDatosEmpresaSeleccionada();
+  void this.actualizarImagenEmpresa(empresaDelPresupuesto);
 
   this.budgetDate = new Date().toISOString().split('T')[0];
 
-  // 3. NO TOCAR LA EMPRESA
-  // La empresa actual ya está seleccionada por el usuario.
-  // No la cambiamos al cargar un presupuesto (sería confuso para el usuario).
+  // Persistencia IDB (async, no afecta estado de UI)
+  localStorage.setItem('presupuestoCargado', JSON.stringify(presupuesto));
+  localStorage.setItem('selectedPresupuestoName', presupuesto.name);
+  await this.localStore.setState('budget:active-preview', {
+    presupuesto,
+    empresa: presupuesto.empresa || null,
+    cliente: presupuesto.cliente || null,
+    tareas: presupuesto.tareas || [],
+    name: presupuesto.name,
+    budgetDate: presupuesto.createdAt || new Date().toISOString()
+  });
 
-  // 5. SCROLL SUAVE A LA TABLA (opcional, mejora UX)
+  this.updatePaginatedTareasPanel();
+
   if (scrollToTable) {
-  setTimeout(() => {
-    const tabla = document.querySelector('.table-responsive');
-    if (tabla) {
-      tabla.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, 100);
+    setTimeout(() => {
+      const tabla = document.querySelector('.table-responsive');
+      if (tabla) {
+        tabla.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   }
 }
 
@@ -2455,6 +2551,7 @@ openSaveBudgetModal(): void {
     this.uiDialog.info({ title: 'Tareas requeridas', text: 'Agrega al menos una tarea antes de guardar el presupuesto.' });
     return;
   }
+  console.log('[SAVE-MODAL] open → selectedEmpresaId:', this.selectedEmpresaId, '| empresaName:', this.empresaName, '| clienteSeleccionado:', this.clienteSeleccionado, '| presupuestoSeleccionado:', this.presupuestoSeleccionado?.id);
   this.nombrePresupuestoModal = this.presupuestoSeleccionado?.name || '';
   this._presupuestoGuardadoExitosamente = false;
   this.showSaveBudgetModal = true;
@@ -2471,12 +2568,29 @@ guardarPresupuestoDesdeModal(): void {
   if (this.codeExpired) { this.showExpiredMessage(); return; }
   const nombre = this.nombrePresupuestoModal.trim();
   if (!nombre || !this.presupuestosGuardadosComponent) return;
+  this.showSaveBudgetModal = false;
   this.presupuestosGuardadosComponent.nombreTemporal = nombre;
   this.presupuestosGuardadosComponent.guardarPresupuestoActual();
   this._presupuestoGuardadoExitosamente = false;
   this.nombrePresupuestoModal = '';
-  const modalEl = document.getElementById('saveBudgetModal');
-  if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+  setTimeout(() => {
+    this.showTareasPanel = false;
+    this.showSavedBudgetsPanel = true;
+  }, 400);
+}
+
+guardarComoNuevoDesdeModal(): void {
+  if (this.codeExpired) { this.showExpiredMessage(); return; }
+  const nombre = this.nombrePresupuestoModal.trim();
+  if (!nombre || !this.presupuestosGuardadosComponent) return;
+  if (nombre === this.presupuestoSeleccionado?.name) {
+    this.appToast.error('Cambiá el nombre para crear un presupuesto nuevo.');
+    return;
+  }
+  this.showSaveBudgetModal = false;
+  this.presupuestosGuardadosComponent.nombreTemporal = nombre;
+  this.presupuestosGuardadosComponent.guardarComoNuevo();
+  this.nombrePresupuestoModal = '';
   setTimeout(() => {
     this.showTareasPanel = false;
     this.showSavedBudgetsPanel = true;
@@ -2501,6 +2615,7 @@ toggleTareasPanel(): void {
   }
 
   if (!this.tareasAgregadas || this.tareasAgregadas.length === 0) {
+    if (this.userTareaStore.loading()) return;
     this.uiDialog.info({ title: 'Sin tareas', text: 'Aún no agregaste tareas. Agrega al menos una para poder ver el panel.' });
     return;
   }
@@ -2559,8 +2674,25 @@ limpiarPresupuestoCargado() {
   this.budgetDate = '';
   localStorage.removeItem('presupuestoCargado');
   localStorage.removeItem('selectedPresupuestoName');
+  localStorage.removeItem('presupuestoBaselineIds');
   this.localStore.removeState('budget:active-preview');
 
+  // Limpiar cliente que venía del presupuesto
+  this.clienteSeleccionado = null;
+  this.clienteStore.select(null);
+  localStorage.removeItem('selectedCliente');
+  localStorage.removeItem('selectedClienteId');
+  this.localStore.removeState(this.dashboardStateKey('selectedCliente'));
+
+  // Restaurar empresa guardada antes de entrar en modo presupuesto
+  const empresaARestore = this.empresaBeforePresupuesto;
+  this.empresaBeforePresupuesto = null;
+  this.selectedEmpresaId = empresaARestore;
+  this.syncSelectedEmpresaStorage(empresaARestore);
+  this.empresaStore.select(empresaARestore);
+  this.cargarDatosEmpresaSeleccionada();
+  void this.actualizarImagenEmpresa(empresaARestore);
+  this.presupuestoModeBaselineIds = new Set();
 
   // Volver a cargar tareas del usuario
   if (this.userCode) {
@@ -2588,6 +2720,10 @@ limpiarPresupuestoCargado() {
   }
 
   localStorage.removeItem('selectedTareas');
+
+  // Sincronizar con el servidor para que el siguiente refresh no restaure
+  // la empresa del presupuesto desde las preferencias del servidor.
+  this.syncPreferencesToServer();
 }
 
 
@@ -2601,7 +2737,7 @@ onPresupuestoActualizado(p: SavedPresupuesto) {
   localStorage.setItem('selectedPresupuestoName', p.name);
 
   // refrescar tareas y UI usando tu método existente
-  void this.aplicarPresupuestoGuardado(p, { scrollToTable: false });
+  void this.aplicarPresupuestoGuardado(p, { scrollToTable: false, useStoredBaseline: true });
 }
 
 closeSavedBudgetsPanel(): void {
@@ -3136,6 +3272,14 @@ calcularCostoTotal(): number {
 
 
 
+  abrirPdfVivienda() {
+    const modal = document.getElementById('pdfViviendaModal');
+    if (modal) {
+      const bsModal = new (window as any).bootstrap.Modal(modal);
+      bsModal.show();
+    }
+  }
+
   abrirGoogleSheets2() {
     const url = "https://drive.google.com/file/d/1dZcSD_5lt3OsDE44SN91t5NcUyvQtl-N/view?usp=sharing";
     window.open(url, "_blank");
@@ -3418,6 +3562,7 @@ onImageChange(event: Event): void {
     this.empresaCuilCuit = '';
     this.showSocialFields = false;
     this.logoUrl = '';
+    localStorage.removeItem('demoEmpresaLogo');
     if (this.modalImagePreview) {
       this.modalImagePreview.nativeElement.style.display = 'none';
     }
@@ -3800,6 +3945,10 @@ fetchUserData(): void {
       }
     },
     error: async error => {
+      if (error?.status === 404) {
+        this.authService.logout();
+        return;
+      }
       if (hasCachedData) return;
       console.error('Error al obtener datos del usuario:', error);
       const indexedUserData = await this.localStore.getState<any>(this.dashboardStateKey('userData'));
@@ -3852,6 +4001,8 @@ fetchUserData(): void {
   onEmpresaSeleccionada(empresa: any): void {
     const normalizedEmpresa = this.normalizeEmpresaSelection(empresa);
     if (!normalizedEmpresa) return;
+
+    console.log('[EMPRESA-SEL] empresa:', normalizedEmpresa?.id, '| selectedEmpresaId antes:', this.selectedEmpresaId?.id, '| presupuestoSeleccionado:', this.presupuestoSeleccionado?.id, '| clienteSeleccionado:', this.clienteSeleccionado?.id);
 
     if (this.trialMode) {
       if (this.selectedEmpresaId?.id === normalizedEmpresa.id) {

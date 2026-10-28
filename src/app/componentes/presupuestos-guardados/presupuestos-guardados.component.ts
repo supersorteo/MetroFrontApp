@@ -77,11 +77,10 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       this.cargarPresupuestos();
     }
 
-    if (this.presupuestoCargado) {
+    if (this.presupuestoCargado?.id) {
       this.nombreTemporal = this.presupuestoCargado.name || '';
-      if (this.presupuestoCargado.cliente?.id !== this.clienteActual?.id) {
-        this.presupuestoHabilitadoParaActualizarId = null;
-      }
+      // Habilitar actualización siempre que haya un presupuesto cargado con id válido
+      this.presupuestoHabilitadoParaActualizarId = this.presupuestoCargado.id;
     } else {
       this.presupuestoHabilitadoParaActualizarId = null;
     }
@@ -131,11 +130,10 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
 
     const payload: any = {
       name: nombre,
-      tareas: this.tareasActuales.map(t => ({ id: t.id }))
+      tareas: this.tareasActuales.map(t => ({ id: t.id })),
+      cliente: this.clienteActual?.id ? { id: this.clienteActual.id } : null,
+      empresa: this.empresaActual?.id ? { id: this.empresaActual.id } : null
     };
-    if (this.clienteActual?.id) {
-      payload['cliente'] = { id: this.clienteActual.id };
-    }
 
     if (this.presupuestoCargado?.id) {
       if (!this.puedeActualizarPresupuestoCargado) {
@@ -165,6 +163,37 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
         this.isSavingBudget = false;
         this.nombreTemporal = '';
         this.presupuestoGuardado.emit(nuevo);
+        this.notifyBudgetSaved('guardado', nuevo);
+      },
+      error: (err) => {
+        this.isSavingBudget = false;
+        this.uiDialog.error({ title: 'Error al guardar', text: err.error?.error || 'No se pudo guardar el presupuesto.' });
+      }
+    });
+  }
+
+  guardarComoNuevo(): void {
+    if (this.isSavingBudget) return;
+    if (this.tareasActuales.length === 0) { this.appToast.error('Agrega tareas al presupuesto'); return; }
+    const nombre = this.nombreTemporal.trim();
+    if (!nombre) { this.appToast.error('El nombre del presupuesto es obligatorio'); return; }
+    if (this.nombreYaExiste(nombre)) { this.appToast.error('Ya existe un presupuesto con este nombre. Elige otro.'); return; }
+    if (this.limiteAlcanzado) {
+      this.uiDialog.info({ title: 'Límite alcanzado', text: `Tu plan permite guardar hasta ${this.maxItems} presupuestos. Eliminá uno existente para guardar otro.` });
+      return;
+    }
+    const payload: any = {
+      name: nombre,
+      tareas: this.tareasActuales.map(t => ({ id: t.id })),
+      cliente: this.clienteActual?.id ? { id: this.clienteActual.id } : null,
+      empresa: this.empresaActual?.id ? { id: this.empresaActual.id } : null
+    };
+    this.isSavingBudget = true;
+    this.budgetService.guardarPresupuesto(payload).subscribe({
+      next: (nuevo) => {
+        this.isSavingBudget = false;
+        this.nombreTemporal = '';
+        this.presupuestoActualizado.emit(nuevo);
         this.notifyBudgetSaved('guardado', nuevo);
       },
       error: (err) => {
@@ -252,7 +281,8 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
 
       const payload = {
         name: this.presupuestoEditando!.name.trim(),
-        cliente: { id: this.presupuestoEditando!.cliente.id },
+        cliente: this.presupuestoEditando!.cliente?.id ? { id: this.presupuestoEditando!.cliente.id } : null,
+        empresa: this.empresaActual?.id ? { id: this.empresaActual.id } : null,
         tareas: this.presupuestoEditando!.tareas.map(t => ({ id: t.id }))
       };
 
