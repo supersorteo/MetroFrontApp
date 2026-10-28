@@ -3945,6 +3945,10 @@ fetchUserData(): void {
       }
     },
     error: async error => {
+      if (error?.status === 404) {
+        this.authService.logout();
+        return;
+      }
       if (hasCachedData) return;
       console.error('Error al obtener datos del usuario:', error);
       const indexedUserData = await this.localStore.getState<any>(this.dashboardStateKey('userData'));

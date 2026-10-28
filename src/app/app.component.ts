@@ -61,11 +61,22 @@ export class AppComponent implements OnInit {
     const code = localStorage.getItem('userCode')!;
     const sessionToken = localStorage.getItem('sessionToken');
     const headers = sessionToken ? { 'X-Session-Token': sessionToken } : undefined;
-    return this.authService.getUserCode(code, headers).pipe(catchError(() => of(null)));
+    return this.authService.getUserCode(code, headers).pipe(
+      catchError((err) => {
+        if (err?.status === 404) return of({ __deleted: true } as any);
+        return of(null);
+      })
+    );
   }
 
   private handleSessionResponse(ac: any): void {
     if (!ac) return;
+    if (ac.__deleted === true) {
+      this.authService.logout();
+      this.toast.error('Tu código de acceso fue eliminado por el administrador.', 'Acceso eliminado');
+      this.router.navigate(['/']);
+      return;
+    }
     if (ac.disabled === true || ac.sessionKicked === true) {
       this.authService.logout();
       if (ac.sessionKicked) {

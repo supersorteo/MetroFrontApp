@@ -241,7 +241,13 @@ export class AuthService {
     if (extraHeaders) {
       Object.entries(extraHeaders).forEach(([k, v]) => { headers = headers.set(k, v); });
     }
-    return this.http.get<AccessCode>(`${this.apiUrl}/codes/${code}`, { headers }).pipe(catchError(this.handleError1));
+    return this.http.get<AccessCode>(`${this.apiUrl}/codes/${code}`, { headers }).pipe(
+      catchError((err: HttpErrorResponse) => {
+        const e: any = new Error(extractApiErrorMessage(err));
+        e.status = err.status;
+        return throwError(() => e);
+      })
+    );
   }
 
   addCode(accessCode: AccessCode): Observable<AccessCode> { return this.http.post<AccessCode>(`${this.apiUrl}/codes`, accessCode); }
