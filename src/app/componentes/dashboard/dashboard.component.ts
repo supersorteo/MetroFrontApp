@@ -1158,9 +1158,13 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       if (this.trialMode) return;
       const empresa = this.empresaStore.selected();
       if (this.presupuestoSeleccionado) return;
-      this.selectedEmpresaId = empresa;
+      // Guard: si localStorage no tiene selectedEmpresaId, el store puede tener dato stale
+      // (race condition IDB tras quitar carga) → no aplicar el valor del store
+      const lsEmpresaId = localStorage.getItem('selectedEmpresaId');
+      const resolvedEmpresa = lsEmpresaId ? empresa : null;
+      this.selectedEmpresaId = resolvedEmpresa;
       this.cargarDatosEmpresaSeleccionada();
-      void this.actualizarImagenEmpresa(empresa);
+      void this.actualizarImagenEmpresa(resolvedEmpresa);
     });
 
     // Sync clientes IDB → lista local + paginación
@@ -1176,7 +1180,10 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       const storeCliente = this.clienteStore.selected();
       // No sobreescribir cliente cuando hay presupuesto cargado
       if (!this.presupuestoSeleccionado) {
-        this.clienteSeleccionado = storeCliente;
+        // Guard: si localStorage no tiene selectedCliente, el store puede tener dato stale
+        // (race condition IDB tras quitar carga) → no aplicar el valor del store
+        const lsCliente = localStorage.getItem('selectedCliente');
+        this.clienteSeleccionado = lsCliente ? storeCliente : null;
       }
       if (!storeCliente || !this.presupuestoPendiente) return;
       const mismoCliente =
@@ -2476,9 +2483,15 @@ private async aplicarPresupuestoGuardado(
   this.syncSelectedClienteStorage();
 
   // 4. EMPRESA (guardar la del usuario para restaurar al quitar carga)
-  // Solo en la primera carga del presupuesto, no al re-aplicar tras guardar/editar
+  // Solo en la primera carga del presupuesto, no al re-aplicar tras guardar/editar.
+  // Si la empresa actual coincide con la del presupuesto, guardamos null: el usuario
+  // no la seleccionó explícitamente (vino de preferencias del servidor) y "quitar carga"
+  // debe limpiar el logo en lugar de restaurar la misma empresa.
   if (esPrimeraCarga) {
-    this.empresaBeforePresupuesto = this.selectedEmpresaId;
+    const presupuestoEmpresaId = presupuesto.empresa?.id != null ? Number(presupuesto.empresa.id) : null;
+    const currentEmpresaId = this.selectedEmpresaId?.id != null ? Number(this.selectedEmpresaId.id) : null;
+    const mismaEmpresa = presupuestoEmpresaId != null && currentEmpresaId === presupuestoEmpresaId;
+    this.empresaBeforePresupuesto = mismaEmpresa ? null : this.selectedEmpresaId;
   }
   const empresaRaw = presupuesto.empresa || null;
   // Preferir la empresa del store local (tiene logoUrl y userCode completos)
@@ -2559,6 +2572,24 @@ guardarPresupuestoDesdeModal(): void {
   this.presupuestosGuardadosComponent.nombreTemporal = nombre;
   this.presupuestosGuardadosComponent.guardarPresupuestoActual();
   this._presupuestoGuardadoExitosamente = false;
+  this.nombrePresupuestoModal = '';
+  setTimeout(() => {
+    this.showTareasPanel = false;
+    this.showSavedBudgetsPanel = true;
+  }, 400);
+}
+
+guardarComoNuevoDesdeModal(): void {
+  if (this.codeExpired) { this.showExpiredMessage(); return; }
+  const nombre = this.nombrePresupuestoModal.trim();
+  if (!nombre || !this.presupuestosGuardadosComponent) return;
+  if (nombre === this.presupuestoSeleccionado?.name) {
+    this.appToast.error('Cambiá el nombre para crear un presupuesto nuevo.');
+    return;
+  }
+  this.showSaveBudgetModal = false;
+  this.presupuestosGuardadosComponent.nombreTemporal = nombre;
+  this.presupuestosGuardadosComponent.guardarComoNuevo();
   this.nombrePresupuestoModal = '';
   setTimeout(() => {
     this.showTareasPanel = false;
@@ -2689,6 +2720,10 @@ limpiarPresupuestoCargado() {
   }
 
   localStorage.removeItem('selectedTareas');
+
+  // Sincronizar con el servidor para que el siguiente refresh no restaure
+  // la empresa del presupuesto desde las preferencias del servidor.
+  this.syncPreferencesToServer();
 }
 
 

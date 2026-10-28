@@ -3347,10 +3347,26 @@
         maxlength="120"
         (keyup.enter)="guardarPresupuestoDesdeModal()"
       />
+      <small
+        *ngIf="presupuestoSeleccionado && nombrePresupuestoModal.trim() === presupuestoSeleccionado?.name"
+        class="text-muted d-block mt-1">
+        Para guardar como nuevo, cambiá el nombre del presupuesto.
+      </small>
     </div>
     <div class="save-budget-modal__footer">
       <button type="button" class="btn btn-outline-secondary" (click)="closeSaveBudgetModal()">Cancelar</button>
-      <button type="button" class="btn btn-primary" [disabled]="!nombrePresupuestoModal.trim()" (click)="guardarPresupuestoDesdeModal()">Guardar</button>
+      <button
+        *ngIf="presupuestoSeleccionado"
+        type="button"
+        class="btn btn-outline-primary"
+        [disabled]="!nombrePresupuestoModal.trim() || nombrePresupuestoModal.trim() === presupuestoSeleccionado?.name"
+        (click)="guardarComoNuevoDesdeModal()"
+        title="Crea un presupuesto nuevo con estas tareas. Cambiá el nombre primero.">
+        Guardar como nuevo
+      </button>
+      <button type="button" class="btn btn-primary" [disabled]="!nombrePresupuestoModal.trim()" (click)="guardarPresupuestoDesdeModal()">
+        {{ presupuestoSeleccionado ? 'Actualizar' : 'Guardar' }}
+      </button>
     </div>
   </div>
 </div>
