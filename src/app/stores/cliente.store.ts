@@ -119,4 +119,9 @@ export class ClienteStore {
       localStorage.removeItem('selectedCliente');
     }
   }
+
+  selectById(id: number): void {
+    this._pendingSelectedId.set(id);
+    localStorage.setItem('selectedClienteId', String(id));
+  }
 }

@@ -242,7 +242,10 @@ export class OfflineLocalStoreService {
       .toArray();
 
     const records = Number.isFinite(params.empresaId)
-      ? allRecords.filter(record => Number(record.ownerServerId) === Number(params.empresaId))
+      ? allRecords.filter(record =>
+          Number(record.ownerServerId) === Number(params.empresaId) &&
+          (!currentLogoUrl || record.remoteUrl === currentLogoUrl)
+        )
       : [];
 
     const fallbackRecords = records.length === 0 && !!currentLogoUrl

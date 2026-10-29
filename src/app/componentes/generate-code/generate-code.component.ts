@@ -177,7 +177,7 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     this.loadAdminPrecios();
     this.loadAdminPreciosCategorias();
     this.timer = setInterval(() => this.updateRemainingTimes(), 1000);
-    this.sessionPollInterval = setInterval(() => this.loadActiveSessions(), 30000);
+    this.sessionPollInterval = setInterval(() => this.loadActiveSessions(), 10000);
   }
 
   ngOnDestroy(): void {
@@ -1336,13 +1336,12 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   }
 
   loadActiveSessions(): void {
-    this.codes.filter(c => c.email).forEach(c => {
-      this.authService.getActiveSessions(c.code).subscribe(r => {
-        if (r !== null) {
-          this.activeSessions.set(c.code, r.active);
-          this.sessionLimits.set(c.code, r.limit);
-        }
-      });
+    const codes = this.codes.filter(c => c.email).map(c => c.code);
+    if (!codes.length) return;
+    this.authService.getSessionsSummary(codes).subscribe(summary => {
+      for (const [code, count] of Object.entries(summary)) {
+        this.activeSessions.set(code, count as number);
+      }
     });
   }
 
