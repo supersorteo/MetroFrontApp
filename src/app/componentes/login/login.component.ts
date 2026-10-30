@@ -11,7 +11,7 @@ import { PayPalPaymentService } from '../../servicios/paypal-payment.service';
 import { countryDisplayName } from '../../core/country/country.util';
 import { accessCodeCountryMismatchMessage } from '../../core/country/access-code.util';
 import { phonePlaceholder, sanitizePhoneInput, validatePhoneByCountry } from '../../core/country/phone.util';
-import { PHONE_COUNTRIES } from '../../core/utils/phone-validation.util';
+import { PHONE_COUNTRIES, validatePhone } from '../../core/utils/phone-validation.util';
 import { buildMembershipCheckoutPayload, buildPayPalCheckoutPayload, mapMembershipCountryOption, MembershipCheckoutForm, MembershipCountryOption, validateMembershipCheckoutForm } from '../../core/membership/membership-checkout.util';
 import { extractApiErrorMessage } from '../../core/http/api-error.util';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
@@ -658,6 +658,20 @@ pedirCodigoPorWhatsApp(): void {
       return this.membershipCountries.find(country => country.codigo === this.purchaseCountryCode);
     }
 
+    get checkoutCountryOptions(): Array<MembershipCountryOption & { disabled?: boolean }> {
+      const unavailableCodes = new Set(['CO', 'UY']);
+      const fromBackend = this.membershipCountries.map(c => ({
+        ...c,
+        disabled: unavailableCodes.has(c.codigo)
+      }));
+      const existingCodes = new Set(this.membershipCountries.map(c => c.codigo));
+      const staticFallbacks = [
+        { nombre: 'Colombia', codigo: 'CO', flag: 'https://flagcdn.com/co.svg', currency: 'COP', documentLabel: 'NIT', plans: [], disabled: true },
+        { nombre: 'Uruguay',  codigo: 'UY', flag: 'https://flagcdn.com/uy.svg', currency: 'UYU', documentLabel: 'RUT', plans: [], disabled: true },
+      ].filter(c => !existingCodes.has(c.codigo));
+      return [...fromBackend, ...staticFallbacks].sort((a, b) => a.nombre.localeCompare(b.nombre));
+    }
+
     get selectedPlanAmount(): number | null {
       return this.selectedMembershipCountry?.plans.find(plan => plan.months === this.purchasePlanMonths)?.amount ?? null;
     }
@@ -863,20 +877,25 @@ pedirCodigoPorWhatsApp(): void {
       ).phoneMessage;
     }
 
-    onPurchasePhoneNumberInput(): void {
+    onPurchasePhoneNumberInput(live = false): void {
       this.purchasePhoneNumber = sanitizePhoneInput(this.purchasePhoneNumber);
       this.purchasePhone = this.purchasePhoneNumber.trim()
         ? `${this.purchasePhonePrefix}${this.purchasePhoneNumber}`
         : '';
-      this.purchasePhoneErrorMessage = validateMembershipCheckoutForm(
-        this.purchaseCheckoutForm,
-        this.selectedMembershipCountry?.nombre || null
-      ).phoneMessage;
+      if (this.purchasePhoneNumber.trim()) {
+        const result = validatePhone(this.purchasePhonePrefix, this.purchasePhoneNumber, live);
+        this.purchasePhoneErrorMessage = result.error ?? '';
+      } else {
+        this.purchasePhoneErrorMessage = '';
+      }
+    }
+
+    get checkoutSelectedCountry() {
+      return PHONE_COUNTRIES.find(c => c.code === this.purchasePhonePrefix);
     }
 
     get purchasePhoneNumberPlaceholder(): string {
-      return PHONE_COUNTRIES.find(c => c.code === this.purchasePhonePrefix)?.placeholder
-        ?? 'Ej: 1134567890';
+      return this.checkoutSelectedCountry?.placeholder ?? 'Ej: 1134567890';
     }
 
     get purchaseEmailError(): string | null {

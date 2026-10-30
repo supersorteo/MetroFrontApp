@@ -1652,76 +1652,64 @@
 
       <div class="tareas-agregadas__header">
 
-        <div style="display:flex;align-items:center;gap:8px;">
+        <!-- Fila 1: logo izquierda · cliente derecha -->
+        <div class="tareas-agregadas__top-row">
 
-          <div
-            class="tareas-agregadas__title"
-            [class.tareas-agregadas__title--empty]="!selectedEmpresaId"
-          >
-
+          <div class="tareas-agregadas__empresa-slot" (click)="openListaEmpresasModal()">
             <img
               *ngIf="selectedEmpresaId && currentEmpresaLogoUrl"
               [src]="currentEmpresaLogoUrl"
               alt="Logo empresa"
               class="tareas-agregadas__logo"
-              style="cursor:pointer"
-              (click)="openListaEmpresasModal()"
             >
+            <span *ngIf="selectedEmpresaId && !currentEmpresaLogoUrl" class="tareas-agregadas__empresa-texto">
+              {{ selectedEmpresaId.name }}
+            </span>
+            <span *ngIf="!selectedEmpresaId" class="tareas-agregadas__empresa-vacio">
+              <i class="bi bi-building"></i>
+            </span>
+          </div>
 
-            <span
-              *ngIf="selectedEmpresaId && !currentEmpresaLogoUrl"
-              class="tareas-agregadas__empresa-nombre"
-              style="cursor:pointer;font-weight:600;font-size:0.95rem;"
-              (click)="openListaEmpresasModal()"
-            >{{ selectedEmpresaId.name }}</span>
-
-            <button
-              *ngIf="!selectedEmpresaId"
-              type="button"
-              class="btn btn-sm tareas-agregadas__slot-vacio tareas-agregadas__slot-vacio--empresa"
-              title="Crear tu empresa"
-              (click)="openListaEmpresasModal()"
-            >
-              <i class="bi bi-building"></i> Crea tu empresa
-            </button>
-
+          <div class="tareas-agregadas__cliente-slot">
+            <ng-container *ngIf="clienteSeleccionado; else sinCliente">
+              <button
+                type="button"
+                class="tap-cliente"
+                title="Cambiar cliente"
+                (click)="$event.stopPropagation(); openListaClientesModal()">
+                <span class="tap-cliente__avatar">{{ clienteSeleccionado.name.charAt(0).toUpperCase() }}</span>
+                <span class="tap-cliente__nombre">{{ clienteSeleccionado.name }}</span>
+                <i class="bi bi-chevron-down tap-cliente__arrow"></i>
+              </button>
+            </ng-container>
+            <ng-template #sinCliente>
+              <button
+                type="button"
+                class="tap-cliente tap-cliente--vacio"
+                title="Seleccionar cliente"
+                (click)="$event.stopPropagation(); openListaClientesModal()">
+                <i class="bi bi-person-plus"></i>
+                <span>Cliente</span>
+              </button>
+            </ng-template>
           </div>
 
         </div>
 
-        <div class="tareas-agregadas__cliente">
-
-          <ng-container *ngIf="clienteSeleccionado; else sinCliente">
-            <div class="tareas-agregadas__cliente-top">
-              <span class="tareas-agregadas__cliente-nombre">{{ clienteSeleccionado.name || presupuestoSeleccionado?.name }}</span>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-secondary tareas-agregadas__cliente-btn"
-                title="Seleccionar cliente"
-                (click)="$event.stopPropagation(); openListaClientesModal()">
-                <span class="tareas-agregadas__cliente-switch-icon" aria-hidden="true">
-                  <i class="fas fa-user tareas-agregadas__cliente-switch-icon-user tareas-agregadas__cliente-switch-icon-user--top"></i>
-                  <i class="fas fa-user tareas-agregadas__cliente-switch-icon-user tareas-agregadas__cliente-switch-icon-user--bottom"></i>
-                  <i class="bi bi-arrow-left-right tareas-agregadas__cliente-switch-icon-arrows"></i>
-                </span>
-              </button>
-            </div>
-            <small class="tareas-agregadas__cliente-fecha" *ngIf="budgetDate">
-              Presupuesto: {{ budgetDate | date:'dd/MM/yyyy' }}
-            </small>
-          </ng-container>
-
-          <ng-template #sinCliente>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary tareas-agregadas__slot-vacio"
-              title="Seleccionar cliente"
-              (click)="$event.stopPropagation(); openListaClientesModal()"
-            >
-              <i class="fas fa-user"></i> Cliente
-            </button>
-          </ng-template>
-
+        <!-- Fila 2: banner presupuesto (solo cuando hay uno cargado) -->
+        <div *ngIf="presupuestoSeleccionado" class="tareas-agregadas__presupuesto-banner">
+          <div class="tap-banner__left">
+            <i class="bi bi-file-earmark-text tap-banner__icon"></i>
+          </div>
+          <div class="tap-banner__info">
+            <span class="tap-banner__nombre">{{ presupuestoSeleccionado.name }}</span>
+            <span class="tap-banner__fecha">
+              <i class="bi bi-calendar3"></i> {{ budgetDate | date:'dd/MM/yyyy' }}
+            </span>
+          </div>
+          <div class="tap-banner__right">
+            <span class="tap-banner__badge">Cargado</span>
+          </div>
         </div>
 
       </div>
@@ -1858,7 +1846,13 @@
 
         </button>
 
-        <button class="tareas-panel__action" type="button" (click)="limpiarPresupuestoCargado()" aria-label="Quitar carga" title="Quitar carga">
+        <button
+          *ngIf="presupuestoSeleccionado"
+          class="tareas-panel__action"
+          type="button"
+          (click)="confirmarLimpiarPresupuesto()"
+          aria-label="Quitar carga"
+          title="Quitar carga">
 
           <i class="bi bi-eraser" aria-hidden="true"></i>
 
@@ -2380,7 +2374,7 @@
 
                         [checked]="clienteSeleccionado?.id === cliente.id"
 
-                        (click)="$event.stopPropagation()"
+                        (click)="$event.stopPropagation(); seleccionarCliente(cliente)"
 
                       >
 
@@ -2774,7 +2768,7 @@
 
                       >
 
-                      <div class="checkmark" (click)="$event.stopPropagation()"></div>
+                      <div class="checkmark"></div>
 
                     </label>
 
@@ -3227,7 +3221,7 @@
 
     <div class="save-budget-modal__footer">
       <button type="button" class="sbm-btn sbm-btn--cancel" (click)="closeSaveBudgetModal()">
-        <i class="fas fa-times"></i> Cancelar
+        <i class="fas fa-times"></i><span> Cancelar</span>
       </button>
       <button *ngIf="presupuestoSeleccionado" type="button" class="sbm-btn sbm-btn--secondary"
               [disabled]="!nombrePresupuestoModal.trim() || !budgetDate || nombrePresupuestoModal.trim() === presupuestoSeleccionado.name"

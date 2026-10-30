@@ -2529,6 +2529,18 @@ async cargarPresupuestoDesdeLista(presupuesto: SavedPresupuesto): Promise<void> 
   await this.aplicarPresupuestoGuardado(presupuesto, { scrollToTable: true });
 }
 
+async confirmarLimpiarPresupuesto(): Promise<void> {
+  if (!this.presupuestoSeleccionado) return;
+  const confirmed = await this.uiDialog.confirm({
+    title: 'Quitar presupuesto cargado',
+    text: `¿Querés quitar "${this.presupuestoSeleccionado.name}" del panel? Los datos cargados se borrarán.`,
+    confirmText: 'Quitar',
+    tone: 'danger',
+  });
+  if (!confirmed) return;
+  this.limpiarPresupuestoCargado();
+}
+
 private async aplicarPresupuestoGuardado(
   presupuesto: SavedPresupuesto,
   options: { scrollToTable?: boolean; useStoredBaseline?: boolean } = {}
@@ -2603,7 +2615,9 @@ private async aplicarPresupuestoGuardado(
   this.cargarDatosEmpresaSeleccionada();
   void this.actualizarImagenEmpresa(empresaDelPresupuesto);
 
-  this.budgetDate = new Date().toISOString().split('T')[0];
+  this.budgetDate = presupuesto.budgetDate
+    ? presupuesto.budgetDate.split('T')[0]
+    : (presupuesto.createdAt ? presupuesto.createdAt.split('T')[0] : new Date().toISOString().split('T')[0]);
 
   // Persistencia IDB (async, no afecta estado de UI)
   localStorage.setItem('presupuestoCargado', JSON.stringify(presupuesto));

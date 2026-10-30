@@ -417,7 +417,7 @@
         <div class="lf-field">
           <label class="lf-label">País</label>
           <ng-select
-            [items]="membershipCountries"
+            [items]="checkoutCountryOptions"
             bindLabel="nombre"
             bindValue="codigo"
             [(ngModel)]="purchaseCountryCode"
@@ -426,21 +426,40 @@
             [clearable]="false"
             (change)="onPurchaseCountryChange()"
           >
-            <ng-template ng-option-tmp let-item="item">
-              <img *ngIf="item.flag" [src]="item.flag" width="20" class="me-2" />
-              {{ item.nombre }}
+            <ng-template ng-option-tmp let-item="item" let-item$="item$">
+              <div class="lf-country-option" [class.lf-country-option--disabled]="item.disabled">
+                <img *ngIf="item.flag" [src]="item.flag" width="18" class="me-2" style="border-radius:2px;" />
+                <span>{{ item.nombre }}</span>
+                <span *ngIf="item.disabled" class="lf-soon-badge">Próximamente</span>
+              </div>
             </ng-template>
           </ng-select>
         </div>
 
         <div class="lf-field">
           <label class="lf-label">Plan</label>
-          <select class="form-select login-input-field" [(ngModel)]="purchasePlanMonths" name="purchasePlan">
-            <option [ngValue]="null" disabled>Seleccioná un plan</option>
-            <option *ngFor="let plan of selectedMembershipCountry?.plans" [ngValue]="plan.months">
-              {{ plan.months }} meses — {{ plan.amount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}
-            </option>
-          </select>
+          <ng-select
+            [items]="selectedMembershipCountry?.plans || []"
+            bindValue="months"
+            [(ngModel)]="purchasePlanMonths"
+            name="purchasePlan"
+            placeholder="Seleccioná un plan"
+            [clearable]="false"
+            [disabled]="!selectedMembershipCountry"
+          >
+            <ng-template ng-label-tmp let-item="item">
+              <span class="lf-plan-label">
+                <strong>{{ item.months }} {{ item.months === 1 ? 'mes' : 'meses' }}</strong>
+                <span class="lf-plan-price"> — {{ item.amount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}</span>
+              </span>
+            </ng-template>
+            <ng-template ng-option-tmp let-item="item">
+              <div class="lf-plan-option">
+                <span class="lf-plan-option__months">{{ item.months }} {{ item.months === 1 ? 'mes' : 'meses' }}</span>
+                <span class="lf-plan-option__price">{{ item.amount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}</span>
+              </div>
+            </ng-template>
+          </ng-select>
         </div>
       </div>
 
@@ -483,7 +502,10 @@
             [placeholder]="purchasePhoneNumberPlaceholder"
             name="purchasePhoneNumber"
             [disabled]="!purchaseCountryCode"
-            (input)="onPurchasePhoneNumberInput()"
+            [maxlength]="checkoutSelectedCountry?.maxLength || 15"
+            inputmode="numeric"
+            (input)="onPurchasePhoneNumberInput(true)"
+            (blur)="onPurchasePhoneNumberInput(false)"
           />
         </div>
         <div class="lf-error" *ngIf="purchasePhoneNumber.trim().length > 0 && purchasePhoneErrorMessage">

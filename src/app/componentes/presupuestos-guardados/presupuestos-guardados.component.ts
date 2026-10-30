@@ -206,8 +206,15 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     });
   }
 
-  cargar(presupuesto: SavedPresupuesto): void {
+  async cargar(presupuesto: SavedPresupuesto): Promise<void> {
     if (this.shouldSkipBudgetAction('load', presupuesto.id)) return;
+    const confirmed = await this.uiDialog.confirm({
+      title: 'Cargar presupuesto',
+      text: `¿Querés cargar "${presupuesto.name}"? Se reemplazará el contenido actual del panel.`,
+      confirmText: 'Cargar',
+      tone: 'primary',
+    });
+    if (!confirmed) return;
     this.presupuestoHabilitadoParaActualizarId = presupuesto.id;
     this.cargarPresupuesto.emit(presupuesto);
     this.uiDialog.success({ title: 'Listo', text: `Presupuesto "${presupuesto.name}" cargado correctamente.` });

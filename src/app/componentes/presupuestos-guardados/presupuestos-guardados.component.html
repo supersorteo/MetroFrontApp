@@ -50,13 +50,15 @@
 
           <div class="saved-budget-actions">
             <button type="button" class="btn btn-outline-primary btn-sm" (click)="cargar(presupuesto)"
-              title="Cargar presupuesto" aria-label="Cargar presupuesto">
+              [disabled]="esPresupuestoCargado(presupuesto)"
+              [title]="esPresupuestoCargado(presupuesto) ? 'Este presupuesto ya está cargado' : 'Cargar presupuesto'"
+              [attr.aria-label]="esPresupuestoCargado(presupuesto) ? 'Este presupuesto ya está cargado' : 'Cargar presupuesto'">
               <i class="bi bi-arrow-down-circle" aria-hidden="true"></i>
             </button>
-            <button type="button" class="btn btn-warning" (click)="editarPresupuesto(presupuesto)"
-              [title]="esPresupuestoCargado(presupuesto) ? 'Editar presupuesto cargado' : 'Primero debes cargar este presupuesto'"
-              [attr.aria-label]="esPresupuestoCargado(presupuesto) ? 'Editar presupuesto cargado' : 'Primero debes cargar este presupuesto'">
-              <i class="bi bi-pencil-square" aria-hidden="true"></i>
+            <button type="button" class="btn btn-warning btn-sm" (click)="editarPresupuesto(presupuesto)"
+              title="Renombrar / gestionar tareas"
+              aria-label="Renombrar o gestionar tareas del presupuesto">
+              <i class="bi bi-pencil" aria-hidden="true"></i>
             </button>
             <button type="button" class="btn btn-outline-danger btn-sm" (click)="eliminar(presupuesto)"
               title="Eliminar presupuesto" aria-label="Eliminar presupuesto">
@@ -118,7 +120,7 @@
         </svg>
       </div>
       <div class="pg-modal__header-text">
-        <h3 class="pg-modal__title">Editar presupuesto</h3>
+        <h3 class="pg-modal__title">Renombrar / gestionar tareas</h3>
         <small class="pg-modal__subtitle">{{ presupuestoEditando?.name }}</small>
       </div>
       <button class="pg-modal__close" (click)="cancelarEdicion()" aria-label="Cerrar">&#x00D7;</button>

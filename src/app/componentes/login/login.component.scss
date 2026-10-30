@@ -606,6 +606,64 @@
   }
 }
 
+/* ── Opciones de país en ng-select ── */
+.lf-country-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.lf-soon-badge {
+  margin-left: auto;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #2563eb;
+  background: rgba(37,99,235,0.1);
+  border-radius: 20px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+
+/* ── Opciones de plan en ng-select ── */
+.lf-plan-label {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 0.88rem;
+  color: #0f1c3f;
+
+  .lf-plan-price {
+    color: #1a3a6b;
+    font-size: 0.84rem;
+  }
+}
+
+.lf-plan-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+
+  &__months {
+    font-weight: 600;
+    color: #0f1c3f;
+    font-size: 0.88rem;
+  }
+
+  &__price {
+    font-size: 0.82rem;
+    color: #2563eb;
+    font-weight: 500;
+  }
+}
+
 /* ── Botones de acción del formulario ── */
 .lf-actions {
   display: flex;
