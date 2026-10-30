@@ -890,9 +890,6 @@ pedirCodigoPorWhatsApp(): void {
       return prefixes[code ?? ''] ?? '+549';
     }
 
-    get phoneCountriesForCheckout() {
-      return PHONE_COUNTRIES.filter(c => ['+549', '+57', '+598'].includes(c.code));
-    }
 
     private getCodeCountryMismatchMessage(): string {
       return accessCodeCountryMismatchMessage(this.codeCountry, this.pais);

@@ -569,27 +569,20 @@
   }
 }
 
-.lf-select--prefix {
-  width: 88px !important;
-  min-width: 88px !important;
-  flex: 0 0 88px !important;
-  border: none !important;
-  border-right: 1px solid rgba(37,99,200,0.2) !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  color: #0f1c3f !important;
-  font-weight: 600;
-  font-size: 0.82rem;
-  padding: 0 4px 0 8px;
+.lf-prefix-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 72px;
+  width: 72px;
   height: 38px;
-  appearance: auto;
-
-  &:focus {
-    background: transparent !important;
-    box-shadow: none !important;
-    outline: none;
-  }
+  border-right: 1px solid rgba(37,99,200,0.2);
+  color: #1a3a6b;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.3px;
+  user-select: none;
+  background: rgba(37,99,200,0.04);
 }
 
 .lf-input--number {

@@ -475,20 +475,14 @@
           <span class="lf-label-hint">(opcional — para recibir el código por WhatsApp)</span>
         </label>
         <div class="lf-phone-wrap" [class.is-invalid]="purchasePhoneNumber.trim().length > 0 && !!purchasePhoneErrorMessage">
-          <select
-            class="lf-select--prefix login-input-field"
-            [(ngModel)]="purchasePhonePrefix"
-            name="purchasePhonePrefix"
-            (change)="onPurchasePhoneNumberInput()"
-          >
-            <option *ngFor="let c of phoneCountriesForCheckout" [value]="c.code">{{ c.label }}</option>
-          </select>
+          <span class="lf-prefix-badge">{{ purchasePhonePrefix || '—' }}</span>
           <input
             type="tel"
             class="lf-input--number"
             [(ngModel)]="purchasePhoneNumber"
             [placeholder]="purchasePhoneNumberPlaceholder"
             name="purchasePhoneNumber"
+            [disabled]="!purchaseCountryCode"
             (input)="onPurchasePhoneNumberInput()"
           />
         </div>
