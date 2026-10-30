@@ -419,10 +419,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     window.open(nativeUrl, '_blank');
 
     if (this.planesModal) this.planesModal.hide();
-    this.dashReactivateEmail = this.userData?.email || '';
-    this.dashReactivateNewCode = '';
-    this.dashReactivateError = '';
-    setTimeout(() => { this.showDashboardReactivateModal = true; }, 350);
+
+    if (this.trialMode) {
+      setTimeout(() => this.route.navigate(['/'], { queryParams: { step: 'register' } }), 350);
+    } else {
+      this.dashReactivateEmail = this.userData?.email || '';
+      this.dashReactivateNewCode = '';
+      this.dashReactivateError = '';
+      setTimeout(() => { this.showDashboardReactivateModal = true; }, 350);
+    }
   }
 
   closeDashboardReactivateModal(): void {

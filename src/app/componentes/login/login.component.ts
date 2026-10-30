@@ -242,6 +242,8 @@ constructor(private authService: AuthService,
       const step = params.get('step');
       if (step === 'join') {
         this.loginStep = 'join';
+      } else if (step === 'register') {
+        this.loginStep = 'register';
       } else if (step === 'checkout') {
         this.loginStep = 'checkout';
         const planParam = params.get('plan');
