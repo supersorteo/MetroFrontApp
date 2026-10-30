@@ -11,6 +11,7 @@ import { PayPalPaymentService } from '../../servicios/paypal-payment.service';
 import { countryDisplayName } from '../../core/country/country.util';
 import { accessCodeCountryMismatchMessage } from '../../core/country/access-code.util';
 import { phonePlaceholder, sanitizePhoneInput, validatePhoneByCountry } from '../../core/country/phone.util';
+import { PHONE_COUNTRIES } from '../../core/utils/phone-validation.util';
 import { buildMembershipCheckoutPayload, buildPayPalCheckoutPayload, mapMembershipCountryOption, MembershipCheckoutForm, MembershipCountryOption, validateMembershipCheckoutForm } from '../../core/membership/membership-checkout.util';
 import { extractApiErrorMessage } from '../../core/http/api-error.util';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
@@ -87,6 +88,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   purchaseProvince: string = '';
   purchaseProvincias: Provincia[] = [];
   purchasePhoneErrorMessage: string = '';
+  purchasePhonePrefix: string = '+549';
+  purchasePhoneNumber: string = '';
+  purchaseEmailTouched: boolean = false;
   isLoadingCatalog: boolean = false;
   isStartingCheckout: boolean = false;
   isStartingPayPal: boolean = false;
@@ -685,7 +689,16 @@ pedirCodigoPorWhatsApp(): void {
       const province = this.pendingProvince || this.purchaseProvince || null;
       this.onPurchaseCountryChange();
       // onPurchaseCountryChange() limpia phone y province — los restauramos
-      if (phone) this.purchasePhone = phone;
+      if (phone) {
+        this.purchasePhone = phone;
+        const matched = PHONE_COUNTRIES.find(c => phone.startsWith(c.code));
+        if (matched) {
+          this.purchasePhonePrefix = matched.code;
+          this.purchasePhoneNumber = phone.slice(matched.code.length);
+        } else {
+          this.purchasePhoneNumber = phone;
+        }
+      }
       if (province) this.purchaseProvince = province;
       this.pendingPhone = null;
       this.pendingProvince = null;
@@ -729,7 +742,9 @@ pedirCodigoPorWhatsApp(): void {
       this.purchaseProvince = '';
       this.purchaseDocument = '';
       this.purchasePhone = '';
+      this.purchasePhoneNumber = '';
       this.purchasePhoneErrorMessage = '';
+      this.purchasePhonePrefix = this.getPhonePrefixByCountryCode(this.purchaseCountryCode);
       this.purchasePlanMonths = this.selectedMembershipCountry?.plans[0]?.months ?? null;
       if (!this.purchaseCountryCode) {
         this.purchaseProvincias = [];
@@ -846,6 +861,37 @@ pedirCodigoPorWhatsApp(): void {
         this.purchaseCheckoutForm,
         this.selectedMembershipCountry?.nombre || null
       ).phoneMessage;
+    }
+
+    onPurchasePhoneNumberInput(): void {
+      this.purchasePhoneNumber = sanitizePhoneInput(this.purchasePhoneNumber);
+      this.purchasePhone = this.purchasePhoneNumber.trim()
+        ? `${this.purchasePhonePrefix}${this.purchasePhoneNumber}`
+        : '';
+      this.purchasePhoneErrorMessage = validateMembershipCheckoutForm(
+        this.purchaseCheckoutForm,
+        this.selectedMembershipCountry?.nombre || null
+      ).phoneMessage;
+    }
+
+    get purchasePhoneNumberPlaceholder(): string {
+      return PHONE_COUNTRIES.find(c => c.code === this.purchasePhonePrefix)?.placeholder
+        ?? 'Ej: 1134567890';
+    }
+
+    get purchaseEmailError(): string | null {
+      if (!this.purchaseEmailTouched || !this.purchaseEmail.trim()) return null;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(this.purchaseEmail.trim()) ? null : 'Ingresá un email válido.';
+    }
+
+    private getPhonePrefixByCountryCode(code: string | null): string {
+      const prefixes: Record<string, string> = { AR: '+549', CO: '+57', UY: '+598' };
+      return prefixes[code ?? ''] ?? '+549';
+    }
+
+    get phoneCountriesForCheckout() {
+      return PHONE_COUNTRIES.filter(c => ['+549', '+57', '+598'].includes(c.code));
     }
 
     private getCodeCountryMismatchMessage(): string {

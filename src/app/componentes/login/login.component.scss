@@ -437,7 +437,7 @@
   box-shadow: 0 8px 32px rgba(37,99,200,0.1);
 
   &--wide {
-    max-width: 480px;
+    max-width: 560px;
     text-align: left;
   }
 
@@ -475,6 +475,17 @@
 
 .login-form-card__back-row .login-back {
   margin-bottom: 0;
+}
+
+/* ── Layout 2 columnas en checkout ── */
+.lf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 499px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Campos de formulario inline ── */
@@ -535,6 +546,71 @@
   margin-top: 5px;
   display: flex;
   align-items: center;
+}
+
+/* ── Píldora de teléfono ── */
+.lf-phone-wrap {
+  display: flex;
+  align-items: stretch;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(37,99,200,0.25);
+  border-radius: 10px;
+  overflow: hidden;
+
+  &:focus-within {
+    background: rgba(255,255,255,0.9);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,200,0.15);
+  }
+
+  &.is-invalid {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220,38,38,0.12);
+  }
+}
+
+.lf-select--prefix {
+  width: 88px !important;
+  min-width: 88px !important;
+  flex: 0 0 88px !important;
+  border: none !important;
+  border-right: 1px solid rgba(37,99,200,0.2) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #0f1c3f !important;
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 0 4px 0 8px;
+  height: 38px;
+  appearance: auto;
+
+  &:focus {
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none;
+  }
+}
+
+.lf-input--number {
+  flex: 1 1 0;
+  width: auto !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  height: 38px;
+  padding: 0 10px;
+  color: #0f1c3f !important;
+  font-size: 0.9rem;
+
+  &::placeholder { color: rgba(15,28,63,0.35) !important; }
+
+  &:focus {
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none;
+  }
 }
 
 /* ── Botones de acción del formulario ── */

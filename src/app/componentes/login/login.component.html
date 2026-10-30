@@ -412,64 +412,92 @@
       <p class="login-form-card__sub" *ngIf="isLoadingCatalog">Cargando planes disponibles...</p>
       <p class="login-form-card__sub" *ngIf="!isLoadingCatalog">Completá tus datos para continuar con el pago</p>
 
-      <div class="lf-field">
-        <label class="lf-label">País</label>
-        <ng-select
-          [items]="membershipCountries"
-          bindLabel="nombre"
-          bindValue="codigo"
-          [(ngModel)]="purchaseCountryCode"
-          name="purchaseCountry"
-          placeholder="Seleccioná un país"
-          [clearable]="false"
-          (change)="onPurchaseCountryChange()"
-        >
-          <ng-template ng-option-tmp let-item="item">
-            <img *ngIf="item.flag" [src]="item.flag" width="20" class="me-2" />
-            {{ item.nombre }}
-          </ng-template>
-        </ng-select>
+      <!-- Fila 1: País + Plan -->
+      <div class="lf-row">
+        <div class="lf-field">
+          <label class="lf-label">País</label>
+          <ng-select
+            [items]="membershipCountries"
+            bindLabel="nombre"
+            bindValue="codigo"
+            [(ngModel)]="purchaseCountryCode"
+            name="purchaseCountry"
+            placeholder="Seleccioná un país"
+            [clearable]="false"
+            (change)="onPurchaseCountryChange()"
+          >
+            <ng-template ng-option-tmp let-item="item">
+              <img *ngIf="item.flag" [src]="item.flag" width="20" class="me-2" />
+              {{ item.nombre }}
+            </ng-template>
+          </ng-select>
+        </div>
+
+        <div class="lf-field">
+          <label class="lf-label">Plan</label>
+          <select class="form-select login-input-field" [(ngModel)]="purchasePlanMonths" name="purchasePlan">
+            <option [ngValue]="null" disabled>Seleccioná un plan</option>
+            <option *ngFor="let plan of selectedMembershipCountry?.plans" [ngValue]="plan.months">
+              {{ plan.months }} meses — {{ plan.amount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}
+            </option>
+          </select>
+        </div>
       </div>
 
-      <div class="lf-field">
-        <label class="lf-label">Plan</label>
-        <select class="form-select login-input-field" [(ngModel)]="purchasePlanMonths" name="purchasePlan">
-          <option [ngValue]="null" disabled>Seleccioná un plan</option>
-          <option *ngFor="let plan of selectedMembershipCountry?.plans" [ngValue]="plan.months">
-            {{ plan.months }} meses — {{ plan.amount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}
-          </option>
-        </select>
+      <!-- Fila 2: Nombre + Email -->
+      <div class="lf-row">
+        <div class="lf-field">
+          <label class="lf-label">Nombre completo</label>
+          <input class="form-control login-input-field" [(ngModel)]="purchaseName" name="purchaseName" placeholder="Tu nombre completo" />
+        </div>
+
+        <div class="lf-field">
+          <label class="lf-label">Email</label>
+          <input
+            type="email"
+            class="form-control login-input-field"
+            [class.is-invalid]="!!purchaseEmailError"
+            [(ngModel)]="purchaseEmail"
+            name="purchaseEmail"
+            placeholder="tu@email.com"
+            (blur)="purchaseEmailTouched = true"
+          />
+          <div class="lf-error" *ngIf="purchaseEmailError">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ purchaseEmailError }}
+          </div>
+        </div>
       </div>
 
-      <div class="lf-field">
-        <label class="lf-label">Nombre completo</label>
-        <input class="form-control login-input-field" [(ngModel)]="purchaseName" name="purchaseName" placeholder="Tu nombre completo" />
-      </div>
-
-      <div class="lf-field">
-        <label class="lf-label">Email</label>
-        <input type="email" class="form-control login-input-field" [(ngModel)]="purchaseEmail" name="purchaseEmail" placeholder="tu@email.com" />
-      </div>
-
+      <!-- Teléfono (ancho completo, píldora) -->
       <div class="lf-field">
         <label class="lf-label">
           Teléfono
           <span class="lf-label-hint">(opcional — para recibir el código por WhatsApp)</span>
         </label>
-        <input
-          type="tel"
-          class="form-control login-input-field"
-          [class.is-invalid]="purchasePhone.trim().length > 0 && !!purchasePhoneErrorMessage"
-          [(ngModel)]="purchasePhone"
-          [placeholder]="purchasePhonePlaceholder"
-          name="purchasePhone"
-          (input)="onPurchasePhoneInput()"
-        />
-        <div class="lf-error" *ngIf="purchasePhone.trim().length > 0 && purchasePhoneErrorMessage">
+        <div class="lf-phone-wrap" [class.is-invalid]="purchasePhoneNumber.trim().length > 0 && !!purchasePhoneErrorMessage">
+          <select
+            class="lf-select--prefix login-input-field"
+            [(ngModel)]="purchasePhonePrefix"
+            name="purchasePhonePrefix"
+            (change)="onPurchasePhoneNumberInput()"
+          >
+            <option *ngFor="let c of phoneCountriesForCheckout" [value]="c.code">{{ c.label }}</option>
+          </select>
+          <input
+            type="tel"
+            class="lf-input--number"
+            [(ngModel)]="purchasePhoneNumber"
+            [placeholder]="purchasePhoneNumberPlaceholder"
+            name="purchasePhoneNumber"
+            (input)="onPurchasePhoneNumberInput()"
+          />
+        </div>
+        <div class="lf-error" *ngIf="purchasePhoneNumber.trim().length > 0 && purchasePhoneErrorMessage">
           <i class="bi bi-exclamation-circle me-1"></i>{{ purchasePhoneErrorMessage }}
         </div>
       </div>
 
+      <!-- Documento (ancho completo) -->
       <div class="lf-field" *ngIf="purchaseCountryCode === 'AR'">
         <label class="lf-label">
           {{ selectedMembershipCountry?.documentLabel || 'Documento' }}
