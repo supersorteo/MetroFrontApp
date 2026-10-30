@@ -459,6 +459,30 @@ export class OfflineLocalStoreService {
     }
   }
 
+  async reconcileClientesWithServer(userCode: string, serverIds: number[]): Promise<void> {
+    const serverIdSet = new Set(serverIds);
+    const stale = await metroDB.clientes
+      .where('userCode')
+      .equals(userCode)
+      .filter(r => !r.deletedAt && r.syncStatus === 'synced' && r.serverId != null && !serverIdSet.has(r.serverId))
+      .toArray();
+    if (stale.length > 0) {
+      await Promise.all(stale.map(r => metroDB.clientes.delete(r.localId)));
+    }
+  }
+
+  async reconcileEmpresasWithServer(userCode: string, serverIds: number[]): Promise<void> {
+    const serverIdSet = new Set(serverIds);
+    const stale = await metroDB.empresas
+      .where('userCode')
+      .equals(userCode)
+      .filter(r => !r.deletedAt && r.syncStatus === 'synced' && r.serverId != null && !serverIdSet.has(r.serverId))
+      .toArray();
+    if (stale.length > 0) {
+      await Promise.all(stale.map(r => metroDB.empresas.delete(r.localId)));
+    }
+  }
+
 
   async markUserTareaSynced(localOrServerId: number, remoteData?: any): Promise<void> {
     const record = await this.findUserTareaByAnyId(localOrServerId, remoteData?.id);

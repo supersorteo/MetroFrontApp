@@ -286,9 +286,87 @@
   color: rgba(15,28,63,0.55);
 }
 
+/* ── Phone field — unified pill ───────────────── */
+.ef-phone-wrap {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  border: 1px solid rgba(37,99,200,0.25);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.7);
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus-within {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,200,0.15);
+  }
+}
+
+.ef-select--prefix {
+  flex: 0 0 auto;
+  width: 78px;
+  min-width: 78px;
+  padding: 0.55rem 0.3rem 0.55rem 0.5rem;
+  border: none;
+  border-right: 1px solid rgba(37,99,200,0.18);
+  background: rgba(37,99,200,0.05);
+  font-size: 0.77rem;
+  color: #0f1c3f;
+  cursor: pointer;
+  outline: none;
+  appearance: auto;
+  white-space: nowrap;
+  overflow: hidden;
+
+  &:focus { background: rgba(37,99,200,0.09); }
+}
+
+.ef-input--number {
+  flex: 1 1 0;
+  width: auto !important;
+  min-width: 0;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+
+  &:focus {
+    border: none !important;
+    box-shadow: none !important;
+    background: rgba(255,255,255,0.4) !important;
+  }
+}
+
+/* ── Social label with inline icon ───────────── */
+.ef-label--social {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  svg { opacity: 0.6; flex-shrink: 0; }
+}
+
+/* ── Inline errors ────────────────────────────── */
+.ef-error {
+  display: block;
+  font-size: 11px;
+  color: #ef4444;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.ef-required { color: #ef4444; font-size: 11px; margin-left: 2px; }
+
 /* ── Responsive ───────────────────────────────── */
 @media (max-width: 480px) {
   .ef-row { grid-template-columns: 1fr; }
   .edit-form { padding: 1.2rem 1.2rem 1.5rem; }
   .edit-header { padding: 1.3rem 1.2rem 1.1rem; }
+}
+
+@media (max-width: 340px) {
+  .ef-phone-wrap { flex-direction: column; }
+  .ef-select--prefix { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid rgba(37,99,200,0.18); }
+  .ef-input--number { border-radius: 0 !important; }
 }

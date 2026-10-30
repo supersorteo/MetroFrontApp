@@ -36,6 +36,7 @@ export class DatosDeTareasComponent implements OnInit {
   clienteSeleccionado: Cliente | null = null;
   tareasAgregadas: Tarea[] = [];
   presupuestoNombre: string = '';
+  budgetDate: string = '';
 
   // Toggles de visibilidad de columnas (persistentes en localStorage)
   hideCostPerM2: boolean = false;
@@ -104,6 +105,7 @@ export class DatosDeTareasComponent implements OnInit {
       this.clienteSeleccionado = activePreview.cliente || activePreview.presupuesto?.cliente || null;
       this.tareasAgregadas = activePreview.tareas || activePreview.presupuesto?.tareas || [];
       this.presupuestoNombre = activePreview.name || activePreview.presupuesto?.name || '';
+      this.budgetDate = activePreview.budgetDate || activePreview.presupuesto?.budgetDate || '';
       this.loadPreviewOptions();
       return;
     }
@@ -297,7 +299,7 @@ export class DatosDeTareasComponent implements OnInit {
             margin: 10,
             filename: `presupuesto-${this.clienteSeleccionado?.name || 'cliente'}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
+            html2canvas: { scale: 2, useCORS: true, windowWidth: 794 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
           })
           .from(exportElement)

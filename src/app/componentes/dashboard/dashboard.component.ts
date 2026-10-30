@@ -36,6 +36,7 @@ import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
 import { MembershipPaymentService } from '../../servicios/membership-payment.service';
 import { PrecioMaterial, PrecioMaterialService } from '../../servicios/precio-material.service';
 import { mapMembershipCountryOption, MembershipCountryOption } from '../../core/membership/membership-checkout.util';
+import { PHONE_COUNTRIES, PhoneCountry, validatePhone } from '../../core/utils/phone-validation.util';
 
 
 declare var bootstrap: any;
@@ -529,6 +530,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   empresaName: string = '';
   empresaPhone: string = '';
+  empresaPrefix: string = '+549';
+  empresaPhoneInvalid = false;
+  empresaPhoneInvalidMsg = '';
   empresaEmail: string = '';
   additionalDetailsEmpresa: string = '';
   empresaWebsite: string = '';
@@ -538,6 +542,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   empresaCuilCuit: string = '';
   clientName: string = '';
   clientContact: string = '';
+  clientPrefix: string = '+549';
+  clientNumber: string = '';
+  phoneNumberInvalid = false;
+  phoneNumberInvalidMsg = '';
+  readonly phoneCountries: PhoneCountry[] = PHONE_COUNTRIES;
   budgetDate: any = '';
   additionalDetailsClient: string = '';
 
@@ -834,7 +843,11 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
   private finishClientSaveFlow(message: string): void {
     this.clientName = '';
     this.clientContact = '';
-    this.budgetDate = new Date().toISOString().split('T')[0];
+    this.clientPrefix = '+549';
+    this.clientNumber = '';
+    this.phoneNumberInvalid = false;
+    this.phoneNumberInvalidMsg = '';
+    this.budgetDate = '';
     this.additionalDetailsClient = '';
     this.clientEmail = '';
     this.clientClave = '';
@@ -1369,8 +1382,12 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
         }
       });
     }
+    interval(30000).pipe(takeUntil(this.destroy$)).subscribe(() => {
+      if (!this.userCode) return;
+      this.empresaStore.refreshFromRemote();
+      this.clienteStore.refresh();
+    });
     this.colorScheme = this.loadColorScheme();
-    this.budgetDate = new Date().toISOString().split('T')[0];
   }
 
   async refreshPendingSyncSummary(): Promise<void> {
@@ -1649,10 +1666,26 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   }
 
   updatePaginatedEmpresas(): void {
-    this.totalEmpresaPages = Math.ceil(this.empresas.length / this.itemsPerPageEmpresas) || 1;
+    const filtered = this.filtroEmpresa.trim()
+      ? this.empresas.filter(e =>
+          [e.name, e.email, e.phone, e.description]
+            .some(v => (v ?? '').toLowerCase().includes(this.filtroEmpresa.toLowerCase()))
+        )
+      : this.empresas;
+    this.totalEmpresaPages = Math.ceil(filtered.length / this.itemsPerPageEmpresas) || 1;
     if (this.currentEmpresaPage > this.totalEmpresaPages) this.currentEmpresaPage = 1;
     const startIndex = (this.currentEmpresaPage - 1) * this.itemsPerPageEmpresas;
-    this.paginatedEmpresas = this.empresas.slice(startIndex, startIndex + this.itemsPerPageEmpresas);
+    this.paginatedEmpresas = filtered.slice(startIndex, startIndex + this.itemsPerPageEmpresas);
+  }
+
+  onFiltroEmpresaChange(): void {
+    this.currentEmpresaPage = 1;
+    this.updatePaginatedEmpresas();
+  }
+
+  getWhatsAppUrl(phone: string): string {
+    if (!phone?.trim()) return '';
+    return 'whatsapp://send?phone=' + phone.replace(/\D/g, '');
   }
 
   getEmpresaPages(): number[] {
@@ -1714,6 +1747,12 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
         },
         error: (error) => {
           console.error('[EMPRESA] Error al eliminar empresa:', error);
+          if (error.status === 404) {
+            void this.localStore.markEmpresaDeleteSynced(id);
+            this.removeEmpresaFromState(id);
+            this.uiDialog.success({ title: 'Empresa eliminada', text: 'La empresa ya había sido eliminada desde otro dispositivo.' });
+            return;
+          }
           const msg = error?.error?.error || error.message || 'No se pudo eliminar la empresa.';
           const title = error.status === 409 ? 'No se puede eliminar' : 'Error al eliminar';
           this.uiDialog.error({ title, text: msg });
@@ -1737,6 +1776,12 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       },
       error: (error) => {
         console.error('Error al eliminar cliente:', error);
+        if (error.status === 404) {
+          void this.localStore.markClienteDeleteSynced(id);
+          this.removeClienteFromState(id);
+          this.uiDialog.success({ title: 'Cliente eliminado', text: 'El cliente ya había sido eliminado desde otro dispositivo.' });
+          return;
+        }
         this.uiDialog.error({ title: 'Error al eliminar', text: error.message || 'No se pudo eliminar el cliente.' });
       }
     });
@@ -2618,6 +2663,7 @@ openSaveBudgetModal(): void {
   closeSaveBudgetModal(): void {
   this.showSaveBudgetModal = false;
   this.nombrePresupuestoModal = '';
+  this.budgetDate = '';
   const modalEl = document.getElementById('saveBudgetModal');
   if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
 }
@@ -2628,6 +2674,7 @@ guardarPresupuestoDesdeModal(): void {
   if (!nombre || !this.presupuestosGuardadosComponent) return;
   this.showSaveBudgetModal = false;
   this.presupuestosGuardadosComponent.nombreTemporal = nombre;
+  this.presupuestosGuardadosComponent.budgetDateTemporal = this.budgetDate || null;
   this.presupuestosGuardadosComponent.guardarPresupuestoActual();
   this._presupuestoGuardadoExitosamente = false;
   this.nombrePresupuestoModal = '';
@@ -2647,6 +2694,7 @@ guardarComoNuevoDesdeModal(): void {
   }
   this.showSaveBudgetModal = false;
   this.presupuestosGuardadosComponent.nombreTemporal = nombre;
+  this.presupuestosGuardadosComponent.budgetDateTemporal = this.budgetDate || null;
   this.presupuestosGuardadosComponent.guardarComoNuevo();
   this.nombrePresupuestoModal = '';
   setTimeout(() => {
@@ -3469,12 +3517,18 @@ onImageChange(event: Event): void {
     return;
   }
 
+  const demoPhoneResult = validatePhone(this.empresaPrefix, this.empresaPhone);
+  if (!demoPhoneResult.valid) {
+    this.appToast.error(demoPhoneResult.error || 'El teléfono no es válido');
+    return;
+  }
+
   const localLogo = localStorage.getItem('demoEmpresaLogo') || this.logoUrl || '';
 
   const nuevaEmpresa: Empresa = {
     id: Date.now(),
     name: this.empresaName,
-    phone: this.empresaPhone,
+    phone: demoPhoneResult.e164!,
     email: this.empresaEmail,
     description: this.additionalDetailsEmpresa,
     logoUrl: localLogo,
@@ -3533,6 +3587,12 @@ onImageChange(event: Event): void {
       return;
     }
 
+    const phoneResult = validatePhone(this.empresaPrefix, this.empresaPhone);
+    if (!phoneResult.valid) {
+      this.appToast.error(phoneResult.error || 'El teléfono no es válido');
+      return;
+    }
+
     const syncedUploadedImage = localStorage.getItem('uploadedImage') || '';
     const resolvedLogoUrl = navigator.onLine && this.logoUrl.startsWith('data:image/')
       ? syncedUploadedImage || this.logoUrl
@@ -3540,7 +3600,7 @@ onImageChange(event: Event): void {
 
     const formData: Empresa = {
       name: this.empresaName,
-      phone: this.empresaPhone,
+      phone: phoneResult.e164!,
       email: this.empresaEmail,
       description: this.additionalDetailsEmpresa,
       logoUrl: resolvedLogoUrl,
@@ -3614,6 +3674,9 @@ onImageChange(event: Event): void {
     this.empresaEditId = null;
     this.empresaName = '';
     this.empresaPhone = '';
+    this.empresaPrefix = '+549';
+    this.empresaPhoneInvalid = false;
+    this.empresaPhoneInvalidMsg = '';
     this.empresaEmail = '';
     this.additionalDetailsEmpresa = '';
     this.empresaWebsite = '';
@@ -3642,6 +3705,70 @@ onImageChange(event: Event): void {
     this.budgetDate = input.value;
   }
 
+  get selectedCountry(): PhoneCountry | undefined {
+    return PHONE_COUNTRIES.find(c => c.code === this.clientPrefix);
+  }
+
+  get taxIdConfig(): { label: string; placeholder: string; pattern: string; hint: string } {
+    switch (this.clientPrefix) {
+      case '+549': case '+54':
+        return { label: 'CUIT / CUIL', placeholder: 'XX-XXXXXXXX-X', pattern: '\\d{2}-\\d{8}-\\d{1}', hint: 'Formato: 20-12345678-9' };
+      case '+598':
+        return { label: 'RUT', placeholder: 'XXXXXXXXXXXX (hasta 12 dígitos)', pattern: '\\d{6,12}', hint: '6 a 12 dígitos numéricos' };
+      case '+57':
+        return { label: 'NIT', placeholder: 'XXXXXXXXX', pattern: '\\d{8,10}', hint: '8 a 10 dígitos (sin dígito verificador)' };
+      case '+53':
+        return { label: 'Carné de identidad', placeholder: 'XXXXXXXXXXX (11 dígitos)', pattern: '\\d{11}', hint: '11 dígitos del carné de identidad' };
+      case '+595':
+        return { label: 'RUC', placeholder: 'XXXXXXXX', pattern: '\\d{6,9}', hint: '6 a 9 dígitos' };
+      default:
+        return { label: 'Identificación fiscal', placeholder: 'Número de identificación', pattern: '', hint: '' };
+    }
+  }
+
+  get empresaSelectedCountry(): PhoneCountry | undefined {
+    return PHONE_COUNTRIES.find(c => c.code === this.empresaPrefix);
+  }
+
+  get empresaTaxIdConfig(): { label: string; placeholder: string; pattern: string; hint: string } {
+    switch (this.empresaPrefix) {
+      case '+549': case '+54':
+        return { label: 'CUIT / CUIL', placeholder: 'XX-XXXXXXXX-X', pattern: '\\d{2}-\\d{8}-\\d{1}', hint: 'Formato: 20-12345678-9' };
+      case '+598':
+        return { label: 'RUT', placeholder: 'XXXXXXXXXXXX (hasta 12 dígitos)', pattern: '\\d{6,12}', hint: '6 a 12 dígitos numéricos' };
+      case '+57':
+        return { label: 'NIT', placeholder: 'XXXXXXXXX', pattern: '\\d{8,10}', hint: '8 a 10 dígitos (sin dígito verificador)' };
+      case '+53':
+        return { label: 'Carné de identidad', placeholder: 'XXXXXXXXXXX (11 dígitos)', pattern: '\\d{11}', hint: '11 dígitos del carné de identidad' };
+      case '+595':
+        return { label: 'RUC', placeholder: 'XXXXXXXX', pattern: '\\d{6,9}', hint: '6 a 9 dígitos' };
+      default:
+        return { label: 'Identificación fiscal', placeholder: 'Número de identificación', pattern: '', hint: '' };
+    }
+  }
+
+  validateEmpresaPhone(live = false): void {
+    if (!this.empresaPhone.trim()) {
+      this.empresaPhoneInvalid = false;
+      this.empresaPhoneInvalidMsg = '';
+      return;
+    }
+    const result = validatePhone(this.empresaPrefix, this.empresaPhone, live);
+    this.empresaPhoneInvalid = !result.valid;
+    this.empresaPhoneInvalidMsg = result.error ?? '';
+  }
+
+  validatePhoneInput(live = false): void {
+    if (!this.clientNumber.trim()) {
+      this.phoneNumberInvalid = false;
+      this.phoneNumberInvalidMsg = '';
+      return;
+    }
+    const result = validatePhone(this.clientPrefix, this.clientNumber, live);
+    this.phoneNumberInvalid = !result.valid;
+    this.phoneNumberInvalidMsg = result.error ?? '';
+  }
+
 
 
 
@@ -3663,10 +3790,16 @@ onImageChange(event: Event): void {
       return;
     }
 
+    const phoneResult = validatePhone(this.clientPrefix, this.clientNumber);
+    if (!phoneResult.valid) {
+      this.phoneNumberInvalid = true;
+      this.phoneNumberInvalidMsg = phoneResult.error ?? 'Número inválido';
+      return;
+    }
+    const contactStr = phoneResult.e164!;
     const clientData: Cliente = {
       name: this.clientName,
-      contact: this.clientContact,
-      budgetDate: this.budgetDate,
+      contact: contactStr || this.clientContact,
       additionalDetails: this.additionalDetailsClient,
       userCode: this.userCode,
       email: this.clientEmail,
@@ -3709,29 +3842,34 @@ onImageChange(event: Event): void {
     if (!form.valid) {
       const nameCtrl = form.controls['clientName'];
       const contactCtrl = form.controls['clientContact'];
-      const dateCtrl = form.controls['budgetDate'];
+      const numberCtrl = form.controls['clientNumber'];
       const emailCtrl = form.controls['clientEmail'];
       const claveCtrl = form.controls['clientClave'];
       const direccionCtrl = form.controls['clientDireccion'];
       if (!nameCtrl?.valid) {
         this.appToast.error(nameCtrl?.errors?.['minlength'] ? 'El nombre debe tener al menos 2 caracteres' : 'El nombre es obligatorio');
       }
-      if (!contactCtrl?.valid) {
-        this.appToast.error(contactCtrl?.errors?.['pattern'] ? 'El contacto debe ser un número de teléfono válido (7-15 dígitos, puede incluir +)' : 'El contacto es obligatorio');
+      if (numberCtrl && !numberCtrl?.valid) {
+        this.appToast.error('El número de teléfono es obligatorio');
+      } else if (this.phoneNumberInvalid) {
+        this.appToast.error(this.phoneNumberInvalidMsg || 'El número de teléfono es inválido');
+      } else if (contactCtrl && !contactCtrl?.valid) {
+        this.appToast.error('El contacto es obligatorio');
       }
-      if (!dateCtrl?.valid || !this.budgetDate || this.budgetDate === '0000-00-00') {
-        this.appToast.error('La fecha del presupuesto es obligatoria y debe ser válida');
+      if (emailCtrl?.value && !emailCtrl?.valid) {
+        this.appToast.error('El email debe tener un formato válido');
       }
-      if (!emailCtrl?.valid) {
-        this.appToast.error(emailCtrl?.errors?.['email'] ? 'El email debe tener un formato válido' : 'El email es obligatorio');
-      }
-      if (!claveCtrl?.valid) {
-        this.appToast.error(claveCtrl?.errors?.['pattern'] ? 'El CUIT debe tener el formato XX-XXXXXXXX-X' : 'El CUIT es obligatorio');
+      if (claveCtrl?.value && !claveCtrl?.valid) {
+        this.appToast.error(`${this.taxIdConfig.label} inválido. ${this.taxIdConfig.hint}`);
       }
       if (!direccionCtrl?.valid) {
         this.appToast.error(direccionCtrl?.errors?.['minlength'] ? 'La dirección debe tener al menos 5 caracteres' : 'La dirección es obligatoria');
       }
       console.error('Formulario inválido:', form.controls);
+      return false;
+    }
+    if (this.phoneNumberInvalid) {
+      this.appToast.error(this.phoneNumberInvalidMsg || 'El número de teléfono es inválido');
       return false;
     }
     if (!this.userCode || this.userCode.trim().length === 0) {

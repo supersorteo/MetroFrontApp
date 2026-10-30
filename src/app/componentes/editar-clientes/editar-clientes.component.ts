@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
+import { PHONE_COUNTRIES, PhoneCountry, validatePhone } from '../../core/utils/phone-validation.util';
 
 @Component({
   selector: 'app-editar-clientes',
@@ -27,6 +28,30 @@ export class EditarClientesComponent implements OnInit {
   };
   loading: boolean = true;
   errorMsg: string = '';
+
+  phoneCountries = PHONE_COUNTRIES;
+  editPrefix: string = '+549';
+  editPhone: string = '';
+  phoneInvalid = false;
+  phoneInvalidMsg = '';
+
+  get selectedCountry(): PhoneCountry | undefined {
+    return PHONE_COUNTRIES.find(c => c.code === this.editPrefix);
+  }
+
+  validateEditPhone(live = false): void {
+    if (!this.editPhone.trim()) { this.phoneInvalid = false; this.phoneInvalidMsg = ''; return; }
+    const result = validatePhone(this.editPrefix, this.editPhone, live);
+    this.phoneInvalid = !result.valid;
+    this.phoneInvalidMsg = result.error ?? '';
+  }
+
+  private parseE164(e164: string): void {
+    if (!e164) return;
+    const country = PHONE_COUNTRIES.find(c => e164.startsWith(c.code));
+    this.editPrefix = country?.code ?? '+549';
+    this.editPhone = e164.slice(this.editPrefix.length).trim();
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -112,6 +137,7 @@ if (isTrial) {
   const cliente = demoClientes.find(c => Number(c.id) === id);
   if (cliente) {
     this.cliente = { ...cliente };
+    this.parseE164(this.cliente.contact);
     this.loading = false;
   } else {
     this.errorMsg = 'No se pudo cargar el cliente demo';
@@ -127,8 +153,9 @@ if (isTrial) {
         next: (data) => {
           this.cliente = {
             ...data,
-            empresaId: data.empresaId // Asegura que empresaId se asigne correctamente
+            empresaId: data.empresaId
           };
+          this.parseE164(this.cliente.contact);
           this.loading = false;
         },
         error: async () => {
@@ -139,6 +166,7 @@ if (isTrial) {
               ...storedCliente,
               empresaId: storedCliente.empresaId
             };
+            this.parseE164(this.cliente.contact);
             this.loading = false;
             return;
           }
@@ -160,6 +188,12 @@ if (isTrial) {
       this.uiDialog.warning({ title: 'Campo obligatorio', text: 'El nombre del cliente no puede estar vacío.' });
       return;
     }
+    const phoneResult = validatePhone(this.editPrefix, this.editPhone);
+    if (!phoneResult.valid) {
+      this.uiDialog.warning({ title: 'Teléfono inválido', text: phoneResult.error || 'El número no es válido.' });
+      return;
+    }
+    this.cliente.contact = phoneResult.e164!;
 
     const confirmed = await this.uiDialog.confirm({
       title: '¿Guardar cambios?',

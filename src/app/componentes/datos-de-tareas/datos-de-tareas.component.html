@@ -208,8 +208,8 @@
             <div *ngIf="clienteSeleccionado?.direccion" class="client-row">
               <i class="fas fa-map-marker-alt"></i><span>{{ clienteSeleccionado?.direccion }}</span>
             </div>
-            <div *ngIf="clienteSeleccionado?.budgetDate" class="client-row">
-              <i class="fas fa-calendar-alt"></i><span>{{ clienteSeleccionado?.budgetDate }}</span>
+            <div *ngIf="budgetDate || clienteSeleccionado?.budgetDate" class="client-row">
+              <i class="fas fa-calendar-alt"></i><span>{{ budgetDate || clienteSeleccionado?.budgetDate }}</span>
             </div>
             <div *ngIf="presupuestoNombre" class="client-row">
               <i class="fas fa-file-invoice"></i><span>{{ presupuestoNombre }}</span>

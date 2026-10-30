@@ -69,6 +69,8 @@ export class EmpresaService {
           void this.localStore.upsertEmpresa(e).catch(() => {});
           void this.cacheRemoteLogo(e).catch(() => {});
         });
+        const serverIds = empresas.map(e => e.id).filter((id): id is number => !!id);
+        void this.localStore.reconcileEmpresasWithServer(userCode, serverIds).catch(() => {});
       }),
       catchError(() =>
         from(this.localStore.listEmpresas(userCode)).pipe(

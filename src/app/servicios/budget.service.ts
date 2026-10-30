@@ -12,6 +12,7 @@ export interface SavedPresupuesto {
   id: number;
   name: string;
   createdAt: string;
+  budgetDate?: string;
   cliente: Cliente;
   empresa?: Empresa | null;
   tareas: UserTarea[];

@@ -17,9 +17,9 @@
 
 /* ============ DOCUMENTO WRAPPER ============ */
 .doc-wrapper {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 24px 16px 100px;
+  padding: 24px 24px 100px;
   animation: fadeUp 0.35s ease both;
 }
 
@@ -40,7 +40,7 @@
     0 4px 6px -1px rgba(0,0,0,.07),
     0 10px 30px -8px rgba(0,0,0,.12),
     0 20px 60px -16px rgba(0,0,0,.08);
-  padding: 28px 24px 28px;
+  padding: 32px 36px 32px;
   background: #f8fbff;
 }
 
@@ -977,7 +977,13 @@
 }
 
 /* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+  .doc-wrapper { padding: 16px 16px 100px; }
+  .doc-body { padding: 22px 18px 22px; }
+}
+
 @media (max-width: 640px) {
+  .doc-wrapper { padding: 12px 12px 100px; }
   .doc-body { padding: 18px 14px 20px; }
 
   .preview-toolbar {

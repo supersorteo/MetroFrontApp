@@ -42,6 +42,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   @Output() presupuestoGuardado = new EventEmitter<SavedPresupuesto>();
 
   nombreTemporal = '';
+  budgetDateTemporal: string | null = null;
   filtro = '';
   presupuestos: SavedPresupuesto[] = [];
   cargandoMas = false;
@@ -132,7 +133,8 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       name: nombre,
       tareas: this.tareasActuales.map(t => ({ id: t.id })),
       cliente: this.clienteActual?.id ? { id: this.clienteActual.id } : null,
-      empresa: this.empresaActual?.id ? { id: this.empresaActual.id } : null
+      empresa: this.empresaActual?.id ? { id: this.empresaActual.id } : null,
+      ...(this.budgetDateTemporal ? { budgetDate: this.budgetDateTemporal } : {})
     };
 
     if (this.presupuestoCargado?.id) {
@@ -186,7 +188,8 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       name: nombre,
       tareas: this.tareasActuales.map(t => ({ id: t.id })),
       cliente: this.clienteActual?.id ? { id: this.clienteActual.id } : null,
-      empresa: this.empresaActual?.id ? { id: this.empresaActual.id } : null
+      empresa: this.empresaActual?.id ? { id: this.empresaActual.id } : null,
+      ...(this.budgetDateTemporal ? { budgetDate: this.budgetDateTemporal } : {})
     };
     this.isSavingBudget = true;
     this.budgetService.guardarPresupuesto(payload).subscribe({

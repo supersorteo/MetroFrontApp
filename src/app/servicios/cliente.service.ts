@@ -10,7 +10,7 @@ export interface Cliente {
   id?: number;
   name: string;
   contact: string;
-  budgetDate: string;
+  budgetDate?: string;
   additionalDetails: string;
   userCode: string;
   email: string;
@@ -31,7 +31,11 @@ export class ClienteService {
 
   getClienteByUserCode(userCode: string): Observable<Cliente[]> {
     return this.http.get<Cliente[]>(`${this.apiUrl}/${userCode}`).pipe(
-      tap(clientes => clientes.forEach(cliente => void this.localStore.upsertCliente(cliente).catch(() => {}))),
+      tap(clientes => {
+        clientes.forEach(cliente => void this.localStore.upsertCliente(cliente).catch(() => {}));
+        const serverIds = clientes.map(c => c.id).filter((id): id is number => !!id);
+        void this.localStore.reconcileClientesWithServer(userCode, serverIds).catch(() => {});
+      }),
       catchError(() =>
         from(this.localStore.listClientesByUserCode(userCode)).pipe(
           mergeMap(cached =>
