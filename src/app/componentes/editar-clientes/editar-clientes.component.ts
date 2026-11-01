@@ -18,7 +18,6 @@ export class EditarClientesComponent implements OnInit {
   cliente: Cliente = {
     name: '',
     contact: '',
-    budgetDate: '',
     additionalDetails: '',
     userCode: '',
     email: '',

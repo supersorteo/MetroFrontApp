@@ -10,7 +10,6 @@ export interface Cliente {
   id?: number;
   name: string;
   contact: string;
-  budgetDate?: string;
   additionalDetails: string;
   userCode: string;
   email: string;
