@@ -84,7 +84,9 @@
     }
   } @else {
     <div class="empty-state">
-      <p class="empty-state__message">Consigue acceso a metro y guarda clientes y presupuestos</p>
+      @if (esModoDemo) {
+        <p class="empty-state__message">Consigue acceso a metro y guarda clientes y presupuestos</p>
+      }
       <img
         class="empty-state__sprite"
         src="assets/archi-explicando-presupuestos.webp"
