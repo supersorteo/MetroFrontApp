@@ -420,7 +420,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   }
 
   async verPresupuesto(presupuesto: SavedPresupuesto): Promise<void> {
-    const preview = { presupuesto, empresa: presupuesto.empresa || this.empresaActual, cliente: presupuesto.cliente, tareas: presupuesto.tareas, name: presupuesto.name, budgetDate: presupuesto.createdAt };
+    const preview = { presupuesto, empresa: presupuesto.empresa || this.empresaActual, cliente: presupuesto.cliente, tareas: presupuesto.tareas, name: presupuesto.name, budgetDate: presupuesto.createdAt ? presupuesto.createdAt.split('T')[0] : '' };
     await this.localStore.setState('budget:active-preview', preview);
     localStorage.setItem('selectedEmpresa', JSON.stringify(preview.empresa));
     localStorage.setItem('selectedCliente', JSON.stringify(preview.cliente));

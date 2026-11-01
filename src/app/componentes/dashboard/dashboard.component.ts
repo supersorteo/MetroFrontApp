@@ -5093,7 +5093,6 @@ fetchUserData(): void {
         contact: '11-4455-6677',
         email: 'contacto@constructoradelsol.com',
         direccion: 'Av. Libertador 1500, CABA',
-        budgetDate: today,
         additionalDetails: 'Cliente corporativo - Refaccion de oficinas',
         userCode: this.userCode,
         clave: '30-12345678-9'
@@ -5104,7 +5103,6 @@ fetchUserData(): void {
         contact: '221-555-0987',
         email: 'rmartinez@email.com',
         direccion: 'Calle 50 nro 123, La Plata',
-        budgetDate: today,
         additionalDetails: 'Particular - Proyecto vivienda unifamiliar',
         userCode: this.userCode,
         clave: '20-98765432-1'
@@ -5115,7 +5113,6 @@ fetchUserData(): void {
         contact: '341-555-2211',
         email: 'administracion@hotelcostaazul.com',
         direccion: 'Boulevard Costero 88, Mar del Plata',
-        budgetDate: today,
         additionalDetails: 'Cadena hotelera - Mantenimiento y mejoras',
         userCode: this.userCode,
         clave: '30-45678912-3'

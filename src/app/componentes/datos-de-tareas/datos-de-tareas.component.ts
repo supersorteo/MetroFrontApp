@@ -105,7 +105,8 @@ export class DatosDeTareasComponent implements OnInit {
       this.clienteSeleccionado = activePreview.cliente || activePreview.presupuesto?.cliente || null;
       this.tareasAgregadas = activePreview.tareas || activePreview.presupuesto?.tareas || [];
       this.presupuestoNombre = activePreview.name || activePreview.presupuesto?.name || '';
-      this.budgetDate = activePreview.budgetDate || activePreview.presupuesto?.budgetDate || '';
+      const rawDate = activePreview.budgetDate || activePreview.presupuesto?.budgetDate || '';
+      this.budgetDate = rawDate ? rawDate.split('T')[0] : '';
       this.loadPreviewOptions();
       return;
     }
@@ -146,7 +147,7 @@ export class DatosDeTareasComponent implements OnInit {
     return value.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  private formatBudgetDate(value: string | undefined): string {
+  formatBudgetDate(value: string | undefined): string {
     if (!value) return '';
     const isoDate = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     return isoDate ? `${isoDate[3]}/${isoDate[2]}/${isoDate[1]}` : value;
@@ -466,7 +467,7 @@ export class DatosDeTareasComponent implements OnInit {
   private generarTextoPresupuesto(): string {
     const empresa = this.empresaSeleccionada?.name || 'Sin empresa';
     const cliente = this.clienteSeleccionado?.name || 'Sin cliente';
-    const fecha = this.formatBudgetDate(this.clienteSeleccionado?.budgetDate);
+    const fecha = this.formatBudgetDate(this.budgetDate);
     const lineasTareas = this.tareasAgregadas.map((tarea, index) => {
       const descripcion = tarea.descripcion ? `\n   ${tarea.descripcion}` : '';
       const area = this.formatCurrency(tarea.area || 0);
