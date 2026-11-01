@@ -1266,29 +1266,40 @@
 
     <div class="containerbuscar">
 
-      <div class="task-brand-row mb-2" *ngIf="selectedEmpresaId && currentEmpresaLogoUrl">
+      <div class="task-header-row">
 
-        <div class="fixed-image-container" *ngIf="currentEmpresaLogoUrl">
+      <div class="task-brand-row">
+
+        <div
+          class="fixed-image-container"
+          [class.fixed-image-container--empty]="!currentEmpresaLogoUrl"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="currentEmpresaLogoUrl ? 'Cambiar empresa' : 'Seleccionar empresa'"
+          [attr.title]="currentEmpresaLogoUrl ? 'Cambiar empresa' : 'Seleccionar empresa'"
+          (click)="openListaEmpresasModal()"
+          (keydown.enter)="openListaEmpresasModal()"
+          (keydown.space)="$event.preventDefault(); openListaEmpresasModal()">
 
           <img
-
+            *ngIf="currentEmpresaLogoUrl; else empresaPlaceholder"
             id="fixedImageIcon"
-
             class="fixed-image"
+            [src]="currentEmpresaLogoUrl"
+            alt="Logo Empresa">
 
-            [src]="currentEmpresaLogoUrl || '#'"
-
-            alt="Logo Empresa"
-
-            style="cursor:pointer"
-
-            (click)="openListaEmpresasModal()">
+          <ng-template #empresaPlaceholder>
+            <img
+              class="fixed-image fixed-image--placeholder"
+              src="assets/icons/empresa-add.png"
+              alt="Agregar empresa">
+          </ng-template>
 
         </div>
 
       </div>
 
-      <div class="task-tabs-toolbar mb-3">
+      <div class="task-tabs-toolbar">
 
         <ul class="nav nav-tabs task-tabs" role="tablist">
 
@@ -1335,6 +1346,8 @@
           </li>
 
         </ul>
+
+      </div>
 
       </div>
 
@@ -3220,9 +3233,6 @@
     </div>
 
     <div class="save-budget-modal__footer">
-      <button type="button" class="sbm-btn sbm-btn--cancel" (click)="closeSaveBudgetModal()">
-        <i class="fas fa-times"></i><span> Cancelar</span>
-      </button>
       <button *ngIf="presupuestoSeleccionado" type="button" class="sbm-btn sbm-btn--secondary"
               [disabled]="!nombrePresupuestoModal.trim() || !budgetDate || nombrePresupuestoModal.trim() === presupuestoSeleccionado.name"
               (click)="guardarComoNuevoDesdeModal()"
@@ -4351,14 +4361,12 @@
           <div class="pm-filter-wrap" (click)="$event.stopPropagation()">
             <button type="button"
                     class="pm-filter-btn"
+                    aria-label="Filtrar por categorías"
+                    title="Filtrar por categorías"
                     [class.pm-filter-btn--active]="categoriasSeleccionadas.length > 0"
                     (click)="abrirDropdownFiltro($event)">
               <i class="bi bi-funnel-fill"></i>
-              <span>{{ preciosLabelCategoria }}</span>
-              <span *ngIf="categoriasSeleccionadas.length > 0" class="pm-filter-count">
-                {{ categoriasSeleccionadas.length }}
-              </span>
-              <i class="bi ms-auto"
+              <i class="bi"
                  [class.bi-chevron-down]="!filtroDropdownOpen"
                  [class.bi-chevron-up]="filtroDropdownOpen"></i>
             </button>
@@ -4495,9 +4503,8 @@
 
       <div class="modal-footer pm-footer">
         <small class="text-muted me-auto">
-          <i class="bi bi-info-circle me-1"></i>Fuente: MEPREC · {{ preciosFecha }}
+          {{ preciosFecha }}
         </small>
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
       </div>
 
     </div>

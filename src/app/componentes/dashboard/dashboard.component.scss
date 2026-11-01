@@ -251,12 +251,26 @@
   }
 }
 
+.task-header-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+  min-height: 68px;
+  margin-bottom: 12px;
+}
+
 .task-brand-row {
+  flex: 0 0 68px;
   display: flex;
   justify-content: flex-start;
-  align-items: flex-start;
+  align-items: stretch;
   flex-wrap: wrap;
-  gap: 12px;
+}
+
+.task-brand-row .fixed-image-container {
+  width: 68px;
+  height: 68px;
 }
 
 .task-modal-header {
@@ -340,11 +354,10 @@
 }
 
 .task-tabs-toolbar {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 12px;
-  margin-top: 8px;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  min-width: 0;
 }
 
 .task-tabs-toolbar__action {
@@ -399,6 +412,8 @@
 .task-tabs {
   display: flex;
   align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 68px;
   width: 100%;
   border-bottom: 1px solid rgba(29, 104, 255, 0.14);
   gap: 8px;
@@ -1239,7 +1254,7 @@
 
   &__accent {
     width: 4px;
-    background: linear-gradient(180deg, #0b5ed7 0%, #6390f0 100%);
+    background: transparent;
     flex-shrink: 0;
   }
 
@@ -1318,7 +1333,7 @@
     span { font-size: 0.74rem; }
 
     &--add {
-      background: #0b5ed7;
+      background: #1a4a8f;
       color: #fff;
       &:hover { background: #0a50b8; transform: translateY(-1px); }
     }
@@ -1330,8 +1345,8 @@
     }
 
     &--delete {
-      background: #fde8e8;
-      color: #dc3545;
+      background: #7b7b7b;
+      color: #ffffff;
       padding: 4px 8px;
       margin-left: auto;
       &:hover { background: #fbd2d2; }
@@ -1358,9 +1373,22 @@
 }
 
 @media (max-width: 767px) {
+  .task-header-row {
+    gap: 8px;
+    min-height: 62px;
+  }
+
+  .task-brand-row {
+    flex-basis: 62px;
+  }
+
+  .task-brand-row .fixed-image-container {
+    width: 62px;
+    height: 62px;
+  }
+
   .task-tabs-toolbar {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    min-width: 0;
   }
 
   .task-tabs-toolbar__action {
@@ -1384,6 +1412,7 @@
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     justify-content: stretch;
+    min-height: 62px;
     width: 100%;
     border-bottom: none;
 
@@ -2189,6 +2218,25 @@
   align-items: center;
   justify-content: flex-end;
   overflow: hidden;
+}
+
+.fixed-image-container--empty {
+  cursor: pointer;
+  color: #2563eb;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: rgba(37, 99, 235, 0.45);
+    color: #174ea6;
+    box-shadow: 0 12px 24px rgba(10, 35, 79, 0.14);
+    outline: none;
+  }
+}
+
+.fixed-image--placeholder {
+  object-fit: contain;
+  background: transparent;
 }
 
 .dashboard-header {
@@ -3254,8 +3302,8 @@ p {
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  border-radius: 20px;
-  background: #25d366;
+  border-radius: 4px;
+  background: #057f33;
   color: #fff;
   font-size: 12px;
   font-weight: 600;
@@ -4070,6 +4118,11 @@ p {
       padding: 10px;
       background-color: #f0f0f0;
       border-radius: 5px;
+    }
+
+    > ul > li > .btn.btn-primary,
+    > ul > li > .btn.btn-outline-primary {
+      text-align: left;
     }
   }
 }
@@ -7148,8 +7201,11 @@ p {
 .pm-filter-btn {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.375rem 0.875rem;
+  justify-content: center;
+  gap: 0.25rem;
+  width: 52px;
+  min-width: 0;
+  padding: 0.375rem 0.45rem;
   background: var(--bs-body-bg);
   border: 1px solid var(--bs-border-color);
   border-radius: 8px;
@@ -7158,7 +7214,6 @@ p {
   white-space: nowrap;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
-  min-width: 160px;
 
   &:hover {
     border-color: var(--bs-primary);
@@ -7456,21 +7511,35 @@ p {
     border-color: var(--bs-border-color-translucent);
   }
 
+  tbody tr:nth-child(odd) td {
+    background: #f7faff;
+  }
+
+  tbody tr:nth-child(even) td {
+    background: #ffffff;
+  }
+
   tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover td { background: var(--bs-tertiary-bg); }
+  tbody tr:hover td { background: #eaf2ff; }
 }
 
 .pm-col-unit  { width: 80px; }
 .pm-col-price { width: 130px; }
 
-.pm-cell-material { overflow: hidden; }
+.pm-cell-material {
+  min-width: 0;
+  overflow: hidden;
+}
 
 .pm-nombre {
   display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .pm-cat {
