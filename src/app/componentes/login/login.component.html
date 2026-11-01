@@ -158,69 +158,99 @@
       <h3 class="login-form-card__title">Registrá tu código</h3>
       <p class="login-form-card__sub">Asociá tu código de acceso a tu cuenta</p>
 
-      <div class="lf-field">
-        <label class="lf-label">Código</label>
-        <input type="text" class="form-control login-input-field"
-               [(ngModel)]="code" placeholder="Ingresá tu código" name="code"
-               (input)="onCodeInput()" (blur)="syncCountryWithCode()">
-        <div class="lf-hint lf-hint--country" *ngIf="codeCountry">
-          <i class="bi bi-check-circle-fill me-1" style="color:#22c55e"></i>
-          País detectado: <strong>{{ codeCountry }}</strong>
+      <!-- Fila 1: Código + Email -->
+      <div class="lf-grid-2">
+        <div class="lf-field">
+          <label class="lf-label">Código</label>
+          <input type="text" class="form-control login-input-field"
+                 [(ngModel)]="code" placeholder="Ingresá tu código" name="code"
+                 (input)="onCodeInput()" (blur)="syncCountryWithCode()">
+          <div class="lf-hint lf-hint--country" *ngIf="codeCountry">
+            <i class="bi bi-check-circle-fill me-1" style="color:#22c55e"></i>
+            País: <strong>{{ codeCountry }}</strong>
+          </div>
+        </div>
+
+        <div class="lf-field">
+          <label class="lf-label">Email</label>
+          <input type="email" class="form-control login-input-field"
+                 [class.is-invalid]="!!registerEmailError"
+                 [(ngModel)]="email" placeholder="tu@email.com" name="email"
+                 (input)="validateForm()"
+                 (blur)="registerEmailTouched = true">
+          <div class="lf-error" *ngIf="registerEmailError">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ registerEmailError }}
+          </div>
         </div>
       </div>
 
-      <div class="lf-field">
-        <label class="lf-label">Email</label>
-        <input type="email" class="form-control login-input-field"
-               [(ngModel)]="email" placeholder="tu@email.com" name="email"
-               (input)="validateForm()">
+      <!-- Fila 2: País + Provincia -->
+      <div class="lf-grid-2">
+        <div class="lf-field">
+          <label class="lf-label">País</label>
+          <ng-select
+            [items]="registrationCountries"
+            bindLabel="displayLabel"
+            bindValue="nombre"
+            [(ngModel)]="pais"
+            name="pais"
+            id="pais"
+            (change)="onPaisChange()"
+            placeholder="Seleccioná tu país"
+            [clearable]="!codeCountry"
+            [searchable]="false"
+            [disabled]="!!codeCountry"
+          >
+            <ng-template ng-option-tmp let-item="item">
+              <img [src]="item.flag" width="18" class="me-2" style="vertical-align:middle" />
+              {{ item.nombre }}
+              <span *ngIf="item.disabled" class="ms-1" style="font-size:0.72rem;color:#94a3b8;font-style:italic">Próximamente</span>
+            </ng-template>
+            <ng-template ng-label-tmp let-item="item">
+              <img [src]="item.flag" width="18" class="me-2" style="vertical-align:middle" />
+              {{ item.nombre }}
+            </ng-template>
+          </ng-select>
+        </div>
+
+        <div class="lf-field">
+          <label class="lf-label">Provincia</label>
+          <ng-select
+            [items]="provincias"
+            bindLabel="nombre"
+            bindValue="nombre"
+            [(ngModel)]="provincia"
+            name="provincia"
+            (change)="validateForm()"
+            placeholder="Seleccioná tu provincia"
+            [clearable]="false"
+            [searchable]="true"
+            [disabled]="!pais"
+          >
+          </ng-select>
+        </div>
       </div>
 
-      <div class="lf-field">
-        <label class="lf-label">País</label>
-        <ng-select
-          [items]="registrationCountries"
-          bindLabel="nombre"
-          bindValue="nombre"
-          [(ngModel)]="pais"
-          name="pais"
-          id="pais"
-          (change)="onPaisChange()"
-          placeholder="Seleccioná tu país"
-          [clearable]="!codeCountry"
-          [searchable]="!codeCountry"
-          [disabled]="!!codeCountry"
-        >
-          <ng-template ng-option-tmp let-item="item" let-selected="selected">
-            <img [src]="item.flag" width="20" class="me-2" />
-            {{ item.nombre }}
-            <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
-          </ng-template>
-        </ng-select>
-      </div>
-
-      <div class="lf-field">
-        <label class="lf-label">Provincia</label>
-        <select class="form-select login-input-field"
-                [(ngModel)]="provincia" name="provincia" (change)="validateForm()">
-          <option value="" disabled selected>Seleccioná tu provincia</option>
-          <option *ngFor="let p of provincias" [value]="p.nombre">{{ p.nombre }}</option>
-        </select>
-      </div>
-
+      <!-- Fila 3: Teléfono (ancho completo) -->
       <div class="lf-field">
         <label class="lf-label">Teléfono</label>
-        <input
-          type="tel"
-          class="form-control login-input-field"
-          [class.is-invalid]="telefono.trim().length > 0 && !!telefonoErrorMessage"
-          [(ngModel)]="telefono"
-          [placeholder]="telefonoPlaceholder"
-          name="telefono"
-          (input)="onTelefonoInput()"
-        >
-        <div class="lf-error" *ngIf="telefono.trim().length > 0 && telefonoErrorMessage">
-          <i class="bi bi-exclamation-circle me-1"></i>{{ telefonoErrorMessage }}
+        <div class="lf-phone-wrap" [class.is-invalid]="registerPhoneNumber.trim().length > 0 && !!registerPhoneErrorMessage">
+          <span class="lf-prefix-badge">{{ registerPhonePrefix || '—' }}</span>
+          <input
+            type="tel"
+            class="lf-input--number"
+            [(ngModel)]="registerPhoneNumber"
+            name="registerPhoneNumber"
+            [placeholder]="registerPhoneNumberPlaceholder"
+            [maxlength]="registerSelectedCountry?.maxLength || 15"
+            [disabled]="!pais"
+            inputmode="numeric"
+            (input)="onRegisterPhoneInput(true)"
+            (blur)="onRegisterPhoneInput(false)"
+          />
+        </div>
+        <div class="lf-error" *ngIf="registerPhoneNumber.trim().length > 0 && registerPhoneErrorMessage">
+          <i class="bi bi-exclamation-circle me-1"></i>{{ registerPhoneErrorMessage }}
         </div>
       </div>
 

@@ -488,6 +488,18 @@
   }
 }
 
+/* ── Grid 2 columnas para formulario ── */
+.lf-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
 /* ── Campos de formulario inline ── */
 .lf-field {
   margin-bottom: 16px;
