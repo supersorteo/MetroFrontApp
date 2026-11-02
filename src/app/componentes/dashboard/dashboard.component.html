@@ -171,6 +171,32 @@
 
       </li>
 
+      <li class="w-100 mt-2 text-center" *ngIf="legacyBudgetTasks.length > 0">
+
+        <button class="btn btn-outline-secondary btn-block w-100 animate legacy-budget-sidebar-button"
+                type="button"
+                (click)="abrirMetroBudgetListModal(); toggleMenuPanel()">
+          <i class="bi bi-archive me-1" aria-hidden="true"></i>
+          <span class="legacy-budget-sidebar-button__content">
+            <span>RECUPERAR DATOS</span>
+            <span class="legacy-budget-sidebar-button__hint">recupera datos de un presupuesto con el antiguo sistema</span>
+          </span>
+        </button>
+
+      </li>
+
+      <li class="w-100 mt-2 text-center">
+
+        <a
+          class="btn btn-block w-100 animate sidebar-whatsapp-link"
+          href="https://wa.me/5491128634744"
+          target="_blank"
+          rel="noopener noreferrer">
+          <i class="fab fa-whatsapp" aria-hidden="true"></i>LÍNEA DE ATENCIÓN
+        </a>
+
+      </li>
+
       <li class="w-100 mt-2 text-center" *ngIf="deferredPrompt">
 
         <button class="btn btn-warning btn-block w-100 animate" (click)="installPwa()" style="font-weight: bold; background-color: #ffc107; border-color: #ffc107; color: #000;">
@@ -726,153 +752,12 @@
   <span>METRO PREMIUM</span>
 </button>
 
-<!-- ══════════════════════════════════════
-     MODAL PLANES (solo demo)
-══════════════════════════════════════ -->
-<div class="modal fade" id="planesModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content planes-modal">
-
-      <div class="planes-modal__header">
-        <h2 class="planes-modal__title">OBTEN METRO PREMIUM</h2>
-        <button type="button" class="planes-modal__close" data-bs-dismiss="modal">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
-
-      <div
-        id="planesBenefitsCarousel"
-        class="carousel slide planes-modal__carousel"
-        data-bs-ride="carousel"
-        data-bs-interval="4500"
-        aria-label="Beneficios de la membresía">
-        <div class="carousel-indicators">
-          <button
-            *ngFor="let benefit of membershipBenefits; let i = index"
-            type="button"
-            data-bs-target="#planesBenefitsCarousel"
-            [attr.data-bs-slide-to]="i"
-            [class.active]="i === 0"
-            [attr.aria-label]="'Mostrar beneficio ' + (i + 1)">
-          </button>
-        </div>
-
-        <div class="carousel-inner">
-          <div
-            *ngFor="let benefit of membershipBenefits; let i = index"
-            class="carousel-item"
-            [class.active]="i === 0">
-            <div class="planes-modal__benefit-slide">
-              <img [src]="benefit.image" [alt]="benefit.title" class="planes-modal__benefit-image">
-              <div class="planes-modal__benefit-caption">
-                <strong>{{ benefit.title }}</strong>
-                <span>{{ benefit.description }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button class="carousel-control-prev" type="button" data-bs-target="#planesBenefitsCarousel" data-bs-slide="prev" aria-label="Beneficio anterior">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#planesBenefitsCarousel" data-bs-slide="next" aria-label="Beneficio siguiente">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        </button>
-      </div>
-
-      <div class="planes-modal__plans-stage">
-        <!-- Métodos de pago: se superponen a la tarjeta después de seleccionar un plan -->
-        <div class="planes-modal__plan-section planes-modal__plan-section--pay" *ngIf="selectedPlanMeses">
-        <button type="button" class="planes-modal__back-button" (click)="volverASeleccionarPlan()">
-          <i class="bi bi-arrow-left"></i>
-          Volver a elegir plan
-        </button>
-
-        <div class="planes-modal__options">
-
-          <button class="planes-modal__card" [disabled]="!selectedPlanMeses" (click)="irAlCheckout()">
-            <div class="planes-modal__card-icon"><i class="bi bi-credit-card-2-front-fill"></i></div>
-            <h4 class="planes-modal__card-title">Pagar en línea</h4>
-            <p class="planes-modal__card-desc">Recibí tu código automáticamente</p>
-            <div class="planes-modal__card-badges">
-              <span><i class="bi bi-bag-check-fill me-1"></i>Mercado Pago</span>
-              <span><i class="bi bi-paypal me-1"></i>PayPal</span>
-            </div>
-            <span class="planes-modal__card-cta">Comprar ahora <i class="bi bi-arrow-right-circle-fill"></i></span>
-          </button>
-
-          <button class="planes-modal__card" [disabled]="!selectedPlanMeses" (click)="pagarPorWhatsApp()">
-            <div class="planes-modal__card-icon planes-modal__card-icon--ws"><i class="bi bi-whatsapp"></i></div>
-            <h4 class="planes-modal__card-title">Pagar por WhatsApp</h4>
-            <p class="planes-modal__card-desc">Pagá en efectivo y recibí tu código</p>
-            <div class="planes-modal__card-badges planes-modal__card-badges--ws">
-              <span><i class="bi bi-cash-coin me-1"></i>Efectivo</span>
-              <span><i class="bi bi-chat-dots-fill me-1"></i>Entrega manual</span>
-            </div>
-            <span class="planes-modal__card-cta planes-modal__card-cta--ws">Contactar <i class="bi bi-arrow-right-circle-fill"></i></span>
-          </button>
-
-        </div>
-        </div>
-
-        <div class="planes-modal__detail-section" *ngIf="!selectedPlanMeses && !planesLoading && planesPais">
-        <div
-          id="planesPlansCarousel"
-          class="carousel slide planes-modal__plans-carousel"
-          data-bs-interval="false">
-          <div class="carousel-indicators">
-            <button
-              *ngFor="let plan of planesPais.plans; let i = index"
-              type="button"
-              data-bs-target="#planesPlansCarousel"
-              [attr.data-bs-slide-to]="i"
-              [class.active]="i === 0"
-              [attr.aria-label]="'Mostrar plan de ' + plan.months + ' meses'">
-            </button>
-          </div>
-
-          <div class="carousel-inner">
-            <div
-              *ngFor="let plan of planesPais.plans; let i = index"
-              class="carousel-item"
-              [class.active]="i === 0">
-              <button
-                type="button"
-                class="planes-modal__detail-card"
-                [class.planes-modal__detail-card--selected]="selectedPlanMeses === plan.months"
-                (click)="seleccionarPlan(plan.months)">
-                <div class="planes-modal__detail-card-head">
-                  <span class="planes-modal__detail-card-months">Plan {{ plan.months }} meses</span>
-                  <span class="planes-modal__detail-card-price">{{ plan.amount | number:'1.0-0' }} {{ planesPais.currency }}</span>
-                </div>
-                <ul class="planes-modal__detail-list">
-                  <li><i class="bi bi-check-circle-fill"></i> Calculadora de materiales</li>
-                  <li><i class="bi bi-check-circle-fill"></i> Tareas ilimitadas por presupuesto</li>
-                  <li><i class="bi bi-check-circle-fill"></i> {{ plan.months >= 12 ? 1000 : plan.months >= 6 ? 200 : 60 }} clientes</li>
-                  <li><i class="bi bi-check-circle-fill"></i> {{ plan.months >= 12 ? 5 : plan.months >= 6 ? 3 : 1 }} empresa{{ (plan.months >= 6 ? 3 : 1) !== 1 ? 's' : '' }}</li>
-                  <li><i class="bi bi-check-circle-fill"></i> Hasta {{ plan.months >= 12 ? 250 : plan.months >= 6 ? 120 : 30 }} presupuestos guardados</li>
-                  <li><i class="bi bi-check-circle-fill"></i> Precios actualizados por región</li>
-                </ul>
-                <span class="planes-modal__detail-card-cta">
-                  {{ selectedPlanMeses === plan.months ? 'Plan seleccionado' : 'Elegir este plan' }}
-                </span>
-              </button>
-            </div>
-          </div>
-
-          <button class="carousel-control-prev" type="button" data-bs-target="#planesPlansCarousel" data-bs-slide="prev" aria-label="Plan anterior">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          </button>
-          <button class="carousel-control-next" type="button" data-bs-target="#planesPlansCarousel" data-bs-slide="next" aria-label="Plan siguiente">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          </button>
-        </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
+<app-membership-modal
+  #membershipModal
+  [userData]="userData"
+  (checkout)="onMembershipCheckout($event)"
+  (whatsapp)="onMembershipWhatsApp($event)">
+</app-membership-modal>
 
 <div class="modal fade qr-modal" id="qrModal" tabindex="-1" aria-hidden="true">
 
@@ -1678,9 +1563,12 @@
             <span *ngIf="selectedEmpresaId && !currentEmpresaLogoUrl" class="tareas-agregadas__empresa-texto">
               {{ selectedEmpresaId.name }}
             </span>
-            <span *ngIf="!selectedEmpresaId" class="tareas-agregadas__empresa-vacio">
-              <i class="bi bi-building"></i>
-            </span>
+            <img
+              *ngIf="!selectedEmpresaId"
+              src="assets/icons/empresa-add.png"
+              alt="Agregar empresa"
+              class="fixed-image fixed-image--placeholder"
+            >
           </div>
 
           <div class="tareas-agregadas__cliente-slot">
@@ -4520,10 +4408,6 @@
           <h5 class="modal-title mb-0">PDF Valor Vivienda — Octubre 2026</h5>
         </div>
         <div class="d-flex align-items-center gap-2">
-          <a href="assets/pdf-vivienda-oct2026.pdf" download="PDF-Valor-Vivienda-Oct2026.pdf"
-             class="btn btn-sm btn-outline-danger">
-            <i class="bi bi-download me-1"></i>Descargar
-          </a>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
       </div>
@@ -4537,6 +4421,65 @@
         </iframe>
       </div>
 
+      <a href="assets/pdf-vivienda-oct2026.pdf" download="PDF-Valor-Vivienda-Oct2026.pdf"
+         class="btn btn-sm btn-outline-danger pdf-vivienda-download">
+        <i class="bi bi-download me-1"></i>Descargar
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TAREAS LEGACY METROBUDGETLIST -->
+<div class="modal fade" id="metroBudgetListModal" tabindex="-1" aria-labelledby="metroBudgetListModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl legacy-budget-modal__dialog">
+    <div class="modal-content modal-zona legacy-budget-modal__content">
+      <div class="modal-header legacy-budget-modal__header">
+        <div>
+          <span class="legacy-budget-modal__eyebrow">Copia local</span>
+          <h5 class="modal-title mb-0" id="metroBudgetListModalLabel">Tareas de MetroBudgetList</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body legacy-budget-modal__body">
+        <div class="legacy-budget-modal__summary">
+          <i class="bi bi-info-circle" aria-hidden="true"></i>
+          <span>Al implementar la nueva aplicación solo podemos recuperar tu antiguo presupuesto de esta manera. Discúlpanos la molestia.</span>
+        </div>
+
+        <div class="table-responsive legacy-budget-modal__table-wrap">
+          <table class="table table-bordered align-middle legacy-budget-modal__table">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Área</th>
+                <th>Costo</th>
+                <th>Descripción</th>
+                <th>Descuento</th>
+                <th>Costo total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let task of legacyBudgetTasks">
+                <td>{{ task.type }}</td>
+                <td>{{ task.area }}</td>
+                <td>{{ task.cost }}</td>
+                <td>{{ task.description }}</td>
+                <td>{{ task.discount }}</td>
+                <td>{{ task.totalCost }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer legacy-budget-modal__footer">
+        <span class="legacy-budget-modal__count">{{ legacyBudgetTasks.length }} tarea(s)</span>
+        <button type="button" class="btn btn-primary" (click)="descargarMetroBudgetListHtml()">
+          <i class="bi bi-download me-1" aria-hidden="true"></i>Descargar como HTML
+        </button>
+      </div>
     </div>
   </div>
 </div>
