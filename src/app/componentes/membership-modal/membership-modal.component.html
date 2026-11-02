@@ -1,0 +1,93 @@
+<div #planesModal class="modal fade" id="planesModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content planes-modal">
+      <div class="planes-modal__header">
+        <h2 class="planes-modal__title">OBTEN METRO PREMIUM</h2>
+        <button type="button" class="planes-modal__close" data-bs-dismiss="modal" aria-label="Cerrar">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div id="planesBenefitsCarousel" class="carousel slide planes-modal__carousel" data-bs-ride="carousel" data-bs-interval="4500" aria-label="Beneficios de la membresía">
+        <div class="carousel-indicators">
+          <button *ngFor="let benefit of membershipBenefits; let i = index" type="button" data-bs-target="#planesBenefitsCarousel" [attr.data-bs-slide-to]="i" [class.active]="i === 0" [attr.aria-label]="'Mostrar beneficio ' + (i + 1)"></button>
+        </div>
+        <div class="carousel-inner">
+          <div *ngFor="let benefit of membershipBenefits; let i = index" class="carousel-item" [class.active]="i === 0">
+            <div class="planes-modal__benefit-slide">
+              <img [src]="benefit.image" [alt]="benefit.title" class="planes-modal__benefit-image">
+              <div class="planes-modal__benefit-caption">
+                <strong>{{ benefit.title }}</strong>
+                <span>{{ benefit.description }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#planesBenefitsCarousel" data-bs-slide="prev" aria-label="Beneficio anterior"><span class="carousel-control-prev-icon" aria-hidden="true"></span></button>
+        <button class="carousel-control-next" type="button" data-bs-target="#planesBenefitsCarousel" data-bs-slide="next" aria-label="Beneficio siguiente"><span class="carousel-control-next-icon" aria-hidden="true"></span></button>
+      </div>
+
+      <div class="planes-modal__plans-stage">
+        <div class="planes-modal__plan-section planes-modal__plan-section--pay" *ngIf="selectedPlanMeses">
+          <button type="button" class="planes-modal__back-button" (click)="volverASeleccionarPlan()">
+            <i class="bi bi-arrow-left"></i>
+            Volver a elegir plan
+          </button>
+          <div class="planes-modal__options">
+            <button class="planes-modal__card" [disabled]="!selectedPlanMeses" (click)="irAlCheckout()">
+              <div class="planes-modal__card-icon"><i class="bi bi-credit-card-2-front-fill"></i></div>
+              <h4 class="planes-modal__card-title">Pagar en línea</h4>
+              <p class="planes-modal__card-desc">Recibí tu código automáticamente</p>
+              <div class="planes-modal__card-badges">
+                <span><i class="bi bi-bag-check-fill me-1"></i>Mercado Pago</span>
+                <span><i class="bi bi-paypal me-1"></i>PayPal</span>
+              </div>
+              <span class="planes-modal__card-cta">Comprar ahora <i class="bi bi-arrow-right-circle-fill"></i></span>
+            </button>
+            <button class="planes-modal__card" [disabled]="!selectedPlanMeses" (click)="pagarPorWhatsApp()">
+              <div class="planes-modal__card-icon planes-modal__card-icon--ws"><i class="bi bi-whatsapp"></i></div>
+              <h4 class="planes-modal__card-title">Pagar por WhatsApp</h4>
+              <p class="planes-modal__card-desc">Pagá en efectivo y recibí tu código</p>
+              <div class="planes-modal__card-badges planes-modal__card-badges--ws">
+                <span><i class="bi bi-cash-coin me-1"></i>Efectivo</span>
+                <span><i class="bi bi-chat-dots-fill me-1"></i>Entrega manual</span>
+              </div>
+              <span class="planes-modal__card-cta planes-modal__card-cta--ws">Contactar <i class="bi bi-arrow-right-circle-fill"></i></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="planes-modal__detail-section" *ngIf="!selectedPlanMeses && !planesLoading && planesPais">
+          <div id="planesPlansCarousel" class="carousel slide planes-modal__plans-carousel" data-bs-interval="false">
+            <div class="carousel-indicators">
+              <button *ngFor="let plan of planesPais.plans; let i = index" type="button" data-bs-target="#planesPlansCarousel" [attr.data-bs-slide-to]="i" [class.active]="i === 0" [attr.aria-label]="'Mostrar plan de ' + plan.months + ' meses'"></button>
+            </div>
+            <div class="carousel-inner">
+              <div *ngFor="let plan of planesPais.plans; let i = index" class="carousel-item" [class.active]="i === 0">
+                <button type="button" class="planes-modal__detail-card" [class.planes-modal__detail-card--selected]="selectedPlanMeses === plan.months" (click)="seleccionarPlan(plan.months)">
+                  <div class="planes-modal__detail-card-head">
+                    <span class="planes-modal__detail-card-months">Plan {{ plan.months }} meses</span>
+                    <span class="planes-modal__detail-card-price">{{ plan.amount | number:'1.0-0' }} {{ planesPais.currency }}</span>
+                  </div>
+                  <ul class="planes-modal__detail-list">
+                    <li><i class="bi bi-check-circle-fill"></i> Calculadora de materiales</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Tareas ilimitadas por presupuesto</li>
+                    <li><i class="bi bi-check-circle-fill"></i> {{ plan.months >= 12 ? 1000 : plan.months >= 6 ? 200 : 60 }} clientes</li>
+                    <li><i class="bi bi-check-circle-fill"></i> {{ plan.months >= 12 ? 5 : plan.months >= 6 ? 3 : 1 }} empresa{{ (plan.months >= 6 ? 3 : 1) !== 1 ? 's' : '' }}</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Hasta {{ plan.months >= 12 ? 250 : plan.months >= 6 ? 120 : 30 }} presupuestos guardados</li>
+                    <li><i class="bi bi-check-circle-fill"></i> Precios actualizados por región</li>
+                  </ul>
+                  <span class="planes-modal__detail-card-cta">{{ selectedPlanMeses === plan.months ? 'Plan seleccionado' : 'Elegir este plan' }}</span>
+                </button>
+              </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#planesPlansCarousel" data-bs-slide="prev" aria-label="Plan anterior"><span class="carousel-control-prev-icon" aria-hidden="true"></span></button>
+            <button class="carousel-control-next" type="button" data-bs-target="#planesPlansCarousel" data-bs-slide="next" aria-label="Plan siguiente"><span class="carousel-control-next-icon" aria-hidden="true"></span></button>
+          </div>
+        </div>
+        <p class="planes-modal__no-catalog" *ngIf="!planesLoading && !planesPais">No hay planes disponibles para tu región.</p>
+        <div class="planes-modal__loading" *ngIf="planesLoading">Cargando planes...</div>
+      </div>
+    </div>
+  </div>
+</div>
