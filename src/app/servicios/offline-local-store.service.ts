@@ -242,7 +242,10 @@ export class OfflineLocalStoreService {
       .toArray();
 
     const records = Number.isFinite(params.empresaId)
-      ? allRecords.filter(record => Number(record.ownerServerId) === Number(params.empresaId))
+      ? allRecords.filter(record =>
+          Number(record.ownerServerId) === Number(params.empresaId) &&
+          (!currentLogoUrl || record.remoteUrl === currentLogoUrl)
+        )
       : [];
 
     const fallbackRecords = records.length === 0 && !!currentLogoUrl
@@ -453,6 +456,30 @@ export class OfflineLocalStoreService {
       .toArray();
     if (stale.length > 0) {
       await Promise.all(stale.map(r => metroDB.userTareas.delete(r.localId)));
+    }
+  }
+
+  async reconcileClientesWithServer(userCode: string, serverIds: number[]): Promise<void> {
+    const serverIdSet = new Set(serverIds);
+    const stale = await metroDB.clientes
+      .where('userCode')
+      .equals(userCode)
+      .filter(r => !r.deletedAt && r.syncStatus === 'synced' && r.serverId != null && !serverIdSet.has(r.serverId))
+      .toArray();
+    if (stale.length > 0) {
+      await Promise.all(stale.map(r => metroDB.clientes.delete(r.localId)));
+    }
+  }
+
+  async reconcileEmpresasWithServer(userCode: string, serverIds: number[]): Promise<void> {
+    const serverIdSet = new Set(serverIds);
+    const stale = await metroDB.empresas
+      .where('userCode')
+      .equals(userCode)
+      .filter(r => !r.deletedAt && r.syncStatus === 'synced' && r.serverId != null && !serverIdSet.has(r.serverId))
+      .toArray();
+    if (stale.length > 0) {
+      await Promise.all(stale.map(r => metroDB.empresas.delete(r.localId)));
     }
   }
 

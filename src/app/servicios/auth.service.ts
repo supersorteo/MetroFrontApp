@@ -310,6 +310,24 @@ export class AuthService {
       .pipe(catchError(() => of(null)));
   }
 
+  getSessionsSummary(codes: string[]): Observable<Record<string, number>> {
+    return this.http.get<Record<string, number>>(
+      `${this.apiUrl}/sessions/summary?codes=${codes.join(',')}`
+    ).pipe(catchError(() => of({})));
+  }
+
+  saveLastPresupuesto(id: number | null): Observable<void> {
+    const userCode = localStorage.getItem('userCode');
+    const headers = userCode ? new HttpHeaders({ 'X-User-Code': userCode }) : new HttpHeaders();
+    return this.http.put<void>(`${this.apiUrl}/last-presupuesto`, { id }, { headers })
+      .pipe(catchError(() => of(undefined as unknown as void)));
+  }
+
+  getLastPresupuesto(userCode: string): Observable<{ id: number } | null> {
+    return this.http.get<{ id: number }>(`${this.apiUrl}/last-presupuesto/${userCode}`)
+      .pipe(catchError(() => of(null)));
+  }
+
   terminateAllSessions(code: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/codes/${code}/sessions`)
       .pipe(catchError(this.handleError1));

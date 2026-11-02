@@ -12,6 +12,7 @@ export interface SavedPresupuesto {
   id: number;
   name: string;
   createdAt: string;
+  budgetDate?: string;
   cliente: Cliente;
   empresa?: Empresa | null;
   tareas: UserTarea[];
@@ -57,9 +58,13 @@ export class BudgetService {
     if (!navigator.onLine) return of([]);
     return this.http.get<PresupuestosPage>(`${this.apiUrl}/user/${userCode}?page=0&size=20`).pipe(
       tap(r => {
-        this.setBudgets(r.content ?? []);
+        const list = r.content ?? [];
+        this.setBudgets(list);
         this.totalPagesSubject.next(r.totalPages ?? 1);
         this.currentPageSubject.next(0);
+        list.forEach(p =>
+          void this.localStore.upsertPresupuesto({ ...p, userCode }, 'synced').catch(() => {})
+        );
       }),
       map(r => r.content ?? []),
       catchError(() => { this.setBudgets([]); return of([]); })
@@ -380,7 +385,6 @@ export class BudgetService {
       id: targetId,
       name: 'Cliente',
       contact: '',
-      budgetDate: new Date().toISOString().split('T')[0],
       additionalDetails: '',
       userCode: localStorage.getItem('userCode') || '',
       email: '',
@@ -410,7 +414,6 @@ export class BudgetService {
       id: clienteId,
       name: 'Cliente demo',
       contact: '',
-      budgetDate: new Date().toISOString().split('T')[0],
       additionalDetails: '',
       userCode: 'demo',
       clave: '',

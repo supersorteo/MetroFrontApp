@@ -11,6 +11,7 @@ import { PayPalPaymentService } from '../../servicios/paypal-payment.service';
 import { countryDisplayName } from '../../core/country/country.util';
 import { accessCodeCountryMismatchMessage } from '../../core/country/access-code.util';
 import { phonePlaceholder, sanitizePhoneInput, validatePhoneByCountry } from '../../core/country/phone.util';
+import { PHONE_COUNTRIES, validatePhone } from '../../core/utils/phone-validation.util';
 import { buildMembershipCheckoutPayload, buildPayPalCheckoutPayload, mapMembershipCountryOption, MembershipCheckoutForm, MembershipCountryOption, validateMembershipCheckoutForm } from '../../core/membership/membership-checkout.util';
 import { extractApiErrorMessage } from '../../core/http/api-error.util';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
@@ -44,6 +45,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   email: string = '';
   username: string = '';
   telefono: string = '';
+  registerPhonePrefix: string = '';
+  registerPhoneNumber: string = '';
+  registerPhoneErrorMessage: string = '';
+  registerEmailTouched: boolean = false;
   //pais: any = null;
   pais: string | null = null;
   provincia:string = '';
@@ -87,6 +92,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   purchaseProvince: string = '';
   purchaseProvincias: Provincia[] = [];
   purchasePhoneErrorMessage: string = '';
+  purchasePhonePrefix: string = '+549';
+  purchasePhoneNumber: string = '';
+  purchaseEmailTouched: boolean = false;
   isLoadingCatalog: boolean = false;
   isStartingCheckout: boolean = false;
   isStartingPayPal: boolean = false;
@@ -238,6 +246,8 @@ constructor(private authService: AuthService,
       const step = params.get('step');
       if (step === 'join') {
         this.loginStep = 'join';
+      } else if (step === 'register') {
+        this.loginStep = 'register';
       } else if (step === 'checkout') {
         this.loginStep = 'checkout';
         const planParam = params.get('plan');
@@ -386,18 +396,9 @@ registerLegacy(): void {
   }
 
   register(): void {
-    if (!this.isCountryAvailable(this.pais)) {
-      this.uiDialog.warning({ title: 'País no disponible', text: 'Por ahora solo está disponible Argentina.' });
-      this.pais = null;
-      this.provincia = '';
-      this.provincias = [];
-      this.validateForm();
-      return;
-    }
-
     this.validateForm();
     if (!this.isFormValid) {
-      this.uiDialog.error({ title: 'Error', text: this.codeCountryErrorMessage || this.telefonoErrorMessage || 'Completa correctamente los datos del registro.' });
+      this.uiDialog.error({ title: 'Error', text: this.codeCountryErrorMessage || this.registerPhoneErrorMessage || 'Completa correctamente los datos del registro.' });
       return;
     }
 
@@ -428,10 +429,13 @@ registerLegacy(): void {
         });
         if (!confirmed) return;
 
+        const telefonoCombinado = this.registerPhoneNumber.trim()
+          ? `${this.registerPhonePrefix}${this.registerPhoneNumber}`
+          : '';
         this.authService.assignEmail({
           code: this.code,
           email: this.email,
-          telefono: this.telefono,
+          telefono: telefonoCombinado,
           pais: this.pais || '',
           provincia: this.provincia
         }).subscribe({
@@ -453,15 +457,57 @@ registerLegacy(): void {
   }
 
     validateForm(): void {
-      const phoneValidation = validatePhoneByCountry(this.telefono, this.pais);
-      this.telefonoErrorMessage = phoneValidation.message;
+      const phoneResult = validatePhone(this.registerPhonePrefix, this.registerPhoneNumber);
       this.codeCountryErrorMessage = this.getCodeCountryMismatchMessage();
+      const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim());
       this.isFormValid = this.code.trim().length > 0 &&
-      this.email.trim().length > 0 &&
-      phoneValidation.valid &&
+      emailValid &&
+      phoneResult.valid &&
       this.provincia.trim().length > 0 &&
       this.isCountryAvailable(this.pais) &&
       !this.codeCountryErrorMessage;
+    }
+
+    get registerSelectedCountry() {
+      return PHONE_COUNTRIES.find(c => c.code === this.registerPhonePrefix);
+    }
+
+    get registerPhoneNumberPlaceholder(): string {
+      return this.registerSelectedCountry?.placeholder ?? 'Ej: 1134567890';
+    }
+
+    get registerEmailError(): string | null {
+      if (!this.registerEmailTouched || !this.email.trim()) return null;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(this.email.trim()) ? null : 'Ingresá un email válido.';
+    }
+
+    validateRegisterPhone(live = false): void {
+      if (!this.registerPhoneNumber.trim()) { this.registerPhoneErrorMessage = ''; return; }
+      const result = validatePhone(this.registerPhonePrefix, this.registerPhoneNumber, live);
+      this.registerPhoneErrorMessage = result.error ?? '';
+    }
+
+    onRegisterPhoneInput(live = false): void {
+      this.registerPhoneNumber = sanitizePhoneInput(this.registerPhoneNumber);
+      this.telefono = this.registerPhoneNumber.trim()
+        ? `${this.registerPhonePrefix}${this.registerPhoneNumber}`
+        : '';
+      if (this.registerPhoneNumber.trim()) {
+        const result = validatePhone(this.registerPhonePrefix, this.registerPhoneNumber, live);
+        this.registerPhoneErrorMessage = result.error ?? '';
+      } else {
+        this.registerPhoneErrorMessage = '';
+      }
+      this.validateForm();
+    }
+
+    private getPhonePrefixByPaisName(nombre: string | null): string {
+      const map: Record<string, string> = {
+        'Argentina': '+549', 'Uruguay': '+598', 'Colombia': '+57',
+        'Cuba': '+53', 'Paraguay': '+595'
+      };
+      return map[nombre ?? ''] ?? '';
     }
 
 
@@ -489,6 +535,9 @@ registerLegacy(): void {
     if (this.pais) {
       this.provincia = '';
       this.telefono = '';
+      this.registerPhonePrefix = this.getPhonePrefixByPaisName(this.pais);
+      this.registerPhoneNumber = '';
+      this.registerPhoneErrorMessage = '';
       this.provinciaService.getProvinciasByPais(this.pais).subscribe(
         response => {
           this.provincias = response;
@@ -505,6 +554,9 @@ registerLegacy(): void {
       );
     } else {
       this.provincias = [];
+      this.registerPhonePrefix = '';
+      this.registerPhoneNumber = '';
+      this.registerPhoneErrorMessage = '';
     }
     this.validateForm();
   }
@@ -543,6 +595,11 @@ registerLegacy(): void {
         this.codeCountry = detectedCountry;
 
         if (detectedCountry && this.pais !== detectedCountry) {
+          if (!this.isCountryAvailable(detectedCountry)) {
+            this.appToast.info(`El código pertenece a ${detectedCountry}, que estará disponible próximamente.`);
+            this.validateForm();
+            return;
+          }
           this.pais = detectedCountry;
           this.onPaisChange();
           return;
@@ -579,7 +636,11 @@ registerLegacy(): void {
   }
 
   get registrationCountries(): Country[] {
-    return this.countries.filter(country => this.isCountryAvailable(country.nombre));
+    return this.countries.map(c => ({
+      ...c,
+      disabled: !this.isCountryAvailable(c.nombre),
+      displayLabel: this.isCountryAvailable(c.nombre) ? c.nombre : `${c.nombre} — Próximamente`
+    }));
   }
 
   activarModoPrueba(pais: string = 'Argentina'): void {
@@ -654,6 +715,20 @@ pedirCodigoPorWhatsApp(): void {
       return this.membershipCountries.find(country => country.codigo === this.purchaseCountryCode);
     }
 
+    get checkoutCountryOptions(): Array<MembershipCountryOption & { disabled?: boolean }> {
+      const unavailableCodes = new Set(['CO', 'UY']);
+      const fromBackend = this.membershipCountries.map(c => ({
+        ...c,
+        disabled: unavailableCodes.has(c.codigo)
+      }));
+      const existingCodes = new Set(this.membershipCountries.map(c => c.codigo));
+      const staticFallbacks = [
+        { nombre: 'Colombia', codigo: 'CO', flag: 'https://flagcdn.com/co.svg', currency: 'COP', documentLabel: 'NIT', plans: [], disabled: true },
+        { nombre: 'Uruguay',  codigo: 'UY', flag: 'https://flagcdn.com/uy.svg', currency: 'UYU', documentLabel: 'RUT', plans: [], disabled: true },
+      ].filter(c => !existingCodes.has(c.codigo));
+      return [...fromBackend, ...staticFallbacks].sort((a, b) => a.nombre.localeCompare(b.nombre));
+    }
+
     get selectedPlanAmount(): number | null {
       return this.selectedMembershipCountry?.plans.find(plan => plan.months === this.purchasePlanMonths)?.amount ?? null;
     }
@@ -685,7 +760,16 @@ pedirCodigoPorWhatsApp(): void {
       const province = this.pendingProvince || this.purchaseProvince || null;
       this.onPurchaseCountryChange();
       // onPurchaseCountryChange() limpia phone y province — los restauramos
-      if (phone) this.purchasePhone = phone;
+      if (phone) {
+        this.purchasePhone = phone;
+        const matched = PHONE_COUNTRIES.find(c => phone.startsWith(c.code));
+        if (matched) {
+          this.purchasePhonePrefix = matched.code;
+          this.purchasePhoneNumber = phone.slice(matched.code.length);
+        } else {
+          this.purchasePhoneNumber = phone;
+        }
+      }
       if (province) this.purchaseProvince = province;
       this.pendingPhone = null;
       this.pendingProvince = null;
@@ -729,7 +813,9 @@ pedirCodigoPorWhatsApp(): void {
       this.purchaseProvince = '';
       this.purchaseDocument = '';
       this.purchasePhone = '';
+      this.purchasePhoneNumber = '';
       this.purchasePhoneErrorMessage = '';
+      this.purchasePhonePrefix = this.getPhonePrefixByCountryCode(this.purchaseCountryCode);
       this.purchasePlanMonths = this.selectedMembershipCountry?.plans[0]?.months ?? null;
       if (!this.purchaseCountryCode) {
         this.purchaseProvincias = [];
@@ -847,6 +933,39 @@ pedirCodigoPorWhatsApp(): void {
         this.selectedMembershipCountry?.nombre || null
       ).phoneMessage;
     }
+
+    onPurchasePhoneNumberInput(live = false): void {
+      this.purchasePhoneNumber = sanitizePhoneInput(this.purchasePhoneNumber);
+      this.purchasePhone = this.purchasePhoneNumber.trim()
+        ? `${this.purchasePhonePrefix}${this.purchasePhoneNumber}`
+        : '';
+      if (this.purchasePhoneNumber.trim()) {
+        const result = validatePhone(this.purchasePhonePrefix, this.purchasePhoneNumber, live);
+        this.purchasePhoneErrorMessage = result.error ?? '';
+      } else {
+        this.purchasePhoneErrorMessage = '';
+      }
+    }
+
+    get checkoutSelectedCountry() {
+      return PHONE_COUNTRIES.find(c => c.code === this.purchasePhonePrefix);
+    }
+
+    get purchasePhoneNumberPlaceholder(): string {
+      return this.checkoutSelectedCountry?.placeholder ?? 'Ej: 1134567890';
+    }
+
+    get purchaseEmailError(): string | null {
+      if (!this.purchaseEmailTouched || !this.purchaseEmail.trim()) return null;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(this.purchaseEmail.trim()) ? null : 'Ingresá un email válido.';
+    }
+
+    private getPhonePrefixByCountryCode(code: string | null): string {
+      const prefixes: Record<string, string> = { AR: '+549', CO: '+57', UY: '+598' };
+      return prefixes[code ?? ''] ?? '+549';
+    }
+
 
     private getCodeCountryMismatchMessage(): string {
       return accessCodeCountryMismatchMessage(this.codeCountry, this.pais);

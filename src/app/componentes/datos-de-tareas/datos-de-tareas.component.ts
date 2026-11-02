@@ -36,6 +36,7 @@ export class DatosDeTareasComponent implements OnInit {
   clienteSeleccionado: Cliente | null = null;
   tareasAgregadas: Tarea[] = [];
   presupuestoNombre: string = '';
+  budgetDate: string = '';
 
   // Toggles de visibilidad de columnas (persistentes en localStorage)
   hideCostPerM2: boolean = false;
@@ -104,6 +105,8 @@ export class DatosDeTareasComponent implements OnInit {
       this.clienteSeleccionado = activePreview.cliente || activePreview.presupuesto?.cliente || null;
       this.tareasAgregadas = activePreview.tareas || activePreview.presupuesto?.tareas || [];
       this.presupuestoNombre = activePreview.name || activePreview.presupuesto?.name || '';
+      const rawDate = activePreview.budgetDate || activePreview.presupuesto?.budgetDate || '';
+      this.budgetDate = rawDate ? rawDate.split('T')[0] : '';
       this.loadPreviewOptions();
       return;
     }
@@ -144,7 +147,7 @@ export class DatosDeTareasComponent implements OnInit {
     return value.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  private formatBudgetDate(value: string | undefined): string {
+  formatBudgetDate(value: string | undefined): string {
     if (!value) return '';
     const isoDate = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
     return isoDate ? `${isoDate[3]}/${isoDate[2]}/${isoDate[1]}` : value;
@@ -297,7 +300,7 @@ export class DatosDeTareasComponent implements OnInit {
             margin: 10,
             filename: `presupuesto-${this.clienteSeleccionado?.name || 'cliente'}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
+            html2canvas: { scale: 2, useCORS: true, windowWidth: 794 },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
           })
           .from(exportElement)
@@ -464,7 +467,7 @@ export class DatosDeTareasComponent implements OnInit {
   private generarTextoPresupuesto(): string {
     const empresa = this.empresaSeleccionada?.name || 'Sin empresa';
     const cliente = this.clienteSeleccionado?.name || 'Sin cliente';
-    const fecha = this.formatBudgetDate(this.clienteSeleccionado?.budgetDate);
+    const fecha = this.formatBudgetDate(this.budgetDate);
     const lineasTareas = this.tareasAgregadas.map((tarea, index) => {
       const descripcion = tarea.descripcion ? `\n   ${tarea.descripcion}` : '';
       const area = this.formatCurrency(tarea.area || 0);

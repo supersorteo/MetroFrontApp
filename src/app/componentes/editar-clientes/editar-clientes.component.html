@@ -28,56 +28,78 @@
 
     <form #editForm="ngForm" (ngSubmit)="onSubmit()" class="edit-form">
 
-      <div class="ef-field">
-        <label class="ef-label">Nombre</label>
-        <input type="text" id="name" class="ef-input" name="name"
-               placeholder="Nombre del cliente"
-               [(ngModel)]="cliente.name" required>
+      <div class="ef-section-label">Información principal</div>
+
+      <div class="ef-row">
+        <div class="ef-field">
+          <label class="ef-label">Nombre <span class="ef-required">*</span></label>
+          <input type="text" class="ef-input" name="name"
+                 placeholder="Nombre del cliente" minlength="2"
+                 [(ngModel)]="cliente.name" required #eName="ngModel">
+          @if (eName.touched && eName.errors?.['required']) {
+            <span class="ef-error">El nombre es obligatorio.</span>
+          }
+          @if (eName.touched && eName.errors?.['minlength']) {
+            <span class="ef-error">Mínimo 2 caracteres.</span>
+          }
+        </div>
+        <div class="ef-field">
+          <label class="ef-label">Email <span class="ef-optional">(opcional)</span></label>
+          <input type="email" class="ef-input" name="email"
+                 placeholder="correo@ejemplo.com"
+                 [(ngModel)]="cliente.email" email #eEmail="ngModel">
+          @if (eEmail.touched && eEmail.errors?.['email']) {
+            <span class="ef-error">Formato de email no válido.</span>
+          }
+        </div>
+      </div>
+
+      <div class="ef-row">
+        <div class="ef-field">
+          <label class="ef-label">Teléfono <span class="ef-required">*</span></label>
+          <div class="ef-phone-wrap">
+            <select class="ef-select--prefix" name="editPrefix"
+                    [(ngModel)]="editPrefix" (ngModelChange)="validateEditPhone()" aria-label="País / prefijo">
+              <option *ngFor="let c of phoneCountries" [value]="c.code">{{ c.label }}</option>
+            </select>
+            <input type="text" class="ef-input ef-input--number" name="editPhone"
+                   [(ngModel)]="editPhone" required
+                   [placeholder]="selectedCountry?.placeholder || 'Número'"
+                   [maxlength]="selectedCountry?.maxLength || 15"
+                   (input)="validateEditPhone(true)" (blur)="validateEditPhone(false)"
+                   #ePhone="ngModel" inputmode="numeric">
+          </div>
+          @if (ePhone.touched && ePhone.errors?.['required']) {
+            <span class="ef-error">El número es obligatorio.</span>
+          }
+          @if (!ePhone.errors?.['required'] && phoneInvalid) {
+            <span class="ef-error">{{ phoneInvalidMsg }}</span>
+          }
+        </div>
+        <div class="ef-field">
+          <label class="ef-label">CUIT / Clave <!--span-- class="ef-optional">(opcional)</span--></label>
+          <input type="text" class="ef-input" name="clave"
+                 placeholder="00-00000000-0"
+                 [(ngModel)]="cliente.clave">
+        </div>
       </div>
 
       <div class="ef-field">
-        <label class="ef-label">Contacto</label>
-        <input type="text" id="contact" class="ef-input" name="contact"
-               placeholder="Teléfono de contacto"
-               [(ngModel)]="cliente.contact" required>
-      </div>
-
-      <div class="ef-field">
-        <label class="ef-label">Email</label>
-        <input type="email" id="email" class="ef-input" name="email"
-               placeholder="correo@ejemplo.com"
-               [(ngModel)]="cliente.email" required>
-      </div>
-
-      <div class="ef-field">
-        <label class="ef-label">CUIT / Clave <span class="ef-optional">(opcional)</span></label>
-        <input type="text" id="clave" class="ef-input" name="clave"
-               placeholder="00-00000000-0"
-               [(ngModel)]="cliente.clave">
-      </div>
-
-      <div class="ef-field">
-        <label class="ef-label">Dirección</label>
-        <input type="text" id="direccion" class="ef-input" name="direccion"
+        <label class="ef-label">Dirección <span class="ef-optional">(opcional)</span></label>
+        <input type="text" class="ef-input" name="direccion"
                placeholder="Dirección del cliente"
-               [(ngModel)]="cliente.direccion" required>
-      </div>
-
-      <div class="ef-field">
-        <label class="ef-label">Fecha del Presupuesto</label>
-        <input type="date" id="budgetDate" class="ef-input" name="budgetDate"
-               [(ngModel)]="cliente.budgetDate" required>
+               [(ngModel)]="cliente.direccion">
       </div>
 
       <div class="ef-field">
         <label class="ef-label">Detalles adicionales <span class="ef-optional">(opcional)</span></label>
-        <textarea id="additionalDetails" class="ef-input ef-textarea" name="additionalDetails"
+        <textarea class="ef-input ef-textarea" name="additionalDetails"
                   rows="3" placeholder="Información extra del cliente"
                   [(ngModel)]="cliente.additionalDetails"></textarea>
       </div>
 
       <div class="ef-actions">
-        <button type="submit" class="ef-btn ef-btn--primary" [disabled]="editForm.invalid">
+        <button type="submit" class="ef-btn ef-btn--primary" [disabled]="editForm.invalid || phoneInvalid">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
             <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
           </svg>

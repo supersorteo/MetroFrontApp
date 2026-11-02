@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EmpresaService } from '../../servicios/empresa.service';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
+import { PHONE_COUNTRIES, PhoneCountry, validatePhone } from '../../core/utils/phone-validation.util';
 
 @Component({
   selector: 'app-editar-empresa',
@@ -19,6 +20,41 @@ export class EditarEmpresaComponent implements OnInit {
   loading = false;
   imagePreview: string | null = null;
   selectedFile: File | null = null;
+
+  phoneCountries = PHONE_COUNTRIES;
+  editPrefix: string = '+549';
+  editPhone: string = '';
+  phoneInvalid = false;
+  phoneInvalidMsg = '';
+
+  get selectedCountry(): PhoneCountry | undefined {
+    return PHONE_COUNTRIES.find(c => c.code === this.editPrefix);
+  }
+
+  get taxIdConfig(): { label: string; placeholder: string; pattern: string; hint: string } {
+    switch (this.editPrefix) {
+      case '+549': case '+54': return { label: 'CUIT / CUIL', placeholder: 'XX-XXXXXXXX-X', pattern: '\\d{2}-\\d{8}-\\d{1}', hint: 'Formato: 20-12345678-9' };
+      case '+598': return { label: 'RUT', placeholder: 'XXXXXXXXXXXX', pattern: '\\d{6,12}', hint: '6 a 12 dígitos' };
+      case '+57':  return { label: 'NIT', placeholder: 'XXXXXXXXX', pattern: '\\d{8,10}', hint: '8 a 10 dígitos' };
+      case '+53':  return { label: 'Carné de identidad', placeholder: 'XXXXXXXXXXX', pattern: '\\d{11}', hint: '11 dígitos' };
+      case '+595': return { label: 'RUC', placeholder: 'XXXXXXXX', pattern: '\\d{6,9}', hint: '6 a 9 dígitos' };
+      default:     return { label: 'Identificación fiscal', placeholder: 'Número de identificación', pattern: '', hint: '' };
+    }
+  }
+
+  validateEditPhone(live = false): void {
+    if (!this.editPhone.trim()) { this.phoneInvalid = false; this.phoneInvalidMsg = ''; return; }
+    const result = validatePhone(this.editPrefix, this.editPhone, live);
+    this.phoneInvalid = !result.valid;
+    this.phoneInvalidMsg = result.error ?? '';
+  }
+
+  private parseE164(e164: string): void {
+    if (!e164) return;
+    const country = PHONE_COUNTRIES.find(c => e164.startsWith(c.code));
+    this.editPrefix = country?.code ?? '+549';
+    this.editPhone = e164.slice(this.editPrefix.length).trim();
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -112,6 +148,7 @@ export class EditarEmpresaComponent implements OnInit {
       if (empresa) {
         this.empresa = { ...empresa };
         this.imagePreview = this.empresa.logoUrl || null;
+        this.parseE164(this.empresa.phone);
       }
       return;
     }
@@ -121,6 +158,7 @@ export class EditarEmpresaComponent implements OnInit {
       next: async (data: any) => {
         this.empresa = { ...data };
         this.imagePreview = await this.resolveEmpresaImagePreview(this.empresa);
+        this.parseE164(this.empresa.phone);
         this.loading = false;
       },
       error: async () => {
@@ -129,6 +167,7 @@ export class EditarEmpresaComponent implements OnInit {
         if (storedEmpresa) {
           this.empresa = { ...storedEmpresa };
           this.imagePreview = await this.resolveEmpresaImagePreview(this.empresa);
+          this.parseE164(this.empresa.phone);
         }
         this.loading = false;
       }
@@ -186,10 +225,12 @@ export class EditarEmpresaComponent implements OnInit {
       this.uiDialog.warning({ title: 'Campo obligatorio', text: 'El nombre de la empresa no puede estar vacío.' });
       return;
     }
-    if (!this.empresa.phone || !this.empresa.phone.trim()) {
-      this.uiDialog.warning({ title: 'Campo obligatorio', text: 'El teléfono de la empresa no puede estar vacío.' });
+    const phoneResult = validatePhone(this.editPrefix, this.editPhone);
+    if (!phoneResult.valid) {
+      this.uiDialog.warning({ title: 'Teléfono inválido', text: phoneResult.error || 'El número no es válido.' });
       return;
     }
+    this.empresa.phone = phoneResult.e164!;
     if (!this.empresa.email || !this.empresa.email.trim()) {
       this.uiDialog.warning({ title: 'Campo obligatorio', text: 'El email de la empresa no puede estar vacío.' });
       return;

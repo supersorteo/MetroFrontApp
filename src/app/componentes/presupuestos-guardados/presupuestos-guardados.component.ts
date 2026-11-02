@@ -42,6 +42,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   @Output() presupuestoGuardado = new EventEmitter<SavedPresupuesto>();
 
   nombreTemporal = '';
+  budgetDateTemporal: string | null = null;
   filtro = '';
   presupuestos: SavedPresupuesto[] = [];
   cargandoMas = false;
@@ -132,7 +133,8 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       name: nombre,
       tareas: this.tareasActuales.map(t => ({ id: t.id })),
       cliente: this.clienteActual?.id ? { id: this.clienteActual.id } : null,
-      empresa: this.empresaActual?.id ? { id: this.empresaActual.id } : null
+      empresa: this.empresaActual?.id ? { id: this.empresaActual.id } : null,
+      ...(this.budgetDateTemporal ? { budgetDate: this.budgetDateTemporal } : {})
     };
 
     if (this.presupuestoCargado?.id) {
@@ -186,7 +188,8 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
       name: nombre,
       tareas: this.tareasActuales.map(t => ({ id: t.id })),
       cliente: this.clienteActual?.id ? { id: this.clienteActual.id } : null,
-      empresa: this.empresaActual?.id ? { id: this.empresaActual.id } : null
+      empresa: this.empresaActual?.id ? { id: this.empresaActual.id } : null,
+      ...(this.budgetDateTemporal ? { budgetDate: this.budgetDateTemporal } : {})
     };
     this.isSavingBudget = true;
     this.budgetService.guardarPresupuesto(payload).subscribe({
@@ -203,8 +206,15 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
     });
   }
 
-  cargar(presupuesto: SavedPresupuesto): void {
+  async cargar(presupuesto: SavedPresupuesto): Promise<void> {
     if (this.shouldSkipBudgetAction('load', presupuesto.id)) return;
+    const confirmed = await this.uiDialog.confirm({
+      title: 'Cargar presupuesto',
+      text: `¿Querés cargar "${presupuesto.name}"? Se reemplazará el contenido actual del panel.`,
+      confirmText: 'Cargar',
+      tone: 'primary',
+    });
+    if (!confirmed) return;
     this.presupuestoHabilitadoParaActualizarId = presupuesto.id;
     this.cargarPresupuesto.emit(presupuesto);
     this.uiDialog.success({ title: 'Listo', text: `Presupuesto "${presupuesto.name}" cargado correctamente.` });
@@ -410,7 +420,7 @@ export class PresupuestosGuardadosComponent implements OnInit, OnChanges {
   }
 
   async verPresupuesto(presupuesto: SavedPresupuesto): Promise<void> {
-    const preview = { presupuesto, empresa: presupuesto.empresa || this.empresaActual, cliente: presupuesto.cliente, tareas: presupuesto.tareas, name: presupuesto.name, budgetDate: presupuesto.createdAt };
+    const preview = { presupuesto, empresa: presupuesto.empresa || this.empresaActual, cliente: presupuesto.cliente, tareas: presupuesto.tareas, name: presupuesto.name, budgetDate: presupuesto.createdAt ? presupuesto.createdAt.split('T')[0] : '' };
     await this.localStore.setState('budget:active-preview', preview);
     localStorage.setItem('selectedEmpresa', JSON.stringify(preview.empresa));
     localStorage.setItem('selectedCliente', JSON.stringify(preview.cliente));

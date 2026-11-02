@@ -42,8 +42,8 @@ export class AppComponent implements OnInit {
   }
 
   private startSessionGuard(): void {
-    // Heartbeat periódico cada 60s
-    interval(60_000).pipe(
+    // Heartbeat periódico cada 15s
+    interval(15_000).pipe(
       takeUntilDestroyed(this.destroyRef),
       filter(() => this.authService.isLoggedIn()),
       switchMap(() => this.doHeartbeat())

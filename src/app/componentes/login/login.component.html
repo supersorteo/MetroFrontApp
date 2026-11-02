@@ -158,69 +158,99 @@
       <h3 class="login-form-card__title">Registrá tu código</h3>
       <p class="login-form-card__sub">Asociá tu código de acceso a tu cuenta</p>
 
-      <div class="lf-field">
-        <label class="lf-label">Código</label>
-        <input type="text" class="form-control login-input-field"
-               [(ngModel)]="code" placeholder="Ingresá tu código" name="code"
-               (input)="onCodeInput()" (blur)="syncCountryWithCode()">
-        <div class="lf-hint lf-hint--country" *ngIf="codeCountry">
-          <i class="bi bi-check-circle-fill me-1" style="color:#22c55e"></i>
-          País detectado: <strong>{{ codeCountry }}</strong>
+      <!-- Fila 1: Código + Email -->
+      <div class="lf-grid-2">
+        <div class="lf-field">
+          <label class="lf-label">Código</label>
+          <input type="text" class="form-control login-input-field"
+                 [(ngModel)]="code" placeholder="Ingresá tu código" name="code"
+                 (input)="onCodeInput()" (blur)="syncCountryWithCode()">
+          <div class="lf-hint lf-hint--country" *ngIf="codeCountry">
+            <i class="bi bi-check-circle-fill me-1" style="color:#22c55e"></i>
+            País: <strong>{{ codeCountry }}</strong>
+          </div>
+        </div>
+
+        <div class="lf-field">
+          <label class="lf-label">Email</label>
+          <input type="email" class="form-control login-input-field"
+                 [class.is-invalid]="!!registerEmailError"
+                 [(ngModel)]="email" placeholder="tu@email.com" name="email"
+                 (input)="validateForm()"
+                 (blur)="registerEmailTouched = true">
+          <div class="lf-error" *ngIf="registerEmailError">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ registerEmailError }}
+          </div>
         </div>
       </div>
 
-      <div class="lf-field">
-        <label class="lf-label">Email</label>
-        <input type="email" class="form-control login-input-field"
-               [(ngModel)]="email" placeholder="tu@email.com" name="email"
-               (input)="validateForm()">
+      <!-- Fila 2: País + Provincia -->
+      <div class="lf-grid-2">
+        <div class="lf-field">
+          <label class="lf-label">País</label>
+          <ng-select
+            [items]="registrationCountries"
+            bindLabel="displayLabel"
+            bindValue="nombre"
+            [(ngModel)]="pais"
+            name="pais"
+            id="pais"
+            (change)="onPaisChange()"
+            placeholder="Seleccioná tu país"
+            [clearable]="!codeCountry"
+            [searchable]="false"
+            [disabled]="!!codeCountry"
+          >
+            <ng-template ng-option-tmp let-item="item">
+              <img [src]="item.flag" width="18" class="me-2" style="vertical-align:middle" />
+              {{ item.nombre }}
+              <span *ngIf="item.disabled" class="ms-1" style="font-size:0.72rem;color:#94a3b8;font-style:italic">Próximamente</span>
+            </ng-template>
+            <ng-template ng-label-tmp let-item="item">
+              <img [src]="item.flag" width="18" class="me-2" style="vertical-align:middle" />
+              {{ item.nombre }}
+            </ng-template>
+          </ng-select>
+        </div>
+
+        <div class="lf-field">
+          <label class="lf-label">Provincia</label>
+          <ng-select
+            [items]="provincias"
+            bindLabel="nombre"
+            bindValue="nombre"
+            [(ngModel)]="provincia"
+            name="provincia"
+            (change)="validateForm()"
+            placeholder="Seleccioná tu provincia"
+            [clearable]="false"
+            [searchable]="true"
+            [disabled]="!pais"
+          >
+          </ng-select>
+        </div>
       </div>
 
-      <div class="lf-field">
-        <label class="lf-label">País</label>
-        <ng-select
-          [items]="registrationCountries"
-          bindLabel="nombre"
-          bindValue="nombre"
-          [(ngModel)]="pais"
-          name="pais"
-          id="pais"
-          (change)="onPaisChange()"
-          placeholder="Seleccioná tu país"
-          [clearable]="!codeCountry"
-          [searchable]="!codeCountry"
-          [disabled]="!!codeCountry"
-        >
-          <ng-template ng-option-tmp let-item="item" let-selected="selected">
-            <img [src]="item.flag" width="20" class="me-2" />
-            {{ item.nombre }}
-            <span *ngIf="selected" class="float-end text-success"><i class="bi bi-check-lg"></i></span>
-          </ng-template>
-        </ng-select>
-      </div>
-
-      <div class="lf-field">
-        <label class="lf-label">Provincia</label>
-        <select class="form-select login-input-field"
-                [(ngModel)]="provincia" name="provincia" (change)="validateForm()">
-          <option value="" disabled selected>Seleccioná tu provincia</option>
-          <option *ngFor="let p of provincias" [value]="p.nombre">{{ p.nombre }}</option>
-        </select>
-      </div>
-
+      <!-- Fila 3: Teléfono (ancho completo) -->
       <div class="lf-field">
         <label class="lf-label">Teléfono</label>
-        <input
-          type="tel"
-          class="form-control login-input-field"
-          [class.is-invalid]="telefono.trim().length > 0 && !!telefonoErrorMessage"
-          [(ngModel)]="telefono"
-          [placeholder]="telefonoPlaceholder"
-          name="telefono"
-          (input)="onTelefonoInput()"
-        >
-        <div class="lf-error" *ngIf="telefono.trim().length > 0 && telefonoErrorMessage">
-          <i class="bi bi-exclamation-circle me-1"></i>{{ telefonoErrorMessage }}
+        <div class="lf-phone-wrap" [class.is-invalid]="registerPhoneNumber.trim().length > 0 && !!registerPhoneErrorMessage">
+          <span class="lf-prefix-badge">{{ registerPhonePrefix || '—' }}</span>
+          <input
+            type="tel"
+            class="lf-input--number"
+            [(ngModel)]="registerPhoneNumber"
+            name="registerPhoneNumber"
+            [placeholder]="registerPhoneNumberPlaceholder"
+            [maxlength]="registerSelectedCountry?.maxLength || 15"
+            [disabled]="!pais"
+            inputmode="numeric"
+            (input)="onRegisterPhoneInput(true)"
+            (blur)="onRegisterPhoneInput(false)"
+          />
+        </div>
+        <div class="lf-error" *ngIf="registerPhoneNumber.trim().length > 0 && registerPhoneErrorMessage">
+          <i class="bi bi-exclamation-circle me-1"></i>{{ registerPhoneErrorMessage }}
         </div>
       </div>
 
@@ -412,64 +442,108 @@
       <p class="login-form-card__sub" *ngIf="isLoadingCatalog">Cargando planes disponibles...</p>
       <p class="login-form-card__sub" *ngIf="!isLoadingCatalog">Completá tus datos para continuar con el pago</p>
 
-      <div class="lf-field">
-        <label class="lf-label">País</label>
-        <ng-select
-          [items]="membershipCountries"
-          bindLabel="nombre"
-          bindValue="codigo"
-          [(ngModel)]="purchaseCountryCode"
-          name="purchaseCountry"
-          placeholder="Seleccioná un país"
-          [clearable]="false"
-          (change)="onPurchaseCountryChange()"
-        >
-          <ng-template ng-option-tmp let-item="item">
-            <img *ngIf="item.flag" [src]="item.flag" width="20" class="me-2" />
-            {{ item.nombre }}
-          </ng-template>
-        </ng-select>
+      <!-- Fila 1: País + Plan -->
+      <div class="lf-row">
+        <div class="lf-field">
+          <label class="lf-label">País</label>
+          <ng-select
+            [items]="checkoutCountryOptions"
+            bindLabel="nombre"
+            bindValue="codigo"
+            [(ngModel)]="purchaseCountryCode"
+            name="purchaseCountry"
+            placeholder="Seleccioná un país"
+            [clearable]="false"
+            (change)="onPurchaseCountryChange()"
+          >
+            <ng-template ng-option-tmp let-item="item" let-item$="item$">
+              <div class="lf-country-option" [class.lf-country-option--disabled]="item.disabled">
+                <img *ngIf="item.flag" [src]="item.flag" width="18" class="me-2" style="border-radius:2px;" />
+                <span>{{ item.nombre }}</span>
+                <span *ngIf="item.disabled" class="lf-soon-badge">Próximamente</span>
+              </div>
+            </ng-template>
+          </ng-select>
+        </div>
+
+        <div class="lf-field">
+          <label class="lf-label">Plan</label>
+          <ng-select
+            [items]="selectedMembershipCountry?.plans || []"
+            bindValue="months"
+            [(ngModel)]="purchasePlanMonths"
+            name="purchasePlan"
+            placeholder="Seleccioná un plan"
+            [clearable]="false"
+            [disabled]="!selectedMembershipCountry"
+          >
+            <ng-template ng-label-tmp let-item="item">
+              <span class="lf-plan-label">
+                <strong>{{ item.months }} {{ item.months === 1 ? 'mes' : 'meses' }}</strong>
+                <span class="lf-plan-price"> — {{ item.amount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}</span>
+              </span>
+            </ng-template>
+            <ng-template ng-option-tmp let-item="item">
+              <div class="lf-plan-option">
+                <span class="lf-plan-option__months">{{ item.months }} {{ item.months === 1 ? 'mes' : 'meses' }}</span>
+                <span class="lf-plan-option__price">{{ item.amount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}</span>
+              </div>
+            </ng-template>
+          </ng-select>
+        </div>
       </div>
 
-      <div class="lf-field">
-        <label class="lf-label">Plan</label>
-        <select class="form-select login-input-field" [(ngModel)]="purchasePlanMonths" name="purchasePlan">
-          <option [ngValue]="null" disabled>Seleccioná un plan</option>
-          <option *ngFor="let plan of selectedMembershipCountry?.plans" [ngValue]="plan.months">
-            {{ plan.months }} meses — {{ plan.amount | number:'1.0-0' }} {{ selectedMembershipCountry?.currency }}
-          </option>
-        </select>
+      <!-- Fila 2: Nombre + Email -->
+      <div class="lf-row">
+        <div class="lf-field">
+          <label class="lf-label">Nombre completo</label>
+          <input class="form-control login-input-field" [(ngModel)]="purchaseName" name="purchaseName" placeholder="Tu nombre completo" />
+        </div>
+
+        <div class="lf-field">
+          <label class="lf-label">Email</label>
+          <input
+            type="email"
+            class="form-control login-input-field"
+            [class.is-invalid]="!!purchaseEmailError"
+            [(ngModel)]="purchaseEmail"
+            name="purchaseEmail"
+            placeholder="tu@email.com"
+            (blur)="purchaseEmailTouched = true"
+          />
+          <div class="lf-error" *ngIf="purchaseEmailError">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ purchaseEmailError }}
+          </div>
+        </div>
       </div>
 
-      <div class="lf-field">
-        <label class="lf-label">Nombre completo</label>
-        <input class="form-control login-input-field" [(ngModel)]="purchaseName" name="purchaseName" placeholder="Tu nombre completo" />
-      </div>
-
-      <div class="lf-field">
-        <label class="lf-label">Email</label>
-        <input type="email" class="form-control login-input-field" [(ngModel)]="purchaseEmail" name="purchaseEmail" placeholder="tu@email.com" />
-      </div>
-
+      <!-- Teléfono (ancho completo, píldora) -->
       <div class="lf-field">
         <label class="lf-label">
           Teléfono
           <span class="lf-label-hint">(opcional — para recibir el código por WhatsApp)</span>
         </label>
-        <input
-          type="tel"
-          class="form-control login-input-field"
-          [class.is-invalid]="purchasePhone.trim().length > 0 && !!purchasePhoneErrorMessage"
-          [(ngModel)]="purchasePhone"
-          [placeholder]="purchasePhonePlaceholder"
-          name="purchasePhone"
-          (input)="onPurchasePhoneInput()"
-        />
-        <div class="lf-error" *ngIf="purchasePhone.trim().length > 0 && purchasePhoneErrorMessage">
+        <div class="lf-phone-wrap" [class.is-invalid]="purchasePhoneNumber.trim().length > 0 && !!purchasePhoneErrorMessage">
+          <span class="lf-prefix-badge">{{ purchasePhonePrefix || '—' }}</span>
+          <input
+            type="tel"
+            class="lf-input--number"
+            [(ngModel)]="purchasePhoneNumber"
+            [placeholder]="purchasePhoneNumberPlaceholder"
+            name="purchasePhoneNumber"
+            [disabled]="!purchaseCountryCode"
+            [maxlength]="checkoutSelectedCountry?.maxLength || 15"
+            inputmode="numeric"
+            (input)="onPurchasePhoneNumberInput(true)"
+            (blur)="onPurchasePhoneNumberInput(false)"
+          />
+        </div>
+        <div class="lf-error" *ngIf="purchasePhoneNumber.trim().length > 0 && purchasePhoneErrorMessage">
           <i class="bi bi-exclamation-circle me-1"></i>{{ purchasePhoneErrorMessage }}
         </div>
       </div>
 
+      <!-- Documento (ancho completo) -->
       <div class="lf-field" *ngIf="purchaseCountryCode === 'AR'">
         <label class="lf-label">
           {{ selectedMembershipCountry?.documentLabel || 'Documento' }}

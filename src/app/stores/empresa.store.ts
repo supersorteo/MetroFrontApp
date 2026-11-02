@@ -110,6 +110,11 @@ export class EmpresaStore {
     }
   }
 
+  selectById(id: number): void {
+    this._pendingSelectedId.set(id);
+    localStorage.setItem('selectedEmpresaId', String(id));
+  }
+
   refreshFromRemote(): void {
     const userCode = this._userCode();
     if (!userCode) return;
