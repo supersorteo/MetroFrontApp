@@ -110,7 +110,6 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   legacyImportResult: LegacyImportResult | null = null;
   legacyStats = { total: 0, vigentes: 0, vencidos: 0, reclamados: 0 };
 
-  // TEST ONLY — comentar tras pruebas
   editingExpiryCode: string | null = null;
   expiryEditRegistro = '';
   expiryEditVencimiento = '';
@@ -1258,7 +1257,6 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     });
   }
 
-  // TEST ONLY — comentar tras pruebas
   openExpiryEdit(item: AccessCode): void {
     this.editingExpiryCode = item.code;
     this.expiryEditRegistro  = item.fechaRegistro  ?? '';

@@ -1472,26 +1472,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 }
 
   private initPremiumCtaVisibility(): void {
-    if (!this.trialMode) {
-      this.showPremiumCta = false;
-      return;
-    }
-
-    let startedAt = Number(localStorage.getItem('demoStartedAt'));
-    if (!Number.isFinite(startedAt) || startedAt <= 0) {
-      startedAt = Date.now();
-      localStorage.setItem('demoStartedAt', String(startedAt));
-    }
-
-    const remaining = Math.max(0, 15_000 - (Date.now() - startedAt));
-    if (remaining === 0) {
-      this.showPremiumCta = true;
-      return;
-    }
-
-    this.premiumCtaTimer = setTimeout(() => {
-      this.showPremiumCta = true;
-    }, remaining);
+    this.showPremiumCta = this.trialMode;
   }
 
 

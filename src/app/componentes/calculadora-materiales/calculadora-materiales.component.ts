@@ -855,19 +855,7 @@ export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
   }
 
   private initPremiumCtaVisibility(): void {
-    let startedAt = Number(localStorage.getItem('demoStartedAt'));
-    if (!Number.isFinite(startedAt) || startedAt <= 0) {
-      startedAt = Date.now();
-      localStorage.setItem('demoStartedAt', String(startedAt));
-    }
-
-    const remaining = Math.max(0, 15_000 - (Date.now() - startedAt));
-    if (remaining === 0) {
-      this.showPremiumCta.set(true);
-      return;
-    }
-
-    this.premiumCtaTimer = setTimeout(() => this.showPremiumCta.set(true), remaining);
+    this.showPremiumCta.set(true);
   }
 
   filteredByCategoria(cat: string): Tarea[] {
