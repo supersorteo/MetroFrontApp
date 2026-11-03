@@ -90,7 +90,7 @@
         <div class="edit-card__header-icon"><i class="fas fa-pen-to-square"></i></div>
         <div>
           <h5 class="edit-card__title">Editar tarea</h5>
-          <p class="edit-card__sub">Modificá los valores para este ítem del presupuesto</p>
+          <p class="edit-card__sub">{{ isDemoMode ? 'Modo demo — solo visualización' : 'Modificá los valores para este ítem del presupuesto' }}</p>
         </div>
         <button type="button" class="edit-card__close" (click)="cerrarEditarTarea()">
           <i class="fas fa-times"></i>
@@ -133,11 +133,24 @@
 
       </div>
 
+      <div *ngIf="isDemoMode" class="edit-demo-notice">
+        <div class="edit-demo-notice__left">
+          <i class="fas fa-lock edit-demo-notice__icon"></i>
+          <div class="edit-demo-notice__text">
+            <span class="edit-demo-notice__title">Función no disponible en modo demo</span>
+            <span class="edit-demo-notice__desc">Desbloqueá la edición completa con tu código de acceso</span>
+          </div>
+        </div>
+        <button type="button" class="edit-demo-notice__cta" (click)="irAPlanes()">
+          <i class="fas fa-star"></i> Adquirí tu código
+        </button>
+      </div>
+
       <div class="edit-card__footer">
         <button type="button" class="edit-btn edit-btn--cancel" (click)="cerrarEditarTarea()">
           <i class="fas fa-times"></i> Cancelar
         </button>
-        <button type="button" class="edit-btn edit-btn--save" (click)="guardarEditarTarea()">
+        <button type="button" class="edit-btn edit-btn--save" [disabled]="isDemoMode" [class.edit-btn--disabled]="isDemoMode" (click)="guardarEditarTarea()">
           <i class="fas fa-check"></i> Guardar cambios
         </button>
       </div>

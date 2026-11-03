@@ -1157,12 +1157,12 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
           !this.presupuestoModeBaselineIds.has(t.id) &&
           !existingInPresupuesto.has(t.id)
         );
-        console.log('[PRESUPUESTO] UserTareaStore effect en modo presupuesto', {
+        /*console.log('[PRESUPUESTO] UserTareaStore effect en modo presupuesto', {
           storeTareas: storeTareas.length,
           baselineIds: [...this.presupuestoModeBaselineIds],
           existingInPresupuesto: [...existingInPresupuesto],
           trulyNew: trulyNew.map(t => ({ id: t.id, tarea: t.tarea }))
-        });
+        });*/
         if (trulyNew.length > 0) {
           this.tareasAgregadas = [...this.tareasAgregadas, ...trulyNew];
           this.mostrarTabla = true;
@@ -2103,9 +2103,9 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 ngAfterViewInit() {
   // Restaurar presupuesto pendiente (con o sin cliente) después de que los stores IDB inicialicen
   if (this.presupuestoPendiente) {
-    console.log('[PRESUPUESTO] ngAfterViewInit - hay pendiente, programando restauración en 300ms', this.presupuestoPendiente.id);
+    /*console.log('[PRESUPUESTO] ngAfterViewInit - hay pendiente, programando restauración en 300ms', this.presupuestoPendiente.id);*/
     setTimeout(() => {
-      console.log('[PRESUPUESTO] ngAfterViewInit timeout - pendiente:', this.presupuestoPendiente?.id, '| seleccionado:', this.presupuestoSeleccionado?.id);
+      /*console.log('[PRESUPUESTO] ngAfterViewInit timeout - pendiente:', this.presupuestoPendiente?.id, '| seleccionado:', this.presupuestoSeleccionado?.id);*/
       if (this.presupuestoPendiente && !this.presupuestoSeleccionado) {
         void this.aplicarPresupuestoGuardado(this.presupuestoPendiente, { scrollToTable: false, useStoredBaseline: true });
         this.presupuestoPendiente = null;
@@ -2617,13 +2617,13 @@ private async aplicarPresupuestoGuardado(
   this.presupuestoPendiente = null;
   this.presupuestoSeleccionado = presupuesto;
 
-  console.log('[PRESUPUESTO] aplicarPresupuestoGuardado - iniciando', {
+  /*console.log('[PRESUPUESTO] aplicarPresupuestoGuardado - iniciando', {
     id: presupuesto.id,
     name: presupuesto.name,
     cliente: presupuesto.cliente,
     empresa: presupuesto.empresa,
     tareas: presupuesto.tareas?.map(t => ({ id: t.id, tarea: t.tarea }))
-  });
+  });*/
 
   // Todo el estado de UI ANTES del await para evitar race conditions con effects
 
@@ -2644,9 +2644,9 @@ private async aplicarPresupuestoGuardado(
       storeTareasSnapshot.map(t => t.id).filter((id): id is number => !!id)
     );
     localStorage.setItem('presupuestoBaselineIds', JSON.stringify([...this.presupuestoModeBaselineIds]));
-    console.log('[PRESUPUESTO] baseline NUEVO - store tiene', storeTareasSnapshot.length, 'tareas, ids:', [...this.presupuestoModeBaselineIds]);
+    /*console.log('[PRESUPUESTO] baseline NUEVO - store tiene', storeTareasSnapshot.length, 'tareas, ids:', [...this.presupuestoModeBaselineIds]);*/
   } else {
-    console.log('[PRESUPUESTO] baseline RESTAURADO desde localStorage:', [...this.presupuestoModeBaselineIds]);
+    /*console.log('[PRESUPUESTO] baseline RESTAURADO desde localStorage:', [...this.presupuestoModeBaselineIds]);*/
   }
 
   // 3. CLIENTE — busca en lista local primero, luego en signal del store, fallback al objeto del presupuesto
@@ -3461,6 +3461,13 @@ calcularCostoTotal(): number {
 
 
   abrirPdfVivienda() {
+    if (this.trialMode) {
+      this.uiDialog.warning({
+        title: 'Solo disponible con código activo',
+        text: 'El PDF Valor Vivienda es exclusivo para usuarios registrados. Adquirí tu código.'
+      });
+      return;
+    }
     const modal = document.getElementById('pdfViviendaModal');
     if (modal) {
       const bsModal = new (window as any).bootstrap.Modal(modal);
