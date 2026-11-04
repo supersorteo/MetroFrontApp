@@ -2136,3 +2136,55 @@
   }
 }
 
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 8px 0;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.filter-label {
+  font-size: 11px;
+  color: #9ca3af;
+  white-space: nowrap;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.filter-btn,
+.filter-chip {
+  padding: 4px 11px;
+  border-radius: 20px;
+  border: 1px solid rgba(156, 163, 175, 0.4);
+  background: transparent;
+  color: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  &:hover:not(.active) {
+    border-color: rgba(156, 163, 175, 0.7);
+  }
+
+  &.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #fff;
+  }
+}
+
+.chip--pending.active   { background: #f59e0b; border-color: #f59e0b; }
+.chip--reserved.active  { background: #10b981; border-color: #10b981; }
+
+.chip--active.active   { background: #10b981; border-color: #10b981; }
+.chip--expired.active  { background: #ef4444; border-color: #ef4444; }

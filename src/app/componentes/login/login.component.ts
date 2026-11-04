@@ -335,6 +335,9 @@ login(): void {
             this.legacyData = legacy;
             this.email = '';
             this.telefono = '';
+            this.registerPhonePrefix = '+549';
+            this.registerPhoneNumber = '';
+            this.registerPhoneErrorMessage = '';
             this.provincia = '';
             this.provinciaService.getProvinciasByPais('argentina').subscribe({
               next: ps => this.provincias = ps,
@@ -613,7 +616,8 @@ registerLegacy(): void {
     // Verificar el código contra la tabla regular con datos completos
     this.authService.getUserCode(normalized).subscribe({
       next: (accessCode) => {
-        this.codeCountry = countryDisplayName(accessCode?.pais || null);
+        const detectedCountry = countryDisplayName(accessCode?.pais || null);
+        this.codeCountry = detectedCountry;
         this.codeNotFoundError = '';
 
         // Código ya tiene un usuario registrado → no permitir nuevo registro
@@ -625,6 +629,11 @@ registerLegacy(): void {
           return;
         }
 
+        if (detectedCountry && this.isCountryAvailable(detectedCountry) && this.pais !== detectedCountry) {
+          this.pais = detectedCountry;
+          this.onPaisChange();
+        }
+
         this.loginStep = 'register';
       },
       error: () => {
@@ -633,7 +642,9 @@ registerLegacy(): void {
           if (legacy) {
             this.legacyData = legacy;
             this.email = '';
+            this.registerPhonePrefix = '+549';
             this.registerPhoneNumber = '';
+            this.registerPhoneErrorMessage = '';
             this.registerEmailTouched = false;
             this.provincia = '';
             this.provinciaService.getProvinciasByPais('argentina').subscribe({
@@ -678,10 +689,17 @@ registerLegacy(): void {
       },
       error: () => {
         this.codeCountry = null;
-        this.codeNotFoundError = navigator.onLine
-          ? 'Código no encontrado.'
-          : 'Sin conexión. No se pudo validar el código.';
-        this.validateForm();
+        if (!navigator.onLine) {
+          this.codeNotFoundError = 'Sin conexión. No se pudo validar el código.';
+          this.validateForm();
+          return;
+        }
+        this.legacyCodeService.checkCode(normalizedCode).subscribe(legacy => {
+          this.codeNotFoundError = legacy
+            ? 'Este código es legacy. Ingresalo en el formulario de login, no en el registro.'
+            : 'Código no encontrado.';
+          this.validateForm();
+        });
       }
     });
   }

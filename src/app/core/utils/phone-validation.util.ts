@@ -9,35 +9,155 @@ export interface PhoneCountry {
 }
 
 // ─── Argentina ────────────────────────────────────────────────────────────────
+// Validación con códigos de área ENACOM (300 códigos, 24 provincias, 2026-11-03).
+// Validación independiente de provincia: se verifica que el código exista en Argentina,
+// no que coincida con la ubicación del usuario (la numeración se conserva al cambiar de residencia).
 
-const AR_AREA_2 = ['11'];
-const AR_AREA_3 = [
-  '221','223','230','236','237','249','260','261','263','264','266',
-  '280','291','294','297','298','299','336','341','342','343','345','348','351','358',
-  '362','370','376','379','380','381','383','385','387','388'
-];
-const AR_AREA_4 = ['2901','2920','2954','2966'];
+const AR_AREA_CODES_2 = new Set(['11']);
 
-// Evalúa si los dígitos ingresados son compatibles con algún código de área argentino.
-// Permite validación incremental: con 2 dígitos ya puede detectar prefijos inválidos.
-function hasValidARPrefix(d: string): boolean {
-  if (d.length <= 1) return true;
-  if (d.length === 2) {
-    return AR_AREA_2.includes(d)
-      || AR_AREA_3.some(a => a.startsWith(d))
-      || AR_AREA_4.some(a => a.startsWith(d));
-  }
-  if (d.length === 3) {
-    return AR_AREA_3.includes(d)
-      || AR_AREA_4.some(a => a.startsWith(d))
-      || AR_AREA_2.includes(d.slice(0, 2));
-  }
-  // length >= 4
-  return AR_AREA_4.includes(d.slice(0, 4))
-    || AR_AREA_3.includes(d.slice(0, 3))
-    || AR_AREA_2.includes(d.slice(0, 2));
+const AR_AREA_CODES_3 = new Set([
+  // Buenos Aires
+  '220','221','223','230','236','237','249','291','336','348',
+  // Catamarca
+  '383',
+  // Chaco
+  '362','364',
+  // Chubut
+  '280','297',
+  // Córdoba
+  '351','353','358',
+  // Corrientes
+  '379',
+  // Entre Ríos
+  '343','345',
+  // Formosa
+  '370',
+  // Jujuy
+  '388',
+  // La Rioja
+  '380',
+  // Mendoza
+  '260','261','263',
+  // Misiones
+  '376',
+  // Neuquén
+  '299',
+  // Río Negro
+  '294','298',
+  // Salta
+  '387',
+  // San Juan
+  '264',
+  // San Luis
+  '266',
+  // Santa Fe
+  '341','342',
+  // Santiago del Estero
+  '385',
+  // Tucumán
+  '381',
+]);
+
+const AR_AREA_CODES_4 = new Set([
+  // Buenos Aires
+  '2202','2221','2223','2224','2225','2226','2227','2229',
+  '2241','2242','2243','2244','2245','2246','2252','2254','2255','2257',
+  '2261','2262','2264','2265','2266','2267','2268','2271','2272','2273','2274',
+  '2281','2283','2284','2285','2286','2291','2292','2296','2297',
+  '2314','2316','2317','2320','2323','2324','2325','2326','2337',
+  '2342','2343','2344','2345','2346','2352','2353','2354','2355','2356','2357','2358',
+  '2392','2393','2394','2395','2396','2473','2474','2475','2477','2478',
+  '2921','2922','2923','2924','2925','2926','2927','2928','2929',
+  '2932','2933','2935','2936','2982','2983',
+  '3327','3329','3388','3407','3487','3489',
+  // Catamarca
+  '3832','3835','3837','3838',
+  // Chaco
+  '3721','3725','3731','3734','3735',
+  // Chubut
+  '2903','2945',
+  // Córdoba
+  '2336','3385','3387','3463','3467','3468','3472',
+  '3521','3522','3524','3525','3532','3533','3537',
+  '3541','3542','3543','3544','3546','3547','3548','3549',
+  '3562','3563','3564','3571','3572','3573','3574','3575','3576',
+  '3582','3583','3584','3585',
+  // Corrientes
+  '3756','3772','3773','3774','3775','3777','3781','3782','3786',
+  // Entre Ríos
+  '3435','3436','3437','3438','3442','3444','3445','3446','3447',
+  '3454','3455','3456','3458',
+  // Formosa
+  '3711','3715','3716','3718',
+  // Jujuy
+  '3885','3886','3887','3888',
+  // La Pampa
+  '2302','2331','2333','2334','2335','2338','2952','2953','2954',
+  // La Rioja
+  '3821','3825','3826','3827',
+  // Mendoza
+  '2622','2624','2625','2626',
+  // Misiones
+  '3741','3743','3751','3754','3755','3757','3758',
+  // Neuquén
+  '2942','2948','2972',
+  // Río Negro
+  '2920','2931','2934','2940','2946',
+  // Salta
+  '3868','3873','3876','3877','3878',
+  // San Juan
+  '2646','2647','2648',
+  // San Luis
+  '2651','2655','2656','2657','2658',
+  // Santa Cruz
+  '2902','2962','2963','2966',
+  // Santa Fe
+  '3382','3400','3401','3402','3404','3405','3406','3408','3409',
+  '3460','3462','3464','3465','3466','3469','3471','3476',
+  '3482','3483','3491','3492','3493','3496','3497','3498',
+  // Santiago del Estero
+  '3841','3843','3844','3845','3846','3854','3855','3856','3857','3858','3861',
+  // Tierra del Fuego
+  '2901','2964',
+  // Tucumán
+  '3862','3863','3865','3867','3869','3891','3892','3894',
+]);
+
+function getARAreaCode(digits: string): string | null {
+  // Más específico primero: evita que "2202" haga match en "220"
+  if (AR_AREA_CODES_4.has(digits.slice(0, 4))) return digits.slice(0, 4);
+  if (AR_AREA_CODES_3.has(digits.slice(0, 3))) return digits.slice(0, 3);
+  if (AR_AREA_CODES_2.has(digits.slice(0, 2))) return digits.slice(0, 2);
+  return null;
 }
 
+// Prefijos válidos para validación progresiva (live): todos los posibles inicios de un código de área
+const AR_PREFIXES_2CHAR = new Set<string>([
+  ...Array.from(AR_AREA_CODES_2),
+  ...Array.from(AR_AREA_CODES_3).map(c => c.slice(0, 2)),
+  ...Array.from(AR_AREA_CODES_4).map(c => c.slice(0, 2)),
+]);
+const AR_PREFIXES_3CHAR = new Set<string>([
+  ...Array.from(AR_AREA_CODES_3),
+  ...Array.from(AR_AREA_CODES_4).map(c => c.slice(0, 3)),
+]);
+
+// ── v1: solo formato (sin validación de código de área) — para volver: descomentar esto y comentar v2
+/* function diagnoseAR(d: string, live = false): string | null {
+   if (d.startsWith('0'))
+     return 'No incluyas el 0 inicial. Ingresá directo el código de área. Ej: 1134567890';
+   if (d.startsWith('15'))
+    return 'No incluyas el 15. Ingresá el código de área seguido del número. Ej: 1134567890';
+   if (d.length >= 4 && /^\d{2}15/.test(d))
+    return 'No incluyas el 15 después del código de área. Ej: para GBA ingresá 1134567890';
+   if (d.length < 10)
+     return live ? null : `Número incompleto: ingresaste ${d.length} de 10 dígitos`;
+   if (d.length > 10)
+     return 'El número no puede tener más de 10 dígitos';
+   return null;
+ }*/
+
+// ── v2: valida código de área contra los 300 códigos ENACOM (error progresivo al escribir)
 function diagnoseAR(d: string, live = false): string | null {
   if (d.startsWith('0'))
     return 'No incluyas el 0 inicial. Ingresá directo el código de área. Ej: 1134567890';
@@ -45,14 +165,25 @@ function diagnoseAR(d: string, live = false): string | null {
     return 'No incluyas el 15. Ingresá el código de área seguido del número. Ej: 1134567890';
   if (d.length >= 4 && /^\d{2}15/.test(d))
     return 'No incluyas el 15 después del código de área. Ej: para GBA ingresá 1134567890';
-  if (!hasValidARPrefix(d))
-    return 'El código de área no corresponde a ninguna provincia. Verificá los primeros dígitos';
+
+  // Validación progresiva de código de área: muestra error en cuanto el prefijo ya no puede
+  // corresponder a ningún código válido (no espera al blur ni a los 10 dígitos completos)
+  if (d.length >= 2) {
+    const err = 'Código de área no reconocido. Verificá que sea una característica argentina válida (ej: 11, 221, 2202).';
+    if (!AR_PREFIXES_2CHAR.has(d.slice(0, 2))) return err;
+    if (!AR_AREA_CODES_2.has(d.slice(0, 2)) && d.length >= 3) {
+      if (!AR_PREFIXES_3CHAR.has(d.slice(0, 3))) return err;
+      if (!AR_AREA_CODES_3.has(d.slice(0, 3)) && d.length >= 4) {
+        if (!AR_AREA_CODES_4.has(d.slice(0, 4))) return err;
+      }
+    }
+  }
+
   if (d.length < 10)
     return live ? null : `Número incompleto: ingresaste ${d.length} de 10 dígitos`;
-  if (AR_AREA_4.includes(d.slice(0, 4)) && d.slice(4).length === 6) return null;
-  if (AR_AREA_3.includes(d.slice(0, 3)) && d.slice(3).length === 7) return null;
-  if (AR_AREA_2.includes(d.slice(0, 2)) && d.slice(2).length === 8) return null;
-  return 'El código de área no corresponde a ninguna provincia. Verificá los primeros dígitos e intentá nuevamente';
+  if (d.length > 10)
+    return 'El número no puede tener más de 10 dígitos';
+  return null;
 }
 
 // ─── Uruguay ──────────────────────────────────────────────────────────────────

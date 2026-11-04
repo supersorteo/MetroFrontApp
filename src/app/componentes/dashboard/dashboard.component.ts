@@ -35,6 +35,7 @@ import { MembershipLimits, MembershipLimitsService } from '../../servicios/membe
 import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
 import { PrecioMaterial, PrecioMaterialService } from '../../servicios/precio-material.service';
 import { PHONE_COUNTRIES, PhoneCountry, validatePhone } from '../../core/utils/phone-validation.util';
+import { cleanCuit, diagnoseCuit, validateCuit } from '../../core/utils/cuit-validation.util';
 import {
   MembershipCheckoutSelection,
   MembershipModalComponent,
@@ -470,6 +471,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   clientNumber: string = '';
   phoneNumberInvalid = false;
   phoneNumberInvalidMsg = '';
+  clientCuitError = '';
+  clientCuitWarning = '';
+  empresaCuitError = '';
+  empresaCuitWarning = '';
   readonly phoneCountries: PhoneCountry[] = PHONE_COUNTRIES;
   budgetDate: any = '';
   additionalDetailsClient: string = '';
@@ -776,6 +781,8 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
     this.additionalDetailsClient = '';
     this.clientEmail = '';
     this.clientClave = '';
+    this.clientCuitError = '';
+    this.clientCuitWarning = '';
     this.clientDireccion = '';
 
     const confirmationMessage = document.getElementById('confirmationMessage');
@@ -3591,6 +3598,13 @@ onImageChange(event: Event): void {
     this.appToast.error(demoPhoneResult.error || 'El teléfono no es válido');
     return;
   }
+  if (this.isEmpresaArgentina && this.empresaCuilCuit?.trim()) {
+    const cuitResult = validateCuit(this.empresaCuilCuit);
+    if (!cuitResult.valid) {
+      this.appToast.error(cuitResult.error || 'CUIT/CUIL inválido');
+      return;
+    }
+  }
 
   const localLogo = localStorage.getItem('demoEmpresaLogo') || this.logoUrl || '';
 
@@ -3660,6 +3674,13 @@ onImageChange(event: Event): void {
     if (!phoneResult.valid) {
       this.appToast.error(phoneResult.error || 'El teléfono no es válido');
       return;
+    }
+    if (this.isEmpresaArgentina && this.empresaCuilCuit?.trim()) {
+      const cuitResult = validateCuit(this.empresaCuilCuit);
+      if (!cuitResult.valid) {
+        this.appToast.error(cuitResult.error || 'CUIT/CUIL inválido');
+        return;
+      }
     }
 
     const syncedUploadedImage = localStorage.getItem('uploadedImage') || '';
@@ -3816,6 +3837,60 @@ onImageChange(event: Event): void {
     }
   }
 
+  private get isClientArgentina(): boolean {
+    return this.clientPrefix === '+549' || this.clientPrefix === '+54';
+  }
+
+  private get isEmpresaArgentina(): boolean {
+    return this.empresaPrefix === '+549' || this.empresaPrefix === '+54';
+  }
+
+  onClientCuitInput(): void {
+    if (!this.isClientArgentina) { this.clientCuitError = ''; this.clientCuitWarning = ''; return; }
+    const digits = cleanCuit(this.clientClave || '');
+    this.clientCuitError = diagnoseCuit(this.clientClave || '', true) ?? '';
+    if (digits.length === 11) {
+      const result = validateCuit(this.clientClave || '');
+      this.clientClave = result.formatted ?? this.clientClave;
+      this.clientCuitError = result.error ?? '';
+      this.clientCuitWarning = result.warning ?? '';
+    } else {
+      this.clientCuitWarning = '';
+    }
+  }
+
+  onClientCuitBlur(): void {
+    if (!this.isClientArgentina) { this.clientCuitError = ''; this.clientCuitWarning = ''; return; }
+    if (!this.clientClave?.trim()) { this.clientCuitError = ''; this.clientCuitWarning = ''; return; }
+    const result = validateCuit(this.clientClave);
+    if (result.formatted) this.clientClave = result.formatted;
+    this.clientCuitError = result.error ?? '';
+    this.clientCuitWarning = result.warning ?? '';
+  }
+
+  onEmpresaCuitInput(): void {
+    if (!this.isEmpresaArgentina) { this.empresaCuitError = ''; this.empresaCuitWarning = ''; return; }
+    const digits = cleanCuit(this.empresaCuilCuit || '');
+    this.empresaCuitError = diagnoseCuit(this.empresaCuilCuit || '', true) ?? '';
+    if (digits.length === 11) {
+      const result = validateCuit(this.empresaCuilCuit || '');
+      this.empresaCuilCuit = result.formatted ?? this.empresaCuilCuit;
+      this.empresaCuitError = result.error ?? '';
+      this.empresaCuitWarning = result.warning ?? '';
+    } else {
+      this.empresaCuitWarning = '';
+    }
+  }
+
+  onEmpresaCuitBlur(): void {
+    if (!this.isEmpresaArgentina) { this.empresaCuitError = ''; this.empresaCuitWarning = ''; return; }
+    if (!this.empresaCuilCuit?.trim()) { this.empresaCuitError = ''; this.empresaCuitWarning = ''; return; }
+    const result = validateCuit(this.empresaCuilCuit);
+    if (result.formatted) this.empresaCuilCuit = result.formatted;
+    this.empresaCuitError = result.error ?? '';
+    this.empresaCuitWarning = result.warning ?? '';
+  }
+
   validateEmpresaPhone(live = false): void {
     if (!this.empresaPhone.trim()) {
       this.empresaPhoneInvalid = false;
@@ -3866,6 +3941,13 @@ onImageChange(event: Event): void {
       return;
     }
     const contactStr = phoneResult.e164!;
+    if (this.isClientArgentina && this.clientClave?.trim()) {
+      const cuitResult = validateCuit(this.clientClave);
+      if (!cuitResult.valid) {
+        this.appToast.error(cuitResult.error || 'CUIT/CUIL inválido');
+        return;
+      }
+    }
     const clientData: Cliente = {
       name: this.clientName,
       contact: contactStr || this.clientContact,
@@ -3928,8 +4010,8 @@ onImageChange(event: Event): void {
       if (emailCtrl?.value && !emailCtrl?.valid) {
         this.appToast.error('El email debe tener un formato válido');
       }
-      if (claveCtrl?.value && !claveCtrl?.valid) {
-        this.appToast.error(`${this.taxIdConfig.label} inválido. ${this.taxIdConfig.hint}`);
+      if (this.clientCuitError) {
+        this.appToast.error(this.clientCuitError);
       }
       if (!direccionCtrl?.valid) {
         this.appToast.error(direccionCtrl?.errors?.['minlength'] ? 'La dirección debe tener al menos 5 caracteres' : 'La dirección es obligatoria');

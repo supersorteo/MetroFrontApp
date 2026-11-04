@@ -2133,11 +2133,15 @@
               </label>
               <input type="text" class="cm-input" id="clave" name="clientClave"
                      [(ngModel)]="clientClave"
-                     [pattern]="taxIdConfig.pattern"
                      [placeholder]="taxIdConfig.placeholder"
+                     (input)="onClientCuitInput()" (blur)="onClientCuitBlur()"
+                     inputmode="numeric" maxlength="13"
                      #clave="ngModel">
-              @if (clave.touched && clave.errors?.['pattern']) {
-                <span class="cm-error">{{ taxIdConfig.label }} inválido. {{ taxIdConfig.hint }}</span>
+              @if (clave.touched && clientCuitError) {
+                <span class="cm-error">{{ clientCuitError }}</span>
+              }
+              @if (clave.touched && !clientCuitError && clientCuitWarning) {
+                <span class="cm-hint">{{ clientCuitWarning }}</span>
               }
             </div>
 
@@ -2487,11 +2491,15 @@
               </label>
               <input type="text" class="cm-input" id="empresaCuilCuit" name="empresaCuilCuit"
                      [(ngModel)]="empresaCuilCuit"
-                     [pattern]="empresaTaxIdConfig.pattern"
                      [placeholder]="empresaTaxIdConfig.placeholder"
+                     (input)="onEmpresaCuitInput()" (blur)="onEmpresaCuitBlur()"
+                     inputmode="numeric" maxlength="13"
                      #eCuilCtrl="ngModel">
-              @if (eCuilCtrl.touched && eCuilCtrl.errors?.['pattern']) {
-                <span class="cm-error">{{ empresaTaxIdConfig.label }} inválido. {{ empresaTaxIdConfig.hint }}</span>
+              @if (eCuilCtrl.touched && empresaCuitError) {
+                <span class="cm-error">{{ empresaCuitError }}</span>
+              }
+              @if (eCuilCtrl.touched && !empresaCuitError && empresaCuitWarning) {
+                <span class="cm-hint">{{ empresaCuitWarning }}</span>
               }
             </div>
 
