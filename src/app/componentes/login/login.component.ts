@@ -305,7 +305,7 @@ login(): void {
         this.uiDialog.error({ title: 'Error', text: response.email || 'Error al iniciar sesión' });
       }
     },
-    error => {
+    async error => {
       const storedCode = localStorage.getItem('userCode');
       const cachedUserRaw = localStorage.getItem('userData');
 
@@ -348,6 +348,16 @@ login(): void {
             this.uiDialog.error({ title: 'Error', text: 'Código no encontrado.' });
           }
         });
+        return;
+      }
+      if (serverMsg === 'Código existe pero no asignado a un usuario') {
+        const confirmed = await this.uiDialog.confirm({
+          title: 'Código sin registrar',
+          text: 'Este código existe en el sistema pero todavía no tiene un usuario asociado. ¿Querés completar tu registro ahora?',
+          confirmText: 'Registrarme',
+          cancelText: 'Cerrar'
+        });
+        if (confirmed) this.enterRegisterStep();
         return;
       }
       this.uiDialog.error({ title: 'Error', text: serverMsg || 'Error al iniciar sesión' });
