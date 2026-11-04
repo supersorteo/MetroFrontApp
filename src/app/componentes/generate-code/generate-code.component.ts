@@ -44,6 +44,9 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   generatedCodes: AccessCode[] = [];
 
   filterText = '';
+  sortOrder: 'desc' | 'asc' = 'desc';
+  filterTipo: '' | '3 meses' | '6 meses' | '12 meses' = '';
+  filterEstado: '' | 'sin-cliente' | 'reservados' = '';
   codeCount3 = 1;
   codeCount6 = 1;
   codeCount12 = 1;
@@ -102,6 +105,9 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   legacyCodes: LegacyCodeDTO[] = [];
   filteredLegacyCodes: LegacyCodeDTO[] = [];
   legacyFilterText = '';
+  legacySortOrder: 'desc' | 'asc' = 'desc';
+  legacyFilterEstado: '' | 'sin-reclamar' | 'reclamados' = '';
+  legacyFilterVigencia: '' | 'vigentes' | 'vencidos' = '';
   legacyPage = 1;
   legacyItemsPerPage = 10;
   legacyTotalPages = 0;
@@ -110,7 +116,6 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   legacyImportResult: LegacyImportResult | null = null;
   legacyStats = { total: 0, vigentes: 0, vencidos: 0, reclamados: 0 };
 
-  // TEST ONLY — comentar tras pruebas
   editingExpiryCode: string | null = null;
   expiryEditRegistro = '';
   expiryEditVencimiento = '';
@@ -230,20 +235,45 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   }
 
   applyFilter(): void {
+    let result = [...this.codes];
+
     const f = this.filterText.toLowerCase();
-    this.filteredCodes = f
-      ? this.codes.filter(c =>
-          (c.code?.toLowerCase().includes(f)) ||
-          (c.email?.toLowerCase().includes(f)) ||
-          (c.username?.toLowerCase().includes(f)) ||
-          (c.telefono?.toLowerCase().includes(f)) ||
-          (c.provincia?.toLowerCase().includes(f)) ||
-          (String(c.fechaRegistro || '').toLowerCase().includes(f)) ||
-          (String(c.fechaVencimiento || '').toLowerCase().includes(f))
-        )
-      : [...this.codes];
+    if (f) {
+      result = result.filter(c =>
+        (c.code?.toLowerCase().includes(f)) ||
+        (c.email?.toLowerCase().includes(f)) ||
+        (c.username?.toLowerCase().includes(f)) ||
+        (c.telefono?.toLowerCase().includes(f)) ||
+        (c.provincia?.toLowerCase().includes(f)) ||
+        (String(c.fechaRegistro || '').toLowerCase().includes(f)) ||
+        (String(c.fechaVencimiento || '').toLowerCase().includes(f))
+      );
+    }
+
+    if (this.filterTipo) {
+      result = result.filter(c => c.tipo === this.filterTipo);
+    }
+
+    if (this.filterEstado === 'sin-cliente') {
+      result = result.filter(c => !c.email);
+    } else if (this.filterEstado === 'reservados') {
+      result = result.filter(c => !!c.email);
+    }
+
+    result.sort((a, b) => {
+      const dA = a.fechaRegistro ? new Date(a.fechaRegistro).getTime() : 0;
+      const dB = b.fechaRegistro ? new Date(b.fechaRegistro).getTime() : 0;
+      return this.sortOrder === 'desc' ? dB - dA : dA - dB;
+    });
+
+    this.filteredCodes = result;
     this.currentPage = 1;
     this.updatePagination();
+  }
+
+  toggleSort(): void {
+    this.sortOrder = this.sortOrder === 'desc' ? 'asc' : 'desc';
+    this.applyFilter();
   }
 
   computeStats(): void {
@@ -1044,20 +1074,47 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
   }
 
   applyLegacyFilter(): void {
+    let result = [...this.legacyCodes];
+
     const f = this.legacyFilterText.toLowerCase();
-    this.filteredLegacyCodes = f
-      ? this.legacyCodes.filter(c =>
-          c.code.toLowerCase().includes(f) ||
-          (c.claimedByEmail?.toLowerCase().includes(f) ?? false) ||
-          (c.fechaVencimiento?.includes(f) ?? false) ||
-          (c.fechaAdquisicion?.includes(f) ?? false) ||
-          String(c.meses).includes(f) ||
-          (c.claimed ? 'reclamado' : 'no reclamado').includes(f) ||
-          (this.isLegacyVigente(c) ? 'vigente' : 'vencido').includes(f)
-        )
-      : [...this.legacyCodes];
+    if (f) {
+      result = result.filter(c =>
+        c.code.toLowerCase().includes(f) ||
+        (c.claimedByEmail?.toLowerCase().includes(f) ?? false) ||
+        (c.fechaVencimiento?.includes(f) ?? false) ||
+        (c.fechaAdquisicion?.includes(f) ?? false) ||
+        String(c.meses).includes(f) ||
+        (c.claimed ? 'reclamado' : 'no reclamado').includes(f) ||
+        (this.isLegacyVigente(c) ? 'vigente' : 'vencido').includes(f)
+      );
+    }
+
+    if (this.legacyFilterEstado === 'sin-reclamar') {
+      result = result.filter(c => !c.claimed);
+    } else if (this.legacyFilterEstado === 'reclamados') {
+      result = result.filter(c => !!c.claimed);
+    }
+
+    if (this.legacyFilterVigencia === 'vigentes') {
+      result = result.filter(c => this.isLegacyVigente(c));
+    } else if (this.legacyFilterVigencia === 'vencidos') {
+      result = result.filter(c => !this.isLegacyVigente(c));
+    }
+
+    result.sort((a, b) => {
+      const dA = a.fechaAdquisicion ? this.parseLegacyDate(a.fechaAdquisicion).getTime() : 0;
+      const dB = b.fechaAdquisicion ? this.parseLegacyDate(b.fechaAdquisicion).getTime() : 0;
+      return this.legacySortOrder === 'desc' ? dB - dA : dA - dB;
+    });
+
+    this.filteredLegacyCodes = result;
     this.legacyPage = 1;
     this.legacyTotalPages = Math.ceil(this.filteredLegacyCodes.length / this.legacyItemsPerPage);
+  }
+
+  toggleLegacySort(): void {
+    this.legacySortOrder = this.legacySortOrder === 'desc' ? 'asc' : 'desc';
+    this.applyLegacyFilter();
   }
 
   private parseLegacyDate(dateStr: string): Date {
@@ -1258,7 +1315,6 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     });
   }
 
-  // TEST ONLY — comentar tras pruebas
   openExpiryEdit(item: AccessCode): void {
     this.editingExpiryCode = item.code;
     this.expiryEditRegistro  = item.fechaRegistro  ?? '';

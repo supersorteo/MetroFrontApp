@@ -255,7 +255,6 @@ export class AuthService {
   deleteCode1(code: string): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/codes/${code}`); }
   deleteCode(code: string): Observable<void> { return this.http.delete<void>(`${this.apiUrl}/codes/${code}`).pipe(catchError(this.handleError1)); }
 
-  // TEST ONLY — comentar tras pruebas
   setExpiry(code: string, fechaVencimiento: string, fechaRegistro?: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/codes/${code}/expiry`, { fechaVencimiento, fechaRegistro })
       .pipe(catchError(this.handleError1));

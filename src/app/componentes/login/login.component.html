@@ -2,7 +2,7 @@
 
   <!-- BRAND -->
   <div class="login-brand">
-    <img src="https://www.metroapp.site/metrologo.jpg" class="login-brand__logo" alt="Metro logo" />
+    <img src="assets/icons/metro-logo-transparent.png" class="login-brand__logo" alt="Metro logo" />
     <p class="login-brand__tagline">Optimizá tu manera de trabajar. Ahorrá tiempo. Mostrate profesional.</p>
   </div>
 
@@ -163,11 +163,15 @@
         <div class="lf-field">
           <label class="lf-label">Código</label>
           <input type="text" class="form-control login-input-field"
+                 [class.is-invalid]="codeTouched && !!codeNotFoundError"
                  [(ngModel)]="code" placeholder="Ingresá tu código" name="code"
-                 (input)="onCodeInput()" (blur)="syncCountryWithCode()">
-          <div class="lf-hint lf-hint--country" *ngIf="codeCountry">
+                 (input)="onCodeInput()" (blur)="onCodeBlur()">
+          <div class="lf-hint lf-hint--country" *ngIf="codeCountry && !codeNotFoundError">
             <i class="bi bi-check-circle-fill me-1" style="color:#22c55e"></i>
             País: <strong>{{ codeCountry }}</strong>
+          </div>
+          <div class="lf-error" *ngIf="codeTouched && codeNotFoundError">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ codeNotFoundError }}
           </div>
         </div>
 
@@ -288,34 +292,68 @@
         Vence: <strong>{{ legacyData?.fechaVencimiento }}</strong>
       </p>
 
-      <div class="lf-field">
-        <label class="lf-label">Código</label>
-        <input type="text" class="form-control login-input-field" [value]="code" disabled>
+      <!-- Fila 1: Código + País -->
+      <div class="lf-grid-2">
+        <div class="lf-field">
+          <label class="lf-label">Código</label>
+          <input type="text" class="form-control login-input-field" [value]="code" disabled>
+        </div>
+
+        <div class="lf-field">
+          <label class="lf-label">País</label>
+          <input type="text" class="form-control login-input-field" value="🇦🇷 Argentina" disabled>
+        </div>
       </div>
 
-      <div class="lf-field">
-        <label class="lf-label">País</label>
-        <input type="text" class="form-control login-input-field" value="Argentina" disabled>
+      <!-- Fila 2: Email + Provincia -->
+      <div class="lf-grid-2">
+        <div class="lf-field">
+          <label class="lf-label">Email</label>
+          <input type="email" class="form-control login-input-field"
+                 [class.is-invalid]="!!registerEmailError"
+                 [(ngModel)]="email" placeholder="tu@email.com" name="legacyEmail"
+                 (blur)="registerEmailTouched = true">
+          <div class="lf-error" *ngIf="registerEmailError">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ registerEmailError }}
+          </div>
+        </div>
+
+        <div class="lf-field">
+          <label class="lf-label">Provincia</label>
+          <ng-select
+            [items]="provincias"
+            bindLabel="nombre"
+            bindValue="nombre"
+            [(ngModel)]="provincia"
+            name="legacyProvincia"
+            placeholder="Seleccioná tu provincia"
+            [clearable]="false"
+            [searchable]="true"
+          >
+          </ng-select>
+        </div>
       </div>
 
-      <div class="lf-field">
-        <label class="lf-label">Email</label>
-        <input type="email" class="form-control login-input-field"
-               [(ngModel)]="email" placeholder="tu@email.com" name="legacyEmail">
-      </div>
-
-      <div class="lf-field">
-        <label class="lf-label">Provincia</label>
-        <select class="form-select login-input-field" [(ngModel)]="provincia" name="legacyProvincia">
-          <option value="" disabled selected>Seleccioná tu provincia</option>
-          <option *ngFor="let p of provincias" [value]="p.nombre">{{ p.nombre }}</option>
-        </select>
-      </div>
-
+      <!-- Fila 3: Teléfono -->
       <div class="lf-field">
         <label class="lf-label">Teléfono</label>
-        <input type="tel" class="form-control login-input-field"
-               [(ngModel)]="telefono" placeholder="+54 9 11 1234-5678" name="legacyTelefono">
+        <div class="lf-phone-wrap" [class.is-invalid]="registerPhoneNumber.trim().length > 0 && !!registerPhoneErrorMessage">
+          <span class="lf-prefix-badge">{{ registerPhonePrefix || '+549' }}</span>
+          <input
+            type="tel"
+            class="lf-input--number"
+            [(ngModel)]="registerPhoneNumber"
+            name="legacyPhoneNumber"
+            [placeholder]="registerPhoneNumberPlaceholder"
+            [maxlength]="registerSelectedCountry?.maxLength || 15"
+            inputmode="numeric"
+            (input)="onRegisterPhoneInput(true)"
+            (blur)="onRegisterPhoneInput(false)"
+          />
+        </div>
+        <div class="lf-error" *ngIf="registerPhoneNumber.trim().length > 0 && registerPhoneErrorMessage">
+          <i class="bi bi-exclamation-circle me-1"></i>{{ registerPhoneErrorMessage }}
+        </div>
       </div>
 
       <div class="lf-actions">

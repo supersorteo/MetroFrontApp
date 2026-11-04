@@ -77,10 +77,18 @@
           }
         </div>
         <div class="ef-field">
-          <label class="ef-label">CUIT / Clave <!--span-- class="ef-optional">(opcional)</span--></label>
+          <label class="ef-label">CUIT / CUIL <span class="ef-optional">(opcional)</span></label>
           <input type="text" class="ef-input" name="clave"
-                 placeholder="00-00000000-0"
-                 [(ngModel)]="cliente.clave">
+                 placeholder="XX-XXXXXXXX-X"
+                 [(ngModel)]="cliente.clave" #eClave="ngModel"
+                 (input)="onCuitInput()" (blur)="onCuitBlur()"
+                 inputmode="numeric" maxlength="13">
+          @if (eClave.touched && cuitError) {
+            <span class="ef-error">{{ cuitError }}</span>
+          }
+          @if (eClave.touched && !cuitError && cuitWarning) {
+            <span class="ef-hint">{{ cuitWarning }}</span>
+          }
         </div>
       </div>
 

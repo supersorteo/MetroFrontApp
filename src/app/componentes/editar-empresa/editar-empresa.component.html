@@ -72,9 +72,14 @@
           <input type="text" class="ef-input" name="cuil"
                  [placeholder]="taxIdConfig.placeholder"
                  [pattern]="taxIdConfig.pattern"
-                 [(ngModel)]="empresa.cuilCuit" #eCuil="ngModel" />
-          @if (eCuil.touched && eCuil.errors?.['pattern']) {
-            <span class="ef-error">{{ taxIdConfig.label }} inválido. {{ taxIdConfig.hint }}</span>
+                 [(ngModel)]="empresa.cuilCuit" #eCuil="ngModel"
+                 (input)="onCuitInput()" (blur)="onCuitBlur()"
+                 inputmode="numeric" maxlength="13" />
+          @if (eCuil.touched && cuitError) {
+            <span class="ef-error">{{ cuitError }}</span>
+          }
+          @if (eCuil.touched && !cuitError && cuitWarning) {
+            <span class="ef-hint">{{ cuitWarning }}</span>
           }
         </div>
       </div>

@@ -58,7 +58,12 @@ export const httpResilienceInterceptor: HttpInterceptorFn = (
     stream = stream.pipe(
       retry({
         count: 1,
-        delay: () => timer(300),
+        delay: (error) => {
+          if (error instanceof HttpErrorResponse && error.status === 404) {
+            return throwError(() => error);
+          }
+          return timer(300);
+        },
       })
     );
   }

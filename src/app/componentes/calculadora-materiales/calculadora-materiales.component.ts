@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit, computed, signal } from '@angular/core';
-import { HostListener, OnDestroy } from '@angular/core';
+import { HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,6 +10,12 @@ import {
 } from '../../servicios/calculadora-materiales.service';
 import { AppToastService } from '../../servicios/app-toast.service';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
+import {
+  MembershipCheckoutSelection,
+  MembershipModalComponent,
+  MembershipUserData,
+  MembershipWhatsAppSelection
+} from '../membership-modal/membership-modal.component';
 
 export interface Material {
   nombre: string;
@@ -711,7 +717,7 @@ function construirResumenesDesdeHistorial(
 @Component({
   selector: 'app-calculadora-materiales',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MembershipModalComponent],
   templateUrl: './calculadora-materiales.component.html',
   styleUrl: './calculadora-materiales.component.scss'
 })
@@ -738,15 +744,12 @@ export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
   resultados = signal<Record<number, ResultadoMaterial[]>>({});
   sidebarOpen = signal(false);
   showPremiumCta = signal(false);
-  membershipModalOpen = signal(false);
-  selectedMembershipPlan = signal<number | null>(null);
-  readonly membershipBenefits = [
-    { image: 'assets/benefits/materials-calculator-sprite-v2.png', title: 'Calculadora de materiales', description: 'Calculá cantidades de materiales de forma rápida y clara.' },
-    { image: 'assets/benefits/unlimited-tasks-sprite.png', title: 'Tareas ilimitadas por presupuesto', description: 'Organizá todos los trabajos de cada presupuesto sin límites.' },
-    { image: 'assets/benefits/clients-companies-sprite.png', title: 'Clientes y empresas según tu plan', description: 'Gestioná tus clientes y empresas con la capacidad de tu membresía.' },
-    { image: 'assets/benefits/saved-budgets-sprite.png', title: 'Guardado de presupuestos', description: 'Conservá tus presupuestos organizados para retomarlos cuando quieras.' },
-    { image: 'assets/benefits/regional-prices-sprite.png', title: 'Precios actualizados por región', description: 'Trabajá con referencias de precios actualizadas para tu zona.' }
-  ];
+  readonly membershipUserData: MembershipUserData | null = (() => {
+    const raw = localStorage.getItem('userData');
+    if (!raw) return null;
+    try { return JSON.parse(raw) as MembershipUserData; } catch { return null; }
+  })();
+  @ViewChild(MembershipModalComponent) private membershipModal?: MembershipModalComponent;
   ultimasTareasOpen = signal(false);
   historialOpen = signal(false);
   tourOpen = signal(false);
@@ -852,19 +855,7 @@ export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
   }
 
   private initPremiumCtaVisibility(): void {
-    let startedAt = Number(localStorage.getItem('demoStartedAt'));
-    if (!Number.isFinite(startedAt) || startedAt <= 0) {
-      startedAt = Date.now();
-      localStorage.setItem('demoStartedAt', String(startedAt));
-    }
-
-    const remaining = Math.max(0, 15_000 - (Date.now() - startedAt));
-    if (remaining === 0) {
-      this.showPremiumCta.set(true);
-      return;
-    }
-
-    this.premiumCtaTimer = setTimeout(() => this.showPremiumCta.set(true), remaining);
+    this.showPremiumCta.set(true);
   }
 
   filteredByCategoria(cat: string): Tarea[] {
@@ -1136,30 +1127,25 @@ export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
   cerrarBienvenida(): void { this.welcomeModalOpen.set(false); }
 
   abrirMetroPremium(): void {
-    this.membershipModalOpen.set(true);
-    this.selectedMembershipPlan.set(null);
+    this.membershipModal?.open();
   }
 
-  cerrarMetroPremium(): void {
-    this.membershipModalOpen.set(false);
+  irAlCheckoutDesdeCalculadora(selection: MembershipCheckoutSelection): void {
+    const params: Record<string, string | number> = {
+      step: 'checkout',
+      plan: selection.planMonths
+    };
+    if (selection.countryCode) params['country'] = selection.countryCode;
+    if (selection.email) params['email'] = selection.email;
+    if (selection.phone) params['phone'] = selection.phone;
+    if (selection.province) params['province'] = selection.province;
+    this.router.navigate(['/'], { queryParams: params });
   }
 
-  seleccionarMembershipPlan(months: number): void {
-    this.selectedMembershipPlan.set(months);
-  }
-
-  irAlCheckoutDesdeCalculadora(): void {
-    const plan = this.selectedMembershipPlan();
-    if (!plan) return;
-    this.router.navigate(['/'], { queryParams: { step: 'checkout', plan } });
-  }
-
-  pagarPorWhatsAppDesdeCalculadora(): void {
-    const plan = this.selectedMembershipPlan();
-    if (!plan) return;
-    const pais = localStorage.getItem('demoPais') || 'mi región';
-    const text = `Hola! Quiero adquirir el plan de ${plan} meses para MetroApp. Soy de ${pais}.`;
-    window.open(`whatsapp://send?phone=5491128634744&text=${encodeURIComponent(text)}`, '_blank');
+  pagarPorWhatsAppDesdeCalculadora(_selection: MembershipWhatsAppSelection): void {
+    if (this.isTrialMode) {
+      setTimeout(() => this.router.navigate(['/'], { queryParams: { step: 'register' } }), 350);
+    }
   }
 
   actualizarNoMostrarBienvenida(event: Event): void {

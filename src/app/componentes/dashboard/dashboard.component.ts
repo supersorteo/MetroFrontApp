@@ -33,10 +33,14 @@ import { TareaPersonalizadaService, TareaPersonalizada } from '../../servicios/t
 import { AppToastService } from '../../servicios/app-toast.service';
 import { MembershipLimits, MembershipLimitsService } from '../../servicios/membership-limits.service';
 import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
-import { MembershipPaymentService } from '../../servicios/membership-payment.service';
 import { PrecioMaterial, PrecioMaterialService } from '../../servicios/precio-material.service';
-import { mapMembershipCountryOption, MembershipCountryOption } from '../../core/membership/membership-checkout.util';
 import { PHONE_COUNTRIES, PhoneCountry, validatePhone } from '../../core/utils/phone-validation.util';
+import { cleanCuit, diagnoseCuit, validateCuit } from '../../core/utils/cuit-validation.util';
+import {
+  MembershipCheckoutSelection,
+  MembershipModalComponent,
+  MembershipWhatsAppSelection
+} from '../membership-modal/membership-modal.component';
 
 
 declare var bootstrap: any;
@@ -50,6 +54,15 @@ interface AccessCode {
   provincia: string;
   fechaRegistro: string;
   fechaVencimiento: string;
+}
+
+interface LegacyBudgetTask {
+  type: string;
+  area: string;
+  cost: string;
+  description: string;
+  discount: string;
+  totalCost: string;
 }
 
 interface ColorScheme {
@@ -99,7 +112,8 @@ function cleanupBootstrapModals(): void {
     FilterEmpresaPipe,
     PrecioArgentinoPipe,
     PresupuestosGuardadosComponent,
-    TerminosCondicionesComponent
+    TerminosCondicionesComponent,
+    MembershipModalComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
@@ -326,108 +340,31 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.preciosPagina = 1;
   }
 
-  private planesModal: any = null;
-  planesPais: MembershipCountryOption | null = null;
-  selectedPlanMeses: number | null = null;
-  planesLoading: boolean = false;
-
-  private readonly DEMO_COUNTRIES = [
-    { nombre: 'Argentina', codigo: 'AR', flag: '' },
-    { nombre: 'Chile',     codigo: 'CL', flag: '' },
-    { nombre: 'Colombia',  codigo: 'CO', flag: '' },
-    { nombre: 'Uruguay',   codigo: 'UY', flag: '' }
-  ];
-
-  readonly membershipBenefits = [
-    {
-      image: 'assets/benefits/materials-calculator-sprite-v2.png',
-      title: 'Calculadora de materiales',
-      description: 'Calculá cantidades de materiales de forma rápida y clara.'
-    },
-    {
-      image: 'assets/benefits/unlimited-tasks-sprite.png',
-      title: 'Tareas ilimitadas por presupuesto',
-      description: 'Organizá todos los trabajos de cada presupuesto sin límites.'
-    },
-    {
-      image: 'assets/benefits/clients-companies-sprite.png',
-      title: 'Clientes y empresas según tu plan',
-      description: 'Gestioná tus clientes y empresas con la capacidad incluida en tu membresía.'
-    },
-    {
-      image: 'assets/benefits/saved-budgets-sprite.png',
-      title: 'Guardado de presupuestos',
-      description: 'Conservá tus presupuestos organizados para retomarlos cuando quieras.'
-    },
-    {
-      image: 'assets/benefits/regional-prices-sprite.png',
-      title: 'Precios actualizados por región',
-      description: 'Trabajá con referencias de precios actualizadas para tu zona.'
-    }
-  ];
+  @ViewChild(MembershipModalComponent) private membershipModal?: MembershipModalComponent;
 
   abrirModalPlanes(): void {
-    const el = document.getElementById('planesModal');
-    if (!el) return;
-    if (!this.planesModal) {
-      this.planesModal = new (window as any).bootstrap.Modal(el);
-    }
-    this.selectedPlanMeses = null;
-    this.cargarPlanesDemoPais();
-    this.planesModal.show();
+    this.membershipModal?.open();
   }
 
-  private cargarPlanesDemoPais(): void {
-    const demoPais = localStorage.getItem('demoPais') || 'Argentina';
-    const cached = localStorage.getItem('membershipCatalogCache');
-    if (cached) {
-      try {
-        const catalog: MembershipCountryOption[] = JSON.parse(cached);
-        this.planesPais = catalog.find(c => c.nombre === demoPais) ?? null;
-        return;
-      } catch {}
-    }
-    this.planesLoading = true;
-    this.membershipPaymentService.getCatalog().subscribe({
-      next: (catalog) => {
-        const options: MembershipCountryOption[] = Object.entries(catalog.countries)
-          .map(([code, country]) => mapMembershipCountryOption(code, country, this.DEMO_COUNTRIES));
-        localStorage.setItem('membershipCatalogCache', JSON.stringify(options));
-        this.planesPais = options.find(c => c.nombre === demoPais) ?? null;
-        this.planesLoading = false;
-      },
-      error: () => { this.planesLoading = false; }
-    });
+  onMembershipCheckout(selection: MembershipCheckoutSelection): void {
+    const params: Record<string, any> = { step: 'checkout', plan: selection.planMonths };
+    if (selection.countryCode) params['country'] = selection.countryCode;
+    if (selection.email) params['email'] = selection.email;
+    if (selection.phone) params['phone'] = selection.phone;
+    if (selection.province) params['province'] = selection.province;
+    setTimeout(() => this.route.navigate(['/'], { queryParams: params }), 320);
   }
 
-  seleccionarPlan(meses: number): void {
-    this.selectedPlanMeses = meses;
-  }
-
-  volverASeleccionarPlan(): void {
-    this.selectedPlanMeses = null;
-  }
-
-  pagarPorWhatsApp(): void {
-    if (!this.selectedPlanMeses) return;
-    const plan = this.planesPais?.plans.find(p => p.months === this.selectedPlanMeses);
-    const pais = this.planesPais?.nombre || localStorage.getItem('demoPais') || 'mi región';
-    const precio = plan ? `${Math.round(plan.amount).toLocaleString('es')} ${this.planesPais?.currency}` : '';
-    const text = `Hola! Quiero adquirir el plan de ${this.selectedPlanMeses} meses${precio ? ` (${precio})` : ''} para MetroApp. Soy de ${pais}.`;
-    const phone = '5491128634744';
-    const nativeUrl = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
-    window.open(nativeUrl, '_blank');
-
-    if (this.planesModal) this.planesModal.hide();
-
+  onMembershipWhatsApp(_selection: MembershipWhatsAppSelection): void {
     if (this.trialMode) {
       setTimeout(() => this.route.navigate(['/'], { queryParams: { step: 'register' } }), 350);
-    } else {
-      this.dashReactivateEmail = this.userData?.email || '';
-      this.dashReactivateNewCode = '';
-      this.dashReactivateError = '';
-      setTimeout(() => { this.showDashboardReactivateModal = true; }, 350);
+      return;
     }
+
+    this.dashReactivateEmail = this.userData?.email || '';
+    this.dashReactivateNewCode = '';
+    this.dashReactivateError = '';
+    setTimeout(() => { this.showDashboardReactivateModal = true; }, 350);
   }
 
   closeDashboardReactivateModal(): void {
@@ -479,23 +416,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.dashReactivateError = err?.error?.email || err?.error?.message || 'Error al reactivar. Verificá el código ingresado.';
       }
     });
-  }
-
-  irAlCheckout(): void {
-    if (!this.selectedPlanMeses) return;
-    const pais = this.userData?.pais || localStorage.getItem('demoPais') || '';
-    const countryEntry = this.DEMO_COUNTRIES.find(c => c.nombre.toLowerCase() === pais.toLowerCase());
-    const params: Record<string, any> = { step: 'checkout', plan: this.selectedPlanMeses };
-    if (countryEntry?.codigo) params['country'] = countryEntry.codigo;
-    if (this.userData?.email) params['email'] = this.userData.email;
-    if (this.userData?.telefono) params['phone'] = this.userData.telefono;
-    if (this.userData?.provincia) params['province'] = this.userData.provincia;
-    if (this.planesModal) {
-      this.planesModal.hide();
-      setTimeout(() => this.route.navigate(['/'], { queryParams: params }), 320);
-    } else {
-      this.route.navigate(['/'], { queryParams: params });
-    }
   }
 
   installPwa() {
@@ -551,6 +471,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   clientNumber: string = '';
   phoneNumberInvalid = false;
   phoneNumberInvalidMsg = '';
+  clientCuitError = '';
+  clientCuitWarning = '';
+  empresaCuitError = '';
+  empresaCuitWarning = '';
   readonly phoneCountries: PhoneCountry[] = PHONE_COUNTRIES;
   budgetDate: any = '';
   additionalDetailsClient: string = '';
@@ -608,6 +532,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   tpBusquedaPersonalizada: string = '';
   tareasAgregadas: UserTarea[] = [];
   tareasDelCliente: UserTarea[] = [];
+  legacyBudgetTasks: LegacyBudgetTask[] = [];
   showMenuPanel: boolean = false;
   showSocialFields: boolean = false;
   weatherLoading: boolean = false;
@@ -856,6 +781,8 @@ private presupuestoPendiente: SavedPresupuesto | null = null;
     this.additionalDetailsClient = '';
     this.clientEmail = '';
     this.clientClave = '';
+    this.clientCuitError = '';
+    this.clientCuitWarning = '';
     this.clientDireccion = '';
 
     const confirmationMessage = document.getElementById('confirmationMessage');
@@ -1170,7 +1097,6 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private appToast: AppToastService,
     private uiDialog: UiDialogService,
     private budgetService: BudgetService,
-    private membershipPaymentService: MembershipPaymentService,
     private activatedRoute: ActivatedRoute,
     private precioMaterialService: PrecioMaterialService
   ) {
@@ -1238,12 +1164,12 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
           !this.presupuestoModeBaselineIds.has(t.id) &&
           !existingInPresupuesto.has(t.id)
         );
-        console.log('[PRESUPUESTO] UserTareaStore effect en modo presupuesto', {
+        /*console.log('[PRESUPUESTO] UserTareaStore effect en modo presupuesto', {
           storeTareas: storeTareas.length,
           baselineIds: [...this.presupuestoModeBaselineIds],
           existingInPresupuesto: [...existingInPresupuesto],
           trulyNew: trulyNew.map(t => ({ id: t.id, tarea: t.tarea }))
-        });
+        });*/
         if (trulyNew.length > 0) {
           this.tareasAgregadas = [...this.tareasAgregadas, ...trulyNew];
           this.mostrarTabla = true;
@@ -1277,6 +1203,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   }
 
   ngOnInit(): void {
+    this.loadLegacyBudgetList();
     this.initSession();
     this.initPremiumCtaVisibility();
     this.activatedRoute.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
@@ -1297,6 +1224,136 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     if (this.userCode) {
       this.empresaStore.init(this.userCode);
     }
+  }
+
+  private loadLegacyBudgetList(): void {
+    const storedBudgetList = localStorage.getItem('metroBudgetList');
+    if (!storedBudgetList) {
+      this.legacyBudgetTasks = [];
+      return;
+    }
+
+    try {
+      const parsed: unknown = JSON.parse(storedBudgetList);
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        this.legacyBudgetTasks = [];
+        return;
+      }
+
+      this.legacyBudgetTasks = parsed.map((item: unknown) => {
+        const task = item && typeof item === 'object'
+          ? item as Record<string, unknown>
+          : {};
+
+        return {
+          type: this.legacyBudgetValue(task['type']),
+          area: this.legacyBudgetValue(task['area']),
+          cost: this.legacyBudgetValue(task['cost']),
+          description: this.legacyBudgetValue(task['description']),
+          discount: this.legacyBudgetValue(task['discount']),
+          totalCost: this.legacyBudgetValue(task['totalCost'])
+        };
+      });
+    } catch {
+      this.legacyBudgetTasks = [];
+    }
+  }
+
+  private legacyBudgetValue(value: unknown): string {
+    if (value === null || value === undefined || value === '') return '—';
+    if (typeof value === 'object') {
+      try {
+        return JSON.stringify(value);
+      } catch {
+        return '—';
+      }
+    }
+    return String(value);
+  }
+
+  private escapeLegacyHtml(value: string): string {
+    const entities: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    };
+    return value.replace(/[&<>"']/g, character => entities[character]);
+  }
+
+  abrirMetroBudgetListModal(): void {
+    const modalElement = document.getElementById('metroBudgetListModal');
+    if (!modalElement) return;
+
+    bootstrap.Modal.getOrCreateInstance(modalElement).show();
+  }
+
+  descargarMetroBudgetListHtml(): void {
+    if (this.legacyBudgetTasks.length === 0) return;
+
+    const rows = this.legacyBudgetTasks.map(task => `
+      <tr>
+        <td>${this.escapeLegacyHtml(task.type)}</td>
+        <td>${this.escapeLegacyHtml(task.area)}</td>
+        <td>${this.escapeLegacyHtml(task.cost)}</td>
+        <td>${this.escapeLegacyHtml(task.description)}</td>
+        <td>${this.escapeLegacyHtml(task.discount)}</td>
+        <td>${this.escapeLegacyHtml(task.totalCost)}</td>
+      </tr>`).join('');
+
+    const htmlContent = `<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tareas de MetroBudgetList</title>
+    <style>
+      :root { color-scheme: light; font-family: Arial, sans-serif; }
+      body { margin: 0; padding: 24px; color: #1f2937; background: #f5f7fb; }
+      main { max-width: 1280px; margin: 0 auto; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 8px 24px rgba(15, 23, 42, .08); }
+      h1 { margin: 0 0 8px; color: #0b69a6; font-size: 1.5rem; }
+      p { margin: 0 0 20px; color: #64748b; }
+      .table-wrap { overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; min-width: 760px; }
+      th, td { padding: 10px 12px; border: 1px solid #dbe3ef; text-align: left; vertical-align: top; }
+      th { background: #0b69a6; color: #fff; font-weight: 700; }
+      tbody tr:nth-child(even) { background: #f8fafc; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Tareas de MetroBudgetList</h1>
+      <p>Copia local generada desde la aplicación METRO. Tareas encontradas: ${this.legacyBudgetTasks.length}.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Área</th>
+              <th>Costo</th>
+              <th>Descripción</th>
+              <th>Descuento</th>
+              <th>Costo total</th>
+            </tr>
+          </thead>
+          <tbody>${rows}
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </body>
+</html>`;
+
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = 'tareas-metroBudgetList.html';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
   }
 
   // -- Sesión: leer userCode, detectar demo, fetchUserData o redirigir ------
@@ -1422,26 +1479,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 }
 
   private initPremiumCtaVisibility(): void {
-    if (!this.trialMode) {
-      this.showPremiumCta = false;
-      return;
-    }
-
-    let startedAt = Number(localStorage.getItem('demoStartedAt'));
-    if (!Number.isFinite(startedAt) || startedAt <= 0) {
-      startedAt = Date.now();
-      localStorage.setItem('demoStartedAt', String(startedAt));
-    }
-
-    const remaining = Math.max(0, 15_000 - (Date.now() - startedAt));
-    if (remaining === 0) {
-      this.showPremiumCta = true;
-      return;
-    }
-
-    this.premiumCtaTimer = setTimeout(() => {
-      this.showPremiumCta = true;
-    }, remaining);
+    this.showPremiumCta = this.trialMode;
   }
 
 
@@ -1468,15 +1506,26 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 
   const storedRaw = localStorage.getItem('demoEmpresas');
   const storedList: any[] = storedRaw ? JSON.parse(storedRaw) : [];
-  const stored = storedList.find(e => e.id === DEMO_EMPRESA_ID);
-  this.empresas = [stored
-    ? { ...demoEmpresaBase, ...stored, tiktok: demoEmpresaBase.tiktok, instagram: demoEmpresaBase.instagram, facebook: demoEmpresaBase.facebook, website: demoEmpresaBase.website }
-    : demoEmpresaBase
-  ];
+  const empresasDemo = storedList.length > 0 ? storedList : [demoEmpresaBase];
+  this.empresas = empresasDemo.map(empresa => Number(empresa.id) === DEMO_EMPRESA_ID
+    ? { ...demoEmpresaBase, ...empresa, tiktok: demoEmpresaBase.tiktok, instagram: demoEmpresaBase.instagram, facebook: demoEmpresaBase.facebook, website: demoEmpresaBase.website }
+    : empresa
+  );
   localStorage.setItem('demoEmpresas', JSON.stringify(this.empresas));
 
   this.updatePaginatedEmpresas();
-  this.selectedEmpresaId = this.empresas[0] ?? null;
+  let selectedEmpresaId = Number(localStorage.getItem('selectedEmpresaId'));
+  let selectedEmpresa = this.empresas.find(empresa => Number(empresa.id) === selectedEmpresaId) ?? null;
+  if (!selectedEmpresa) {
+    try {
+      const storedSelected = localStorage.getItem('selectedEmpresa');
+      const parsedSelected = storedSelected ? JSON.parse(storedSelected) : null;
+      selectedEmpresa = parsedSelected?.id != null
+        ? this.empresas.find(empresa => Number(empresa.id) === Number(parsedSelected.id)) ?? null
+        : null;
+    } catch {}
+  }
+  this.selectedEmpresaId = selectedEmpresa ?? this.empresas[0] ?? null;
 
   this.tareas = [];
   this.tareasFiltradas = [];
@@ -1489,9 +1538,10 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   this.loadMembershipLimits();
 
   if (this.selectedEmpresaId?.id) {
-    localStorage.setItem('selectedEmpresaId', String(this.selectedEmpresaId.id));
-    localStorage.setItem('selectedEmpresa', JSON.stringify(this.selectedEmpresaId));
-    this.onEmpresaSeleccionada(this.selectedEmpresaId);
+    this.syncSelectedEmpresaStorage(this.selectedEmpresaId);
+    this.cargarDatosEmpresaSeleccionada();
+    void this.actualizarImagenEmpresa(this.selectedEmpresaId);
+    this.loadDemoClientesGlobales();
   }
 
   // Restaurar cliente seleccionado al volver del presupuesto
@@ -2041,9 +2091,9 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 ngAfterViewInit() {
   // Restaurar presupuesto pendiente (con o sin cliente) después de que los stores IDB inicialicen
   if (this.presupuestoPendiente) {
-    console.log('[PRESUPUESTO] ngAfterViewInit - hay pendiente, programando restauración en 300ms', this.presupuestoPendiente.id);
+    /*console.log('[PRESUPUESTO] ngAfterViewInit - hay pendiente, programando restauración en 300ms', this.presupuestoPendiente.id);*/
     setTimeout(() => {
-      console.log('[PRESUPUESTO] ngAfterViewInit timeout - pendiente:', this.presupuestoPendiente?.id, '| seleccionado:', this.presupuestoSeleccionado?.id);
+      /*console.log('[PRESUPUESTO] ngAfterViewInit timeout - pendiente:', this.presupuestoPendiente?.id, '| seleccionado:', this.presupuestoSeleccionado?.id);*/
       if (this.presupuestoPendiente && !this.presupuestoSeleccionado) {
         void this.aplicarPresupuestoGuardado(this.presupuestoPendiente, { scrollToTable: false, useStoredBaseline: true });
         this.presupuestoPendiente = null;
@@ -2555,13 +2605,13 @@ private async aplicarPresupuestoGuardado(
   this.presupuestoPendiente = null;
   this.presupuestoSeleccionado = presupuesto;
 
-  console.log('[PRESUPUESTO] aplicarPresupuestoGuardado - iniciando', {
+  /*console.log('[PRESUPUESTO] aplicarPresupuestoGuardado - iniciando', {
     id: presupuesto.id,
     name: presupuesto.name,
     cliente: presupuesto.cliente,
     empresa: presupuesto.empresa,
     tareas: presupuesto.tareas?.map(t => ({ id: t.id, tarea: t.tarea }))
-  });
+  });*/
 
   // Todo el estado de UI ANTES del await para evitar race conditions con effects
 
@@ -2582,9 +2632,9 @@ private async aplicarPresupuestoGuardado(
       storeTareasSnapshot.map(t => t.id).filter((id): id is number => !!id)
     );
     localStorage.setItem('presupuestoBaselineIds', JSON.stringify([...this.presupuestoModeBaselineIds]));
-    console.log('[PRESUPUESTO] baseline NUEVO - store tiene', storeTareasSnapshot.length, 'tareas, ids:', [...this.presupuestoModeBaselineIds]);
+    /*console.log('[PRESUPUESTO] baseline NUEVO - store tiene', storeTareasSnapshot.length, 'tareas, ids:', [...this.presupuestoModeBaselineIds]);*/
   } else {
-    console.log('[PRESUPUESTO] baseline RESTAURADO desde localStorage:', [...this.presupuestoModeBaselineIds]);
+    /*console.log('[PRESUPUESTO] baseline RESTAURADO desde localStorage:', [...this.presupuestoModeBaselineIds]);*/
   }
 
   // 3. CLIENTE — busca en lista local primero, luego en signal del store, fallback al objeto del presupuesto
@@ -3399,6 +3449,13 @@ calcularCostoTotal(): number {
 
 
   abrirPdfVivienda() {
+    if (this.trialMode) {
+      this.uiDialog.warning({
+        title: 'Solo disponible con código activo',
+        text: 'El PDF Valor Vivienda es exclusivo para usuarios registrados. Adquirí tu código.'
+      });
+      return;
+    }
     const modal = document.getElementById('pdfViviendaModal');
     if (modal) {
       const bsModal = new (window as any).bootstrap.Modal(modal);
@@ -3541,6 +3598,13 @@ onImageChange(event: Event): void {
     this.appToast.error(demoPhoneResult.error || 'El teléfono no es válido');
     return;
   }
+  if (this.isEmpresaArgentina && this.empresaCuilCuit?.trim()) {
+    const cuitResult = validateCuit(this.empresaCuilCuit);
+    if (!cuitResult.valid) {
+      this.appToast.error(cuitResult.error || 'CUIT/CUIL inválido');
+      return;
+    }
+  }
 
   const localLogo = localStorage.getItem('demoEmpresaLogo') || this.logoUrl || '';
 
@@ -3610,6 +3674,13 @@ onImageChange(event: Event): void {
     if (!phoneResult.valid) {
       this.appToast.error(phoneResult.error || 'El teléfono no es válido');
       return;
+    }
+    if (this.isEmpresaArgentina && this.empresaCuilCuit?.trim()) {
+      const cuitResult = validateCuit(this.empresaCuilCuit);
+      if (!cuitResult.valid) {
+        this.appToast.error(cuitResult.error || 'CUIT/CUIL inválido');
+        return;
+      }
     }
 
     const syncedUploadedImage = localStorage.getItem('uploadedImage') || '';
@@ -3766,6 +3837,60 @@ onImageChange(event: Event): void {
     }
   }
 
+  private get isClientArgentina(): boolean {
+    return this.clientPrefix === '+549' || this.clientPrefix === '+54';
+  }
+
+  private get isEmpresaArgentina(): boolean {
+    return this.empresaPrefix === '+549' || this.empresaPrefix === '+54';
+  }
+
+  onClientCuitInput(): void {
+    if (!this.isClientArgentina) { this.clientCuitError = ''; this.clientCuitWarning = ''; return; }
+    const digits = cleanCuit(this.clientClave || '');
+    this.clientCuitError = diagnoseCuit(this.clientClave || '', true) ?? '';
+    if (digits.length === 11) {
+      const result = validateCuit(this.clientClave || '');
+      this.clientClave = result.formatted ?? this.clientClave;
+      this.clientCuitError = result.error ?? '';
+      this.clientCuitWarning = result.warning ?? '';
+    } else {
+      this.clientCuitWarning = '';
+    }
+  }
+
+  onClientCuitBlur(): void {
+    if (!this.isClientArgentina) { this.clientCuitError = ''; this.clientCuitWarning = ''; return; }
+    if (!this.clientClave?.trim()) { this.clientCuitError = ''; this.clientCuitWarning = ''; return; }
+    const result = validateCuit(this.clientClave);
+    if (result.formatted) this.clientClave = result.formatted;
+    this.clientCuitError = result.error ?? '';
+    this.clientCuitWarning = result.warning ?? '';
+  }
+
+  onEmpresaCuitInput(): void {
+    if (!this.isEmpresaArgentina) { this.empresaCuitError = ''; this.empresaCuitWarning = ''; return; }
+    const digits = cleanCuit(this.empresaCuilCuit || '');
+    this.empresaCuitError = diagnoseCuit(this.empresaCuilCuit || '', true) ?? '';
+    if (digits.length === 11) {
+      const result = validateCuit(this.empresaCuilCuit || '');
+      this.empresaCuilCuit = result.formatted ?? this.empresaCuilCuit;
+      this.empresaCuitError = result.error ?? '';
+      this.empresaCuitWarning = result.warning ?? '';
+    } else {
+      this.empresaCuitWarning = '';
+    }
+  }
+
+  onEmpresaCuitBlur(): void {
+    if (!this.isEmpresaArgentina) { this.empresaCuitError = ''; this.empresaCuitWarning = ''; return; }
+    if (!this.empresaCuilCuit?.trim()) { this.empresaCuitError = ''; this.empresaCuitWarning = ''; return; }
+    const result = validateCuit(this.empresaCuilCuit);
+    if (result.formatted) this.empresaCuilCuit = result.formatted;
+    this.empresaCuitError = result.error ?? '';
+    this.empresaCuitWarning = result.warning ?? '';
+  }
+
   validateEmpresaPhone(live = false): void {
     if (!this.empresaPhone.trim()) {
       this.empresaPhoneInvalid = false;
@@ -3816,6 +3941,13 @@ onImageChange(event: Event): void {
       return;
     }
     const contactStr = phoneResult.e164!;
+    if (this.isClientArgentina && this.clientClave?.trim()) {
+      const cuitResult = validateCuit(this.clientClave);
+      if (!cuitResult.valid) {
+        this.appToast.error(cuitResult.error || 'CUIT/CUIL inválido');
+        return;
+      }
+    }
     const clientData: Cliente = {
       name: this.clientName,
       contact: contactStr || this.clientContact,
@@ -3878,8 +4010,8 @@ onImageChange(event: Event): void {
       if (emailCtrl?.value && !emailCtrl?.valid) {
         this.appToast.error('El email debe tener un formato válido');
       }
-      if (claveCtrl?.value && !claveCtrl?.valid) {
-        this.appToast.error(`${this.taxIdConfig.label} inválido. ${this.taxIdConfig.hint}`);
+      if (this.clientCuitError) {
+        this.appToast.error(this.clientCuitError);
       }
       if (!direccionCtrl?.valid) {
         this.appToast.error(direccionCtrl?.errors?.['minlength'] ? 'La dirección debe tener al menos 5 caracteres' : 'La dirección es obligatoria');

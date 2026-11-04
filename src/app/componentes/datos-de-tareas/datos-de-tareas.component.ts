@@ -53,6 +53,10 @@ export class DatosDeTareasComponent implements OnInit {
     tarea: '', descripcion: '', area: 0, costo: 0, descuento: 0
   };
 
+  get isDemoMode(): boolean {
+    return localStorage.getItem('trialMode') === 'true';
+  }
+
   get editTotalCost(): number {
     const base = (this.editForm.costo || 0) * (this.editForm.area || 0);
     return Math.round(base * (1 - (this.editForm.descuento || 0) / 100) * 100) / 100;
@@ -154,6 +158,10 @@ export class DatosDeTareasComponent implements OnInit {
   }
 
   // ============ NAVEGACIÓN ============
+  irAPlanes(): void {
+    this.route.navigate(['/dashboard'], { queryParams: { openMembership: 'true' } });
+  }
+
   volverAlDashboard(): void {
     const isTrial = localStorage.getItem('trialMode') === 'true';
     if (isTrial) {
@@ -184,6 +192,13 @@ export class DatosDeTareasComponent implements OnInit {
 
   async guardarEditarTarea(): Promise<void> {
     if (this.editingIndex < 0) return;
+    if (this.isDemoMode) {
+      this.appToast.warning(
+        'La edición de tareas no está disponible en el modo demo. Adquirí tu código de acceso en metroapp.site para desbloquear todas las funciones.',
+        'Función no disponible en modo demo'
+      );
+      return;
+    }
     const totalCost = this.editTotalCost;
     this.tareasAgregadas = this.tareasAgregadas.map((t, i) =>
       i === this.editingIndex ? { ...t, ...this.editForm, totalCost } : t
@@ -293,6 +308,21 @@ export class DatosDeTareasComponent implements OnInit {
     `;
     document.head.appendChild(inlineStyle);
 
+    const tableWrapper = exportElement.querySelector('.table-scroll-wrapper') as HTMLElement | null;
+    const prevScrollLeft = tableWrapper?.scrollLeft ?? 0;
+    const prevOverflowX = tableWrapper?.style.overflowX ?? '';
+    if (tableWrapper) {
+      tableWrapper.scrollLeft = 0;
+      tableWrapper.style.overflowX = 'visible';
+    }
+
+    const restoreTableWrapper = () => {
+      if (tableWrapper) {
+        tableWrapper.scrollLeft = prevScrollLeft;
+        tableWrapper.style.overflowX = prevOverflowX;
+      }
+    };
+
     try {
       if (typeof html2pdf !== 'undefined') {
         html2pdf()
@@ -306,20 +336,24 @@ export class DatosDeTareasComponent implements OnInit {
           .from(exportElement)
           .save()
           .then(() => {
+            restoreTableWrapper();
             this.appToast.success('Presupuesto descargado correctamente', 'PDF generado');
             document.head.removeChild(inlineStyle);
           })
           .catch((error: any) => {
+            restoreTableWrapper();
             console.error('Error al generar el PDF', error);
             this.appToast.error('No se pudo generar el PDF. Inténtalo nuevamente.', 'Error');
             document.head.removeChild(inlineStyle);
           });
       } else {
         // Fallback: imprimir con estilo de impresión nativo
+        restoreTableWrapper();
         window.print();
         document.head.removeChild(inlineStyle);
       }
     } catch (error) {
+      restoreTableWrapper();
       console.error('Error al generar el PDF', error);
       this.appToast.error('No se pudo generar el PDF.', 'Error');
       if (document.getElementById('pdf-export-style')) {

@@ -72,6 +72,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   telefonoErrorMessage: string = '';
   codeCountry: string | null = null;
   codeCountryErrorMessage: string = '';
+  codeNotFoundError: string = '';
+  codeTouched: boolean = false;
   countries = [
    { nombre: 'Argentina', codigo: 'AR', flag: 'https://flagcdn.com/ar.svg' },
    { nombre: 'Colombia', codigo: 'CO', flag: 'https://flagcdn.com/co.svg' },
@@ -210,8 +212,11 @@ constructor(private authService: AuthService,
     }
   }
 
+  private codeInputDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
   ngOnDestroy(): void {
     this.restoreManifest();
+    if (this.codeInputDebounceTimer) clearTimeout(this.codeInputDebounceTimer);
   }
 
   ngOnInit(): void {
@@ -330,6 +335,9 @@ login(): void {
             this.legacyData = legacy;
             this.email = '';
             this.telefono = '';
+            this.registerPhonePrefix = '+549';
+            this.registerPhoneNumber = '';
+            this.registerPhoneErrorMessage = '';
             this.provincia = '';
             this.provinciaService.getProvinciasByPais('argentina').subscribe({
               next: ps => this.provincias = ps,
@@ -348,11 +356,17 @@ login(): void {
 }
 
 registerLegacy(): void {
-  if (!this.email.trim() || !this.telefono.trim() || !this.provincia.trim()) {
-    this.uiDialog.error({ title: 'Error', text: 'Completá todos los campos para activar tu código.' });
+  this.registerEmailTouched = true;
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim());
+  const phoneResult = validatePhone(this.registerPhonePrefix, this.registerPhoneNumber);
+  if (!emailValid || !phoneResult.valid || !this.provincia.trim()) {
+    this.uiDialog.error({ title: 'Error', text: !emailValid ? 'Ingresá un email válido.' : !phoneResult.valid ? (phoneResult.error ?? 'Teléfono inválido.') : 'Seleccioná tu provincia.' });
     return;
   }
-  this.legacyCodeService.claimAndActivate(this.code, this.email.trim(), this.telefono.trim(), this.provincia.trim()).subscribe({
+  const telefonoCombinado = this.registerPhoneNumber.trim()
+    ? `${this.registerPhonePrefix}${this.registerPhoneNumber}`
+    : '';
+  this.legacyCodeService.claimAndActivate(this.code, this.email.trim(), telefonoCombinado, this.provincia.trim()).subscribe({
     next: (resp) => {
       localStorage.setItem('userCode', resp.code);
       localStorage.setItem('userEmail', resp.email);
@@ -398,7 +412,7 @@ registerLegacy(): void {
   register(): void {
     this.validateForm();
     if (!this.isFormValid) {
-      this.uiDialog.error({ title: 'Error', text: this.codeCountryErrorMessage || this.registerPhoneErrorMessage || 'Completa correctamente los datos del registro.' });
+      this.uiDialog.error({ title: 'Error', text: this.codeNotFoundError || this.codeCountryErrorMessage || this.registerPhoneErrorMessage || 'Completa correctamente los datos del registro.' });
       return;
     }
 
@@ -465,7 +479,8 @@ registerLegacy(): void {
       phoneResult.valid &&
       this.provincia.trim().length > 0 &&
       this.isCountryAvailable(this.pais) &&
-      !this.codeCountryErrorMessage;
+      !this.codeCountryErrorMessage &&
+      !this.codeNotFoundError;
     }
 
     get registerSelectedCountry() {
@@ -565,19 +580,84 @@ registerLegacy(): void {
     this.code = this.accessCodeService.normalizeCode(this.code);
     this.codeCountry = null;
     this.codeCountryErrorMessage = '';
+    this.codeNotFoundError = '';
+    this.codeTouched = false;
     this.validateForm();
-    if (this.code.length === 5 || this.code.length === 6) {
+
+    if (this.codeInputDebounceTimer) clearTimeout(this.codeInputDebounceTimer);
+
+    if (this.code.length >= 5 && this.code.length <= 7) {
+      this.codeInputDebounceTimer = setTimeout(() => {
+        this.syncCountryWithCode(false);
+      }, 400);
+    }
+  }
+
+  onCodeBlur(): void {
+    if (this.codeInputDebounceTimer) {
+      clearTimeout(this.codeInputDebounceTimer);
+      this.codeInputDebounceTimer = null;
+    }
+    this.codeTouched = true;
+    if (this.code.length >= 5 && this.code.length <= 7) {
       this.syncCountryWithCode(false);
     }
   }
 
   enterRegisterStep(): void {
-    this.loginStep = 'register';
     const normalized = this.accessCodeService.normalizeCode(this.code);
-    if (normalized.length === 5 || normalized.length === 6) {
-      this.code = normalized;
-      this.syncCountryWithCode(false);
+    this.code = normalized;
+
+    if (!normalized) {
+      this.loginStep = 'register';
+      return;
     }
+
+    // Verificar el código contra la tabla regular con datos completos
+    this.authService.getUserCode(normalized).subscribe({
+      next: (accessCode) => {
+        const detectedCountry = countryDisplayName(accessCode?.pais || null);
+        this.codeCountry = detectedCountry;
+        this.codeNotFoundError = '';
+
+        // Código ya tiene un usuario registrado → no permitir nuevo registro
+        if (accessCode.email && accessCode.email.includes('@')) {
+          this.uiDialog.info({
+            title: 'Código ya registrado',
+            text: `El código "${normalized}" ya tiene una sesión activa. Usá "Ya soy miembro" para ingresar.`
+          });
+          return;
+        }
+
+        if (detectedCountry && this.isCountryAvailable(detectedCountry) && this.pais !== detectedCountry) {
+          this.pais = detectedCountry;
+          this.onPaisChange();
+        }
+
+        this.loginStep = 'register';
+      },
+      error: () => {
+        // No existe en la tabla regular → verificar si es legacy
+        this.legacyCodeService.checkCode(normalized).subscribe(legacy => {
+          if (legacy) {
+            this.legacyData = legacy;
+            this.email = '';
+            this.registerPhonePrefix = '+549';
+            this.registerPhoneNumber = '';
+            this.registerPhoneErrorMessage = '';
+            this.registerEmailTouched = false;
+            this.provincia = '';
+            this.provinciaService.getProvinciasByPais('argentina').subscribe({
+              next: (ps: Provincia[]) => this.provincias = ps,
+              error: () => this.provincias = this.getCachedProvincias('argentina')
+            });
+            this.loginStep = 'legacyRegister';
+          } else {
+            this.loginStep = 'register';
+          }
+        });
+      }
+    });
   }
 
   syncCountryWithCode(showErrors: boolean = true): void {
@@ -607,17 +687,19 @@ registerLegacy(): void {
 
         this.validateForm();
       },
-      error: (error) => {
+      error: () => {
         this.codeCountry = null;
-        this.codeCountryErrorMessage = '';
-        this.validateForm();
-        if (showErrors) {
-          this.appToast.error(
-            !navigator.onLine
-              ? 'Sin conexión. No se pudo validar el código.'
-              : error?.message || 'No se pudo validar el código.'
-          );
+        if (!navigator.onLine) {
+          this.codeNotFoundError = 'Sin conexión. No se pudo validar el código.';
+          this.validateForm();
+          return;
         }
+        this.legacyCodeService.checkCode(normalizedCode).subscribe(legacy => {
+          this.codeNotFoundError = legacy
+            ? 'Este código es legacy. Ingresalo en el formulario de login, no en el registro.'
+            : 'Código no encontrado.';
+          this.validateForm();
+        });
       }
     });
   }
@@ -692,10 +774,7 @@ openWebsite(): void {
 pedirCodigoPorWhatsApp(): void {
   const phone = '5491128634744';
   const text = 'Quiero mi código de acceso para la web';
-  const nativeUrl  = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
-  const fallbackUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
-  window.location.href = nativeUrl;
-  setTimeout(() => { window.location.href = fallbackUrl; }, 1500);
+  window.open(`whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`, '_blank');
 }
 
     clearForm(): void {

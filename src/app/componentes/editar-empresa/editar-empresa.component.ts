@@ -6,6 +6,7 @@ import { EmpresaService } from '../../servicios/empresa.service';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
 import { PHONE_COUNTRIES, PhoneCountry, validatePhone } from '../../core/utils/phone-validation.util';
+import { cleanCuit, diagnoseCuit, validateCuit } from '../../core/utils/cuit-validation.util';
 
 @Component({
   selector: 'app-editar-empresa',
@@ -26,6 +27,8 @@ export class EditarEmpresaComponent implements OnInit {
   editPhone: string = '';
   phoneInvalid = false;
   phoneInvalidMsg = '';
+  cuitError = '';
+  cuitWarning = '';
 
   get selectedCountry(): PhoneCountry | undefined {
     return PHONE_COUNTRIES.find(c => c.code === this.editPrefix);
@@ -40,6 +43,33 @@ export class EditarEmpresaComponent implements OnInit {
       case '+595': return { label: 'RUC', placeholder: 'XXXXXXXX', pattern: '\\d{6,9}', hint: '6 a 9 dígitos' };
       default:     return { label: 'Identificación fiscal', placeholder: 'Número de identificación', pattern: '', hint: '' };
     }
+  }
+
+  private get isArgentina(): boolean {
+    return this.editPrefix === '+549' || this.editPrefix === '+54';
+  }
+
+  onCuitInput(): void {
+    if (!this.isArgentina) { this.cuitError = ''; this.cuitWarning = ''; return; }
+    const digits = cleanCuit(this.empresa.cuilCuit || '');
+    this.cuitError = diagnoseCuit(this.empresa.cuilCuit || '', true) ?? '';
+    if (digits.length === 11) {
+      const result = validateCuit(this.empresa.cuilCuit || '');
+      this.empresa.cuilCuit = result.formatted ?? this.empresa.cuilCuit;
+      this.cuitError = result.error ?? '';
+      this.cuitWarning = result.warning ?? '';
+    } else {
+      this.cuitWarning = '';
+    }
+  }
+
+  onCuitBlur(): void {
+    if (!this.isArgentina) { this.cuitError = ''; this.cuitWarning = ''; return; }
+    if (!this.empresa.cuilCuit?.trim()) { this.cuitError = ''; this.cuitWarning = ''; return; }
+    const result = validateCuit(this.empresa.cuilCuit);
+    if (result.formatted) this.empresa.cuilCuit = result.formatted;
+    this.cuitError = result.error ?? '';
+    this.cuitWarning = result.warning ?? '';
   }
 
   validateEditPhone(live = false): void {
@@ -231,6 +261,13 @@ export class EditarEmpresaComponent implements OnInit {
       return;
     }
     this.empresa.phone = phoneResult.e164!;
+    if (this.isArgentina && this.empresa.cuilCuit?.trim()) {
+      const cuitResult = validateCuit(this.empresa.cuilCuit);
+      if (!cuitResult.valid) {
+        this.uiDialog.warning({ title: 'CUIT/CUIL inválido', text: cuitResult.error || 'El CUIT/CUIL ingresado no es válido.' });
+        return;
+      }
+    }
     if (!this.empresa.email || !this.empresa.email.trim()) {
       this.uiDialog.warning({ title: 'Campo obligatorio', text: 'El email de la empresa no puede estar vacío.' });
       return;
