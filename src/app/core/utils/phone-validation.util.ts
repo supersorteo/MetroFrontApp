@@ -163,8 +163,11 @@ function diagnoseAR(d: string, live = false): string | null {
     return 'No incluyas el 0 inicial. Ingresá directo el código de área. Ej: 1134567890';
   if (d.startsWith('15'))
     return 'No incluyas el 15. Ingresá el código de área seguido del número. Ej: 1134567890';
-  if (d.length >= 4 && /^\d{2}15/.test(d))
-    return 'No incluyas el 15 después del código de área. Ej: para GBA ingresá 1134567890';
+  if (d.length >= 4) {
+    const areaCode = getARAreaCode(d);
+    if (areaCode && d.slice(areaCode.length).startsWith('15'))
+      return 'No incluyas el 15 después del código de área. Ej: para GBA ingresá 1134567890';
+  }
 
   // Validación progresiva de código de área: muestra error en cuanto el prefijo ya no puede
   // corresponder a ningún código válido (no espera al blur ni a los 10 dígitos completos)
