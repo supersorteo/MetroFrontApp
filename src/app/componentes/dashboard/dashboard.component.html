@@ -691,7 +691,7 @@
 
               <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea en el formulario.</p>
 
-              <img class="tp-empty-state__sprite" src="assets/archi-relajado-sprite.png" alt="Arquitecto relajado">
+              <img class="tp-empty-state__sprite" [src]="'assets/archi-relajado-sprite.png' | assetUrl" alt="Arquitecto relajado">
 
             </div>
 
@@ -1186,7 +1186,7 @@
           <ng-template #empresaPlaceholder>
             <img
               class="fixed-image fixed-image--placeholder"
-              src="assets/icons/empresa-add.png"
+              [src]="'assets/icons/empresa-add.png' | assetUrl"
               alt="Agregar empresa">
           </ng-template>
 
@@ -1410,7 +1410,7 @@
 
               <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea desde el botón superior.</p>
 
-              <img class="tp-empty-state__sprite" src="assets/archi-relajado-sprite.png" alt="Arquitecto relajado">
+              <img class="tp-empty-state__sprite" [src]="'assets/archi-relajado-sprite.png' | assetUrl" alt="Arquitecto relajado">
 
             </div>
 
@@ -1575,7 +1575,7 @@
             </span>
             <img
               *ngIf="!selectedEmpresaId"
-              src="assets/icons/empresa-add.png"
+              [src]="'assets/icons/empresa-add.png' | assetUrl"
               alt="Agregar empresa"
               class="fixed-image fixed-image--placeholder"
             >

@@ -4,4 +4,5 @@ export const environment = {
   requestTimeoutMs: 15000,
   retryGetRequests: true,
   enableServiceWorker: false,
+  assetsBase: '',
 };

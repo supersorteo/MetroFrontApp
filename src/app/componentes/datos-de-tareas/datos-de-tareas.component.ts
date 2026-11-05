@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PresupuestoService, Tarea } from '../../servicios/presupuesto.service';
@@ -26,7 +27,7 @@ interface ColorScheme {
 @Component({
   selector: 'app-datos-de-tareas',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, AssetUrlPipe],
   templateUrl: './datos-de-tareas.component.html',
   styleUrl: './datos-de-tareas.component.scss'
 })

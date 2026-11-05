@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Component, ElementRef, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -34,7 +35,7 @@ interface Country {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule],
+  imports: [CommonModule, FormsModule, NgSelectModule, AssetUrlPipe],
 
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'

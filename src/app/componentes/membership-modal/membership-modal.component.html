@@ -15,7 +15,7 @@
         <div class="carousel-inner">
           <div *ngFor="let benefit of membershipBenefits; let i = index" class="carousel-item" [class.active]="i === 0">
             <div class="planes-modal__benefit-slide">
-              <img [src]="benefit.image" [alt]="benefit.title" class="planes-modal__benefit-image">
+              <img [src]="benefit.image | assetUrl" [alt]="benefit.title" class="planes-modal__benefit-image">
               <div class="planes-modal__benefit-caption">
                 <strong>{{ benefit.title }}</strong>
                 <span>{{ benefit.description }}</span>

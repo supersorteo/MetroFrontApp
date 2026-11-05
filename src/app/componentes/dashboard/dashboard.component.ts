@@ -36,6 +36,7 @@ import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
 import { PrecioMaterial, PrecioMaterialService } from '../../servicios/precio-material.service';
 import { PHONE_COUNTRIES, PhoneCountry, validatePhone } from '../../core/utils/phone-validation.util';
 import { cleanCuit, diagnoseCuit, validateCuit } from '../../core/utils/cuit-validation.util';
+import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
 import {
   MembershipCheckoutSelection,
   MembershipModalComponent,
@@ -113,7 +114,8 @@ function cleanupBootstrapModals(): void {
     PrecioArgentinoPipe,
     PresupuestosGuardadosComponent,
     TerminosCondicionesComponent,
-    MembershipModalComponent
+    MembershipModalComponent,
+    AssetUrlPipe
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
