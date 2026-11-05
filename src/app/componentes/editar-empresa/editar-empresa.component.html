@@ -89,7 +89,11 @@
         <label class="ef-label">Descripción <span class="ef-optional">(opcional)</span></label>
         <textarea class="ef-input ef-textarea" name="description"
                   rows="3" placeholder="Contá de qué se trata tu empresa"
+                  maxlength="500"
                   [(ngModel)]="empresa.description"></textarea>
+        <span class="ef-char-count" [class.ef-char-count--warn]="(empresa.description?.length || 0) >= 450">
+          {{ empresa.description?.length || 0 }}/500
+        </span>
       </div>
 
       <div class="ef-section-label">Redes sociales</div>

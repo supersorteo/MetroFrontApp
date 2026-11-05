@@ -2521,7 +2521,11 @@
               </label>
               <textarea class="cm-input cm-input--textarea" id="additionalDetailsempresa" name="additionalDetailsEmpresa"
                         [(ngModel)]="additionalDetailsEmpresa" rows="2"
+                        maxlength="500"
                         placeholder="Contale a tus clientes de qué se trata tu empresa"></textarea>
+              <span class="cm-char-count" [class.cm-char-count--warn]="additionalDetailsEmpresa.length >= 450">
+                {{ additionalDetailsEmpresa.length }}/500
+              </span>
             </div>
 
           </div><!-- /cm-grid -->
@@ -2704,7 +2708,19 @@
 
                   <p *ngIf="empresa.email" class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
 
-                  <p *ngIf="empresa.description" class="card-text mb-1"><strong>Descripción:</strong> {{ empresa.description }}</p>
+                  <p *ngIf="empresa.description" class="card-text mb-1">
+                    <strong>Descripción:</strong>
+                    <span class="empresa-desc-wrap"
+                          [class.is-expandable]="descExceedsLimit(empresa.description)"
+                          [class.is-expanded]="expandedDescs.has(empresa.id!)"
+                          (click)="descExceedsLimit(empresa.description) && toggleDesc(empresa.id!, $event)">
+                      <span class="empresa-desc-text">{{ empresa.description }}</span>
+                      <span class="empresa-desc-bubble" *ngIf="descExceedsLimit(empresa.description)">{{ empresa.description }}</span>
+                      <span class="empresa-desc-toggle" *ngIf="descExceedsLimit(empresa.description)">
+                        {{ expandedDescs.has(empresa.id!) ? 'Ver menos ▲' : 'Ver más ▼' }}
+                      </span>
+                    </span>
+                  </p>
 
                   <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
 
@@ -2836,7 +2852,20 @@
 
                 <td>{{ empresa.email }}</td>
 
-                <td>{{ empresa.description }}</td>
+                <td>
+                  <span class="empresa-desc-wrap"
+                        *ngIf="empresa.description"
+                        [class.is-expandable]="descExceedsLimit(empresa.description)"
+                        [class.is-expanded]="expandedDescs.has(empresa.id!)"
+                        (click)="descExceedsLimit(empresa.description) && toggleDesc(empresa.id!, $event)">
+                    <span class="empresa-desc-text">{{ empresa.description }}</span>
+                    <span class="empresa-desc-bubble" *ngIf="descExceedsLimit(empresa.description)">{{ empresa.description }}</span>
+                    <span class="empresa-desc-toggle" *ngIf="descExceedsLimit(empresa.description)">
+                      {{ expandedDescs.has(empresa.id!) ? 'Ver menos ▲' : 'Ver más ▼' }}
+                    </span>
+                  </span>
+                  <span *ngIf="!empresa.description">—</span>
+                </td>
 
                 <td>
 

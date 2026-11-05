@@ -37,7 +37,7 @@
   <div class="admin-body">
 
     <!-- ── Stats ────────────────────────────────── -->
-    <div class="admin-stats">
+    <div class="admin-stats" id="sec-stats">
       <div class="stat-card stat-card--total">
         <span class="stat-card__value">{{ totalCodes }}</span>
         <span class="stat-card__label">Total</span>
@@ -57,7 +57,7 @@
     </div>
 
     <!-- ── Generate buttons ─────────────────────── -->
-        <div class="admin-table-section limits-section">
+        <div class="admin-table-section limits-section" id="sec-limits">
       <div class="admin-table-header limits-section__header">
         <div>
           <h2 class="admin-section-title">
@@ -147,7 +147,7 @@
         </article>
       </div>
     </div>
-<div class="admin-generate">
+<div class="admin-generate" id="sec-generate">
       <h2 class="admin-section-title">Generar Códigos</h2>
       <div class="admin-generate__btns">
         <button class="gen-btn gen-btn--3" (click)="showGenerate3Panel = true; showGenerate6Panel = false; showGenerate12Panel = false">
@@ -231,7 +231,7 @@
     </div>
 
     <!-- ── Codes table ───────────────────────────── -->
-    <div class="admin-table-section">
+    <div class="admin-table-section" id="sec-codes">
       <div class="admin-table-header">
         <h2 class="admin-section-title">
           Códigos de {{ admin.pais | titlecase }}
@@ -374,7 +374,7 @@
     </div>
 
     <!-- ── Códigos Legacy (solo Argentina) ────────── -->
-    <div class="admin-table-section" *ngIf="admin.pais === 'argentina'">
+    <div class="admin-table-section" id="sec-legacy" *ngIf="admin.pais === 'argentina'">
 
       <div class="admin-table-header legacy-header">
         <div>
@@ -777,6 +777,25 @@
     </div>
 
   </div><!-- /admin-body -->
+
+  <!-- ── Sidebar nav ──────────────────────────────── -->
+  <div class="an-backdrop" [class.an-backdrop--open]="navOpen" (click)="navOpen = false"></div>
+
+  <nav class="admin-nav" [class.admin-nav--open]="navOpen" aria-label="Navegación del panel">
+    <div class="an-header">
+      <span class="an-header__title">Navegación</span>
+      <button class="an-close" (click)="navOpen = false" aria-label="Cerrar">&#x00D7;</button>
+    </div>
+    <ul class="an-list">
+      <li *ngFor="let item of navItems" class="an-item" [class.an-item--active]="activeSection === item.id"
+          (click)="scrollTo(item.id)">
+        <span class="an-item__icon">{{ item.icon }}</span>
+        <span class="an-item__label">{{ item.label }}</span>
+      </li>
+    </ul>
+  </nav>
+
+  <button class="an-fab" (click)="navOpen = !navOpen" aria-label="Abrir navegación">&#9776;</button>
 
   <!-- ── Modal Ajuste de Precios ──────────────────── -->
   <div class="admin-overlay" *ngIf="showAjustePreciosPanel" (click)="showAjustePreciosPanel = false">

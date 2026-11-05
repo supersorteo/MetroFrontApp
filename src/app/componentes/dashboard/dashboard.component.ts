@@ -1648,6 +1648,22 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   }
 
 
+  expandedDescs = new Set<number>();
+
+  descExceedsLimit(text: string | undefined | null): boolean {
+    if (!text) return false;
+    return text.trim().split(/\s+/).length > 20;
+  }
+
+  toggleDesc(id: number, event: Event): void {
+    event.stopPropagation();
+    if (this.expandedDescs.has(id)) {
+      this.expandedDescs.delete(id);
+    } else {
+      this.expandedDescs.add(id);
+    }
+  }
+
   getEmpresasByUserCode(): void {
     if (this.trialMode) {
       const demoEmpresasRaw = localStorage.getItem('demoEmpresas');

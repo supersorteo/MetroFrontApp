@@ -1,5 +1,5 @@
 ﻿import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -34,7 +34,7 @@ interface AccessCode {
   templateUrl: './generate-code.component.html',
   styleUrl: './generate-code.component.scss'
 })
-export class GenerateCodeComponent implements OnInit, OnDestroy {
+export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
   admin!: Admin;
   readonly isPwa = sessionStorage.getItem('adminPwaSession') === '1';
 
@@ -134,6 +134,31 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     return `${parts[2]}/${parts[1]}/${parts[0]}`;
   }
 
+  navOpen = false;
+  activeSection = '';
+
+  get navItems() {
+    return [
+      { id: 'sec-stats',           label: 'Estadísticas', icon: '◈' },
+      { id: 'sec-limits',          label: 'Límites',       icon: '⚙' },
+      { id: 'sec-generate',        label: 'Generar',       icon: '⊕' },
+      { id: 'sec-codes',           label: 'Códigos',       icon: '▤' },
+      ...(this.admin?.pais === 'argentina' ? [{ id: 'sec-legacy', label: 'Legacy', icon: '◷' }] : []),
+      { id: 'tarea-form-section',  label: 'Tareas',        icon: '✓' },
+      { id: 'precio-form-section', label: 'Materiales',    icon: '◫' },
+    ];
+  }
+
+  scrollTo(id: string): void {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 72;
+    window.scrollTo({ top, behavior: 'smooth' });
+    this.navOpen = false;
+  }
+
+  private sectionObserver?: IntersectionObserver;
+
   private timer: any;
   private sessionPollInterval: any;
   private preciosBuscarTimer: any;
@@ -185,10 +210,28 @@ export class GenerateCodeComponent implements OnInit, OnDestroy {
     this.sessionPollInterval = setInterval(() => this.loadActiveSessions(), 10000);
   }
 
+  ngAfterViewInit(): void {
+    const ids = ['sec-stats', 'sec-limits', 'sec-generate', 'sec-codes',
+                 'sec-legacy', 'tarea-form-section', 'precio-form-section'];
+    this.sectionObserver = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          this.activeSection = entry.target.id;
+          break;
+        }
+      }
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) this.sectionObserver!.observe(el);
+    });
+  }
+
   ngOnDestroy(): void {
     if (this.timer) clearInterval(this.timer);
     if (this.sessionPollInterval) clearInterval(this.sessionPollInterval);
     if (this.preciosBuscarTimer) clearTimeout(this.preciosBuscarTimer);
+    this.sectionObserver?.disconnect();
     this.restoreManifest();
   }
 
