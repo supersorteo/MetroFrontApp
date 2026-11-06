@@ -36,6 +36,7 @@ import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
 import { PrecioMaterial, PrecioMaterialService } from '../../servicios/precio-material.service';
 import { PHONE_COUNTRIES, PhoneCountry, validatePhone } from '../../core/utils/phone-validation.util';
 import { cleanCuit, diagnoseCuit, validateCuit } from '../../core/utils/cuit-validation.util';
+import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
 import {
   MembershipCheckoutSelection,
   MembershipModalComponent,
@@ -113,7 +114,8 @@ function cleanupBootstrapModals(): void {
     PrecioArgentinoPipe,
     PresupuestosGuardadosComponent,
     TerminosCondicionesComponent,
-    MembershipModalComponent
+    MembershipModalComponent,
+    AssetUrlPipe
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
@@ -1647,6 +1649,22 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     this.appToast.info('Colores reiniciados a valores por defecto');
   }
 
+
+  expandedDescs = new Set<number>();
+
+  descExceedsLimit(text: string | undefined | null): boolean {
+    if (!text) return false;
+    return text.trim().split(/\s+/).length > 20;
+  }
+
+  toggleDesc(id: number, event: Event): void {
+    event.stopPropagation();
+    if (this.expandedDescs.has(id)) {
+      this.expandedDescs.delete(id);
+    } else {
+      this.expandedDescs.add(id);
+    }
+  }
 
   getEmpresasByUserCode(): void {
     if (this.trialMode) {

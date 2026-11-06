@@ -4,4 +4,5 @@ export const environment = {
   requestTimeoutMs: 15000,
   retryGetRequests: true,
   enableServiceWorker: true,
+  assetsBase: 'https://res.cloudinary.com/drd37bhg0/image/upload/f_auto,q_auto/metroapp-assets',
 };

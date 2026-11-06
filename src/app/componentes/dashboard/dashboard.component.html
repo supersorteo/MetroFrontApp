@@ -131,6 +131,16 @@
 
       </li>
 
+      <li class="w-100 mt-2 text-center" *ngIf="!trialMode">
+        <a
+          class="btn btn-primary btn-block w-100 animate"
+          href="https://docs.google.com/forms/d/e/1FAIpQLSfBCoGje--Ue7WGOZ71omgDvD-eplmA4WPkMpWeUjoxUZ95-w/viewform?usp=publish-editor"
+          target="_blank"
+          rel="noopener noreferrer">
+          <i class="bi bi-clipboard-check me-1" aria-hidden="true"></i>Errores y Sugerencias
+        </a>
+      </li>
+
       <li class="w-100 mt-3">
 
         <button (click)="abrirPdfVivienda()" class="btn btn-primary btn-block animate w-100">
@@ -681,7 +691,7 @@
 
               <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea en el formulario.</p>
 
-              <img class="tp-empty-state__sprite" src="assets/archi-relajado-sprite.png" alt="Arquitecto relajado">
+              <img class="tp-empty-state__sprite" [src]="'assets/archi-relajado-sprite.png' | assetUrl" alt="Arquitecto relajado">
 
             </div>
 
@@ -1176,7 +1186,7 @@
           <ng-template #empresaPlaceholder>
             <img
               class="fixed-image fixed-image--placeholder"
-              src="assets/icons/empresa-add.png"
+              [src]="'assets/icons/empresa-add.png' | assetUrl"
               alt="Agregar empresa">
           </ng-template>
 
@@ -1400,7 +1410,7 @@
 
               <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea desde el botón superior.</p>
 
-              <img class="tp-empty-state__sprite" src="assets/archi-relajado-sprite.png" alt="Arquitecto relajado">
+              <img class="tp-empty-state__sprite" [src]="'assets/archi-relajado-sprite.png' | assetUrl" alt="Arquitecto relajado">
 
             </div>
 
@@ -1565,7 +1575,7 @@
             </span>
             <img
               *ngIf="!selectedEmpresaId"
-              src="assets/icons/empresa-add.png"
+              [src]="'assets/icons/empresa-add.png' | assetUrl"
               alt="Agregar empresa"
               class="fixed-image fixed-image--placeholder"
             >
@@ -2511,7 +2521,11 @@
               </label>
               <textarea class="cm-input cm-input--textarea" id="additionalDetailsempresa" name="additionalDetailsEmpresa"
                         [(ngModel)]="additionalDetailsEmpresa" rows="2"
+                        maxlength="500"
                         placeholder="Contale a tus clientes de qué se trata tu empresa"></textarea>
+              <span class="cm-char-count" [class.cm-char-count--warn]="additionalDetailsEmpresa.length >= 450">
+                {{ additionalDetailsEmpresa.length }}/500
+              </span>
             </div>
 
           </div><!-- /cm-grid -->
@@ -2694,7 +2708,19 @@
 
                   <p *ngIf="empresa.email" class="card-text mb-1"><strong>Email:</strong> {{ empresa.email }}</p>
 
-                  <p *ngIf="empresa.description" class="card-text mb-1"><strong>Descripción:</strong> {{ empresa.description }}</p>
+                  <p *ngIf="empresa.description" class="card-text mb-1">
+                    <strong>Descripción:</strong>
+                    <span class="empresa-desc-wrap"
+                          [class.is-expandable]="descExceedsLimit(empresa.description)"
+                          [class.is-expanded]="expandedDescs.has(empresa.id!)"
+                          (click)="descExceedsLimit(empresa.description) && toggleDesc(empresa.id!, $event)">
+                      <span class="empresa-desc-text">{{ empresa.description }}</span>
+                      <span class="empresa-desc-bubble" *ngIf="descExceedsLimit(empresa.description)">{{ empresa.description }}</span>
+                      <span class="empresa-desc-toggle" *ngIf="descExceedsLimit(empresa.description)">
+                        {{ expandedDescs.has(empresa.id!) ? 'Ver menos ▲' : 'Ver más ▼' }}
+                      </span>
+                    </span>
+                  </p>
 
                   <div class="d-flex justify-content-end gap-2 mt-3 cliente-card__actions">
 
@@ -2826,7 +2852,20 @@
 
                 <td>{{ empresa.email }}</td>
 
-                <td>{{ empresa.description }}</td>
+                <td>
+                  <span class="empresa-desc-wrap"
+                        *ngIf="empresa.description"
+                        [class.is-expandable]="descExceedsLimit(empresa.description)"
+                        [class.is-expanded]="expandedDescs.has(empresa.id!)"
+                        (click)="descExceedsLimit(empresa.description) && toggleDesc(empresa.id!, $event)">
+                    <span class="empresa-desc-text">{{ empresa.description }}</span>
+                    <span class="empresa-desc-bubble" *ngIf="descExceedsLimit(empresa.description)">{{ empresa.description }}</span>
+                    <span class="empresa-desc-toggle" *ngIf="descExceedsLimit(empresa.description)">
+                      {{ expandedDescs.has(empresa.id!) ? 'Ver menos ▲' : 'Ver más ▼' }}
+                    </span>
+                  </span>
+                  <span *ngIf="!empresa.description">—</span>
+                </td>
 
                 <td>
 
@@ -2932,7 +2971,7 @@
 
       </span>
 
-      <span class="toolbar-item__label">Tareas</span>
+      <span class="toolbar-item__label">Panel</span>
 
     </button>
 

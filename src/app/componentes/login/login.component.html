@@ -2,7 +2,7 @@
 
   <!-- BRAND -->
   <div class="login-brand">
-    <img src="assets/icons/metro-logo-transparent.png" class="login-brand__logo" alt="Metro logo" />
+    <img [src]="'assets/icons/metro-logo-transparent.png' | assetUrl" class="login-brand__logo" alt="Metro logo" />
     <p class="login-brand__tagline">Optimizá tu manera de trabajar. Ahorrá tiempo. Mostrate profesional.</p>
   </div>
 
@@ -16,7 +16,7 @@
       <div class="login-card login-card--trial" (click)="loginStep = 'demoCountry'">
         <div class="login-card__glow"></div>
         <div class="login-card__visual">
-          <img src="assets/archi-probar-sistema-v2.png" alt="Archi probando el sistema" />
+          <img [src]="'assets/archi-probar-sistema-v2.png' | assetUrl" alt="Archi probando el sistema" />
         </div>
         <div class="login-card__content">
           <span class="login-card__badge-new">¡GRATIS!</span>
@@ -34,7 +34,7 @@
           <span class="login-card__cta">Ingresar</span>
         </div>
         <div class="login-card__visual">
-          <img src="assets/archi-ya-soy-miembro-v2.png" alt="Archi indicando que ya es miembro" />
+          <img [src]="'assets/archi-ya-soy-miembro-v2.png' | assetUrl" alt="Archi indicando que ya es miembro" />
         </div>
       </div>
 

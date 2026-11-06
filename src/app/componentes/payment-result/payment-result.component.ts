@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -14,7 +15,7 @@ const MAX_POLLS        = 30;
 @Component({
   selector: 'app-payment-result',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AssetUrlPipe],
   templateUrl: './payment-result.component.html',
   styleUrl: './payment-result.component.scss'
 })
