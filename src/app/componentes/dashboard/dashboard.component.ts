@@ -1517,6 +1517,16 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     }, 250);
   }
 
+  iniciarTourGuardarPresupuesto(): void {
+    this.cerrarComoUsarMetro();
+    setTimeout(() => {
+      this.setTourOverlayActive(true);
+      this.showDashboardTour = true;
+      this.dashboardTourIndex = 0;
+      this.updateDashboardTourTarget();
+    }, 250);
+  }
+
   iniciarTourCliente(): void {
     this.cerrarComoUsarMetro();
     setTimeout(() => {
