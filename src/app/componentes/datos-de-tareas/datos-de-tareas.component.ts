@@ -134,7 +134,7 @@ export class DatosDeTareasComponent implements OnInit {
     this.colorScheme = this.loadColorScheme();
 
     const activePreview = await this.localStore.getState<any>('budget:active-preview');
-    if (activePreview) {
+    if (activePreview?.presupuesto) {
       this.empresaSeleccionada = activePreview.empresa || activePreview.presupuesto?.empresa || null;
       this.clienteSeleccionado = activePreview.cliente || activePreview.presupuesto?.cliente || null;
       this.tareasAgregadas = activePreview.tareas || activePreview.presupuesto?.tareas || [];
@@ -336,17 +336,26 @@ export class DatosDeTareasComponent implements OnInit {
 
   // ============ EDITAR TAREA ============
   abrirEditarTarea(index: number): void {
-    const t = this.tareasAgregadas[index];
-    if (!t) return;
-    this.editingIndex = index;
-    this.editForm = {
-      tarea:       t.tarea,
-      descripcion: t.descripcion || '',
-      area:        Math.round((t.area || 0) * 100) / 100,
-      costo:       Math.round((t.costo || 0) * 100) / 100,
-      descuento:   Math.round((t.descuento || 0) * 100) / 100
-    };
-    this.showEditModal = true;
+    void this.localStore.getState<any>('budget:active-preview').then(preview => {
+      if (preview?.presupuesto) {
+        void this.uiDialog.info({
+          title: 'Presupuesto cargado activo',
+          text: 'Este presupuesto está cargado en el dashboard. Para modificar sus tareas, andá al panel de tareas en el dashboard y editá desde ahí.'
+        });
+        return;
+      }
+      const t = this.tareasAgregadas[index];
+      if (!t) return;
+      this.editingIndex = index;
+      this.editForm = {
+        tarea:       t.tarea,
+        descripcion: t.descripcion || '',
+        area:        Math.round((t.area || 0) * 100) / 100,
+        costo:       Math.round((t.costo || 0) * 100) / 100,
+        descuento:   Math.round((t.descuento || 0) * 100) / 100
+      };
+      this.showEditModal = true;
+    });
   }
 
   cerrarEditarTarea(): void {
@@ -417,6 +426,14 @@ export class DatosDeTareasComponent implements OnInit {
 
   // ============ ELIMINAR TAREA ============
   async eliminarTarea(index: number): Promise<void> {
+    const activePreview = await this.localStore.getState<any>('budget:active-preview');
+    if (activePreview?.presupuesto) {
+      void this.uiDialog.info({
+        title: 'Presupuesto cargado activo',
+        text: 'Este presupuesto está cargado en el dashboard. Para modificar sus tareas, andá al panel de tareas en el dashboard y editá desde ahí.'
+      });
+      return;
+    }
     const tarea = this.tareasAgregadas[index];
     if (!tarea) return;
 
