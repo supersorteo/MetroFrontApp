@@ -16,6 +16,95 @@
 
 <app-terminos-condiciones *ngIf="!trialMode" [userCode]="userCode"></app-terminos-condiciones>
 
+<div class="archi-intro-backdrop" *ngIf="showArchiIntro" aria-hidden="true"></div>
+
+<section class="archi-intro" *ngIf="showArchiIntro" role="dialog" aria-modal="true" aria-labelledby="archi-intro-title">
+  <button class="archi-intro__close" type="button" aria-label="Cerrar introducción" (click)="cerrarArchiIntro()">×</button>
+
+  <div class="archi-intro__visual" aria-hidden="true">
+    <div class="archi-intro__glow"></div>
+    <img
+      *ngIf="archiIntroSceneVisible"
+      class="archi-intro__sprite"
+      [src]="archiIntroScenes[archiIntroIndex].image"
+      alt="">
+  </div>
+
+  <div class="archi-intro__copy" *ngIf="archiIntroSceneVisible">
+    <span class="archi-intro__eyebrow">{{ archiIntroScenes[archiIntroIndex].eyebrow }}</span>
+    <h2 id="archi-intro-title">{{ archiIntroScenes[archiIntroIndex].title }}</h2>
+    <p>{{ archiIntroScenes[archiIntroIndex].text }}</p>
+  </div>
+
+  <div class="archi-intro__footer">
+    <div class="archi-intro__progress" aria-label="Progreso de la introducción">
+      <span
+        *ngFor="let scene of archiIntroScenes; let i = index"
+        [class.archi-intro__progress-dot--active]="i === archiIntroIndex"></span>
+    </div>
+
+    <label class="archi-intro__check" *ngIf="archiIntroIndex === archiIntroScenes.length - 1">
+      <input type="checkbox" [(ngModel)]="archiIntroDontShowAgain">
+      <span>No volver a mostrar esta animación</span>
+    </label>
+
+    <button
+      class="archi-intro__next"
+      type="button"
+      [attr.aria-label]="archiIntroIndex === archiIntroScenes.length - 1 ? 'Iniciar tour virtual' : 'Avanzar introducción'"
+      (click)="avanzarArchiIntro()">
+      <span class="archi-intro__triangle" aria-hidden="true"></span>
+    </button>
+  </div>
+</section>
+
+<div class="demo-tour-backdrop" *ngIf="showDemoTourWelcome || showDemoTourStep" (click)="cerrarDemoTour()" aria-hidden="true"></div>
+
+<div
+  class="demo-tour-spotlight"
+  *ngIf="showDemoTourStep && activeDemoTourSteps[demoTourIndex].target"
+  [class.demo-tour-spotlight--ready]="demoTourPositionReady"
+  [ngStyle]="demoTourSpotlightStyle"
+  aria-hidden="true">
+</div>
+
+<section class="demo-tour-dialog" *ngIf="showDemoTourWelcome" role="dialog" aria-modal="true" aria-labelledby="demo-tour-welcome-title">
+  <button class="demo-tour-close" type="button" aria-label="Cerrar tour" (click)="cerrarDemoTour()">×</button>
+  <span class="demo-tour-eyebrow">Bienvenido a METRO</span>
+  <h2 id="demo-tour-welcome-title">Explora el dashboard</h2>
+  <p>Te mostramos cómo buscar tareas y conocer las herramientas principales del modo demo.</p>
+  <div class="demo-tour-actions">
+    <button type="button" class="demo-tour-button demo-tour-button--secondary" (click)="cerrarDemoTour()">Cerrar</button>
+    <button type="button" class="demo-tour-button" (click)="comenzarDemoTour()">Comenzar</button>
+  </div>
+</section>
+
+<section
+  class="demo-tour-bubble"
+  *ngIf="showDemoTourStep"
+  [class.demo-tour-bubble--ready]="demoTourPositionReady"
+  [class.demo-tour-bubble--above]="demoTourBubblePlacement === 'above'"
+  [class.demo-tour-bubble--below]="demoTourBubblePlacement === 'below'"
+  [class.demo-tour-bubble--centered]="demoTourBubblePlacement === 'centered'"
+  [ngStyle]="demoTourBubbleStyle"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="demo-tour-step-title">
+  <button class="demo-tour-close" type="button" aria-label="Cerrar tour" (click)="cerrarDemoTour()">×</button>
+  <span class="demo-tour-eyebrow">Recorrido · {{ demoTourIndex + 1 }} de {{ activeDemoTourSteps.length }}</span>
+  <h2 id="demo-tour-step-title">{{ activeDemoTourSteps[demoTourIndex].title }}</h2>
+  <p>{{ activeDemoTourSteps[demoTourIndex].text }}</p>
+  <div class="demo-tour-actions">
+    <button *ngIf="!demoTourAutomationInProgress && demoTourIndex > 0" type="button" class="demo-tour-nav-button demo-tour-nav-button--previous" (click)="avanzarDemoTour(-1)" aria-label="Ir al paso anterior">
+      <span class="demo-tour-nav-triangle" aria-hidden="true"></span>
+    </button>
+    <button *ngIf="!demoTourAutomationInProgress && demoTourIndex < activeDemoTourSteps.length - 1" type="button" class="demo-tour-nav-button demo-tour-nav-button--next" (click)="avanzarDemoTour(1)" aria-label="Ir al paso siguiente">
+      <span class="demo-tour-nav-triangle" aria-hidden="true"></span>
+    </button>
+    <button *ngIf="!demoTourAutomationInProgress && demoTourIndex === activeDemoTourSteps.length - 1" type="button" class="demo-tour-button" (click)="cerrarDemoTour()">Finalizar</button>
+  </div>
+</section>
+
 <div class="menu-panel-overlay" *ngIf="showMenuPanel" (click)="toggleMenuPanel()"></div>
 
 <aside class="menu-panel" *ngIf="showMenuPanel" [class.open]="showMenuPanel">
@@ -387,7 +476,7 @@
 
       </div>
 
-      <div class="tp-editor-modal__body">
+      <div id="demoTourPersonalizedFields" class="tp-editor-modal__body">
 
         <div class="row g-4">
 
@@ -461,7 +550,7 @@
 
               <div class="tp-editor-shell__actions">
 
-                <button class="btn btn-success tp-btn-action tp-btn-action--primary" (click)="tpGuardar()">
+                <button id="demoTourPersonalizedCreateTaskButton" class="btn btn-success tp-btn-action tp-btn-action--primary" (click)="tpGuardar()">
 
                   <i class="bi bi-{{ tpEditingId != null ? 'check2-circle' : 'save2-fill' }} me-2"></i>
 
@@ -1196,7 +1285,7 @@
 
       <div class="task-tabs-toolbar">
 
-        <ul class="nav nav-tabs task-tabs" role="tablist">
+        <ul id="demoTourTaskTabs" class="nav nav-tabs task-tabs" role="tablist">
 
           <li class="nav-item" role="presentation">
 
@@ -1225,6 +1314,8 @@
               class="nav-link"
 
               href="#"
+
+              id="demoTourPersonalizedTab"
 
               [class.active]="activeTaskTab === 'personalizadas'"
 
@@ -1272,17 +1363,29 @@
 
             <small class="task-search-hint">Ej.: pintura interior, hormigon, 2500</small>
 
-            <button type="button" class="task-help-btn task-help-btn--compact" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="Cómo usar el buscador">
+            <div class="task-help-actions">
 
-              <i class="fas fa-info-circle" aria-hidden="true"></i>
+              <button type="button" class="task-help-btn task-help-btn--compact" data-bs-toggle="modal" data-bs-target="#buscadorInfoModal" aria-label="Cómo usar el buscador">
 
-              <span>Cómo buscar</span>
+                <i class="fas fa-info-circle" aria-hidden="true"></i>
 
-            </button>
+                <span>Cómo buscar</span>
+
+              </button>
+
+              <button type="button" class="task-help-btn task-help-btn--compact task-help-btn--metro" (click)="abrirComoUsarMetro()" aria-haspopup="dialog" aria-controls="comoUsarMetroModal">
+
+                <i class="bi bi-question-circle" aria-hidden="true"></i>
+
+                <span>Cómo usar METRO</span>
+
+              </button>
+
+            </div>
 
           </div>
 
-          <div class="table-responsive">
+          <div id="demoTourTaskTable" class="table-responsive">
 
             <table id="tabla" class="table table-striped lista-tareas-tabla" [style.font-size.px]="fontSizeLista">
 
@@ -1370,7 +1473,7 @@
 
               <div class="tp-toolbar__actions">
 
-                <button class="tp-toolbar__create" type="button" (click)="abrirTpEditor()">
+                <button id="demoTourPersonalizedCreateButton" class="tp-toolbar__create" type="button" (click)="abrirTpEditor()">
                   <span class="tp-toolbar__create-main">
                     <span>Crear</span>
                   </span>
@@ -1384,7 +1487,7 @@
                   </div>
                 </button>
 
-                <button type="button" class="tp-toolbar__toggle" (click)="tpMostrarImportar = !tpMostrarImportar">
+                <button id="demoTourPersonalizedImportButton" type="button" class="tp-toolbar__toggle" (click)="tpMostrarImportar = !tpMostrarImportar">
 
                   <span class="tp-toolbar__toggle-icon" aria-hidden="true">
 
@@ -1490,7 +1593,7 @@
 
       <div class="w-100 d-flex justify-content-center align-items-center mb-1" style="gap: 8px;">
 
-        <button type="button" class="btn btn-success animate flex-grow-1" style="font-weight:bold; height: 42px; border-radius: 10px; box-shadow: 0 2px 8px #0001;" data-bs-toggle="modal" data-bs-target="#provinciaModal">
+        <button id="demoTourProvince" type="button" class="btn btn-success animate flex-grow-1" style="font-weight:bold; height: 42px; border-radius: 10px; box-shadow: 0 2px 8px #0001;" data-bs-toggle="modal" data-bs-target="#provinciaModal">
 
           <i class="bi bi-geo-alt"></i> {{ provinciaSeleccionada ? 'Provincia: ' + provinciaSeleccionada : 'Seleccionar provincia' }}
 
@@ -1510,9 +1613,9 @@
 
       </div>
 
-      <div class="w-100 d-flex justify-content-center align-items-center mb-2" style="gap: 8px;">
+      <div id="demoTourEmpresa" class="w-100 d-flex justify-content-center align-items-center mb-2" style="gap: 8px;">
 
-        <button class="btn btn-success animate flex-grow-1" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" type="button" (click)="openListaEmpresasModal()">
+        <button id="demoTourOpenCompanyButton" class="btn btn-success animate flex-grow-1" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" type="button" (click)="openListaEmpresasModal()">
 
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52.29 52.35" width="18" height="18" aria-hidden="true" focusable="false" style="margin-right: 6px;">
 
@@ -1524,7 +1627,7 @@
 
         </button>
 
-        <button class="btn btn-success animate flex-grow-1" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" (click)="abrirModalClientes()">
+        <button id="demoTourOpenClientButton" class="btn btn-success animate flex-grow-1" style="font-weight:bold; border-radius: 10px; box-shadow: 0 2px 8px #0001;" (click)="abrirModalClientes()">
 
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42.97 48.65" width="18" height="18" aria-hidden="true" focusable="false" style="margin-right: 6px;">
 
@@ -1563,7 +1666,7 @@
         <!-- Fila 1: logo izquierda · cliente derecha -->
         <div class="tareas-agregadas__top-row">
 
-          <div class="tareas-agregadas__empresa-slot" (click)="openListaEmpresasModal()">
+          <div id="demoTourPanelEmpresa" class="tareas-agregadas__empresa-slot" (click)="openListaEmpresasModal()">
             <img
               *ngIf="selectedEmpresaId && currentEmpresaLogoUrl"
               [src]="currentEmpresaLogoUrl"
@@ -1581,7 +1684,7 @@
             >
           </div>
 
-          <div class="tareas-agregadas__cliente-slot">
+          <div id="demoTourPanelCliente" class="tareas-agregadas__cliente-slot">
             <ng-container *ngIf="clienteSeleccionado; else sinCliente">
               <button
                 type="button"
@@ -1631,7 +1734,7 @@
 
     </div>
 
-       <div *ngIf="tareasAgregadas?.length" class="table-responsive tareas-table-wrapper">
+       <div id="demoTourPanelTasks" *ngIf="tareasAgregadas?.length" class="table-responsive tareas-table-wrapper">
 
         <div class="table-responsive tareas-table-wrapper">
 
@@ -1743,7 +1846,7 @@
 
       </div>
 
-      <div class="tareas-guardar mt-3 tareas-panel__footer">
+      <div id="demoTourPanelToolbar" class="tareas-guardar mt-3 tareas-panel__footer">
 
         <button class="tareas-panel__action" type="button" (click)="toggleTareasPanel()" aria-label="Cerrar panel" title="Cerrar panel">
 
@@ -1995,7 +2098,7 @@
 
                 <div class="w-100 d-flex">
 
-                  <button type="button" (click)="agregarTarea()" class="btn btn-primary w-100" data-bs-dismiss="modal">Agregar</button>
+                  <button id="demoTourAddTaskButton" type="button" (click)="agregarTarea()" class="btn btn-primary w-100" data-bs-dismiss="modal">Agregar</button>
 
                 </div>
 
@@ -2072,7 +2175,7 @@
 
         <form #clientForm="ngForm" (ngSubmit)="saveClientData(clientForm)">
 
-          <div class="cm-grid">
+          <div id="demoTourClientFields" class="cm-grid">
 
             <!-- Nombre -->
             <div class="cm-field">
@@ -2179,7 +2282,7 @@
 
           <!-- Botón guardar -->
           <div class="cm-footer">
-            <button type="submit" class="cm-save-btn" [disabled]="clientForm.invalid || isSavingClient">
+            <button id="demoTourClientSave" type="submit" class="cm-save-btn" [disabled]="clientForm.invalid || isSavingClient">
               <span *ngIf="!isSavingClient" class="cm-save-btn__inner">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                   <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
@@ -2207,7 +2310,7 @@
 
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg lista-clientes-modal__dialog">
 
-    <div class="modal-content modal-zona">
+    <div id="demoTourClientList" class="modal-content modal-zona">
 
       <div class="modal-header">
 
@@ -2387,7 +2490,7 @@
                [(ngModel)]="filtroCliente"
                (ngModelChange)="onFiltroClienteChange()">
 
-        <button type="button" class="btn btn-success btn-sm flex-shrink-0" (click)="openClientModal()">
+        <button id="demoTourCreateClientButton" type="button" class="btn btn-success btn-sm flex-shrink-0" (click)="openClientModal()">
           <i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Crear
         </button>
 
@@ -2430,7 +2533,7 @@
 
         <form #empresaForm="ngForm" (ngSubmit)="saveFormData()" class="cm-form">
 
-          <div class="cm-grid">
+          <div id="demoTourCompanyFields" class="cm-grid">
 
             <!-- Nombre -->
             <div class="cm-field">
@@ -2538,7 +2641,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5"/></svg>
               {{ showSocialFields ? 'Ocultar redes' : 'Redes sociales' }}
             </button>
-            <button type="button" class="cm-action-btn cm-action-btn--primary" (click)="abrirModalImagen()">
+            <button id="demoTourUploadImageButton" type="button" class="cm-action-btn cm-action-btn--primary" (click)="abrirModalImagen()">
               <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/></svg>
               Subir imagen
             </button>
@@ -2583,13 +2686,13 @@
           </div>
 
           <!-- Paleta -->
-          <button class="cm-action-btn cm-action-btn--palette w-100 mt-2" type="button" (click)="abrirModalPaleta()">
+          <button id="demoTourCompanyPalette" class="cm-action-btn cm-action-btn--palette w-100 mt-2" type="button" (click)="abrirModalPaleta()">
             <i class="fas fa-palette"></i> PALETA DEL PRESUPUESTO
           </button>
 
           <!-- Footer / Submit -->
           <div class="cm-form-footer">
-            <button type="submit" class="cm-submit-btn"
+            <button id="demoTourCompanySave" type="submit" class="cm-submit-btn"
                     [disabled]="empresaForm.invalid || empresaPhoneInvalid || isEmpresaCreateLimitReached"
                     [attr.title]="isEmpresaCreateLimitReached ? 'Límite alcanzado para tu plan' : null">
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/></svg>
@@ -2907,7 +3010,7 @@
 
         <input type="text" class="form-control flex-grow-1" placeholder="Filtrar empresa..." [(ngModel)]="filtroEmpresa" (ngModelChange)="onFiltroEmpresaChange()">
 
-        <button type="button" class="btn btn-primary btn-sm empresa-list__create flex-shrink-0" (click)="abrirFormularioNuevaEmpresa()" [disabled]="isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Límite alcanzado para tu plan' : null"><i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Crear</button>
+        <button id="demoTourCreateCompanyButton" type="button" class="btn btn-primary btn-sm empresa-list__create flex-shrink-0" (click)="abrirFormularioNuevaEmpresa()" [disabled]="isEmpresaCreateLimitReached" [attr.title]="isEmpresaCreateLimitReached ? 'Límite alcanzado para tu plan' : null"><i class="bi bi-plus-circle me-1" aria-hidden="true"></i> Crear</button>
 
       </div>
 
@@ -2919,9 +3022,9 @@
 
 <div class="floating-toolbar-container">
 
-  <div class="floating-toolbar">
+  <div id="demoTourToolbar" class="floating-toolbar">
 
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--presupuesto" (click)="verPresupuesto()" type="button" aria-label="Ver presupuesto" title="Ver presupuesto">
+    <button id="demoTourBudgetOpenButton" class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--presupuesto" (click)="verPresupuesto()" type="button" aria-label="Ver presupuesto" title="Ver presupuesto">
 
       <span class="toolbar-item__icon" aria-hidden="true">
 
@@ -2945,7 +3048,7 @@
 
     </button>
 
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--tareas"
+    <button id="demoTourPanelOpenButton" class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--tareas"
       [class.toolbar-item--has-tasks]="tareasAgregadas.length > 0"
       (click)="toggleTareasPanel()"
       type="button"
@@ -3278,7 +3381,7 @@
 
       <div class="modal-footer">
 
-        <button type="button" class="btn btn-primary" (click)="uploadImage()" [disabled]="!imageSelected" >Cargar Imagen</button>
+        <button id="demoTourLoadImageButton" type="button" class="btn btn-primary" (click)="uploadImage()" [disabled]="!imageSelected" >Cargar Imagen</button>
 
   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
 
@@ -3452,6 +3555,96 @@
         </button>
 
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div class="modal fade" id="comoUsarMetroModal" tabindex="-1" aria-labelledby="comoUsarMetroModalLabel" aria-hidden="true">
+
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+
+    <div class="modal-content metro-help-modal">
+
+      <div class="modal-header metro-help-modal__header">
+
+        <div>
+          <span class="metro-help-modal__eyebrow">Centro de ayuda</span>
+          <h5 class="modal-title" id="comoUsarMetroModalLabel">Cómo usar METRO</h5>
+        </div>
+
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+      </div>
+
+      <div class="modal-body metro-help-modal__body">
+
+        <div class="metro-help-grid">
+
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourCompletoDesdeAyuda()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-signpost-2"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Iniciar tour virtual</strong>
+              <small>Recorre las funciones principales paso a paso.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourPanelTareas()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-list-check"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Agregar tareas al panel</strong>
+              <small>Aprende a cargar una tarea y completar empresa, cliente y herramientas.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourEmpresa()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-buildings"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Agregar una empresa</strong>
+              <small>Recorre el formulario, imagen, paleta y guardado sin crear datos.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourCliente()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-person-plus"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Agregar un cliente</strong>
+              <small>Conoce la lista, el formulario y el guardado sin crear datos.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourTareasPersonalizadas()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-bookmark-plus"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Crear una tarea personalizada</strong>
+              <small>Aprende a usar Tus tareas y completar el formulario sin guardar datos.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourPresupuesto()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Explorar el presupuesto</strong>
+              <small>Conoce sus secciones, botones y formatos de descarga.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
+        </div>
+
+        <div class="metro-help-demo-note" *ngIf="trialMode">
+          <i class="bi bi-info-circle" aria-hidden="true"></i>
+          <span>Estás en modo demo: los importes y datos visibles son valores de prueba.</span>
+        </div>
 
       </div>
 
@@ -3804,7 +3997,7 @@
 
   <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
 
-    <div class="modal-content modal-zona" style="border-radius: 16px;">
+    <div id="demoTourPaletteContent" class="modal-content modal-zona" style="border-radius: 16px;">
 
       <div class="modal-header">
 

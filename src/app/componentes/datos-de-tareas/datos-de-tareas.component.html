@@ -1,7 +1,7 @@
 <div class="presupuesto-page" id="export-presupuesto" [style.color]="colorScheme.textColor">
 
   <!-- ============ TOOLBAR FLOTANTE — no-print ============ -->
-  <div class="preview-toolbar no-print" *ngIf="tareasAgregadas && tareasAgregadas.length > 0">
+  <div id="demoBudgetPreviewControls" class="preview-toolbar no-print" *ngIf="(tareasAgregadas && tareasAgregadas.length > 0) || showBudgetTour">
     <button type="button" class="preview-toggle" [class.preview-toggle--active]="hideCostPerM2" [attr.aria-pressed]="hideCostPerM2" (click)="toggleHideCostPerM2()">
       <span class="preview-toggle__icon" aria-hidden="true">
         <i class="bi" [ngClass]="hideCostPerM2 ? 'bi-eye-slash-fill' : 'bi-eye-fill'"></i>
@@ -17,29 +17,29 @@
   </div>
 
   <!-- BOTÓN DESCARGAR -->
-  <button type="button" class="fab-btn fab-btn--download no-print" (click)="showDownloadModal = true">
+  <button id="demoBudgetDownloadButton" type="button" class="fab-btn fab-btn--download no-print" (click)="showDownloadModal = true">
     <i class="fas fa-download"></i><span>Descargar</span>
   </button>
 
   <!-- BOTÓN VOLVER -->
-  <button type="button" class="fab-btn fab-btn--back no-print" (click)="volverAlDashboard()">
+  <button id="demoBudgetBackButton" type="button" class="fab-btn fab-btn--back no-print" (click)="volverAlDashboard()">
     <i class="fas fa-arrow-left"></i>
   </button>
 
   <!-- ============ MODAL DE DESCARGA ============ -->
   <div class="download-overlay no-print" [class.is-open]="showDownloadModal" (click)="onOverlayClick($event)">
-    <div class="download-card">
+    <div id="demoBudgetDownloadOptions" class="download-card">
       <div class="download-card__icon"><i class="fas fa-file-export"></i></div>
       <h5 class="download-card__title">Exportar presupuesto</h5>
       <p class="download-card__sub">Elegí el formato de descarga</p>
       <div class="download-card__actions">
-        <button type="button" class="dl-btn dl-btn--pdf" (click)="descargarPDF(); showDownloadModal = false">
+        <button id="demoBudgetDownloadPdf" type="button" class="dl-btn dl-btn--pdf" (click)="descargarPDF(); showDownloadModal = false">
           <i class="fas fa-file-pdf"></i> PDF
         </button>
-        <button type="button" class="dl-btn dl-btn--html" (click)="descargarHTML(); showDownloadModal = false">
+        <button id="demoBudgetDownloadHtml" type="button" class="dl-btn dl-btn--html" (click)="descargarHTML(); showDownloadModal = false">
           <i class="fas fa-code"></i> HTML
         </button>
-        <button type="button" class="dl-btn dl-btn--text" (click)="abrirPresupuestoSoloTexto()">
+        <button id="demoBudgetDownloadText" type="button" class="dl-btn dl-btn--text" (click)="abrirPresupuestoSoloTexto()">
           <i class="fas fa-comment-alt"></i> Solo texto
         </button>
         <button type="button" class="dl-btn dl-btn--cancel" (click)="showDownloadModal = false">
@@ -173,7 +173,7 @@
       <div class="doc-header">
 
         <!-- EMPRESA -->
-        <div class="company-card" [style.background-color]="colorScheme.infoBoxColorRGBA">
+        <div id="demoBudgetCompanySection" class="company-card" [style.background-color]="colorScheme.infoBoxColorRGBA">
           <div class="company-card__top">
             <div class="company-card__logo" *ngIf="empresaSeleccionada?.logoUrl">
               <img [src]="empresaSeleccionada!.logoUrl" alt="Logo" />
@@ -201,7 +201,7 @@
         </div>
 
         <!-- CLIENTE -->
-        <div class="client-card" [style.background-color]="colorScheme.infoBoxColorRGBA">
+        <div id="demoBudgetClientSection" class="client-card" [style.background-color]="colorScheme.infoBoxColorRGBA">
           <div class="client-card__label" [style.background]="colorScheme.primaryColor">
             <i class="fas fa-user-tie"></i> CLIENTE
           </div>
@@ -237,6 +237,8 @@
 
       <!-- DIVISOR -->
       <div class="doc-divider" [style.background-color]="colorScheme.primaryColor + '33'"></div>
+
+      <div id="demoBudgetTasksSection">
 
       <!-- ===== ESTADO VACÍO ===== -->
       <div class="empty-state" [class.is-visible]="!tareasAgregadas || tareasAgregadas.length === 0">
@@ -296,7 +298,44 @@
 
       </div><!-- /table-section -->
 
+      </div><!-- /demoBudgetTasksSection -->
+
     </div><!-- /doc-body -->
   </div><!-- /doc-wrapper -->
 
 </div><!-- /presupuesto-page -->
+
+<div class="budget-tour-backdrop no-print" *ngIf="showBudgetTour" (click)="cerrarBudgetTour()" aria-hidden="true"></div>
+
+<div
+  class="budget-tour-spotlight no-print"
+  *ngIf="showBudgetTour && budgetTourSteps[budgetTourIndex].target"
+  [class.budget-tour-spotlight--ready]="budgetTourPositionReady"
+  [ngStyle]="budgetTourSpotlightStyle"
+  aria-hidden="true">
+</div>
+
+<section
+  class="budget-tour-bubble no-print"
+  *ngIf="showBudgetTour"
+  [class.budget-tour-bubble--ready]="budgetTourPositionReady"
+  [class.budget-tour-bubble--above]="budgetTourBubblePlacement === 'above'"
+  [class.budget-tour-bubble--below]="budgetTourBubblePlacement === 'below'"
+  [class.budget-tour-bubble--centered]="budgetTourBubblePlacement === 'centered'"
+  [ngStyle]="budgetTourBubbleStyle"
+  role="dialog"
+  aria-modal="true">
+  <button class="budget-tour-close" type="button" aria-label="Cerrar tour" (click)="cerrarBudgetTour()">×</button>
+  <span class="budget-tour-eyebrow">Presupuesto · {{ budgetTourIndex + 1 }} de {{ budgetTourSteps.length }}</span>
+  <h2>{{ budgetTourSteps[budgetTourIndex].title }}</h2>
+  <p>{{ budgetTourSteps[budgetTourIndex].text }}</p>
+  <div class="budget-tour-actions">
+    <button *ngIf="budgetTourIndex > 0" type="button" class="budget-tour-nav-button budget-tour-nav-button--previous" (click)="avanzarBudgetTour(-1)" aria-label="Ir al paso anterior">
+      <span class="budget-tour-nav-triangle" aria-hidden="true"></span>
+    </button>
+    <button *ngIf="budgetTourIndex < budgetTourSteps.length - 1" type="button" class="budget-tour-nav-button budget-tour-nav-button--next" (click)="avanzarBudgetTour(1)" aria-label="Ir al paso siguiente">
+      <span class="budget-tour-nav-triangle" aria-hidden="true"></span>
+    </button>
+    <button *ngIf="budgetTourIndex === budgetTourSteps.length - 1" type="button" class="budget-tour-button" (click)="cerrarBudgetTour()">Finalizar</button>
+  </div>
+</section>
