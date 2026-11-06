@@ -10,6 +10,7 @@ import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { AccessCode, AuthService } from '../../servicios/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
+import { UserTareaService } from '../../servicios/user-tarea.service';
 declare var html2pdf: any;
 
 interface ColorScheme {
@@ -114,7 +115,8 @@ export class DatosDeTareasComponent implements OnInit {
     private appToast: AppToastService,
     private uiDialog: UiDialogService,
     private route: Router,
-    private localStore: OfflineLocalStoreService
+    private localStore: OfflineLocalStoreService,
+    private userTareaService: UserTareaService
   ) {}
 
   private getBackgroundColorRgba(hex: string, alpha: number): string {
@@ -382,11 +384,27 @@ export class DatosDeTareasComponent implements OnInit {
     const confirmed = await this.uiDialog.confirmDelete(tarea.tarea);
     if (!confirmed) return;
 
-    this.tareasAgregadas = this.tareasAgregadas.filter((_, i) => i !== index);
+    if (this.isDemoMode || !tarea.id || tarea.id < 0) {
+      this.tareasAgregadas = this.tareasAgregadas.filter((_, i) => i !== index);
+      void this.persistTareasLocal();
+      return;
+    }
 
+    this.userTareaService.deleteUserTarea(tarea.id).subscribe({
+      next: () => {
+        this.tareasAgregadas = this.tareasAgregadas.filter((_, i) => i !== index);
+        void this.persistTareasLocal();
+        this.appToast.success('Tarea eliminada correctamente');
+      },
+      error: () => {
+        this.appToast.error('No se pudo eliminar la tarea');
+      }
+    });
+  }
+
+  private async persistTareasLocal(): Promise<void> {
     localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas));
     localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-
     const activePreview = await this.localStore.getState<any>('budget:active-preview');
     if (activePreview) {
       await this.localStore.setState('budget:active-preview', { ...activePreview, tareas: this.tareasAgregadas });

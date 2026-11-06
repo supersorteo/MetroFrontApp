@@ -221,6 +221,24 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     { target: '', title: 'Continúa en la vista previa', text: 'La vista de presupuesto se abrirá al avanzar. Allí podrás recorrer sus secciones y conocer sus opciones de descarga.' }
   ];
 
+  // ===== TOUR PRESUPUESTO (guardar/cargar/editar) =====
+  readonly dashboardTourSteps: readonly DemoTourStep[] = [
+    { target: 'demoTourEmpresa', title: 'Seleccioná tu empresa', text: 'Elegí la empresa que figurará en el presupuesto. Podés cambiarla en cualquier momento.' },
+    { target: 'demoTourOpenClientButton', title: 'Elegí tu cliente', text: 'Asociá un cliente al presupuesto. Podés crear clientes nuevos o seleccionar uno existente.' },
+    { target: 'busqueda', title: 'Buscá tareas en el catálogo', text: 'Filtrá por descripción, categoría o costo y hacé clic en una tarea para agregarla al presupuesto.' },
+    { target: 'demoTourPanelOpenButton', title: 'Revisá las tareas agregadas', text: 'Este botón abre el panel con todas las tareas incluidas en el presupuesto actual.' },
+    { target: 'demoTourPanelToolbar', title: 'Guardá el presupuesto', text: 'Desde esta barra podés guardar el presupuesto actual, limpiar la carga o ver la ayuda del panel.' },
+    { target: 'tourGestorButton', title: 'Cargá presupuestos guardados', text: 'El gestor reúne todos tus presupuestos guardados. Podés cargarlos, editarlos o eliminarlos.' },
+    { target: '', title: '¡Listo para cotizar!', text: 'Ya conocés el flujo completo: empresa, cliente, tareas, guardar y cargar presupuestos.' }
+  ];
+  showDashboardTour = false;
+  dashboardTourIndex = 0;
+  dashboardTourPositionReady = false;
+  dashboardTourBubbleStyle: Record<string, string> = {};
+  dashboardTourSpotlightStyle: Record<string, string> = {};
+  dashboardTourBubblePlacement: 'above' | 'below' | 'centered' = 'below';
+  private dashboardTourPositionTimer: ReturnType<typeof setTimeout> | null = null;
+
   filtroCliente: string = '';
   filtroEmpresa: string = '';
   selectedEmpresaId: any = null;
@@ -1305,6 +1323,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     this.initSession();
     this.iniciarDemoOnboarding();
     this.initPremiumCtaVisibility();
+    this.maybeStartDashboardTour();
     this.activatedRoute.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       if (this.trialMode && params['openMembership'] === 'true') {
         setTimeout(() => this.abrirModalPlanes(), 0);
@@ -1618,6 +1637,98 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       height: `${targetRect.height + 16}px`
     };
     this.demoTourPositionReady = true;
+  }
+
+  // ===== TOUR PRESUPUESTO (guardar/cargar/editar) =====
+  avanzarDashboardTour(delta: number): void {
+    if (!this.showDashboardTour) return;
+    this.dashboardTourIndex = Math.max(0, Math.min(this.dashboardTourSteps.length - 1, this.dashboardTourIndex + delta));
+    this.updateDashboardTourTarget();
+  }
+
+  cerrarDashboardTour(): void {
+    this.showDashboardTour = false;
+    this.dashboardTourBubbleStyle = {};
+    this.dashboardTourSpotlightStyle = {};
+    this.dashboardTourBubblePlacement = 'below';
+    this.dashboardTourPositionReady = false;
+    if (this.dashboardTourPositionTimer) {
+      clearTimeout(this.dashboardTourPositionTimer);
+      this.dashboardTourPositionTimer = null;
+    }
+    this.setTourOverlayActive(false);
+    sessionStorage.setItem('metroDashboardTourDone', 'true');
+  }
+
+  @HostListener('window:resize')
+  @HostListener('window:scroll')
+  repositionDashboardTour(): void {
+    if (this.showDashboardTour && this.dashboardTourPositionReady) {
+      this.positionDashboardTourBubble();
+    }
+  }
+
+  private maybeStartDashboardTour(): void {
+    if (sessionStorage.getItem('metroDashboardTourPending') !== 'true') return;
+    sessionStorage.removeItem('metroDashboardTourPending');
+    setTimeout(() => {
+      this.setTourOverlayActive(true);
+      this.showDashboardTour = true;
+      this.dashboardTourIndex = 0;
+      this.updateDashboardTourTarget();
+    }, 350);
+  }
+
+  private updateDashboardTourTarget(): void {
+    this.dashboardTourPositionReady = false;
+    const targetId = this.dashboardTourSteps[this.dashboardTourIndex]?.target;
+    const target = targetId ? document.getElementById(targetId) : null;
+    target?.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
+
+    if (this.dashboardTourPositionTimer) clearTimeout(this.dashboardTourPositionTimer);
+    this.dashboardTourPositionTimer = setTimeout(() => {
+      this.dashboardTourPositionTimer = null;
+      this.positionDashboardTourBubble();
+    }, target ? 350 : 0);
+  }
+
+  private positionDashboardTourBubble(): void {
+    if (!this.showDashboardTour) return;
+
+    const targetId = this.dashboardTourSteps[this.dashboardTourIndex]?.target;
+    if (!targetId) {
+      this.dashboardTourBubblePlacement = 'centered';
+      this.dashboardTourBubbleStyle = { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+      this.dashboardTourSpotlightStyle = {};
+      this.dashboardTourPositionReady = true;
+      return;
+    }
+
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const bubbleWidth = Math.min(360, viewportWidth - 32);
+    const targetRect = target.getBoundingClientRect();
+    const bubbleElement = document.querySelector('.dashboard-tour-bubble') as HTMLElement | null;
+    const bubbleHeight = bubbleElement?.offsetHeight ?? 250;
+    const canFitBelow = viewportHeight - targetRect.bottom - 16 >= bubbleHeight;
+    const showBelow = canFitBelow || targetRect.top - 16 < bubbleHeight;
+    const top = showBelow
+      ? Math.min(targetRect.bottom + 16, viewportHeight - bubbleHeight - 16)
+      : Math.max(16, targetRect.top - bubbleHeight - 16);
+    const left = Math.max(16, Math.min(targetRect.left + targetRect.width / 2 - bubbleWidth / 2, viewportWidth - bubbleWidth - 16));
+
+    this.dashboardTourBubblePlacement = showBelow ? 'below' : 'above';
+    this.dashboardTourBubbleStyle = { top: `${Math.max(16, top)}px`, left: `${left}px`, width: `${bubbleWidth}px`, transform: 'none' };
+    this.dashboardTourSpotlightStyle = {
+      top: `${Math.max(8, targetRect.top - 8)}px`,
+      left: `${Math.max(8, targetRect.left - 8)}px`,
+      width: `${targetRect.width + 16}px`,
+      height: `${targetRect.height + 16}px`
+    };
+    this.dashboardTourPositionReady = true;
   }
 
   private cerrarComoUsarMetro(): void {

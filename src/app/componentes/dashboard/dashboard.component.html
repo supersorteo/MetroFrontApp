@@ -105,6 +105,43 @@
   </div>
 </section>
 
+<!-- Tour Presupuesto (guardar/cargar/editar) -->
+<div class="demo-tour-backdrop" *ngIf="showDashboardTour" (click)="cerrarDashboardTour()" aria-hidden="true"></div>
+
+<div
+  class="demo-tour-spotlight"
+  *ngIf="showDashboardTour && dashboardTourSteps[dashboardTourIndex].target"
+  [class.demo-tour-spotlight--ready]="dashboardTourPositionReady"
+  [ngStyle]="dashboardTourSpotlightStyle"
+  aria-hidden="true">
+</div>
+
+<section
+  class="demo-tour-bubble dashboard-tour-bubble"
+  *ngIf="showDashboardTour"
+  [class.demo-tour-bubble--ready]="dashboardTourPositionReady"
+  [class.demo-tour-bubble--above]="dashboardTourBubblePlacement === 'above'"
+  [class.demo-tour-bubble--below]="dashboardTourBubblePlacement === 'below'"
+  [class.demo-tour-bubble--centered]="dashboardTourBubblePlacement === 'centered'"
+  [ngStyle]="dashboardTourBubbleStyle"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="dashboard-tour-step-title">
+  <button class="demo-tour-close" type="button" aria-label="Cerrar tour" (click)="cerrarDashboardTour()">×</button>
+  <span class="demo-tour-eyebrow">Recorrido · {{ dashboardTourIndex + 1 }} de {{ dashboardTourSteps.length }}</span>
+  <h2 id="dashboard-tour-step-title">{{ dashboardTourSteps[dashboardTourIndex].title }}</h2>
+  <p>{{ dashboardTourSteps[dashboardTourIndex].text }}</p>
+  <div class="demo-tour-actions">
+    <button *ngIf="dashboardTourIndex > 0" type="button" class="demo-tour-nav-button demo-tour-nav-button--previous" (click)="avanzarDashboardTour(-1)" aria-label="Ir al paso anterior">
+      <span class="demo-tour-nav-triangle" aria-hidden="true"></span>
+    </button>
+    <button *ngIf="dashboardTourIndex < dashboardTourSteps.length - 1" type="button" class="demo-tour-nav-button demo-tour-nav-button--next" (click)="avanzarDashboardTour(1)" aria-label="Ir al paso siguiente">
+      <span class="demo-tour-nav-triangle" aria-hidden="true"></span>
+    </button>
+    <button *ngIf="dashboardTourIndex === dashboardTourSteps.length - 1" type="button" class="demo-tour-button" (click)="cerrarDashboardTour()">Finalizar</button>
+  </div>
+</section>
+
 <div class="menu-panel-overlay" *ngIf="showMenuPanel" (click)="toggleMenuPanel()"></div>
 
 <aside class="menu-panel" *ngIf="showMenuPanel" [class.open]="showMenuPanel">
@@ -3078,7 +3115,7 @@
 
     </button>
 
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--gestor" (click)="toggleSavedBudgetsPanel()" type="button" aria-label="Gestor de presupuestos" title="Gestor de presupuestos">
+    <button id="tourGestorButton" class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--gestor" (click)="toggleSavedBudgetsPanel()" type="button" aria-label="Gestor de presupuestos" title="Gestor de presupuestos">
 
       <span class="toolbar-item__icon" aria-hidden="true">
 
