@@ -58,7 +58,7 @@
   </div>
 </section>
 
-<div class="demo-tour-backdrop" *ngIf="showDemoTourWelcome || showDemoTourStep" (click)="cerrarDemoTour()" aria-hidden="true"></div>
+<div class="demo-tour-backdrop" *ngIf="showDemoTourWelcome || showDemoTourStep" (click)="$event.stopPropagation()" aria-hidden="true"></div>
 
 <div
   class="demo-tour-spotlight"
@@ -106,7 +106,7 @@
 </section>
 
 <!-- Tour Presupuesto (guardar/cargar/editar) -->
-<div class="demo-tour-backdrop" *ngIf="showDashboardTour" (click)="cerrarDashboardTour()" aria-hidden="true"></div>
+<div class="demo-tour-backdrop" *ngIf="showDashboardTour" (click)="$event.stopPropagation()" aria-hidden="true"></div>
 
 <div
   class="demo-tour-spotlight"
@@ -132,13 +132,13 @@
   <h2 id="dashboard-tour-step-title">{{ dashboardTourSteps[dashboardTourIndex].title }}</h2>
   <p>{{ dashboardTourSteps[dashboardTourIndex].text }}</p>
   <div class="demo-tour-actions">
-    <button *ngIf="dashboardTourIndex > 0" type="button" class="demo-tour-nav-button demo-tour-nav-button--previous" (click)="avanzarDashboardTour(-1)" aria-label="Ir al paso anterior">
+    <button *ngIf="!demoTourAutomationInProgress && dashboardTourIndex > 0" type="button" class="demo-tour-nav-button demo-tour-nav-button--previous" (click)="avanzarDashboardTour(-1)" aria-label="Ir al paso anterior">
       <span class="demo-tour-nav-triangle" aria-hidden="true"></span>
     </button>
-    <button *ngIf="dashboardTourIndex < dashboardTourSteps.length - 1" type="button" class="demo-tour-nav-button demo-tour-nav-button--next" (click)="avanzarDashboardTour(1)" aria-label="Ir al paso siguiente">
+    <button *ngIf="!demoTourAutomationInProgress && dashboardTourIndex < dashboardTourSteps.length - 1" type="button" class="demo-tour-nav-button demo-tour-nav-button--next" (click)="avanzarDashboardTour(1)" aria-label="Ir al paso siguiente">
       <span class="demo-tour-nav-triangle" aria-hidden="true"></span>
     </button>
-    <button *ngIf="dashboardTourIndex === dashboardTourSteps.length - 1" type="button" class="demo-tour-button" (click)="cerrarDashboardTour()">Finalizar</button>
+    <button *ngIf="!demoTourAutomationInProgress && dashboardTourIndex === dashboardTourSteps.length - 1" type="button" class="demo-tour-button" (click)="cerrarDashboardTour()">Finalizar</button>
   </div>
 </section>
 
@@ -1898,6 +1898,7 @@
         </button>
 
         <button
+          id="tourQuitarCargaButton"
           *ngIf="presupuestoSeleccionado"
           class="tareas-panel__action"
           type="button"
@@ -3205,7 +3206,7 @@
 
 <div class="saved-budgets-overlay" *ngIf="showSavedBudgetsPanel" (click)="closeSavedBudgetsPanel()"></div>
 
-<div class="saved-budgets-panel" [class.open]="showSavedBudgetsPanel">
+<div id="tourGestorPanel" class="saved-budgets-panel" [class.open]="showSavedBudgetsPanel">
 
   <div class="panel-header">
 
@@ -3667,20 +3668,47 @@
             <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
           </button>
 
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourCrearPresupuesto()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-plus-circle"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Crear un presupuesto</strong>
+              <small>Empresa, cliente, tareas y cómo guardarlo por primera vez.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourCargarPresupuesto()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-folder2-open"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Cargar presupuesto</strong>
+              <small>Cómo abrir un presupuesto guardado desde el Gestor.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourQuitarCarga()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-eraser"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Quitar carga del presupuesto</strong>
+              <small>Cómo descargar el presupuesto activo desde el panel de tareas.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourActualizarPresupuesto()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-pencil-square"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Editar y actualizar presupuesto</strong>
+              <small>Cómo modificar un presupuesto guardado y guardar los cambios.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
           <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourPresupuesto()">
             <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
             <span class="metro-help-card__content">
               <strong>Explorar el presupuesto</strong>
               <small>Conoce sus secciones, botones y formatos de descarga.</small>
-            </span>
-            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
-          </button>
-
-          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourGuardarPresupuesto()">
-            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-floppy2"></i></span>
-            <span class="metro-help-card__content">
-              <strong>Guardar, cargar y editar presupuesto</strong>
-              <small>Recorre el flujo completo: empresa, cliente, tareas, guardar y gestor.</small>
             </span>
             <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
           </button>

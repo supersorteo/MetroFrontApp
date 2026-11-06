@@ -222,15 +222,44 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   ];
 
   // ===== TOUR PRESUPUESTO (guardar/cargar/editar) =====
-  readonly dashboardTourSteps: readonly DemoTourStep[] = [
-    { target: 'demoTourEmpresa', title: 'Seleccioná tu empresa', text: 'Elegí la empresa que figurará en el presupuesto. Podés cambiarla en cualquier momento.' },
-    { target: 'demoTourOpenClientButton', title: 'Elegí tu cliente', text: 'Asociá un cliente al presupuesto. Podés crear clientes nuevos o seleccionar uno existente.' },
-    { target: 'busqueda', title: 'Buscá tareas en el catálogo', text: 'Filtrá por descripción, categoría o costo y hacé clic en una tarea para agregarla al presupuesto.' },
-    { target: 'demoTourPanelOpenButton', title: 'Revisá las tareas agregadas', text: 'Este botón abre el panel con todas las tareas incluidas en el presupuesto actual.' },
-    { target: 'demoTourPanelToolbar', title: 'Guardá el presupuesto', text: 'Desde esta barra podés guardar el presupuesto actual, limpiar la carga o ver la ayuda del panel.' },
-    { target: 'tourGestorButton', title: 'Cargá presupuestos guardados', text: 'El gestor reúne todos tus presupuestos guardados. Podés cargarlos, editarlos o eliminarlos.' },
-    { target: '', title: '¡Listo para cotizar!', text: 'Ya conocés el flujo completo: empresa, cliente, tareas, guardar y cargar presupuestos.' }
+  dashboardTourFlow: 'crear' | 'cargar' | 'quitar' | 'actualizar' | null = null;
+
+  private readonly crearTourSteps: readonly DemoTourStep[] = [
+    { target: 'demoTourEmpresa',          title: '1. Seleccioná tu empresa',         text: 'Elegí la empresa que aparecerá en el presupuesto. El tour abrirá la lista.' },
+    { target: 'demoTourOpenClientButton', title: '2. Elegí tu cliente',              text: 'Asociá un cliente al presupuesto. El tour abrirá la lista de clientes.' },
+    { target: 'busqueda',                 title: '3. Buscá tareas en el catálogo',   text: 'Filtrá por descripción, categoría o costo y hacé clic en una tarea para agregarla.' },
+    { target: 'demoTourPanelOpenButton',  title: '4. Revisá el panel de tareas',     text: 'El panel muestra las tareas del presupuesto con subtotales. El tour lo abrirá.' },
+    { target: 'demoTourPanelToolbar',     title: '5. Guardá el presupuesto',         text: 'El ícono de diskette guarda la cotización. El tour abrirá el formulario.' },
+    { target: '',                         title: '¡Presupuesto creado!',             text: 'Ya sabés cómo crear un presupuesto desde cero. Podés cargarlo desde el Gestor cuando quieras.' },
   ];
+
+  private readonly cargarTourSteps: readonly DemoTourStep[] = [
+    { target: 'tourGestorButton',        title: '1. Abrí el Gestor',       text: 'El Gestor reúne todos tus presupuestos guardados. El tour lo abrirá.' },
+    { target: 'tourCargarButton',        title: '2. Cargá un presupuesto', text: 'Hacé clic en el botón ↓ para cargar el presupuesto. Al cargarse, verás la etiqueta "Cargado" junto al nombre.' },
+    { target: '',                        title: '¡Presupuesto cargado!',   text: 'Ya sabés cómo abrir un presupuesto guardado. Cuando quieras descargarlo, usá el tour "Quitar carga".' },
+  ];
+
+  private readonly quitarTourSteps: readonly DemoTourStep[] = [
+    { target: 'demoTourPanelOpenButton', title: '1. Abrí el panel de tareas', text: 'El panel muestra las tareas del presupuesto activo. El tour lo abrirá.' },
+    { target: 'demoTourPanelToolbar',    title: '2. Quitá la carga',          text: 'En este toolbar, el botón de borrador (eraser) aparece junto al diskette cuando hay un presupuesto cargado. Hacé clic en él para quitar la carga y limpiar el panel.' },
+    { target: '',                        title: '¡Carga quitada!',            text: 'Ya sabés cómo descargar un presupuesto activo desde el panel de tareas.' },
+  ];
+
+  private readonly actualizarTourSteps: readonly DemoTourStep[] = [
+    { target: 'tourGestorButton',        title: '1. Abrí el Gestor',              text: 'Abrí el Gestor para seleccionar el presupuesto que querés modificar. El tour lo abrirá.' },
+    { target: 'tourCargarButton',        title: '2. Cargá el presupuesto a editar', text: 'Hacé clic en este botón ↓ para cargar el presupuesto que querés modificar.' },
+    { target: 'demoTourPanelOpenButton', title: '3. Revisá el presupuesto cargado', text: 'El panel muestra las tareas del presupuesto cargado (requiere al menos una tarea). El tour lo abrirá.' },
+    { target: 'busqueda',                title: '4. Editá empresa, cliente o tareas', text: 'Podés cambiar la empresa, el cliente o agregar/quitar tareas desde el catálogo o el panel.' },
+    { target: 'demoTourPanelToolbar',    title: '5. Guardá los cambios',           text: 'Con un presupuesto cargado, el diskette abre el formulario con el botón "Actualizar". El tour lo abrirá.' },
+    { target: '',                        title: '¡Presupuesto actualizado!',        text: 'Al tocar "Actualizar" en el formulario los cambios se guardan sobre el presupuesto existente.' },
+  ];
+
+  get dashboardTourSteps(): readonly DemoTourStep[] {
+    if (this.dashboardTourFlow === 'cargar')     return this.cargarTourSteps;
+    if (this.dashboardTourFlow === 'quitar')     return this.quitarTourSteps;
+    if (this.dashboardTourFlow === 'actualizar') return this.actualizarTourSteps;
+    return this.crearTourSteps;
+  }
   showDashboardTour = false;
   dashboardTourIndex = 0;
   dashboardTourPositionReady = false;
@@ -1517,7 +1546,57 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     }, 250);
   }
 
-  iniciarTourGuardarPresupuesto(): void {
+  iniciarTourCrearPresupuesto(): void {
+    if (!this.tareasAgregadas?.length) {
+      this.uiDialog.info({ title: 'Se necesitan tareas', text: 'Para este tour necesitás tener al menos una tarea agregada al catálogo.' });
+      return;
+    }
+    this.dashboardTourFlow = 'crear';
+    this.cerrarComoUsarMetro();
+    setTimeout(() => {
+      this.setTourOverlayActive(true);
+      this.showDashboardTour = true;
+      this.dashboardTourIndex = 0;
+      this.updateDashboardTourTarget();
+    }, 250);
+  }
+
+  iniciarTourCargarPresupuesto(): void {
+    if (!this.budgetService.presupuestosActuales?.length) {
+      this.uiDialog.info({ title: 'Se necesitan presupuestos guardados', text: 'Para este tour necesitás tener al menos un presupuesto guardado en el Gestor.' });
+      return;
+    }
+    this.dashboardTourFlow = 'cargar';
+    this.cerrarComoUsarMetro();
+    setTimeout(() => {
+      this.setTourOverlayActive(true);
+      this.showDashboardTour = true;
+      this.dashboardTourIndex = 0;
+      this.updateDashboardTourTarget();
+    }, 250);
+  }
+
+  iniciarTourQuitarCarga(): void {
+    if (!this.presupuestoSeleccionado) {
+      this.uiDialog.info({ title: 'Se necesita un presupuesto cargado', text: 'Para este tour necesitás tener un presupuesto cargado actualmente. Usá el tour "Cargar presupuesto" primero.' });
+      return;
+    }
+    this.dashboardTourFlow = 'quitar';
+    this.cerrarComoUsarMetro();
+    setTimeout(() => {
+      this.setTourOverlayActive(true);
+      this.showDashboardTour = true;
+      this.dashboardTourIndex = 0;
+      this.updateDashboardTourTarget();
+    }, 250);
+  }
+
+  iniciarTourActualizarPresupuesto(): void {
+    if (!this.budgetService.presupuestosActuales?.length) {
+      this.uiDialog.info({ title: 'Se necesitan presupuestos guardados', text: 'Para este tour necesitás tener al menos un presupuesto guardado en el Gestor.' });
+      return;
+    }
+    this.dashboardTourFlow = 'actualizar';
     this.cerrarComoUsarMetro();
     setTimeout(() => {
       this.setTourOverlayActive(true);
@@ -1651,13 +1730,29 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 
   // ===== TOUR PRESUPUESTO (guardar/cargar/editar) =====
   avanzarDashboardTour(delta: number): void {
+    if (this.demoTourAutomationInProgress) return;
     if (!this.showDashboardTour) return;
-    this.dashboardTourIndex = Math.max(0, Math.min(this.dashboardTourSteps.length - 1, this.dashboardTourIndex + delta));
+    if (delta > 0) {
+      if (this.dashboardTourFlow === 'cargar')     { this.avanzarTourCargarManualmente();     return; }
+      if (this.dashboardTourFlow === 'quitar')     { this.avanzarTourQuitarManualmente();     return; }
+      if (this.dashboardTourFlow === 'actualizar') { this.avanzarTourActualizarManualmente(); return; }
+      this.avanzarTourCrearManualmente();
+      return;
+    }
+    this.dashboardTourIndex = Math.max(0, this.dashboardTourIndex - 1);
     this.updateDashboardTourTarget();
   }
 
   cerrarDashboardTour(): void {
     this.showDashboardTour = false;
+    this.dashboardTourFlow = null;
+    this.demoTourAutomationInProgress = false;
+    if (this.demoTourAutomationTimer) {
+      clearTimeout(this.demoTourAutomationTimer);
+      this.demoTourAutomationTimer = null;
+    }
+    this.closeSaveBudgetModal();
+    if (this.showSavedBudgetsPanel) this.toggleSavedBudgetsPanel();
     this.dashboardTourBubbleStyle = {};
     this.dashboardTourSpotlightStyle = {};
     this.dashboardTourBubblePlacement = 'below';
@@ -1667,7 +1762,131 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       this.dashboardTourPositionTimer = null;
     }
     this.setTourOverlayActive(false);
-    sessionStorage.setItem('metroDashboardTourDone', 'true');
+  }
+
+  private mostrarPasoDashboardTour(index: number): void {
+    this.dashboardTourPositionReady = false;
+    this.dashboardTourIndex = index;
+    this.showDashboardTour = true;
+    setTimeout(() => this.updateDashboardTourTarget(), 0);
+  }
+
+  // ── Flows ──────────────────────────────────────────────────────────
+
+  private avanzarTourCrearManualmente(): void {
+    switch (this.dashboardTourIndex) {
+      case 0: this.abrirEmpresaParaTour(1); return;
+      case 1: this.abrirClienteParaTour(2); return;
+      case 3: this.abrirPanelParaTour(4);   return;
+      case 4: this.abrirGuardarParaTour(5); return;
+      default:
+        this.dashboardTourIndex = Math.min(this.crearTourSteps.length - 1, this.dashboardTourIndex + 1);
+        this.updateDashboardTourTarget();
+    }
+  }
+
+  private avanzarTourCargarManualmente(): void {
+    switch (this.dashboardTourIndex) {
+      case 0: this.abrirGestorParaTour(1); return;
+      default:
+        this.dashboardTourIndex = Math.min(this.cargarTourSteps.length - 1, this.dashboardTourIndex + 1);
+        this.updateDashboardTourTarget();
+    }
+  }
+
+  private avanzarTourQuitarManualmente(): void {
+    switch (this.dashboardTourIndex) {
+      case 0: this.abrirPanelParaTour(1); return;
+      default:
+        this.dashboardTourIndex = Math.min(this.quitarTourSteps.length - 1, this.dashboardTourIndex + 1);
+        this.updateDashboardTourTarget();
+    }
+  }
+
+  private avanzarTourActualizarManualmente(): void {
+    switch (this.dashboardTourIndex) {
+      case 0: this.abrirGestorParaTour(1);  return;
+      case 2: this.abrirPanelParaTour(3);   return;
+      case 4: this.abrirGuardarParaTour(5); return;
+      default:
+        this.dashboardTourIndex = Math.min(this.actualizarTourSteps.length - 1, this.dashboardTourIndex + 1);
+        this.updateDashboardTourTarget();
+    }
+  }
+
+  // ── Acciones genéricas ─────────────────────────────────────────────
+
+  private abrirEmpresaParaTour(nextStep: number): void {
+    const button = document.getElementById('demoTourOpenCompanyButton') as HTMLButtonElement | null;
+    if (!button) { this.mostrarPasoDashboardTour(nextStep); return; }
+    this.demoTourAutomationInProgress = true;
+    this.showDashboardTour = false;
+    button.click();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      const modal = document.getElementById('listaEmpresasModal');
+      (window as any).bootstrap?.Modal?.getInstance(modal)?.hide();
+      setTimeout(() => {
+        this.demoTourAutomationInProgress = false;
+        this.mostrarPasoDashboardTour(nextStep);
+      }, 400);
+    }, 800);
+  }
+
+  private abrirClienteParaTour(nextStep: number): void {
+    const button = document.getElementById('demoTourOpenClientButton') as HTMLButtonElement | null;
+    if (!button) { this.mostrarPasoDashboardTour(nextStep); return; }
+    this.demoTourAutomationInProgress = true;
+    this.showDashboardTour = false;
+    button.click();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      const modal = document.getElementById('listaClientesModal');
+      (window as any).bootstrap?.Modal?.getInstance(modal)?.hide();
+      setTimeout(() => {
+        this.demoTourAutomationInProgress = false;
+        this.mostrarPasoDashboardTour(nextStep);
+      }, 400);
+    }, 800);
+  }
+
+  private abrirPanelParaTour(nextStep: number): void {
+    this.demoTourAutomationInProgress = true;
+    this.showDashboardTour = false;
+    if (!this.showTareasPanel) {
+      const btn = document.getElementById('demoTourPanelOpenButton') as HTMLButtonElement | null;
+      btn?.click();
+    }
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoDashboardTour(nextStep);
+    }, 500);
+  }
+
+  private abrirGuardarParaTour(nextStep: number): void {
+    this.demoTourAutomationInProgress = true;
+    this.showDashboardTour = false;
+    this.openSaveBudgetModal();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoDashboardTour(nextStep);
+    }, 500);
+  }
+
+  private abrirGestorParaTour(nextStep: number): void {
+    this.demoTourAutomationInProgress = true;
+    this.showDashboardTour = false;
+    this.closeSaveBudgetModal();
+    setTimeout(() => {
+      if (!this.showSavedBudgetsPanel) this.toggleSavedBudgetsPanel();
+      this.demoTourAutomationTimer = setTimeout(() => {
+        this.demoTourAutomationTimer = null;
+        this.demoTourAutomationInProgress = false;
+        this.mostrarPasoDashboardTour(nextStep);
+      }, 500);
+    }, 300);
   }
 
   @HostListener('window:resize')
@@ -3763,12 +3982,6 @@ toggleTareasPanel(): void {
       this.mostrarTabla = true;
       this.presupuestoService.setTareasAgregadas(this.tareasAgregadas);
     }
-  }
-
-  if (!this.tareasAgregadas || this.tareasAgregadas.length === 0) {
-    if (this.userTareaStore.loading()) return;
-    this.uiDialog.info({ title: 'Sin tareas', text: 'Aún no agregaste tareas. Agrega al menos una para poder ver el panel.' });
-    return;
   }
 
   this.tareasCurrentPage = 1;

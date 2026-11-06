@@ -10,7 +10,7 @@ import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { AccessCode, AuthService } from '../../servicios/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
-import { UserTareaService } from '../../servicios/user-tarea.service';
+import { UserTarea, UserTareaService } from '../../servicios/user-tarea.service';
 declare var html2pdf: any;
 
 interface ColorScheme {
@@ -363,17 +363,56 @@ export class DatosDeTareasComponent implements OnInit {
       );
       return;
     }
+
+    const tarea = this.tareasAgregadas[this.editingIndex];
+    if (!tarea) return;
+
     const totalCost = this.editTotalCost;
-    this.tareasAgregadas = this.tareasAgregadas.map((t, i) =>
-      i === this.editingIndex ? { ...t, ...this.editForm, totalCost } : t
-    );
-    localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas));
-    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-    const activePreview = await this.localStore.getState<any>('budget:active-preview');
-    if (activePreview) {
-      await this.localStore.setState('budget:active-preview', { ...activePreview, tareas: this.tareasAgregadas });
+    const updatedLocal = { ...tarea, ...this.editForm, totalCost };
+
+    if (!tarea.id || tarea.id < 0) {
+      this.tareasAgregadas = this.tareasAgregadas.map((t, i) =>
+        i === this.editingIndex ? updatedLocal : t
+      );
+      void this.persistTareasLocal();
+      this.cerrarEditarTarea();
+      return;
     }
-    this.cerrarEditarTarea();
+
+    const confirmed = await this.uiDialog.confirm({
+      title: '¿Guardar cambios?',
+      text: `Se actualizará "${tarea.tarea}" con los nuevos valores.`,
+      confirmText: 'Guardar',
+      cancelText: 'Cancelar',
+      tone: 'primary',
+      icon: 'question'
+    });
+    if (!confirmed) return;
+
+    const updatedUserTarea: UserTarea = {
+      ...updatedLocal,
+      pais: tarea.pais || '',
+      userCode: tarea.userCode || localStorage.getItem('userCode') || '',
+    };
+
+    this.userTareaService.updateUserTarea(Number(tarea.id), updatedUserTarea).subscribe({
+      next: () => {
+        this.tareasAgregadas = this.tareasAgregadas.map((t, i) =>
+          i === this.editingIndex ? updatedLocal : t
+        );
+        void this.persistTareasLocal();
+        this.cerrarEditarTarea();
+        void this.uiDialog.success({ title: 'Tarea actualizada', text: 'Los cambios se guardaron correctamente.' });
+      },
+      error: () => {
+        this.tareasAgregadas = this.tareasAgregadas.map((t, i) =>
+          i === this.editingIndex ? updatedLocal : t
+        );
+        void this.persistTareasLocal();
+        this.cerrarEditarTarea();
+        void this.uiDialog.error({ title: 'Error al guardar', text: 'No se pudo actualizar la tarea en el servidor.' });
+      }
+    });
   }
 
   // ============ ELIMINAR TAREA ============
@@ -394,10 +433,10 @@ export class DatosDeTareasComponent implements OnInit {
       next: () => {
         this.tareasAgregadas = this.tareasAgregadas.filter((_, i) => i !== index);
         void this.persistTareasLocal();
-        this.appToast.success('Tarea eliminada correctamente');
+        void this.uiDialog.success({ title: 'Tarea eliminada', text: 'La tarea fue eliminada correctamente.' });
       },
       error: () => {
-        this.appToast.error('No se pudo eliminar la tarea');
+        void this.uiDialog.error({ title: 'Error al eliminar', text: 'No se pudo eliminar la tarea en el servidor.' });
       }
     });
   }

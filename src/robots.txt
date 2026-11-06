@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+Disallow: /ofrecimiento
+Disallow: /dashboard
+Disallow: /presupuesto
+Disallow: /calculadora
+Disallow: /editar-clientes/
+Disallow: /editar-empresa/
+Disallow: /admin-generate-code
+Disallow: /payment-result
+
+Sitemap: https://metroapp.site/sitemap.xml

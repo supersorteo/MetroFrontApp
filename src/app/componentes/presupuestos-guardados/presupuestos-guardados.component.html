@@ -17,7 +17,7 @@
 
   @if (presupuestosFiltrados.length > 0) {
     <div class="saved-budgets-list">
-      @for (presupuesto of presupuestosFiltrados; track presupuesto.id) {
+      @for (presupuesto of presupuestosFiltrados; track presupuesto.id; let i = $index) {
         <div class="saved-budget-item">
           <div class="saved-budget-info">
             <strong>
@@ -49,7 +49,8 @@
           </div>
 
           <div class="saved-budget-actions">
-            <button type="button" class="btn btn-outline-primary btn-sm" (click)="cargar(presupuesto)"
+            <button [id]="i === 0 ? 'tourCargarButton' : null"
+              type="button" class="btn btn-outline-primary btn-sm" (click)="cargar(presupuesto)"
               [disabled]="esPresupuestoCargado(presupuesto)"
               [title]="esPresupuestoCargado(presupuesto) ? 'Este presupuesto ya está cargado' : 'Cargar presupuesto'"
               [attr.aria-label]="esPresupuestoCargado(presupuesto) ? 'Este presupuesto ya está cargado' : 'Cargar presupuesto'">
