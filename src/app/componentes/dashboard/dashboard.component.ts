@@ -90,6 +90,11 @@ interface ColorPickerDraft {
   value: number;
 }
 
+interface DemoTourStep {
+  target: string;
+  title: string;
+  text: string;
+}
 
 function cleanupBootstrapModals(): void {
   document.body.classList.remove('modal-open');
@@ -122,6 +127,97 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
   private premiumCtaTimer: ReturnType<typeof setTimeout> | null = null;
   deferredPrompt: any;
+  showArchiIntro = false;
+  archiIntroIndex = 0;
+  archiIntroSceneVisible = true;
+  archiIntroDontShowAgain = false;
+  private readonly archiIntroStorageKey = 'metroArchiIntroDismissed_v1';
+  readonly archiIntroScenes = [
+    {
+      image: 'assets/archi-tour/archi-tour-bienvenida.webp',
+      eyebrow: 'ARCHI te da la bienvenida',
+      title: 'Una nueva versión para construir mejor',
+      text: 'METRO evoluciona para acompañarte con más claridad, orden y confianza en cada presupuesto.'
+    },
+    {
+      image: 'assets/archi-tour/archi-tour-beneficios.webp',
+      eyebrow: 'Más claridad, menos vueltas',
+      title: 'Todo lo importante, en un solo lugar',
+      text: 'Organiza tareas, empresas y clientes; consulta valores de referencia y prepara presupuestos con una experiencia más simple.'
+    },
+    {
+      image: 'assets/archi-tour/archi-tour-organizacion.webp',
+      eyebrow: 'Planificar también es construir',
+      title: 'Decisiones mejor pensadas',
+      text: 'METRO te ayuda a ordenar la información, revisar cada detalle y avanzar con una visión más profesional de tu trabajo.'
+    },
+    {
+      image: 'assets/archi-tour/archi-tour-camino.webp',
+      eyebrow: 'Un gran camino comienza hoy',
+      title: 'Bienvenido al mundo de la construcción',
+      text: 'Que esta nueva etapa te encuentre midiendo, planificando y convirtiendo tus ideas en proyectos reales. ¡Vamos a construir!'
+    }
+  ] as const;
+  showDemoTourWelcome = false;
+  showDemoTourStep = false;
+  demoTourIndex = 0;
+  demoTourBubblePlacement: 'above' | 'below' | 'centered' = 'below';
+  demoTourBubbleStyle: Record<string, string> = {};
+  demoTourSpotlightStyle: Record<string, string> = {};
+  demoTourPositionReady = false;
+  private demoTourPositionTimer: ReturnType<typeof setTimeout> | null = null;
+  private demoTourAutomationTimer: ReturnType<typeof setTimeout> | null = null;
+  demoTourAutomationInProgress = false;
+  readonly demoTourSteps: readonly DemoTourStep[] = [
+    { target: 'busqueda', title: 'Busca tareas', text: 'Explora el catálogo por descripción, categoría o costo. Los importes que ves son valores de prueba.' },
+    { target: 'demoTourProvince', title: 'Consulta la provincia', text: 'Revisa la provincia seleccionada y conoce cómo se organiza el catálogo para tu zona.' },
+    { target: 'demoTourEmpresa', title: 'Explora Empresa y Clientes', text: 'Desde aquí puedes consultar la información de ejemplo de la empresa y sus clientes.' },
+    { target: 'demoTourToolbar', title: 'Revisa tus herramientas', text: 'La barra inferior reúne presupuesto, tareas agregadas, gestor y calculadora.' },
+    { target: '', title: 'Estás en modo demo', text: 'Como estás en modo demo, solo puedes visualizar valores de prueba. Los importes no representan valores reales.' }
+  ];
+  activeDemoTourSteps: readonly DemoTourStep[] = this.demoTourSteps;
+  private demoTourFlow: 'general' | 'panel-tareas' | 'empresa' | 'personalizadas' | 'presupuesto' | 'cliente' = 'general';
+  readonly taskPanelTourSteps: readonly DemoTourStep[] = [
+    { target: 'demoTourTaskTable', title: 'Selecciona una tarea', text: 'El tour elegirá automáticamente una tarea del catálogo para mostrarte el flujo completo de carga.' },
+    { target: 'area', title: 'Completa el área', text: 'Este es el campo donde se indica la cantidad de metros cuadrados o metros cúbicos. Usaremos el ejemplo 20.' },
+    { target: 'demoTourAddTaskButton', title: 'Agrega la tarea', text: 'Después de completar el área, este botón incorpora la tarea al panel.' },
+    { target: 'demoTourPanelOpenButton', title: 'Abre el panel', text: 'La tarea ya fue agregada. Ahora el tour abrirá este botón para mostrarte el panel de tareas.' },
+    { target: 'demoTourPanelTasks', title: 'Tarea cargada en el panel', text: 'Aquí aparece la tarea agregada, junto con su área, costo y total para la cotización.' },
+    { target: 'demoTourPanelEmpresa', title: 'Agrega o cambia la empresa', text: 'Toca el espacio de la empresa para seleccionar otra o agregar una empresa al panel.' },
+    { target: 'demoTourPanelCliente', title: 'Agrega o cambia el cliente', text: 'Desde este botón puedes seleccionar un cliente diferente para asociarlo al presupuesto.' },
+    { target: 'demoTourPanelToolbar', title: 'Usa la barra del panel', text: 'La barra inferior permite cerrar el panel, guardar, quitar una carga, eliminar tareas y consultar ayuda.' },
+    { target: '', title: 'Panel listo', text: 'Ya sabes cómo agregar tareas y completar los datos del panel. En modo demo, los valores mostrados son únicamente de prueba.' }
+  ];
+  readonly companyTourSteps: readonly DemoTourStep[] = [
+    { target: 'demoTourOpenCompanyButton', title: 'Abre Empresas', text: 'Desde este botón puedes consultar tus empresas y comenzar el alta de una nueva.' },
+    { target: 'demoTourCreateCompanyButton', title: 'Pulsa Crear', text: 'En esta lista se inicia el formulario para registrar una empresa.' },
+    { target: 'demoTourCompanyFields', title: 'Datos de prueba cargados', text: 'El formulario se completa con información de ejemplo para que puedas reconocer los campos principales.' },
+    { target: 'demoTourUploadImageButton', title: 'Subir imagen', text: 'Este botón abre el espacio donde puedes seleccionar el logo de la empresa.' },
+    { target: 'demoTourLoadImageButton', title: 'Cargar imagen', text: 'Aquí se confirma la carga de la imagen seleccionada. En este recorrido solo mostramos el botón.' },
+    { target: 'demoTourCompanyPalette', title: 'Paleta del presupuesto', text: 'Desde aquí puedes personalizar los colores que se utilizarán en tus presupuestos.' },
+    { target: 'demoTourPaletteContent', title: 'Personaliza la paleta', text: 'Esta ventana permite revisar y ajustar los colores del presupuesto. No aplicaremos cambios durante el tour.' },
+    { target: 'demoTourCompanySave', title: 'Guardar empresa', text: 'Este es el botón para guardar la empresa. No lo presionaremos: el tour solo muestra el flujo y no guarda nada.' },
+    { target: '', title: 'Tour de empresa finalizado', text: 'La información mostrada fue únicamente de prueba y no se guardó ninguna empresa ni cambio de paleta.' }
+  ];
+  readonly clientTourSteps: readonly DemoTourStep[] = [
+    { target: 'demoTourOpenClientButton', title: 'Abre Clientes', text: 'Desde este botón puedes consultar los clientes asociados y comenzar el alta de uno nuevo.' },
+    { target: 'demoTourClientList', title: 'Revisa la lista', text: 'En esta ventana puedes seleccionar un cliente existente o crear uno nuevo desde el botón Crear.' },
+    { target: 'demoTourClientFields', title: 'Completa los datos', text: 'El formulario se carga con información de prueba para mostrar nombre, teléfono, email, identificación y dirección.' },
+    { target: 'demoTourClientSave', title: 'Guardar cliente', text: 'Este botón confirmaría el alta. En este tutorial solo lo señalamos: no guardaremos el cliente de prueba.' },
+    { target: '', title: 'Tour de cliente finalizado', text: 'Ya conoces el flujo para agregar un cliente. La información de prueba fue descartada y no se creó ningún registro.' }
+  ];
+  readonly customTaskTourSteps: readonly DemoTourStep[] = [
+    { target: 'demoTourPersonalizedTab', title: 'Abre Tus tareas', text: 'Esta pestaña contiene las tareas personalizadas que puedes adaptar a tu forma de cotizar.' },
+    { target: 'demoTourPersonalizedCreateButton', title: 'Pulsa Crear', text: 'Desde este botón se abre el formulario para definir una nueva tarea personalizada.' },
+    { target: 'demoTourPersonalizedFields', title: 'Completa los datos', text: 'El formulario se carga con información de prueba: nombre, descripción y costo unitario.' },
+    { target: 'demoTourPersonalizedCreateTaskButton', title: 'Crear tarea', text: 'Este botón confirma la creación. En este recorrido solo lo señalamos: no guardaremos la tarea.' },
+    { target: 'demoTourPersonalizedImportButton', title: 'Importar tareas', text: 'Este botón abre el catálogo para importar una tarea base y convertirla en una tarea personalizada. En este recorrido solo lo señalamos.' },
+    { target: '', title: 'Tour finalizado', text: 'Ya conoces el flujo de Tus tareas. La información de ejemplo no se guardó ni se importó ninguna tarea.' }
+  ];
+  readonly budgetTourSteps: readonly DemoTourStep[] = [
+    { target: 'demoTourBudgetOpenButton', title: 'Abre el presupuesto', text: 'Desde este botón puedes abrir la vista previa del presupuesto con la empresa, el cliente y las tareas seleccionadas.' },
+    { target: '', title: 'Continúa en la vista previa', text: 'La vista de presupuesto se abrirá al avanzar. Allí podrás recorrer sus secciones y conocer sus opciones de descarga.' }
+  ];
 
   filtroCliente: string = '';
   filtroEmpresa: string = '';
@@ -1205,6 +1301,7 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   ngOnInit(): void {
     this.loadLegacyBudgetList();
     this.initSession();
+    this.iniciarDemoOnboarding();
     this.initPremiumCtaVisibility();
     this.activatedRoute.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       if (this.trialMode && params['openMembership'] === 'true') {
@@ -1224,6 +1321,738 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     if (this.userCode) {
       this.empresaStore.init(this.userCode);
     }
+  }
+
+  comenzarDemoTour(): void {
+    this.setTourOverlayActive(true);
+    this.demoTourAutomationInProgress = false;
+    this.demoTourFlow = 'general';
+    this.activeDemoTourSteps = this.demoTourSteps;
+    this.showDemoTourWelcome = false;
+    this.showDemoTourStep = true;
+    this.demoTourIndex = 0;
+    this.updateDemoTourTarget();
+  }
+
+  avanzarArchiIntro(): void {
+    if (this.archiIntroIndex < this.archiIntroScenes.length - 1) {
+      this.archiIntroSceneVisible = false;
+      this.archiIntroIndex += 1;
+      setTimeout(() => this.archiIntroSceneVisible = true, 40);
+      return;
+    }
+
+    this.finalizarArchiIntro();
+  }
+
+  cerrarArchiIntro(): void {
+    this.finalizarArchiIntro();
+  }
+
+  private iniciarDemoOnboarding(): void {
+    if (!this.trialMode) {
+      this.setTourOverlayActive(false);
+      return;
+    }
+
+    if (localStorage.getItem(this.archiIntroStorageKey) !== 'true') {
+      this.setTourOverlayActive(true);
+      this.showArchiIntro = true;
+      this.archiIntroIndex = 0;
+      this.archiIntroSceneVisible = true;
+      return;
+    }
+
+    if (sessionStorage.getItem('demoTourBubbleDismissed_v1') !== 'true') {
+      this.setTourOverlayActive(true);
+      this.showDemoTourWelcome = true;
+      return;
+    }
+
+    this.setTourOverlayActive(false);
+  }
+
+  private finalizarArchiIntro(): void {
+    if (this.archiIntroDontShowAgain) {
+      localStorage.setItem(this.archiIntroStorageKey, 'true');
+    }
+
+    this.showArchiIntro = false;
+    this.archiIntroSceneVisible = true;
+    this.setTourOverlayActive(true);
+    this.showDemoTourWelcome = true;
+  }
+
+  private setTourOverlayActive(active: boolean): void {
+    window.dispatchEvent(new CustomEvent('metro-tour-state', { detail: { active } }));
+  }
+
+  avanzarDemoTour(delta: number): void {
+    if (this.demoTourAutomationInProgress) {
+      return;
+    }
+
+    if (this.demoTourFlow === 'panel-tareas' && delta > 0) {
+      this.avanzarTourPanelTareasManualmente();
+      return;
+    }
+
+    if (this.demoTourFlow === 'empresa' && delta > 0) {
+      this.avanzarTourEmpresaManualmente();
+      return;
+    }
+
+    if (this.demoTourFlow === 'personalizadas' && delta > 0) {
+      this.avanzarTourTareasPersonalizadasManualmente();
+      return;
+    }
+
+    if (this.demoTourFlow === 'presupuesto' && delta > 0) {
+      this.avanzarTourPresupuestoManualmente();
+      return;
+    }
+
+    if (this.demoTourFlow === 'cliente' && delta > 0) {
+      this.avanzarTourClienteManualmente();
+      return;
+    }
+
+    this.demoTourIndex = Math.max(0, Math.min(this.activeDemoTourSteps.length - 1, this.demoTourIndex + delta));
+    this.updateDemoTourTarget();
+  }
+
+  abrirComoUsarMetro(): void {
+    const modalElement = document.getElementById('comoUsarMetroModal');
+    if (modalElement) {
+      bootstrap.Modal.getOrCreateInstance(modalElement).show();
+    }
+  }
+
+  iniciarTourCompletoDesdeAyuda(): void {
+    this.cerrarComoUsarMetro();
+    setTimeout(() => this.comenzarDemoTour(), 250);
+  }
+
+  iniciarTourPanelTareas(): void {
+    this.cerrarComoUsarMetro();
+    setTimeout(() => {
+      this.setTourOverlayActive(true);
+      // El recorrido queda detenido hasta que el usuario pulse una flecha.
+      this.demoTourAutomationInProgress = false;
+      this.demoTourFlow = 'panel-tareas';
+      this.activeDemoTourSteps = this.taskPanelTourSteps;
+      this.activeTaskTab = 'catalogo';
+      this.showTareasPanel = false;
+      this.showDemoTourWelcome = false;
+      this.showDemoTourStep = true;
+      this.demoTourIndex = 0;
+      this.updateDemoTourTarget();
+    }, 250);
+  }
+
+  iniciarTourEmpresa(): void {
+    this.cerrarComoUsarMetro();
+    setTimeout(() => {
+      this.setTourOverlayActive(true);
+      this.demoTourAutomationInProgress = false;
+      this.demoTourFlow = 'empresa';
+      this.activeDemoTourSteps = this.companyTourSteps;
+      this.showTareasPanel = false;
+      this.showDemoTourWelcome = false;
+      this.showDemoTourStep = true;
+      this.demoTourIndex = 0;
+      this.updateDemoTourTarget();
+    }, 250);
+  }
+
+  iniciarTourTareasPersonalizadas(): void {
+    this.cerrarComoUsarMetro();
+    setTimeout(() => {
+      this.setTourOverlayActive(true);
+      this.demoTourAutomationInProgress = false;
+      this.demoTourFlow = 'personalizadas';
+      this.activeDemoTourSteps = this.customTaskTourSteps;
+      this.activeTaskTab = 'catalogo';
+      this.showTpEditorModal = false;
+      this.showDemoTourWelcome = false;
+      this.showDemoTourStep = true;
+      this.demoTourIndex = 0;
+      this.updateDemoTourTarget();
+    }, 250);
+  }
+
+  iniciarTourPresupuesto(): void {
+    this.cerrarComoUsarMetro();
+    setTimeout(() => {
+      this.setTourOverlayActive(true);
+      this.demoTourAutomationInProgress = false;
+      this.demoTourFlow = 'presupuesto';
+      this.activeDemoTourSteps = this.budgetTourSteps;
+      this.showTareasPanel = false;
+      this.showDemoTourWelcome = false;
+      this.showDemoTourStep = true;
+      this.demoTourIndex = 0;
+      this.updateDemoTourTarget();
+    }, 250);
+  }
+
+  iniciarTourCliente(): void {
+    this.cerrarComoUsarMetro();
+    setTimeout(() => {
+      this.setTourOverlayActive(true);
+      this.demoTourAutomationInProgress = false;
+      this.demoTourFlow = 'cliente';
+      this.activeDemoTourSteps = this.clientTourSteps;
+      this.showTareasPanel = false;
+      this.showDemoTourWelcome = false;
+      this.showDemoTourStep = true;
+      this.demoTourIndex = 0;
+      this.updateDemoTourTarget();
+    }, 250);
+  }
+
+  cerrarDemoTour(): void {
+    const tourFlow = this.demoTourFlow;
+    this.showDemoTourWelcome = false;
+    this.showDemoTourStep = false;
+    this.demoTourAutomationInProgress = false;
+    this.demoTourFlow = 'general';
+    this.activeDemoTourSteps = this.demoTourSteps;
+    this.demoTourBubbleStyle = {};
+    this.demoTourSpotlightStyle = {};
+    this.demoTourBubblePlacement = 'below';
+    this.demoTourPositionReady = false;
+    if (this.demoTourPositionTimer) {
+      clearTimeout(this.demoTourPositionTimer);
+      this.demoTourPositionTimer = null;
+    }
+    if (this.demoTourAutomationTimer) {
+      clearTimeout(this.demoTourAutomationTimer);
+      this.demoTourAutomationTimer = null;
+    }
+    if (tourFlow === 'personalizadas') {
+      this.cerrarTpEditor();
+    }
+    if (tourFlow === 'cliente') {
+      this.cerrarModalClienteParaTour();
+    }
+    this.setTourOverlayActive(false);
+    sessionStorage.setItem('demoTourBubbleDismissed_v1', 'true');
+  }
+
+  private updateDemoTourTarget(): void {
+    this.demoTourPositionReady = false;
+    const targetId = this.activeDemoTourSteps[this.demoTourIndex]?.target;
+    const target = targetId ? document.getElementById(targetId) : null;
+    target?.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
+
+    if (this.demoTourPositionTimer) {
+      clearTimeout(this.demoTourPositionTimer);
+    }
+    this.demoTourPositionTimer = setTimeout(() => {
+      this.demoTourPositionTimer = null;
+      this.positionDemoTourBubble();
+    }, target ? 350 : 0);
+  }
+
+  @HostListener('window:resize')
+  @HostListener('window:scroll')
+  repositionDemoTour(): void {
+    if (this.showDemoTourStep && this.demoTourPositionReady) {
+      this.positionDemoTourBubble();
+    }
+  }
+
+  private positionDemoTourBubble(): void {
+    if (!this.showDemoTourStep) {
+      return;
+    }
+
+    const targetId = this.activeDemoTourSteps[this.demoTourIndex]?.target;
+    if (!targetId) {
+      this.demoTourBubblePlacement = 'centered';
+      this.demoTourBubbleStyle = {
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)'
+      };
+      this.demoTourSpotlightStyle = {};
+      this.demoTourPositionReady = true;
+      return;
+    }
+
+    const target = document.getElementById(targetId);
+    if (!target) {
+      return;
+    }
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const bubbleWidth = Math.min(360, viewportWidth - 32);
+    const targetRect = target.getBoundingClientRect();
+    const bubbleElement = document.querySelector('.demo-tour-bubble') as HTMLElement | null;
+    const bubbleHeight = bubbleElement?.offsetHeight ?? 250;
+    const canFitBelow = viewportHeight - targetRect.bottom - 16 >= bubbleHeight;
+    const showBelow = canFitBelow || targetRect.top - 16 < bubbleHeight;
+    const top = showBelow
+      ? Math.min(targetRect.bottom + 16, viewportHeight - bubbleHeight - 16)
+      : Math.max(16, targetRect.top - bubbleHeight - 16);
+    const left = Math.max(
+      16,
+      Math.min(targetRect.left + targetRect.width / 2 - bubbleWidth / 2, viewportWidth - bubbleWidth - 16)
+    );
+
+    this.demoTourBubblePlacement = showBelow ? 'below' : 'above';
+    this.demoTourBubbleStyle = {
+      top: `${Math.max(16, top)}px`,
+      left: `${left}px`,
+      width: `${bubbleWidth}px`,
+      transform: 'none'
+    };
+    this.demoTourSpotlightStyle = {
+      top: `${Math.max(8, targetRect.top - 8)}px`,
+      left: `${Math.max(8, targetRect.left - 8)}px`,
+      width: `${targetRect.width + 16}px`,
+      height: `${targetRect.height + 16}px`
+    };
+    this.demoTourPositionReady = true;
+  }
+
+  private cerrarComoUsarMetro(): void {
+    const modalElement = document.getElementById('comoUsarMetroModal');
+    if (modalElement) {
+      bootstrap.Modal.getInstance(modalElement)?.hide();
+    }
+  }
+
+  private avanzarTourPanelTareasManualmente(): void {
+    switch (this.demoTourIndex) {
+      case 0:
+        this.seleccionarTareaParaTourPanel();
+        return;
+      case 1:
+        this.completarAreaParaTourPanel();
+        return;
+      case 2:
+        this.pulsarAgregarTareaDelTour();
+        return;
+      case 3:
+        this.pulsarBotonPanelDelTour();
+        return;
+      default:
+        this.demoTourIndex = Math.min(this.activeDemoTourSteps.length - 1, this.demoTourIndex + 1);
+        this.updateDemoTourTarget();
+    }
+  }
+
+  private avanzarTourEmpresaManualmente(): void {
+    switch (this.demoTourIndex) {
+      case 0:
+        this.abrirEmpresasParaTour();
+        return;
+      case 1:
+        this.crearEmpresaParaTour();
+        return;
+      case 2:
+        this.mostrarPasoTourPanel(3);
+        return;
+      case 3:
+        this.abrirImagenParaTour();
+        return;
+      case 4:
+        this.cerrarImagenParaTour();
+        return;
+      case 5:
+        this.abrirPaletaParaTour();
+        return;
+      case 6:
+        this.cerrarPaletaParaTour();
+        return;
+      case 7:
+        this.mostrarPasoTourPanel(8);
+        return;
+      default:
+        this.demoTourIndex = Math.min(this.activeDemoTourSteps.length - 1, this.demoTourIndex + 1);
+        this.updateDemoTourTarget();
+    }
+  }
+
+  private avanzarTourTareasPersonalizadasManualmente(): void {
+    switch (this.demoTourIndex) {
+      case 0:
+        this.abrirTusTareasParaTour();
+        return;
+      case 1:
+        this.abrirCrearTareaPersonalizadaParaTour();
+        return;
+      case 2:
+        this.mostrarPasoTourPanel(3);
+        return;
+      case 3:
+        this.cerrarFormularioTareaPersonalizadaParaTour();
+        return;
+      case 4:
+        this.mostrarPasoTourPanel(5);
+        return;
+      default:
+        this.demoTourIndex = Math.min(this.activeDemoTourSteps.length - 1, this.demoTourIndex + 1);
+        this.updateDemoTourTarget();
+    }
+  }
+
+  private avanzarTourPresupuestoManualmente(): void {
+    if (this.demoTourIndex !== 0) {
+      return;
+    }
+
+    const budgetButton = document.getElementById('demoTourBudgetOpenButton') as HTMLButtonElement | null;
+    if (!budgetButton) {
+      this.demoTourAutomationInProgress = false;
+      return;
+    }
+
+    this.demoTourAutomationInProgress = true;
+    sessionStorage.setItem('metroBudgetTourPending', 'true');
+    this.showDemoTourStep = false;
+    budgetButton.click();
+  }
+
+  private avanzarTourClienteManualmente(): void {
+    switch (this.demoTourIndex) {
+      case 0:
+        this.abrirClientesParaTour();
+        return;
+      case 1:
+        this.abrirCrearClienteParaTour();
+        return;
+      case 2:
+        this.mostrarPasoTourPanel(3);
+        return;
+      case 3:
+        this.cerrarFormularioClienteParaTour();
+        return;
+      default:
+        this.demoTourIndex = Math.min(this.activeDemoTourSteps.length - 1, this.demoTourIndex + 1);
+        this.updateDemoTourTarget();
+    }
+  }
+
+  private abrirClientesParaTour(): void {
+    const button = document.getElementById('demoTourOpenClientButton') as HTMLButtonElement | null;
+    if (!button) return;
+
+    this.demoTourAutomationInProgress = true;
+    this.showDemoTourStep = false;
+    button.click();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(1);
+    }, 500);
+  }
+
+  private abrirCrearClienteParaTour(): void {
+    const button = document.getElementById('demoTourCreateClientButton') as HTMLButtonElement | null;
+    if (!button) return;
+
+    this.demoTourAutomationInProgress = true;
+    this.showDemoTourStep = false;
+    button.click();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.cargarDatosClienteParaTour();
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(2);
+    }, 750);
+  }
+
+  private cargarDatosClienteParaTour(): void {
+    this.clientName = 'Cliente Demo Metro';
+    this.clientPrefix = '+549';
+    this.clientNumber = '1122334455';
+    this.clientEmail = 'cliente@metro.test';
+    this.clientClave = '';
+    this.clientDireccion = 'Av. Demo 123, CABA';
+    this.additionalDetailsClient = 'Cliente de prueba para recorrer el alta en METRO.';
+    this.phoneNumberInvalid = false;
+    this.phoneNumberInvalidMsg = '';
+    this.clientCuitError = '';
+    this.clientCuitWarning = '';
+  }
+
+  private cerrarFormularioClienteParaTour(): void {
+    this.demoTourAutomationInProgress = true;
+    this.showDemoTourStep = false;
+    const clientModal = document.getElementById('clientModal');
+    if (clientModal) {
+      bootstrap.Modal.getOrCreateInstance(clientModal).hide();
+    }
+
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      const listaModal = document.getElementById('listaClientesModal');
+      if (listaModal) {
+        bootstrap.Modal.getInstance(listaModal)?.hide();
+      }
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(4);
+    }, 750);
+  }
+
+  private cerrarModalClienteParaTour(): void {
+    const clientModal = document.getElementById('clientModal');
+    const listaModal = document.getElementById('listaClientesModal');
+    if (clientModal) {
+      bootstrap.Modal.getInstance(clientModal)?.hide();
+    }
+    if (listaModal) {
+      bootstrap.Modal.getInstance(listaModal)?.hide();
+    }
+  }
+
+  private abrirTusTareasParaTour(): void {
+    const button = document.getElementById('demoTourPersonalizedTab') as HTMLAnchorElement | null;
+    if (!button) return;
+
+    this.demoTourAutomationInProgress = true;
+    this.showDemoTourStep = false;
+    button.click();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(1);
+    }, 350);
+  }
+
+  private abrirCrearTareaPersonalizadaParaTour(): void {
+    const button = document.getElementById('demoTourPersonalizedCreateButton') as HTMLButtonElement | null;
+    if (!button) return;
+
+    this.demoTourAutomationInProgress = true;
+    this.showDemoTourStep = false;
+    button.click();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.cargarDatosTareaPersonalizadaParaTour();
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(2);
+    }, 350);
+  }
+
+  private cargarDatosTareaPersonalizadaParaTour(): void {
+    this.tpForm = {
+      tarea: 'Pintura interior de paredes',
+      descripcion: 'Aplicación de pintura interior como ejemplo de tarea personalizada.',
+      costo: 2500
+    };
+    this.tpSubmitted = false;
+  }
+
+  private cerrarFormularioTareaPersonalizadaParaTour(): void {
+    this.demoTourAutomationInProgress = true;
+    this.showDemoTourStep = false;
+    this.cerrarTpEditor();
+    setTimeout(() => {
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(4);
+    }, 250);
+  }
+
+  private abrirEmpresasParaTour(): void {
+    const button = document.getElementById('demoTourOpenCompanyButton') as HTMLButtonElement | null;
+    if (!button) return;
+
+    this.demoTourAutomationInProgress = true;
+    this.showDemoTourStep = false;
+    button.click();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(1);
+    }, 500);
+  }
+
+  private crearEmpresaParaTour(): void {
+    const button = document.getElementById('demoTourCreateCompanyButton') as HTMLButtonElement | null;
+    if (!button) return;
+
+    this.demoTourAutomationInProgress = true;
+    this.showDemoTourStep = false;
+    button.click();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.cargarDatosEmpresaParaTour();
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(2);
+    }, 750);
+  }
+
+  private cargarDatosEmpresaParaTour(): void {
+    this.empresaName = 'Metro Constructora Demo';
+    this.empresaPrefix = '+549';
+    this.empresaPhone = '1122334455';
+    this.empresaEmail = 'demo@metro.test';
+    this.empresaCuilCuit = '';
+    this.additionalDetailsEmpresa = 'Empresa de prueba para recorrer el alta de una empresa en METRO.';
+    this.empresaWebsite = 'https://metro.test';
+    this.empresaPhoneInvalid = false;
+    this.empresaPhoneInvalidMsg = '';
+    this.showSocialFields = false;
+  }
+
+  private abrirImagenParaTour(): void {
+    const button = document.getElementById('demoTourUploadImageButton') as HTMLButtonElement | null;
+    if (!button) return;
+
+    this.demoTourAutomationInProgress = true;
+    this.showDemoTourStep = false;
+    button.click();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(4);
+    }, 500);
+  }
+
+  private cerrarImagenParaTour(): void {
+    const imageModal = document.getElementById('imageModal');
+    if (!imageModal) return;
+
+    this.demoTourAutomationInProgress = true;
+    this.showDemoTourStep = false;
+    bootstrap.Modal.getInstance(imageModal)?.hide();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(5);
+    }, 750);
+  }
+
+  private abrirPaletaParaTour(): void {
+    const button = document.getElementById('demoTourCompanyPalette') as HTMLButtonElement | null;
+    if (!button) return;
+
+    this.demoTourAutomationInProgress = true;
+    this.showDemoTourStep = false;
+    button.click();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(6);
+    }, 750);
+  }
+
+  private cerrarPaletaParaTour(): void {
+    this.demoTourAutomationInProgress = true;
+    this.showDemoTourStep = false;
+    this.volverAModalEmpresa();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(7);
+    }, 750);
+  }
+
+  private seleccionarTareaParaTourPanel(): void {
+    const tarea = this.tareasFiltradas[0] ?? this.tareas[0];
+    if (!tarea) {
+      return;
+    }
+
+    this.demoTourAutomationInProgress = true;
+    this.showDemoTourStep = false;
+    this.demoTourBubbleStyle = {};
+    this.demoTourSpotlightStyle = {};
+    this.seleccionar(tarea);
+
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(1);
+    }, 450);
+  }
+
+  private completarAreaParaTourPanel(): void {
+    const areaInput = document.getElementById('area') as HTMLInputElement | null;
+    if (!areaInput) {
+      return;
+    }
+
+    this.demoTourAutomationInProgress = true;
+    this.tareaSeleccionada.area = 20;
+    areaInput.value = '20';
+    areaInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+    setTimeout(() => {
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(2);
+    }, 0);
+  }
+
+  private pulsarAgregarTareaDelTour(): void {
+    if (this.demoTourFlow !== 'panel-tareas') {
+      return;
+    }
+
+    this.demoTourAutomationInProgress = true;
+    const agregarButton = document.getElementById('demoTourAddTaskButton') as HTMLButtonElement | null;
+    if (!agregarButton) {
+      this.demoTourAutomationInProgress = false;
+      this.showDemoTourStep = true;
+      this.updateDemoTourTarget();
+      return;
+    }
+
+    // Pulsar el botón real dispara el mismo flujo que una interacción del usuario.
+    this.showDemoTourStep = false;
+    agregarButton.click();
+
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.cerrarDialogoExitoTarea();
+      this.demoTourAutomationTimer = setTimeout(() => {
+        this.demoTourAutomationTimer = null;
+        this.demoTourAutomationInProgress = false;
+        this.mostrarPasoTourPanel(3);
+      }, 350);
+    }, 1500);
+  }
+
+  private pulsarBotonPanelDelTour(): void {
+    if (this.demoTourFlow !== 'panel-tareas') {
+      return;
+    }
+
+    this.demoTourAutomationInProgress = true;
+    const panelButton = document.getElementById('demoTourPanelOpenButton') as HTMLButtonElement | null;
+    if (!panelButton) {
+      this.demoTourAutomationInProgress = false;
+      this.showDemoTourStep = true;
+      this.updateDemoTourTarget();
+      return;
+    }
+
+    this.showDemoTourStep = false;
+    panelButton.click();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoTourPanel(4);
+    }, 500);
+  }
+
+  private mostrarPasoTourPanel(index: number): void {
+    this.demoTourPositionReady = false;
+    this.demoTourIndex = index;
+    this.showDemoTourStep = true;
+    setTimeout(() => this.updateDemoTourTarget(), 0);
+  }
+
+  private cerrarDialogoExitoTarea(): void {
+    const confirmButton = document.querySelector(
+      '.swal2-popup.app-dialog--success .swal2-confirm'
+    ) as HTMLButtonElement | null;
+    confirmButton?.click();
   }
 
   private loadLegacyBudgetList(): void {
@@ -1466,6 +2295,14 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     if (this.premiumCtaTimer) {
       clearTimeout(this.premiumCtaTimer);
       this.premiumCtaTimer = null;
+    }
+    if (this.demoTourPositionTimer) {
+      clearTimeout(this.demoTourPositionTimer);
+      this.demoTourPositionTimer = null;
+    }
+    if (this.demoTourAutomationTimer) {
+      clearTimeout(this.demoTourAutomationTimer);
+      this.demoTourAutomationTimer = null;
     }
     this.clearTareaPersonalizadaNotice();
     cleanupBootstrapModals();

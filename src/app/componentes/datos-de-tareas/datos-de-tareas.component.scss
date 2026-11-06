@@ -1136,6 +1136,128 @@
   }
 }
 
+/* ============ TOUR GUIADO DEL PRESUPUESTO ============ */
+.budget-tour-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(15, 23, 42, 0.12);
+  pointer-events: auto;
+}
+
+.budget-tour-spotlight {
+  position: fixed;
+  z-index: 10001;
+  border: 2px solid rgba(64, 158, 255, 0.9);
+  border-radius: 14px;
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.12), 0 0 0 5px rgba(64, 158, 255, 0.18);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: none;
+
+  &--ready {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+.budget-tour-bubble {
+  position: fixed;
+  z-index: 10002;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 24px;
+  background: linear-gradient(135deg, #0b69a6 0%, #2f7fe7 52%, #7c3aed 100%);
+  box-shadow: 0 22px 55px rgba(15, 23, 42, 0.3);
+  color: #fff;
+  opacity: 0;
+  visibility: hidden;
+  transition: none;
+
+  &--ready {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  h2 {
+    margin: 7px 30px 8px 0;
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+}
+
+.budget-tour-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1459c9;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.budget-tour-eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.budget-tour-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.budget-tour-nav-button,
+.budget-tour-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #1459c9;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.budget-tour-nav-triangle {
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+}
+
+.budget-tour-nav-button--next .budget-tour-nav-triangle {
+  border-left: 12px solid currentColor;
+}
+
+.budget-tour-nav-button--previous .budget-tour-nav-triangle {
+  border-right: 12px solid currentColor;
+}
+
 /* ============ IMPRESIÓN ============ */
 @media print {
   :host, .presupuesto-page { background: #fff !important; }

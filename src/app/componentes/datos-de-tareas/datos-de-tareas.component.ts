@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PresupuestoService, Tarea } from '../../servicios/presupuesto.service';
 import { Cliente, ClienteService } from '../../servicios/cliente.service';
@@ -21,6 +21,12 @@ interface ColorScheme {
   gradientAngle: string;
   infoBoxColorRGBA: string;
   tableBodyColor: string;
+}
+
+interface BudgetTourStep {
+  target: string;
+  title: string;
+  text: string;
 }
 
 @Component({
@@ -45,6 +51,27 @@ export class DatosDeTareasComponent implements OnInit {
   showTextBudgetModal: boolean = false;
   textoPresupuestoEditable: string = '';
   readonly PREVIEW_OPTIONS_KEY = 'metroBudgetPreviewVisibility';
+
+  readonly budgetTourSteps: readonly BudgetTourStep[] = [
+    { target: 'demoBudgetCompanySection', title: 'Sección de empresa', text: 'Aquí se presenta la identidad de la empresa: logo, nombre, contacto y datos comerciales del presupuesto.' },
+    { target: 'demoBudgetClientSection', title: 'Sección de cliente', text: 'Esta tarjeta muestra el cliente asociado, sus datos y la fecha del presupuesto.' },
+    { target: 'demoBudgetTasksSection', title: 'Sección de tareas', text: 'Aquí se listan los trabajos agregados, su descripción, área, costo por m² y total.' },
+    { target: 'demoBudgetPreviewControls', title: 'Controles de visualización', text: 'Estos botones permiten ocultar o mostrar el costo por m² y la descripción antes de descargar.' },
+    { target: 'demoBudgetDownloadButton', title: 'Botón Descargar', text: 'Este botón abre las opciones para elegir el formato. El tour solo mostrará el flujo y no descargará archivos.' },
+    { target: 'demoBudgetDownloadOptions', title: 'Opciones de descarga', text: 'Este menú reúne los tipos de descarga disponibles y el botón para cancelar.' },
+    { target: 'demoBudgetDownloadPdf', title: 'Descarga en PDF', text: 'Esta opción genera el presupuesto en PDF. Durante el tour no se ejecutará la descarga.' },
+    { target: 'demoBudgetDownloadHtml', title: 'Descarga en HTML', text: 'Esta opción genera una copia HTML del presupuesto. Durante el tour no se ejecutará la descarga.' },
+    { target: 'demoBudgetDownloadText', title: 'Presupuesto solo texto', text: 'Esta opción prepara una versión de texto para compartir, por ejemplo, por WhatsApp. Solo la señalamos.' },
+    { target: 'demoBudgetBackButton', title: 'Volver al dashboard', text: 'Este botón permite regresar al dashboard. No lo pulsaremos automáticamente.' },
+    { target: '', title: 'Tour finalizado', text: 'Ya conoces las secciones, botones y formatos de descarga. En modo demo, los datos y valores visibles son únicamente de prueba.' }
+  ];
+  showBudgetTour = false;
+  budgetTourIndex = 0;
+  budgetTourPositionReady = false;
+  budgetTourBubbleStyle: Record<string, string> = {};
+  budgetTourSpotlightStyle: Record<string, string> = {};
+  budgetTourBubblePlacement: 'above' | 'below' | 'centered' = 'below';
+  private budgetTourPositionTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Modal de edición de tarea
   showEditModal = false;
@@ -112,6 +139,7 @@ export class DatosDeTareasComponent implements OnInit {
       const rawDate = activePreview.budgetDate || activePreview.presupuesto?.budgetDate || '';
       this.budgetDate = rawDate ? rawDate.split('T')[0] : '';
       this.loadPreviewOptions();
+      this.maybeStartBudgetTour();
       return;
     }
 
@@ -140,6 +168,139 @@ export class DatosDeTareasComponent implements OnInit {
     }
 
     this.loadPreviewOptions();
+    this.maybeStartBudgetTour();
+  }
+
+  avanzarBudgetTour(delta: number): void {
+    if (!this.showBudgetTour) {
+      return;
+    }
+
+    const nextIndex = Math.max(0, Math.min(this.budgetTourSteps.length - 1, this.budgetTourIndex + delta));
+    if (delta > 0 && this.budgetTourIndex === 4) {
+      this.showDownloadModal = true;
+    }
+    if (delta > 0 && this.budgetTourIndex === 8) {
+      this.showDownloadModal = false;
+    }
+    if (delta < 0 && nextIndex < 5) {
+      this.showDownloadModal = false;
+    }
+    if (delta < 0 && nextIndex >= 5 && nextIndex <= 8) {
+      this.showDownloadModal = true;
+    }
+
+    this.budgetTourIndex = nextIndex;
+    this.updateBudgetTourTarget();
+  }
+
+  cerrarBudgetTour(): void {
+    this.showBudgetTour = false;
+    this.showDownloadModal = false;
+    this.setTourOverlayActive(false);
+    this.budgetTourPositionReady = false;
+    this.budgetTourBubbleStyle = {};
+    this.budgetTourSpotlightStyle = {};
+    if (this.budgetTourPositionTimer) {
+      clearTimeout(this.budgetTourPositionTimer);
+      this.budgetTourPositionTimer = null;
+    }
+  }
+
+  @HostListener('window:resize')
+  @HostListener('window:scroll')
+  repositionBudgetTour(): void {
+    if (this.showBudgetTour && this.budgetTourPositionReady) {
+      this.positionBudgetTourBubble();
+    }
+  }
+
+  private maybeStartBudgetTour(): void {
+    if (sessionStorage.getItem('metroBudgetTourPending') !== 'true') {
+      return;
+    }
+
+    sessionStorage.removeItem('metroBudgetTourPending');
+    setTimeout(() => {
+      this.setTourOverlayActive(true);
+      this.showBudgetTour = true;
+      this.budgetTourIndex = 0;
+      this.updateBudgetTourTarget();
+    }, 350);
+  }
+
+  private setTourOverlayActive(active: boolean): void {
+    window.dispatchEvent(new CustomEvent('metro-tour-state', { detail: { active } }));
+  }
+
+  private updateBudgetTourTarget(): void {
+    this.budgetTourPositionReady = false;
+    const targetId = this.budgetTourSteps[this.budgetTourIndex]?.target;
+    const target = targetId ? document.getElementById(targetId) : null;
+    target?.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
+
+    if (this.budgetTourPositionTimer) {
+      clearTimeout(this.budgetTourPositionTimer);
+    }
+    this.budgetTourPositionTimer = setTimeout(() => {
+      this.budgetTourPositionTimer = null;
+      this.positionBudgetTourBubble();
+    }, target ? 200 : 0);
+  }
+
+  private positionBudgetTourBubble(): void {
+    if (!this.showBudgetTour) {
+      return;
+    }
+
+    const targetId = this.budgetTourSteps[this.budgetTourIndex]?.target;
+    if (!targetId) {
+      this.budgetTourBubblePlacement = 'centered';
+      this.budgetTourBubbleStyle = {
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)'
+      };
+      this.budgetTourSpotlightStyle = {};
+      this.budgetTourPositionReady = true;
+      return;
+    }
+
+    const target = document.getElementById(targetId);
+    if (!target) {
+      return;
+    }
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const bubbleWidth = Math.min(360, viewportWidth - 32);
+    const targetRect = target.getBoundingClientRect();
+    const bubbleElement = document.querySelector('.budget-tour-bubble') as HTMLElement | null;
+    const bubbleHeight = bubbleElement?.offsetHeight ?? 250;
+    const canFitBelow = viewportHeight - targetRect.bottom - 16 >= bubbleHeight;
+    const showBelow = canFitBelow || targetRect.top - 16 < bubbleHeight;
+    const top = showBelow
+      ? Math.min(targetRect.bottom + 16, viewportHeight - bubbleHeight - 16)
+      : Math.max(16, targetRect.top - bubbleHeight - 16);
+    const left = Math.max(
+      16,
+      Math.min(targetRect.left + targetRect.width / 2 - bubbleWidth / 2, viewportWidth - bubbleWidth - 16)
+    );
+
+    this.budgetTourBubblePlacement = showBelow ? 'below' : 'above';
+    this.budgetTourBubbleStyle = {
+      top: `${Math.max(16, top)}px`,
+      left: `${left}px`,
+      width: `${bubbleWidth}px`,
+      transform: 'none'
+    };
+    this.budgetTourSpotlightStyle = {
+      top: `${Math.max(8, targetRect.top - 8)}px`,
+      left: `${Math.max(8, targetRect.left - 8)}px`,
+      width: `${targetRect.width + 16}px`,
+      height: `${targetRect.height + 16}px`
+    };
+    this.budgetTourPositionReady = true;
   }
 
   // ============ TOTAL ============

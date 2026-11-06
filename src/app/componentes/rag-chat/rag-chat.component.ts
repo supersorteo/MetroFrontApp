@@ -24,6 +24,7 @@ export class RagChatComponent implements OnInit, OnDestroy {
 
   visible = signal(localStorage.getItem('archi-visible') !== 'false');
   dashboardVisible = signal(false);
+  tourActive = signal(false);
 
   private readonly SHOW_SEQ = ['a', 'r', 'c', 'h', 'i'];
   private showKeyBuf: string[] = [];
@@ -149,6 +150,20 @@ export class RagChatComponent implements OnInit, OnDestroy {
   @HostListener('window:metro-demo-entered')
   onDemoEntered(): void {
     this.schedulePreviousVersionBubble();
+  }
+
+  @HostListener('window:metro-tour-state', ['$event'])
+  onMetroTourState(event: Event): void {
+    const active = (event as CustomEvent<{ active?: boolean }>).detail?.active === true;
+    this.tourActive.set(active);
+    if (active) {
+      this.abierto.set(false);
+      this.showPreviousVersionBubble.set(false);
+      if (this.previousVersionBubbleTimer) {
+        clearTimeout(this.previousVersionBubbleTimer);
+        this.previousVersionBubbleTimer = null;
+      }
+    }
   }
 
   private isDemoMode(): boolean {
