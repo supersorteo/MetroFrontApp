@@ -170,6 +170,9 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
         if (order.status === 'PAID') {
           localStorage.removeItem('pendingPaymentId');
           this.stopPolling();
+          if (order.accessCode) {
+            this.useAccessCode();
+          }
         } else if (order.status === 'REJECTED') {
           this.stopPolling();
         }

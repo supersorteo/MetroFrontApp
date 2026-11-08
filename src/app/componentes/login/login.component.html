@@ -4,6 +4,9 @@
   <div class="login-brand">
     <img [src]="'assets/icons/metro-logo-transparent.png' | assetUrl" class="login-brand__logo" alt="Metro logo" />
     <p class="login-brand__tagline">Optimizá tu manera de trabajar. Ahorrá tiempo. Mostrate profesional.</p>
+    <button type="button" class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#faqModalLogin">
+      <i class="fas fa-question-circle" style="margin-right: 8px;"></i>PREGUNTAS FRECUENTES
+    </button>
   </div>
 
   <!-- ══════════════════════════════════════
@@ -702,6 +705,98 @@
   </div>
 
 </div>
+
+<!-- Modal: Preguntas Frecuentes (login) -->
+<div class="modal fade" id="faqModalLogin" tabindex="-1" role="dialog" aria-labelledby="faqModalLoginLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content" style="border-radius: 16px; border: 1px solid rgba(64,158,255,.2); box-shadow: 0 14px 35px rgba(0,0,0,.18);">
+
+      <div class="modal-header" style="background: linear-gradient(to right top, #f0f4fa, #e9f0fc, #cbdefa, #98c0f8, #67a5f6); border-bottom: 1px solid rgba(11,105,166,.15);">
+        <h5 class="modal-title" id="faqModalLoginLabel" style="color:#0b69a6; font-weight:700;">
+          <i class="fas fa-question-circle" aria-hidden="true" style="margin-right: 8px;"></i>Preguntas Frecuentes
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body" style="padding: 18px; background-image: linear-gradient(to top, #ffffff, #fafafd, #f4f6fc, #edf3fb, #e5eff9); max-height: 70vh; overflow-y: auto;">
+        <div class="accordion" id="faqAccordionLogin">
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faqL1">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL1Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-percent" style="margin-right: 8px;"></i>¿Cómo funciona subir o bajar los precios de la lista?
+              </button>
+            </h2>
+            <div id="faqL1Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLogin">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p>Escribí un porcentaje en el campo correspondiente y tocá <strong>SUBIR</strong> para aumentar todos los precios de la lista, o <strong>BAJAR</strong> para reducirlos. El ajuste se aplica de forma general a todos los ítems.</p>
+                <p style="margin-bottom:0;"><strong>Ejemplo:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faqL2">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL2Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-undo-alt" style="margin-right: 8px;"></i>¿Cómo restablezco los precios originales?
+              </button>
+            </h2>
+            <div id="faqL2Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLogin">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p style="margin-bottom:0;">Usá el botón <strong>"Reestablecer valor original de lista"</strong>. Esto recarga los precios desde el servidor, deshaciendo cualquier ajuste porcentual que hayas aplicado.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faqL3">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL3Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-text-height" style="margin-right: 8px;"></i>¿Para qué sirve el control de tamaño de texto?
+              </button>
+            </h2>
+            <div id="faqL3Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLogin">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p style="margin-bottom:0;">El slider ajusta el tamaño de la fuente de la tabla de tareas. Útil para ver más ítems en pantalla (texto más chico) o para mejorar la legibilidad en dispositivos grandes (texto más grande).</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faqL4">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL4Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-key" style="margin-right: 8px;"></i>¿Qué es el Código de Acceso?
+              </button>
+            </h2>
+            <div id="faqL4Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLogin">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p style="margin-bottom:0;">Es tu identificador único en el sistema. Lo usás para ingresar a la aplicación y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 0; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faqL5">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL5Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                <i class="fas fa-save" style="margin-right: 8px;"></i>¿Los cambios en los precios se guardan permanentemente?
+              </button>
+            </h2>
+            <div id="faqL5Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLogin">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                <p style="margin-bottom:0;">Sí, los cambios se guardan en tu lista de tareas activa. Si querés volver a los precios base, usá <strong>"Reestablecer valor original de lista"</strong>. Los precios de la tabla de referencia (buscador) nunca se modifican.</p>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /#faqAccordionLogin -->
+      </div><!-- /.modal-body -->
+
+      <div class="modal-footer" style="border-top: 1px solid rgba(11,105,166,.15);">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+      </div>
+
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /#faqModalLogin -->
 
 
 <!--
