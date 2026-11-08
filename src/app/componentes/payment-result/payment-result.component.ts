@@ -168,9 +168,11 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
         this.cacheOrder('mercadopago', externalId, order);
 
         if (order.status === 'PAID') {
+          const pendingId = localStorage.getItem('pendingPaymentId');
           localStorage.removeItem('pendingPaymentId');
           this.stopPolling();
-          if (order.accessCode) {
+          // Auto-login solo si este browser inició el checkout (evita session fixation)
+          if (order.accessCode && pendingId) {
             this.useAccessCode();
           }
         } else if (order.status === 'REJECTED') {
