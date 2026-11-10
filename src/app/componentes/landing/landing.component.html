@@ -1,6 +1,9 @@
 <header class="site-header" aria-label="Encabezado de Metro">
   <a class="brand" href="#inicio" aria-label="Metro, inicio">
-    <img [src]="'assets/landing/metro-logo.png' | assetUrl" alt="Metro" />
+    <picture>
+      <source [srcset]="'assets/landing/metro-logo.webp' | assetUrl" type="image/webp">
+      <img [src]="'assets/landing/metro-logo.png' | assetUrl" alt="Metro" />
+    </picture>
   </a>
   <nav class="site-nav" aria-label="Navegación principal">
     <a href="#funcionalidades">Funcionalidades</a>
@@ -18,7 +21,7 @@
         Metro te ayuda a crear presupuestos profesionales, calcular materiales y organizar clientes y empresas desde un solo lugar.
       </p>
       <div class="hero-actions">
-        <a class="button button-primary" routerLink="/login" aria-label="Probar gratis Metro, software argentino para presupuestos de obra">Probar Metro gratis <span aria-hidden="true">→</span></a>
+        <a class="button button-primary" routerLink="/login" [queryParams]="{ step: 'demo' }" aria-label="Probar gratis Metro, software argentino para presupuestos de obra">Probar Metro gratis <span aria-hidden="true">→</span></a>
         <a class="text-link" href="#funcionalidades">Conocé cómo funciona <span aria-hidden="true">↓</span></a>
       </div>
       <p class="hero-note"><span aria-hidden="true">✓</span> Sin tarjeta de crédito · Acceso desde cualquier dispositivo</p>
@@ -90,21 +93,36 @@
     <div class="benefit-grid">
       <article class="benefit-card card-blue">
         <span class="card-number">01</span>
-        <div class="benefit-visual"><img [src]="'assets/landing/card-budgets.png' | assetUrl" alt="Archi presentando un presupuesto de obra" /></div>
+        <div class="benefit-visual">
+          <picture>
+            <source [srcset]="'assets/landing/card-budgets.webp' | assetUrl" type="image/webp">
+            <img [src]="'assets/landing/card-budgets.png' | assetUrl" alt="Archi presentando un presupuesto de obra" loading="lazy" />
+          </picture>
+        </div>
         <h3>Presupuestos profesionales</h3>
         <p>Armá presupuestos claros, completos y listos para compartir con tus clientes.</p>
         <a routerLink="/login" aria-label="Crear un presupuesto de obra con Metro">Crear un presupuesto <span aria-hidden="true">↗</span></a>
       </article>
       <article class="benefit-card card-yellow">
         <span class="card-number">02</span>
-        <div class="benefit-visual"><img [src]="'assets/landing/card-materials.png' | assetUrl" alt="Archi organizando materiales de construcción" /></div>
+        <div class="benefit-visual">
+          <picture>
+            <source [srcset]="'assets/landing/card-materials.webp' | assetUrl" type="image/webp">
+            <img [src]="'assets/landing/card-materials.png' | assetUrl" alt="Archi organizando materiales de construcción" loading="lazy" />
+          </picture>
+        </div>
         <h3>Materiales sin adivinar</h3>
         <p>Calculá cantidades para cada tarea y trabajá con información de tu región.</p>
         <a routerLink="/login" aria-label="Calcular materiales de construcción con Metro">Calcular materiales <span aria-hidden="true">↗</span></a>
       </article>
       <article class="benefit-card card-dark">
         <span class="card-number">03</span>
-        <div class="benefit-visual"><img [src]="'assets/landing/card-control.png' | assetUrl" alt="Archi coordinando un proyecto de construcción" /></div>
+        <div class="benefit-visual">
+          <picture>
+            <source [srcset]="'assets/landing/card-control.webp' | assetUrl" type="image/webp">
+            <img [src]="'assets/landing/card-control.png' | assetUrl" alt="Archi coordinando un proyecto de construcción" loading="lazy" />
+          </picture>
+        </div>
         <h3>Todo bajo control</h3>
         <p>Organizá clientes, empresas y presupuestos para encontrar todo cuando lo necesitás.</p>
         <a routerLink="/login" aria-label="Organizar clientes y obras con Metro">Ordenar mi trabajo <span aria-hidden="true">↗</span></a>
@@ -145,14 +163,19 @@
         <p class="eyebrow">TU PRÓXIMA OBRA EMPIEZA ACÁ</p>
         <h2 id="cta-title">Hacé que cada presupuesto<br /><em>hable bien de tu trabajo.</em></h2>
       </div>
-      <a class="button button-primary" routerLink="/login" aria-label="Probar gratis Metro ahora">Probar Metro gratis <span aria-hidden="true">→</span></a>
+      <a class="button button-primary" routerLink="/login" [queryParams]="{ step: 'demo' }" aria-label="Probar gratis Metro ahora">Probar Metro gratis <span aria-hidden="true">→</span></a>
     </div>
   </section>
 </main>
 
 <footer class="site-footer">
   <div class="section-shell footer-inner">
-    <a class="brand" href="#inicio"><img [src]="'assets/landing/metro-logo.png' | assetUrl" alt="Metro" /></a>
+    <a class="brand" href="#inicio">
+      <picture>
+        <source [srcset]="'assets/landing/metro-logo.webp' | assetUrl" type="image/webp">
+        <img [src]="'assets/landing/metro-logo.png' | assetUrl" alt="Metro" />
+      </picture>
+    </a>
     <span>Software para construir con más claridad.</span>
     <a routerLink="/login">www.metroapp.site ↗</a>
   </div>

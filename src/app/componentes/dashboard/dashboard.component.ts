@@ -501,12 +501,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     if (selection.email) params['email'] = selection.email;
     if (selection.phone) params['phone'] = selection.phone;
     if (selection.province) params['province'] = selection.province;
-    setTimeout(() => this.route.navigate(['/'], { queryParams: params }), 320);
+    setTimeout(() => this.route.navigate(['/login'], { queryParams: params }), 320);
   }
 
   onMembershipWhatsApp(_selection: MembershipWhatsAppSelection): void {
     if (this.trialMode) {
-      setTimeout(() => this.route.navigate(['/'], { queryParams: { step: 'register' } }), 350);
+      setTimeout(() => this.route.navigate(['/login'], { queryParams: { step: 'register' } }), 350);
       return;
     }
 

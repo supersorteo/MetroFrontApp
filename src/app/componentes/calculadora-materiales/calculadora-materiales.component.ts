@@ -1139,12 +1139,12 @@ export class CalculadoraMaterialesComponent implements OnInit, OnDestroy {
     if (selection.email) params['email'] = selection.email;
     if (selection.phone) params['phone'] = selection.phone;
     if (selection.province) params['province'] = selection.province;
-    this.router.navigate(['/'], { queryParams: params });
+    this.router.navigate(['/login'], { queryParams: params });
   }
 
   pagarPorWhatsAppDesdeCalculadora(_selection: MembershipWhatsAppSelection): void {
     if (this.isTrialMode) {
-      setTimeout(() => this.router.navigate(['/'], { queryParams: { step: 'register' } }), 350);
+      setTimeout(() => this.router.navigate(['/login'], { queryParams: { step: 'register' } }), 350);
     }
   }
 

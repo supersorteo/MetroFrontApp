@@ -150,7 +150,7 @@
 
     <div class="program-title" *ngIf="!isContentVisible">
 
-      <img class="program-title__logo" src="assets/orbita-software-logo.png" alt="Orbita Software">
+      <img class="program-title__logo" [src]="'assets/orbita-software-logo.png' | assetUrl" alt="Orbita Software">
       <a class="program-title__website" href="https://www.orbitasoftware.site" target="_blank" rel="noopener noreferrer">
         www.orbitasoftware.site
       </a>

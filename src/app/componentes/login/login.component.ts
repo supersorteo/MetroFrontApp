@@ -5,7 +5,7 @@ import { Component, ElementRef, OnDestroy, OnInit, Renderer2, ViewChild } from '
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../servicios/auth.service';
 import { AccessCodeService } from '../../servicios/access-code.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProvinciaService } from '../../servicios/provincia.service';
 import { MembershipPaymentService } from '../../servicios/membership-payment.service';
 import { PayPalPaymentService } from '../../servicios/paypal-payment.service';
@@ -36,7 +36,7 @@ interface Country {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule, AssetUrlPipe],
+  imports: [CommonModule, FormsModule, NgSelectModule, AssetUrlPipe, RouterLink],
 
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
@@ -257,7 +257,9 @@ constructor(private authService: AuthService,
         this.loginStep = 'adminCountry';
       }
       const step = params.get('step');
-      if (step === 'join') {
+      if (step === 'demo') {
+        this.loginStep = 'demoCountry';
+      } else if (step === 'join') {
         this.loginStep = 'join';
       } else if (step === 'register') {
         this.loginStep = 'register';

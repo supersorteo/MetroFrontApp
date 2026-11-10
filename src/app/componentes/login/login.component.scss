@@ -12,7 +12,7 @@
   padding: 32px 16px 48px;
   background:
     linear-gradient(180deg, rgba(248, 251, 255, 0.72) 0%, rgba(236, 244, 255, 0.82) 70%),
-    url('/assets/fondo-obra-atardecer.png') center/cover no-repeat;
+    url('https://res.cloudinary.com/drd37bhg0/image/upload/f_auto,q_auto/metroapp-assets/fondo-obra-atardecer') center/cover no-repeat;
   overflow-x: hidden;
 }
 
@@ -510,6 +510,7 @@
   margin-bottom: 20px;
   transition: background 0.2s, color 0.2s;
   backdrop-filter: blur(8px);
+  text-decoration: none;
 
   &:hover {
     background: rgba(255,255,255,0.75);

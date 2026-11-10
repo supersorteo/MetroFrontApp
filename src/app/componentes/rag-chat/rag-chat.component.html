@@ -12,7 +12,7 @@
 
   <!-- Avatar de Archi (visible cuando está cerrado) -->
   <span class="rag-fab__worker" [class.rag-fab__worker--hidden]="abierto()">
-    <img src="assets/chatbot-arquitecto.png" alt="Archi, asistente de materiales">
+    <img [src]="'assets/chatbot-arquitecto.png' | assetUrl" alt="Archi, asistente de materiales">
   </span>
 
   <!-- X para cerrar -->
@@ -75,7 +75,7 @@
     <div class="rag-panel__header">
       <!-- Avatar de Archi en el header -->
       <div class="rag-panel__header-icon">
-        <img src="assets/chatbot-arquitecto.png" alt="">
+        <img [src]="'assets/chatbot-arquitecto.png' | assetUrl" alt="">
       </div>
       <div class="rag-panel__header-info">
         <span class="rag-panel__header-title">Archi</span>

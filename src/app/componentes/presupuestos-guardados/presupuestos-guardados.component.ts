@@ -10,6 +10,7 @@ import { OfflineLocalStoreService } from '../../servicios/offline-local-store.se
 import { AppToastService } from '../../servicios/app-toast.service';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { PrecioArgentinoPipe, formatPrecioArgentino } from '../../pipes/precio-argentino.pipe';
+import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
 import { MembershipLimits } from '../../servicios/membership-limits.service';
 
 declare const html2pdf: any;
@@ -17,7 +18,7 @@ declare const html2pdf: any;
 @Component({
   selector: 'app-presupuestos-guardados',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, PrecioArgentinoPipe],
+  imports: [CommonModule, FormsModule, DatePipe, PrecioArgentinoPipe, AssetUrlPipe],
   templateUrl: './presupuestos-guardados.component.html',
   styleUrl: './presupuestos-guardados.component.scss'
 })

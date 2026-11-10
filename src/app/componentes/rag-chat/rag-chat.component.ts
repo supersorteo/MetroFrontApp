@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, computed, NgZone, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { RagUnificadoService, RagUnificadoResponse } from '../../servicios/rag-unificado.service';
@@ -15,7 +16,7 @@ interface Mensaje {
 @Component({
   selector: 'app-rag-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AssetUrlPipe],
   templateUrl: './rag-chat.component.html',
   styleUrl: './rag-chat.component.scss'
 })

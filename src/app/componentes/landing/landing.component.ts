@@ -13,6 +13,7 @@ import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
 })
 export class LandingComponent implements OnInit, OnDestroy {
   private doc = inject(DOCUMENT);
+  private scrollObserver?: IntersectionObserver;
 
   constructor(private seo: SeoService) {}
 
@@ -24,12 +25,34 @@ export class LandingComponent implements OnInit, OnDestroy {
     });
     this.injectFonts();
     this.injectSchemas();
+    this.initScrollReveal();
   }
 
   ngOnDestroy(): void {
+    this.scrollObserver?.disconnect();
     this.doc.querySelector('#landing-fonts')?.remove();
     this.doc.querySelector('#landing-schema-graph')?.remove();
     this.doc.querySelector('#landing-schema-faq')?.remove();
+  }
+
+  private initScrollReveal(): void {
+    if (!('IntersectionObserver' in window)) {
+      this.doc.querySelectorAll('.audience-inner,.faq-list,.cta-card').forEach(
+        el => el.classList.add('is-visible')
+      );
+      return;
+    }
+    this.scrollObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-visible');
+          this.scrollObserver!.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    this.doc.querySelectorAll('.audience-inner,.faq-list,.cta-card').forEach(
+      el => this.scrollObserver!.observe(el)
+    );
   }
 
   private injectFonts(): void {

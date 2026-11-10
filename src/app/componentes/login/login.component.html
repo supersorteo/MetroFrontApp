@@ -42,6 +42,12 @@
       </button>
     </div>
 
+    <div class="login-home-back-landing">
+      <a class="login-back" routerLink="/">
+        <i class="bi bi-arrow-left"></i> Volver al inicio
+      </a>
+    </div>
+
   </div>
 
   <!-- ══════════════════════════════════════
@@ -623,7 +629,7 @@
           [disabled]="!canStartCheckout || isStartingCheckout"
           (click)="startMembershipCheckout()"
         >
-          <img class="lf-pay-logo lf-pay-logo--mp" src="assets/mercadopago-logo.png" alt="" aria-hidden="true">
+          <img class="lf-pay-logo lf-pay-logo--mp" [src]="'assets/mercadopago-logo.png' | assetUrl" alt="" aria-hidden="true">
           {{ isStartingCheckout ? 'Redirigiendo...' : 'Pagar con Mercado Pago' }}
         </button>
 
