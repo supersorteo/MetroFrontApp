@@ -40,3 +40,20 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Firebase cache
+.firebase/
+
+# Archivos temporales con rutas en el nombre
+C*UsersLeo*
+
+# Claude Code
+.claude/
+
+# Plans and scripts (local only)
+plan/
+scripts/
+
+# Docs generados localmente
+docs/plan-*.md
+docs/tours-*.md
