@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { Component, ElementRef, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +16,7 @@ import { PHONE_COUNTRIES, validatePhone } from '../../core/utils/phone-validatio
 import { buildMembershipCheckoutPayload, buildPayPalCheckoutPayload, mapMembershipCountryOption, MembershipCheckoutForm, MembershipCountryOption, validateMembershipCheckoutForm } from '../../core/membership/membership-checkout.util';
 import { extractApiErrorMessage } from '../../core/http/api-error.util';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
+import { SeoService } from '../../core/services/seo.service';
 import { AppToastService } from '../../servicios/app-toast.service';
 import { AdminService, AdminCountry } from '../../servicios/admin.service';
 import { LegacyCodeService, LegacyCodeDTO } from '../../servicios/legacy-code.service';
@@ -34,7 +36,7 @@ interface Country {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgSelectModule],
+  imports: [CommonModule, FormsModule, NgSelectModule, AssetUrlPipe],
 
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
@@ -126,7 +128,8 @@ constructor(private authService: AuthService,
   private adminService: AdminService,
   private uiDialog: UiDialogService,
   private appToast: AppToastService,
-  private legacyCodeService: LegacyCodeService){}
+  private legacyCodeService: LegacyCodeService,
+  private seoService: SeoService){}
 
   private provinciasCacheKey(pais: string): string {
     return `loginProvincias_${pais.toLowerCase()}`;
@@ -220,6 +223,11 @@ constructor(private authService: AuthService,
   }
 
   ngOnInit(): void {
+    this.seoService.setPage({
+      title: 'Metro | Software de Presupuestos para Construcción',
+      description: 'Creá presupuestos de construcción, calculá materiales y gestioná tus obras. Ingresá a MetroApp.',
+      url: 'https://metroapp.site/'
+    });
     this.loadMembershipCatalog();
     const legacyCode = this.getLegacyAccessCodeFromCookie();
     const lastCode = localStorage.getItem('lastLoginCode');

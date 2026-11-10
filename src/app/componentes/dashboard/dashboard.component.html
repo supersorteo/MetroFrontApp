@@ -58,7 +58,7 @@
   </div>
 </section>
 
-<div class="demo-tour-backdrop" *ngIf="showDemoTourWelcome || showDemoTourStep" (click)="cerrarDemoTour()" aria-hidden="true"></div>
+<div class="demo-tour-backdrop" *ngIf="showDemoTourWelcome || showDemoTourStep" (click)="$event.stopPropagation()" aria-hidden="true"></div>
 
 <div
   class="demo-tour-spotlight"
@@ -102,6 +102,43 @@
       <span class="demo-tour-nav-triangle" aria-hidden="true"></span>
     </button>
     <button *ngIf="!demoTourAutomationInProgress && demoTourIndex === activeDemoTourSteps.length - 1" type="button" class="demo-tour-button" (click)="cerrarDemoTour()">Finalizar</button>
+  </div>
+</section>
+
+<!-- Tour Presupuesto (guardar/cargar/editar) -->
+<div class="demo-tour-backdrop" *ngIf="showDashboardTour" (click)="$event.stopPropagation()" aria-hidden="true"></div>
+
+<div
+  class="demo-tour-spotlight"
+  *ngIf="showDashboardTour && dashboardTourSteps[dashboardTourIndex].target"
+  [class.demo-tour-spotlight--ready]="dashboardTourPositionReady"
+  [ngStyle]="dashboardTourSpotlightStyle"
+  aria-hidden="true">
+</div>
+
+<section
+  class="demo-tour-bubble dashboard-tour-bubble"
+  *ngIf="showDashboardTour"
+  [class.demo-tour-bubble--ready]="dashboardTourPositionReady"
+  [class.demo-tour-bubble--above]="dashboardTourBubblePlacement === 'above'"
+  [class.demo-tour-bubble--below]="dashboardTourBubblePlacement === 'below'"
+  [class.demo-tour-bubble--centered]="dashboardTourBubblePlacement === 'centered'"
+  [ngStyle]="dashboardTourBubbleStyle"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="dashboard-tour-step-title">
+  <button class="demo-tour-close" type="button" aria-label="Cerrar tour" (click)="cerrarDashboardTour()">×</button>
+  <span class="demo-tour-eyebrow">Recorrido · {{ dashboardTourIndex + 1 }} de {{ dashboardTourSteps.length }}</span>
+  <h2 id="dashboard-tour-step-title">{{ dashboardTourSteps[dashboardTourIndex].title }}</h2>
+  <p>{{ dashboardTourSteps[dashboardTourIndex].text }}</p>
+  <div class="demo-tour-actions">
+    <button *ngIf="!demoTourAutomationInProgress && dashboardTourIndex > 0" type="button" class="demo-tour-nav-button demo-tour-nav-button--previous" (click)="avanzarDashboardTour(-1)" aria-label="Ir al paso anterior">
+      <span class="demo-tour-nav-triangle" aria-hidden="true"></span>
+    </button>
+    <button *ngIf="!demoTourAutomationInProgress && dashboardTourIndex < dashboardTourSteps.length - 1" type="button" class="demo-tour-nav-button demo-tour-nav-button--next" (click)="avanzarDashboardTour(1)" aria-label="Ir al paso siguiente">
+      <span class="demo-tour-nav-triangle" aria-hidden="true"></span>
+    </button>
+    <button *ngIf="!demoTourAutomationInProgress && dashboardTourIndex === dashboardTourSteps.length - 1" type="button" class="demo-tour-button" (click)="cerrarDashboardTour()">Finalizar</button>
   </div>
 </section>
 
@@ -780,7 +817,7 @@
 
               <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea en el formulario.</p>
 
-              <img class="tp-empty-state__sprite" src="assets/archi-relajado-sprite.png" alt="Arquitecto relajado">
+              <img class="tp-empty-state__sprite" [src]="'assets/archi-relajado-sprite.png' | assetUrl" alt="Arquitecto relajado">
 
             </div>
 
@@ -1275,7 +1312,7 @@
           <ng-template #empresaPlaceholder>
             <img
               class="fixed-image fixed-image--placeholder"
-              src="assets/icons/empresa-add.png"
+              [src]="'assets/icons/empresa-add.png' | assetUrl"
               alt="Agregar empresa">
           </ng-template>
 
@@ -1513,7 +1550,7 @@
 
               <p class="tp-empty-state__text">Todavía no tenés tareas guardadas.<br>Creá tu primera tarea desde el botón superior.</p>
 
-              <img class="tp-empty-state__sprite" src="assets/archi-relajado-sprite.png" alt="Arquitecto relajado">
+              <img class="tp-empty-state__sprite" [src]="'assets/archi-relajado-sprite.png' | assetUrl" alt="Arquitecto relajado">
 
             </div>
 
@@ -1678,7 +1715,7 @@
             </span>
             <img
               *ngIf="!selectedEmpresaId"
-              src="assets/icons/empresa-add.png"
+              [src]="'assets/icons/empresa-add.png' | assetUrl"
               alt="Agregar empresa"
               class="fixed-image fixed-image--placeholder"
             >
@@ -1854,13 +1891,14 @@
 
         </button>
 
-        <button class="tareas-panel__action" type="button" (click)="openSaveBudgetModal()" aria-label="Guardar presupuesto" title="Guardar presupuesto">
+        <button id="demoTourPanelSaveButton" class="tareas-panel__action" type="button" (click)="openSaveBudgetModal()" aria-label="Guardar presupuesto" title="Guardar presupuesto">
 
           <i class="bi bi-floppy" aria-hidden="true"></i>
 
         </button>
 
         <button
+          id="tourQuitarCargaButton"
           *ngIf="presupuestoSeleccionado"
           class="tareas-panel__action"
           type="button"
@@ -2306,7 +2344,8 @@
 
 </div>
 
-<div class="modal fade" id="listaClientesModal" aria-hidden="true" aria-labelledby="listaClientesLabel" tabindex="-1">
+<div class="modal fade" id="listaClientesModal" aria-hidden="true" aria-labelledby="listaClientesLabel" tabindex="-1"
+     [class.dashboard-tour-modal-layer]="showDashboardTour && dashboardTourFlow === 'crear' && dashboardTourIndex === 3">
 
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg lista-clientes-modal__dialog">
 
@@ -2710,11 +2749,12 @@
 
 </div>
 
-<div class="modal fade" id="listaEmpresasModal" aria-hidden="true" aria-labelledby="listaEmpresasLabel" tabindex="-1">
+<div class="modal fade" id="listaEmpresasModal" aria-hidden="true" aria-labelledby="listaEmpresasLabel" tabindex="-1"
+     [class.dashboard-tour-modal-layer]="showDashboardTour && dashboardTourFlow === 'crear' && dashboardTourIndex === 1">
 
   <div class="modal-dialog modal-lg">
 
-    <div class="modal-content modal-zona">
+    <div id="demoTourCompanyListModal" class="modal-content modal-zona">
 
       <div class="modal-header">
 
@@ -3078,7 +3118,7 @@
 
     </button>
 
-    <button class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--gestor" (click)="toggleSavedBudgetsPanel()" type="button" aria-label="Gestor de presupuestos" title="Gestor de presupuestos">
+    <button id="tourGestorButton" class="toolbar-item toolbar-item--icon toolbar-item--ghost toolbar-item--gestor" (click)="toggleSavedBudgetsPanel()" type="button" aria-label="Gestor de presupuestos" title="Gestor de presupuestos">
 
       <span class="toolbar-item__icon" aria-hidden="true">
 
@@ -3168,7 +3208,7 @@
 
 <div class="saved-budgets-overlay" *ngIf="showSavedBudgetsPanel" (click)="closeSavedBudgetsPanel()"></div>
 
-<div class="saved-budgets-panel" [class.open]="showSavedBudgetsPanel">
+<div id="tourGestorPanel" class="saved-budgets-panel" [class.open]="showSavedBudgetsPanel">
 
   <div class="panel-header">
 
@@ -3208,8 +3248,8 @@
 
 
 
-<div class="save-budget-modal-backdrop" *ngIf="showSaveBudgetModal" (click)="closeSaveBudgetModal()">
-  <div class="save-budget-modal" role="dialog" aria-modal="true"
+<div class="save-budget-modal-backdrop" *ngIf="showSaveBudgetModal" [class.save-budget-modal-backdrop--tour]="showDashboardTour && dashboardTourFlow === 'crear' && dashboardTourIndex === 7" (click)="closeSaveBudgetModal()">
+  <div id="demoTourSaveBudgetModal" class="save-budget-modal" role="dialog" aria-modal="true"
        aria-labelledby="saveBudgetModalTitle" (click)="$event.stopPropagation()">
 
     <div class="save-budget-modal__header">
@@ -3626,6 +3666,42 @@
             <span class="metro-help-card__content">
               <strong>Crear una tarea personalizada</strong>
               <small>Aprende a usar Tus tareas y completar el formulario sin guardar datos.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourCrearPresupuesto()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-plus-circle"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Crear un presupuesto</strong>
+              <small>Empresa, cliente, tareas y cómo guardarlo por primera vez.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourCargarPresupuesto()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-folder2-open"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Cargar presupuesto</strong>
+              <small>Cómo abrir un presupuesto guardado desde el Gestor.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourQuitarCarga()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-eraser"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Quitar carga del presupuesto</strong>
+              <small>Cómo descargar el presupuesto activo desde el panel de tareas.</small>
+            </span>
+            <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
+          </button>
+
+          <button type="button" class="metro-help-card metro-help-card--featured" (click)="iniciarTourActualizarPresupuesto()">
+            <span class="metro-help-card__icon" aria-hidden="true"><i class="bi bi-pencil-square"></i></span>
+            <span class="metro-help-card__content">
+              <strong>Editar y actualizar presupuesto</strong>
+              <small>Cómo modificar un presupuesto guardado y guardar los cambios.</small>
             </span>
             <i class="bi bi-arrow-right metro-help-card__arrow" aria-hidden="true"></i>
           </button>

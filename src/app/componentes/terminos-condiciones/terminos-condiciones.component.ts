@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
 import { Component, HostListener, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -7,7 +8,7 @@ import { hasAcceptedTerms, TERMS_VERSION, termsStorageKey } from '../../core/ter
 @Component({
   selector: 'app-terminos-condiciones',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AssetUrlPipe],
   templateUrl: './terminos-condiciones.component.html',
   styleUrl: './terminos-condiciones.component.scss'
 })

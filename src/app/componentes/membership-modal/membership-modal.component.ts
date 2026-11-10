@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, Output, ViewChild } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 import { MembershipPaymentService } from '../../servicios/membership-payment.service';
@@ -30,7 +31,7 @@ export interface MembershipWhatsAppSelection {
 @Component({
   selector: 'app-membership-modal',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, AssetUrlPipe],
   templateUrl: './membership-modal.component.html',
   styleUrl: './membership-modal.component.scss'
 })

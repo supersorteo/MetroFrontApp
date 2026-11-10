@@ -13,6 +13,8 @@ export interface LegacyCodeDTO {
   claimed: boolean;
   claimedByEmail: string | null;
   claimedAt: string | null;
+  disabled?: boolean;
+  maxDevices?: number | null;
 }
 
 export interface LegacyImportResult {

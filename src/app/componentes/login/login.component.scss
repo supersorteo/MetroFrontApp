@@ -11,7 +11,7 @@
   justify-content: flex-start;
   padding: 32px 16px 48px;
   background:
-    linear-gradient(180deg, rgba(248, 251, 255, 0.72) 0%, rgba(236, 244, 255, 0.82) 100%),
+    linear-gradient(180deg, rgba(248, 251, 255, 0.72) 0%, rgba(236, 244, 255, 0.82) 70%),
     url('/assets/fondo-obra-atardecer.png') center/cover no-repeat;
   overflow-x: hidden;
 }
@@ -199,7 +199,7 @@
   align-items: center;
   gap: 24px;
   text-align: left;
-  overflow: visible;
+  overflow: hidden;
 
   .login-card__visual {
     align-self: stretch;
@@ -210,15 +210,17 @@
     align-items: flex-end;
     justify-content: center;
     order: 1;
-    overflow: visible;
+    overflow: hidden;
 
     img {
       display: block;
       width: 100%;
-      height: 365px;
+      max-width: 100%;
+      height: 100%;
+      max-height: 100%;
       object-fit: contain;
       object-position: center bottom;
-      transform: translateY(12px);
+      transform: none;
       opacity: 0;
       animation: archiSpriteFadeIn 0.8s ease-out forwards;
     }
@@ -313,13 +315,120 @@
 
   .login-card__title { font-size: 1.15rem; color: #0f1c3f; }
   .login-card__desc  { font-size: 0.83rem; color: rgba(15, 28, 63, 0.7); }
-  .login-card__cta   { color: #2563eb; font-size: 0.85rem; }
 
   &:hover {
     border-color: rgba(37, 99, 235, 0.58);
     box-shadow: 0 16px 40px rgba(37, 99, 235, 0.2);
   }
 
+}
+
+.login-home-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(100%, 280px);
+  margin-top: 8px;
+}
+
+.login-home-primary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.login-home-note {
+  color: rgba(30, 64, 175, 0.72);
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.login-home-button {
+  width: 100%;
+  min-height: 42px;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.45px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.28);
+    outline-offset: 2px;
+  }
+
+  &--primary {
+    color: #fff;
+    background: linear-gradient(135deg, #2563eb, #38bdf8);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
+
+    &:hover,
+    &:focus-visible {
+      box-shadow: 0 12px 24px rgba(37, 99, 235, 0.3);
+    }
+  }
+
+  &--secondary {
+    color: #1d4ed8;
+    background: rgba(255, 255, 255, 0.86);
+    border: 1px solid rgba(37, 99, 235, 0.28);
+    box-shadow: 0 5px 14px rgba(37, 99, 235, 0.1);
+
+    &:hover,
+    &:focus-visible {
+      background: #fff;
+      box-shadow: 0 9px 20px rgba(37, 99, 235, 0.18);
+    }
+  }
+}
+
+.login-home-faq {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: -4px;
+}
+
+.login-home-faq__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: min(100%, 280px);
+  min-height: 40px;
+  padding: 9px 16px;
+  border: 1px solid rgba(37, 99, 235, 0.24);
+  border-radius: 11px;
+  color: #1d4ed8;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.35px;
+  cursor: pointer;
+  box-shadow: 0 5px 16px rgba(37, 99, 235, 0.08);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 9px 20px rgba(37, 99, 235, 0.14);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.25);
+    outline-offset: 2px;
+  }
 }
 
 .login-card__badge-new {
@@ -334,14 +443,6 @@
 }
 
 /* ── Card variantes ── */
-.login-card--member {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.14) 0%, rgba(59, 130, 246, 0.1) 100%);
-
-  .login-card__glow { background: radial-gradient(circle at 50% 0%, rgba(37,117,252,0.2), transparent 70%); }
-  .login-card__icon { color: #1d4ed8; }
-  .login-card__cta  { color: #2563eb; }
-}
-
 .login-card--join {
   background: rgba(37, 117, 252, 0.08);
   border-color: rgba(37,117,252,0.25);

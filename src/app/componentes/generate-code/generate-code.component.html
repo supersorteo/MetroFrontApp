@@ -492,7 +492,14 @@
             <tr *ngFor="let lc of getPaginatedLegacyCodes()"
                 [class.row--expired]="!isLegacyVigente(lc)"
                 [class.row--pending]="lc.claimed">
-              <td><span class="code-badge">{{ lc.code }}</span></td>
+              <td>
+                <span class="code-badge">{{ lc.code }}</span>
+                <span *ngIf="lc.claimed"
+                      [class]="getSessionBadgeClass(lc.code)"
+                      [title]="(activeSessions.get(lc.code) ?? 0) + '/' + (sessionLimits.get(lc.code) ?? lc.maxDevices ?? 2) + ' dispositivos activos'">
+                  {{ activeSessions.get(lc.code) ?? 0 }}/{{ sessionLimits.get(lc.code) ?? lc.maxDevices ?? 2 }}
+                </span>
+              </td>
               <td>
                 <span class="tipo-badge"
                       [class.tipo-badge--3]="lc.meses === 3"
@@ -513,6 +520,35 @@
               </td>
               <td>
                 <div class="row-actions">
+                  <button class="ra-btn ra-btn--copy" title="Copiar" (click)="copyToClipboard(lc.code)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+                      <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+                    </svg>
+                  </button>
+                  <button *ngIf="lc.claimed && (activeSessions.get(lc.code) ?? 0) > 0" class="ra-btn ra-btn--kick" title="Cerrar sesiones activas"
+                          (click)="terminateAllSessionsLegacy(lc)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M6 12.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v2.5a.5.5 0 0 1-1 0V3.5A1.5 1.5 0 0 1 6.5 2h8A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 5 12.5V10a.5.5 0 0 1 1 0z"/>
+                      <path d="M.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L1.707 7.5H10.5a.5.5 0 0 1 0 1H1.707l2.147 2.146a.5.5 0 0 1-.708.708z"/>
+                    </svg>
+                  </button>
+                  <button *ngIf="lc.claimed" class="ra-btn ra-btn--devices" title="Editar límite de dispositivos"
+                          (click)="openMaxDevicesEditLegacy(lc)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M4 0a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h1v1H2.5A1.5 1.5 0 0 0 1 7.5v1A1.5 1.5 0 0 0 2.5 10H4v1H2a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h5a2 2 0 0 0 2-2v-1h1.5A1.5 1.5 0 0 0 12 11.5v-1A1.5 1.5 0 0 0 10.5 9H9V8h1.5A1.5 1.5 0 0 0 12 6.5v-1A1.5 1.5 0 0 0 10.5 4H9V3a2 2 0 0 0 2-2V0H4zm1 3V0h5v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm-1 5V5h5v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zm0 5v-3h5v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/>
+                    </svg>
+                  </button>
+                  <button *ngIf="lc.claimed" class="ra-btn" [class.ra-btn--disable]="!lc.disabled" [class.ra-btn--enable]="lc.disabled"
+                          [title]="lc.disabled ? 'Activar código' : 'Desactivar código'"
+                          (click)="toggleDisableLegacyCode(lc)">
+                    <svg *ngIf="!lc.disabled" xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"/>
+                    </svg>
+                    <svg *ngIf="lc.disabled" xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M11 1a2 2 0 0 0-2 2v4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h5V3a3 3 0 0 1 6 0v4a.5.5 0 0 1-1 0V3a2 2 0 0 0-2-2"/>
+                    </svg>
+                  </button>
                   <button *ngIf="lc.claimed" class="ra-btn ra-btn--edit" title="Resetear claim (solo para testing)" (click)="resetLegacyClaim(lc)" style="margin-right:4px">
                     ↺
                   </button>
@@ -1319,6 +1355,51 @@
             <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
           </svg>
           Aplicar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: códigos recién generados -->
+  <div class="admin-overlay at-modal-overlay" *ngIf="showGeneratedCodesModal" (click)="showGeneratedCodesModal = false">
+    <div class="at-modal gc-modal" (click)="$event.stopPropagation()">
+
+      <div class="at-modal__header">
+        <div class="at-modal__header-icon gc-modal__icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5"/>
+            <path d="M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5"/>
+          </svg>
+        </div>
+        <div class="at-modal__header-text">
+          <h3 class="at-modal__title">Códigos generados</h3>
+          <small class="at-modal__subtitle">{{ generatedCodes.length }} código{{ generatedCodes.length !== 1 ? 's' : '' }} · {{ generatedCodes[0]?.tipo }}</small>
+        </div>
+        <button class="at-modal__close" type="button" (click)="showGeneratedCodesModal = false">&#x00D7;</button>
+      </div>
+
+      <div class="at-modal__body gc-modal__body">
+        <div class="gc-code-list">
+          <div class="gc-code-row" *ngFor="let c of generatedCodes">
+            <span class="gc-code-row__badge">{{ c.code }}</span>
+            <button class="gc-code-row__copy ra-btn ra-btn--copy" type="button" title="Copiar código" (click)="copyToClipboard(c.code)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="expiry-modal__footer gc-modal__footer">
+        <button class="ea-btn ea-btn--cancel" type="button" (click)="showGeneratedCodesModal = false">Listo</button>
+        <button class="ea-btn expiry-modal__save-btn" type="button" (click)="copyAllGeneratedCodes()" *ngIf="generatedCodes.length > 1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+            <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+          </svg>
+          Copiar todos
         </button>
       </div>
     </div>

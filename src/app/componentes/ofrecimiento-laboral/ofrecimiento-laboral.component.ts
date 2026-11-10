@@ -4,6 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProvinciaService, Provincia } from '../../servicios/provincia.service';
 import { UiDialogService } from '../../core/services/ui-dialog.service';
+import { SeoService } from '../../core/services/seo.service';
 import { AppToastService } from '../../servicios/app-toast.service';
 import { NgSelectModule } from '@ng-select/ng-select';
 
@@ -74,7 +75,7 @@ export class OfrecimientoLaboralComponent implements OnInit {
   form: FormGroup;
   vehiculo: string = '';
 
-  constructor(private fb: FormBuilder, private provinciaService: ProvinciaService, private uiDialog: UiDialogService, private appToast: AppToastService) {
+  constructor(private fb: FormBuilder, private provinciaService: ProvinciaService, private uiDialog: UiDialogService, private appToast: AppToastService, private seoService: SeoService) {
     this.form = this.fb.group({
       nombre: ['', Validators.required],
       apellidos: ['', Validators.required],
@@ -113,7 +114,11 @@ export class OfrecimientoLaboralComponent implements OnInit {
 
 
   ngOnInit(): void {
-    // Por defecto no se cargan provincias hasta que se seleccione un país
+    this.seoService.setPage({
+      title: 'Ofrecimiento Laboral | Metro',
+      description: 'Sumá tu propuesta de trabajo en MetroApp. Conectamos profesionales de la construcción en Argentina, Colombia y Uruguay.',
+      url: 'https://metroapp.site/ofrecimiento'
+    });
   }
 
   onPaisChange() {

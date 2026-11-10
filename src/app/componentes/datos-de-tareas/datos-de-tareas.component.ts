@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
 import { Component, HostListener, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PresupuestoService, Tarea } from '../../servicios/presupuesto.service';
@@ -9,6 +10,7 @@ import { UiDialogService } from '../../core/services/ui-dialog.service';
 import { AccessCode, AuthService } from '../../servicios/auth.service';
 import { Router, RouterModule } from '@angular/router';
 import { OfflineLocalStoreService } from '../../servicios/offline-local-store.service';
+import { UserTarea, UserTareaService } from '../../servicios/user-tarea.service';
 declare var html2pdf: any;
 
 interface ColorScheme {
@@ -32,7 +34,7 @@ interface BudgetTourStep {
 @Component({
   selector: 'app-datos-de-tareas',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, AssetUrlPipe],
   templateUrl: './datos-de-tareas.component.html',
   styleUrl: './datos-de-tareas.component.scss'
 })
@@ -113,7 +115,8 @@ export class DatosDeTareasComponent implements OnInit {
     private appToast: AppToastService,
     private uiDialog: UiDialogService,
     private route: Router,
-    private localStore: OfflineLocalStoreService
+    private localStore: OfflineLocalStoreService,
+    private userTareaService: UserTareaService
   ) {}
 
   private getBackgroundColorRgba(hex: string, alpha: number): string {
@@ -131,7 +134,7 @@ export class DatosDeTareasComponent implements OnInit {
     this.colorScheme = this.loadColorScheme();
 
     const activePreview = await this.localStore.getState<any>('budget:active-preview');
-    if (activePreview) {
+    if (activePreview?.presupuesto) {
       this.empresaSeleccionada = activePreview.empresa || activePreview.presupuesto?.empresa || null;
       this.clienteSeleccionado = activePreview.cliente || activePreview.presupuesto?.cliente || null;
       this.tareasAgregadas = activePreview.tareas || activePreview.presupuesto?.tareas || [];
@@ -333,17 +336,26 @@ export class DatosDeTareasComponent implements OnInit {
 
   // ============ EDITAR TAREA ============
   abrirEditarTarea(index: number): void {
-    const t = this.tareasAgregadas[index];
-    if (!t) return;
-    this.editingIndex = index;
-    this.editForm = {
-      tarea:       t.tarea,
-      descripcion: t.descripcion || '',
-      area:        Math.round((t.area || 0) * 100) / 100,
-      costo:       Math.round((t.costo || 0) * 100) / 100,
-      descuento:   Math.round((t.descuento || 0) * 100) / 100
-    };
-    this.showEditModal = true;
+    void this.localStore.getState<any>('budget:active-preview').then(preview => {
+      if (preview?.presupuesto) {
+        void this.uiDialog.info({
+          title: 'Presupuesto cargado activo',
+          text: 'Este presupuesto está cargado en el dashboard. Para modificar sus tareas, andá al panel de tareas en el dashboard y editá desde ahí.'
+        });
+        return;
+      }
+      const t = this.tareasAgregadas[index];
+      if (!t) return;
+      this.editingIndex = index;
+      this.editForm = {
+        tarea:       t.tarea,
+        descripcion: t.descripcion || '',
+        area:        Math.round((t.area || 0) * 100) / 100,
+        costo:       Math.round((t.costo || 0) * 100) / 100,
+        descuento:   Math.round((t.descuento || 0) * 100) / 100
+      };
+      this.showEditModal = true;
+    });
   }
 
   cerrarEditarTarea(): void {
@@ -360,32 +372,95 @@ export class DatosDeTareasComponent implements OnInit {
       );
       return;
     }
+
+    const tarea = this.tareasAgregadas[this.editingIndex];
+    if (!tarea) return;
+
     const totalCost = this.editTotalCost;
-    this.tareasAgregadas = this.tareasAgregadas.map((t, i) =>
-      i === this.editingIndex ? { ...t, ...this.editForm, totalCost } : t
-    );
-    localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas));
-    localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-    const activePreview = await this.localStore.getState<any>('budget:active-preview');
-    if (activePreview) {
-      await this.localStore.setState('budget:active-preview', { ...activePreview, tareas: this.tareasAgregadas });
+    const updatedLocal = { ...tarea, ...this.editForm, totalCost };
+
+    if (!tarea.id || tarea.id < 0) {
+      this.tareasAgregadas = this.tareasAgregadas.map((t, i) =>
+        i === this.editingIndex ? updatedLocal : t
+      );
+      void this.persistTareasLocal();
+      this.cerrarEditarTarea();
+      return;
     }
-    this.cerrarEditarTarea();
+
+    const confirmed = await this.uiDialog.confirm({
+      title: '¿Guardar cambios?',
+      text: `Se actualizará "${tarea.tarea}" con los nuevos valores.`,
+      confirmText: 'Guardar',
+      cancelText: 'Cancelar',
+      tone: 'primary',
+      icon: 'question'
+    });
+    if (!confirmed) return;
+
+    const updatedUserTarea: UserTarea = {
+      ...updatedLocal,
+      pais: tarea.pais || '',
+      userCode: tarea.userCode || localStorage.getItem('userCode') || '',
+    };
+
+    this.userTareaService.updateUserTarea(Number(tarea.id), updatedUserTarea).subscribe({
+      next: () => {
+        this.tareasAgregadas = this.tareasAgregadas.map((t, i) =>
+          i === this.editingIndex ? updatedLocal : t
+        );
+        void this.persistTareasLocal();
+        this.cerrarEditarTarea();
+        void this.uiDialog.success({ title: 'Tarea actualizada', text: 'Los cambios se guardaron correctamente.' });
+      },
+      error: () => {
+        this.tareasAgregadas = this.tareasAgregadas.map((t, i) =>
+          i === this.editingIndex ? updatedLocal : t
+        );
+        void this.persistTareasLocal();
+        this.cerrarEditarTarea();
+        void this.uiDialog.error({ title: 'Error al guardar', text: 'No se pudo actualizar la tarea en el servidor.' });
+      }
+    });
   }
 
   // ============ ELIMINAR TAREA ============
   async eliminarTarea(index: number): Promise<void> {
+    const activePreview = await this.localStore.getState<any>('budget:active-preview');
+    if (activePreview?.presupuesto) {
+      void this.uiDialog.info({
+        title: 'Presupuesto cargado activo',
+        text: 'Este presupuesto está cargado en el dashboard. Para modificar sus tareas, andá al panel de tareas en el dashboard y editá desde ahí.'
+      });
+      return;
+    }
     const tarea = this.tareasAgregadas[index];
     if (!tarea) return;
 
     const confirmed = await this.uiDialog.confirmDelete(tarea.tarea);
     if (!confirmed) return;
 
-    this.tareasAgregadas = this.tareasAgregadas.filter((_, i) => i !== index);
+    if (this.isDemoMode || !tarea.id || tarea.id < 0) {
+      this.tareasAgregadas = this.tareasAgregadas.filter((_, i) => i !== index);
+      void this.persistTareasLocal();
+      return;
+    }
 
+    this.userTareaService.deleteUserTarea(tarea.id).subscribe({
+      next: () => {
+        this.tareasAgregadas = this.tareasAgregadas.filter((_, i) => i !== index);
+        void this.persistTareasLocal();
+        void this.uiDialog.success({ title: 'Tarea eliminada', text: 'La tarea fue eliminada correctamente.' });
+      },
+      error: () => {
+        void this.uiDialog.error({ title: 'Error al eliminar', text: 'No se pudo eliminar la tarea en el servidor.' });
+      }
+    });
+  }
+
+  private async persistTareasLocal(): Promise<void> {
     localStorage.setItem('selectedTareas', JSON.stringify(this.tareasAgregadas));
     localStorage.setItem('tareasAgregadas', JSON.stringify(this.tareasAgregadas));
-
     const activePreview = await this.localStore.getState<any>('budget:active-preview');
     if (activePreview) {
       await this.localStore.setState('budget:active-preview', { ...activePreview, tareas: this.tareasAgregadas });
