@@ -4,9 +4,6 @@
   <div class="login-brand">
     <img [src]="'assets/icons/metro-logo-transparent.png' | assetUrl" class="login-brand__logo" alt="Metro logo" />
     <p class="login-brand__tagline">Optimizá tu manera de trabajar. Ahorrá tiempo. Mostrate profesional.</p>
-    <button type="button" class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#faqModalLogin">
-      <i class="fas fa-question-circle" style="margin-right: 8px;"></i>PREGUNTAS FRECUENTES
-    </button>
   </div>
 
   <!-- ══════════════════════════════════════
@@ -16,31 +13,33 @@
 
     <div class="login-cards login-cards--home">
 
-      <div class="login-card login-card--trial" (click)="loginStep = 'demoCountry'">
+      <div class="login-card login-card--trial">
         <div class="login-card__glow"></div>
         <div class="login-card__visual">
           <img [src]="'assets/archi-probar-sistema-v2.png' | assetUrl" alt="Archi probando el sistema" />
         </div>
         <div class="login-card__content">
-          <span class="login-card__badge-new">¡GRATIS!</span>
-          <h3 class="login-card__title">Probar el sistema</h3>
-          <p class="login-card__desc">Explorá todas las funciones sin registrarte. Cero compromisos.</p>
-          <span class="login-card__cta">Comenzar demo</span>
+          <div class="login-home-actions">
+            <div class="login-home-primary">
+              <button type="button" class="login-home-button login-home-button--primary" (click)="loginStep = 'demoCountry'">
+                PROBAR METRO
+              </button>
+              <span class="login-home-note">No hace falta registrarte.</span>
+            </div>
+            <button type="button" class="login-home-button login-home-button--secondary" (click)="loginStep = 'login'">
+              YA SOY MIEMBRO
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="login-card login-card--member" (click)="loginStep = 'login'">
-        <div class="login-card__glow"></div>
-        <div class="login-card__content">
-          <h3 class="login-card__title">Ya soy miembro</h3>
-          <p class="login-card__desc">Ingresá con tu código de acceso</p>
-          <span class="login-card__cta">Ingresar</span>
-        </div>
-        <div class="login-card__visual">
-          <img [src]="'assets/archi-ya-soy-miembro-v2.png' | assetUrl" alt="Archi indicando que ya es miembro" />
-        </div>
-      </div>
+    </div>
 
+    <div class="login-home-faq">
+      <button type="button" class="login-home-faq__button" data-bs-toggle="modal" data-bs-target="#faqModalLogin">
+        <i class="fas fa-question-circle" aria-hidden="true"></i>
+        PREGUNTAS FRECUENTES
+      </button>
     </div>
 
   </div>
@@ -110,7 +109,7 @@
     <div class="login-form-card">
       <div class="login-form-card__icon"><i class="bi bi-person-badge-fill"></i></div>
       <h3 class="login-form-card__title">Ingresá tu código</h3>
-      <p class="login-form-card__sub">Tu código fue enviado por WhatsApp o email</p>
+      <p class="login-form-card__sub">Esta opción es solo para usuarios que ya tienen código de acceso</p>
 
       <input
         type="text"
@@ -124,14 +123,14 @@
         <i class="bi bi-box-arrow-in-right me-2"></i>ENTRAR
       </button>
 
-      <button type="button" class="btn btn-lg w-100 mb-2 login-btn login-btn--whatsapp" (click)="pedirCodigoPorWhatsApp()">
-        <i class="bi bi-whatsapp me-2"></i>PEDIR MI CÓDIGO EN WHATAPPS
+      <div class="login-divider"><span>Solo para usuarios que ya tuvieron código de acceso</span></div>
+
+      <button type="button" class="btn btn-outline-primary w-100 mb-2 login-btn" (click)="enterRegisterStep()">
+        <i class="bi bi-person-plus me-2"></i>Registrar mi código
       </button>
 
-      <div class="login-divider"><span>o</span></div>
-
-      <button type="button" class="btn btn-outline-primary w-100 login-btn" (click)="enterRegisterStep()">
-        <i class="bi bi-person-plus me-2"></i>Registrar mi código
+      <button type="button" class="btn btn-lg w-100 mb-2 login-btn login-btn--whatsapp" (click)="pedirCodigoPorWhatsApp()">
+        <i class="bi bi-whatsapp me-2"></i>PEDIR MI CÓDIGO EN WHATAPPS
       </button>
 
       <!--button-- type="button" class="btn btn-link w-100 mt-2 login-btn--link" (click)="expiredCode = code; reactivateNewCode = ''; reactivateEmail = ''; loginStep = 'reactivate'">
@@ -723,66 +722,156 @@
 
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
             <h2 class="accordion-header" id="faqL1">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL1Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
-                <i class="fas fa-percent" style="margin-right: 8px;"></i>¿Cómo funciona subir o bajar los precios de la lista?
+              <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faqL1Collapse" aria-expanded="true" aria-controls="faqL1Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                ¿Qué es METRO y para quién está pensado?
               </button>
             </h2>
-            <div id="faqL1Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLogin">
+            <div id="faqL1Collapse" class="accordion-collapse collapse show" aria-labelledby="faqL1" data-bs-parent="#faqAccordionLogin">
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
-                <p>Escribí un porcentaje en el campo correspondiente y tocá <strong>SUBIR</strong> para aumentar todos los precios de la lista, o <strong>BAJAR</strong> para reducirlos. El ajuste se aplica de forma general a todos los ítems.</p>
-                <p style="margin-bottom:0;"><strong>Ejemplo:</strong> con <strong>10</strong> en SUBIR, una tarea de $100 pasa a $110. Con <strong>10</strong> en BAJAR, pasa a $90.</p>
+                METRO es una herramienta para profesionales de la construcción, arquitectura y oficios que necesitan buscar tareas, calcular costos y preparar presupuestos profesionales.
               </div>
             </div>
           </div>
 
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
             <h2 class="accordion-header" id="faqL2">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL2Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
-                <i class="fas fa-undo-alt" style="margin-right: 8px;"></i>¿Cómo restablezco los precios originales?
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL2Collapse" aria-expanded="false" aria-controls="faqL2Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                ¿Puedo probar METRO antes de contratar un plan?
               </button>
             </h2>
-            <div id="faqL2Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLogin">
+            <div id="faqL2Collapse" class="accordion-collapse collapse" aria-labelledby="faqL2" data-bs-parent="#faqAccordionLogin">
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
-                <p style="margin-bottom:0;">Usá el botón <strong>"Reestablecer valor original de lista"</strong>. Esto recarga los precios desde el servidor, deshaciendo cualquier ajuste porcentual que hayas aplicado.</p>
+                Sí. Podés ingresar al modo demo sin registrarte. Allí podés explorar las tareas y conocer las principales herramientas del sistema. Los datos e importes del modo demo son únicamente de prueba.
               </div>
             </div>
           </div>
 
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
             <h2 class="accordion-header" id="faqL3">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL3Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
-                <i class="fas fa-text-height" style="margin-right: 8px;"></i>¿Para qué sirve el control de tamaño de texto?
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL3Collapse" aria-expanded="false" aria-controls="faqL3Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                ¿Qué incluye un plan de METRO?
               </button>
             </h2>
-            <div id="faqL3Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLogin">
+            <div id="faqL3Collapse" class="accordion-collapse collapse" aria-labelledby="faqL3" data-bs-parent="#faqAccordionLogin">
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
-                <p style="margin-bottom:0;">El slider ajusta el tamaño de la fuente de la tabla de tareas. Útil para ver más ítems en pantalla (texto más chico) o para mejorar la legibilidad en dispositivos grandes (texto más grande).</p>
+                Un plan permite acceder a las funciones completas del sistema, guardar información propia, administrar empresas y clientes, crear tareas personalizadas y preparar presupuestos.
               </div>
             </div>
           </div>
 
           <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
             <h2 class="accordion-header" id="faqL4">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL4Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
-                <i class="fas fa-key" style="margin-right: 8px;"></i>¿Qué es el Código de Acceso?
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL4Collapse" aria-expanded="false" aria-controls="faqL4Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                ¿Cómo obtengo un plan?
               </button>
             </h2>
-            <div id="faqL4Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLogin">
+            <div id="faqL4Collapse" class="accordion-collapse collapse" aria-labelledby="faqL4" data-bs-parent="#faqAccordionLogin">
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
-                <p style="margin-bottom:0;">Es tu identificador único en el sistema. Lo usás para ingresar a la aplicación y para que el equipo de soporte pueda asistirte. Guardalo en un lugar seguro.</p>
+                Podés comprar un plan en línea mediante los medios de pago disponibles para tu país.
               </div>
             </div>
           </div>
 
-          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 0; border: 1px solid rgba(64,158,255,.2);">
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
             <h2 class="accordion-header" id="faqL5">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL5Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
-                <i class="fas fa-save" style="margin-right: 8px;"></i>¿Los cambios en los precios se guardan permanentemente?
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL5Collapse" aria-expanded="false" aria-controls="faqL5Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                ¿Los precios de las tareas son definitivos?
               </button>
             </h2>
-            <div id="faqL5Collapse" class="accordion-collapse collapse" data-bs-parent="#faqAccordionLogin">
+            <div id="faqL5Collapse" class="accordion-collapse collapse" aria-labelledby="faqL5" data-bs-parent="#faqAccordionLogin">
               <div class="accordion-body" style="font-size: 13px; color:#374151;">
-                <p style="margin-bottom:0;">Sí, los cambios se guardan en tu lista de tareas activa. Si querés volver a los precios base, usá <strong>"Reestablecer valor original de lista"</strong>. Los precios de la tabla de referencia (buscador) nunca se modifican.</p>
+                No necesariamente. Son valores de referencia para ayudarte a preparar presupuestos. Podés modificarlos y adaptarlos a tu mercado, ubicación, materiales y condiciones de trabajo.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faqL6">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL6Collapse" aria-expanded="false" aria-controls="faqL6Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                ¿Qué puedo hacer si no encuentro una tarea?
+              </button>
+            </h2>
+            <div id="faqL6Collapse" class="accordion-collapse collapse" aria-labelledby="faqL6" data-bs-parent="#faqAccordionLogin">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                Podés utilizar una tarea genérica o crear una tarea personalizada con su nombre, descripción y costo.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faqL7">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL7Collapse" aria-expanded="false" aria-controls="faqL7Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                ¿Puedo administrar empresas y clientes?
+              </button>
+            </h2>
+            <div id="faqL7Collapse" class="accordion-collapse collapse" aria-labelledby="faqL7" data-bs-parent="#faqAccordionLogin">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                Sí. Podés crear y administrar empresas, agregar sus logotipos y datos comerciales, y asociar clientes a tus presupuestos.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faqL8">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL8Collapse" aria-expanded="false" aria-controls="faqL8Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                ¿Puedo guardar, editar y reutilizar mis presupuestos?
+              </button>
+            </h2>
+            <div id="faqL8Collapse" class="accordion-collapse collapse" aria-labelledby="faqL8" data-bs-parent="#faqAccordionLogin">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                Sí. Podés guardar presupuestos, volver a cargarlos posteriormente, editarlos y actualizar su información.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faqL9">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL9Collapse" aria-expanded="false" aria-controls="faqL9Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                ¿Puedo exportar o compartir un presupuesto?
+              </button>
+            </h2>
+            <div id="faqL9Collapse" class="accordion-collapse collapse" aria-labelledby="faqL9" data-bs-parent="#faqAccordionLogin">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                Sí. Podés exportarlo como PDF, HTML o texto. La versión de texto también puede copiarse o compartirse por WhatsApp.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faqL10">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL10Collapse" aria-expanded="false" aria-controls="faqL10Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                ¿Qué ocurre si pierdo la conexión a Internet?
+              </button>
+            </h2>
+            <div id="faqL10Collapse" class="accordion-collapse collapse" aria-labelledby="faqL10" data-bs-parent="#faqAccordionLogin">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                METRO puede continuar funcionando con información local disponible. Los cambios pendientes se sincronizan cuando vuelve la conexión con el servidor.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faqL11">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL11Collapse" aria-expanded="false" aria-controls="faqL11Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                ¿Qué sucede cuando vence mi plan?
+              </button>
+            </h2>
+            <div id="faqL11Collapse" class="accordion-collapse collapse" aria-labelledby="faqL11" data-bs-parent="#faqAccordionLogin">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                Cuando tu acceso vence, podés renovarlo en cualquier momento. Tus datos permanecen en línea durante tres meses y podés descargarlos cuando quieras.
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item" style="border-radius: 10px; margin-bottom: 8px; border: 1px solid rgba(64,158,255,.2);">
+            <h2 class="accordion-header" id="faqL12">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqL12Collapse" aria-expanded="false" aria-controls="faqL12Collapse" style="border-radius: 10px; font-size: 13px; font-weight: 600; color:#0b69a6;">
+                ¿Puedo usar METRO en más de un dispositivo?
+              </button>
+            </h2>
+            <div id="faqL12Collapse" class="accordion-collapse collapse" aria-labelledby="faqL12" data-bs-parent="#faqAccordionLogin">
+              <div class="accordion-body" style="font-size: 13px; color:#374151;">
+                Sí. Podés mantener hasta dos sesiones activas y acceder a METRO desde una computadora de escritorio o desde un celular.
               </div>
             </div>
           </div>
@@ -791,7 +880,7 @@
       </div><!-- /.modal-body -->
 
       <div class="modal-footer" style="border-top: 1px solid rgba(11,105,166,.15);">
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
       </div>
 
     </div><!-- /.modal-content -->
