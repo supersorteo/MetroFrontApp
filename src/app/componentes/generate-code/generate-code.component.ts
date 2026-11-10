@@ -60,6 +60,7 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
   showGenerate12Panel = false;
   showEditAdminPanel = false;
   showLimitsPanel = false;
+  showGeneratedCodesModal = false;
 
   tareas: Tarea[] = [];
   filteredTareas: Tarea[] = [];
@@ -304,8 +305,8 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     result.sort((a, b) => {
-      const dA = a.fechaRegistro ? new Date(a.fechaRegistro).getTime() : 0;
-      const dB = b.fechaRegistro ? new Date(b.fechaRegistro).getTime() : 0;
+      const dA = new Date(a.fechaRegistro ?? a.fechaVencimiento ?? 0).getTime();
+      const dB = new Date(b.fechaRegistro ?? b.fechaVencimiento ?? 0).getTime();
       return this.sortOrder === 'desc' ? dB - dA : dA - dB;
     });
 
@@ -399,8 +400,8 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showGenerate12Panel = false;
 
     this.authService.agregarCodes(newCodes).subscribe({
-      next: res => {
-        this.uiDialog.success({ title: 'Códigos generados', text: res.message });
+      next: () => {
+        this.showGeneratedCodesModal = true;
         this.loadCodes();
       },
       error: err => this.uiDialog.error({ title: 'Error al generar', text: err.message })
@@ -498,6 +499,14 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
     navigator.clipboard.writeText(code).then(
       () => this.uiDialog.success({ title: 'Copiado', text: `El código ${code} fue copiado al portapapeles.` }),
       () => this.uiDialog.error({ title: 'Error', text: 'No se pudo copiar el código.' })
+    );
+  }
+
+  copyAllGeneratedCodes(): void {
+    const text = this.generatedCodes.map(c => c.code).join('\n');
+    navigator.clipboard.writeText(text).then(
+      () => this.uiDialog.success({ title: 'Copiados', text: `${this.generatedCodes.length} código${this.generatedCodes.length !== 1 ? 's' : ''} copiado${this.generatedCodes.length !== 1 ? 's' : ''} al portapapeles.` }),
+      () => this.uiDialog.error({ title: 'Error', text: 'No se pudo copiar los códigos.' })
     );
   }
 
@@ -1109,8 +1118,14 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.legacyCodeService.getCodes().subscribe({
       next: page => {
         this.legacyCodes = page.content || [];
+        for (const lc of this.legacyCodes) {
+          if (lc.claimed && lc.maxDevices != null) {
+            this.sessionLimits.set(lc.code, lc.maxDevices);
+          }
+        }
         this.applyLegacyFilter();
         this.computeLegacyStats();
+        this.loadActiveSessions();
       },
       error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron cargar los códigos legacy.' })
     });
@@ -1425,6 +1440,8 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
         this.editingMaxDevicesCode = null;
         const item = this.codes.find(c => c.code === code);
         if (item) item.maxDevices = res.maxDevices;
+        const legacyItem = this.legacyCodes.find(c => c.code === code);
+        if (legacyItem) legacyItem.maxDevices = res.maxDevices;
         this.sessionLimits.set(code, res.maxDevices);
         this.uiDialog.success({ title: 'Límite actualizado', text: `Código ${res.code} — máximo ${res.maxDevices} dispositivo${res.maxDevices === 1 ? '' : 's'}.` });
       },
@@ -1434,8 +1451,67 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  async terminateAllSessionsLegacy(lc: LegacyCodeDTO): Promise<void> {
+    const active = this.activeSessions.get(lc.code) ?? 0;
+    const confirmed = await this.uiDialog.confirm({
+      title: 'Cerrar sesiones',
+      html: `Se cerrarán las <strong>${active}</strong> sesión${active === 1 ? '' : 'es'} activa${active === 1 ? '' : 's'} del código <strong>${lc.code}</strong>. Los dispositivos conectados serán desconectados en el próximo ciclo.`,
+      confirmText: 'Sí, cerrar sesiones',
+      cancelText: 'Cancelar',
+      tone: 'warning',
+      icon: 'warning'
+    });
+    if (!confirmed) return;
+    this.authService.terminateAllSessions(lc.code).subscribe({
+      next: () => {
+        this.activeSessions.set(lc.code, 0);
+        this.uiDialog.success({ title: 'Sesiones cerradas', text: `Todos los dispositivos del código ${lc.code} fueron desconectados.` });
+      },
+      error: (err: any) => {
+        this.uiDialog.error({ title: 'Error', text: err?.message || 'No se pudo cerrar las sesiones.' });
+      }
+    });
+  }
+
+  openMaxDevicesEditLegacy(lc: LegacyCodeDTO): void {
+    this.editingMaxDevicesCode = lc.code;
+    this.maxDevicesDraft = lc.maxDevices ?? 2;
+  }
+
+  toggleDisableLegacyCode(lc: LegacyCodeDTO): void {
+    const action = lc.disabled ? 'reactivar' : 'desactivar';
+    const icon = lc.disabled ? 'question' : 'warning';
+    this.uiDialog.confirm({
+      title: `¿${action.charAt(0).toUpperCase() + action.slice(1)} el código ${lc.code}?`,
+      text: lc.disabled
+        ? `El usuario ${lc.claimedByEmail} podrá volver a iniciar sesión.`
+        : `El usuario ${lc.claimedByEmail} no podrá iniciar sesión hasta que lo reactives. Sus datos se conservan.`,
+      confirmText: `Sí, ${action}`,
+      cancelText: 'Cancelar',
+      tone: lc.disabled ? 'primary' : 'warning',
+      icon
+    }).then(confirmed => {
+      if (!confirmed) return;
+      const obs = lc.disabled ? this.authService.enableCode(lc.code) : this.authService.disableCode(lc.code);
+      obs.subscribe({
+        next: res => {
+          lc.disabled = res.disabled;
+          this.uiDialog.success({
+            title: lc.disabled ? 'Código desactivado' : 'Código reactivado',
+            text: lc.disabled
+              ? `El código ${lc.code} fue desactivado. El usuario no puede iniciar sesión.`
+              : `El código ${lc.code} fue reactivado correctamente.`
+          });
+        },
+        error: () => this.uiDialog.error({ title: 'Error', text: `No se pudo ${action} el código.` })
+      });
+    });
+  }
+
   loadActiveSessions(): void {
-    const codes = this.codes.filter(c => c.email).map(c => c.code);
+    const regularCodes = this.codes.filter(c => c.email).map(c => c.code);
+    const legacyCodes  = this.legacyCodes.filter(c => c.claimed).map(c => c.code);
+    const codes = [...new Set([...regularCodes, ...legacyCodes])];
     if (!codes.length) return;
     this.authService.getSessionsSummary(codes).subscribe(summary => {
       for (const [code, count] of Object.entries(summary)) {
