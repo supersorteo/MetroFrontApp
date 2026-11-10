@@ -274,7 +274,7 @@ export class PaymentResultComponent implements OnInit, OnDestroy {
         this.router.navigate(['/dashboard']);
       },
       error: () => {
-        this.router.navigate(['/'], { queryParams: { code, paid: '1' } });
+        this.router.navigate(['/login'], { queryParams: { code, paid: '1' } });
       }
     });
   }

@@ -4,9 +4,13 @@ import { AuthLoggedGuard } from './guard/auth-logged.guard';
 import { AdminGuard } from './guard/admin.guard';
 
 export const routes: Routes = [
-  // Eager: login y payment-result se necesitan de inmediato
   {
     path: '',
+    loadComponent: () =>
+      import('./componentes/landing/landing.component').then(m => m.LandingComponent)
+  },
+  {
+    path: 'login',
     loadComponent: () =>
       import('./componentes/login/login.component').then(m => m.LoginComponent),
     canActivate: [AuthLoggedGuard]
@@ -60,5 +64,5 @@ export const routes: Routes = [
       import('./componentes/ofrecimiento-laboral/ofrecimiento-laboral.component').then(m => m.OfrecimientoLaboralComponent)
   },
 
-  { path: '**', redirectTo: '', pathMatch: 'full' }
+  { path: '**', redirectTo: '/', pathMatch: 'full' }
 ];
