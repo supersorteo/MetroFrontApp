@@ -134,6 +134,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   archiIntroSceneVisible = true;
   archiIntroDontShowAgain = false;
   private readonly archiIntroStorageKey = 'metroArchiIntroDismissed_v1';
+  private readonly archiIntroSessionKey = 'metroArchiIntroShown_v1';
   readonly archiIntroScenes = [
     {
       image: 'assets/archi-tour/archi-tour-bienvenida.webp',
@@ -225,12 +226,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   dashboardTourFlow: 'crear' | 'cargar' | 'quitar' | 'actualizar' | null = null;
 
   private readonly crearTourSteps: readonly DemoTourStep[] = [
-    { target: 'demoTourEmpresa',          title: '1. Seleccioná tu empresa',         text: 'Elegí la empresa que aparecerá en el presupuesto. El tour abrirá la lista.' },
-    { target: 'demoTourOpenClientButton', title: '2. Elegí tu cliente',              text: 'Asociá un cliente al presupuesto. El tour abrirá la lista de clientes.' },
-    { target: 'busqueda',                 title: '3. Buscá tareas en el catálogo',   text: 'Filtrá por descripción, categoría o costo y hacé clic en una tarea para agregarla.' },
-    { target: 'demoTourPanelOpenButton',  title: '4. Revisá el panel de tareas',     text: 'El panel muestra las tareas del presupuesto con subtotales. El tour lo abrirá.' },
-    { target: 'demoTourPanelToolbar',     title: '5. Guardá el presupuesto',         text: 'El ícono de diskette guarda la cotización. El tour abrirá el formulario.' },
-    { target: '',                         title: '¡Presupuesto creado!',             text: 'Ya sabés cómo crear un presupuesto desde cero. Podés cargarlo desde el Gestor cuando quieras.' },
+    { target: 'demoTourOpenCompanyButton', title: '1. Seleccioná una empresa', text: 'Comenzá por este botón. El presupuesto necesita una empresa seleccionada.' },
+    { target: 'demoTourCompanyListModal', title: '2. Elegí una empresa', text: 'La lista de empresas está abierta. Seleccioná cualquier empresa para asociarla al presupuesto.' },
+    { target: 'demoTourOpenClientButton', title: '3. Abrí Clientes', text: 'Después de revisar la empresa, avanzá hacia el botón de clientes.' },
+    { target: 'demoTourClientList', title: '4. Seleccioná un cliente', text: 'La lista de clientes está abierta. Elegí un cliente para asociarlo al presupuesto.' },
+    { target: 'busqueda', title: '5. Buscá una tarea', text: 'Usá este buscador para encontrar una tarea dentro del catálogo.' },
+    { target: 'demoTourPanelOpenButton', title: '6. Abrí el panel', text: 'Desde este botón podés abrir el panel donde se reúnen las tareas del presupuesto.' },
+    { target: 'demoTourPanelSaveButton', title: '7. Guardá el presupuesto', text: 'En el panel, este es el botón para abrir la ventana de guardado. El tour no guardará nada.' },
+    { target: 'demoTourSaveBudgetModal', title: '8. Revisá el guardado', text: 'Esta ventana permite nombrar y guardar el presupuesto. En este tutorial solo la mostramos.' },
+    { target: '', title: '¡Tour finalizado!', text: 'Ya conocés el recorrido básico para crear un presupuesto. No se guardó ninguna información.' },
   ];
 
   private readonly cargarTourSteps: readonly DemoTourStep[] = [
@@ -1405,7 +1409,11 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       return;
     }
 
-    if (localStorage.getItem(this.archiIntroStorageKey) !== 'true') {
+    const introDismissed = localStorage.getItem(this.archiIntroStorageKey) === 'true';
+    const introShownThisSession = sessionStorage.getItem(this.archiIntroSessionKey) === 'true';
+
+    if (!introDismissed && !introShownThisSession) {
+      sessionStorage.setItem(this.archiIntroSessionKey, 'true');
       this.setTourOverlayActive(true);
       this.showArchiIntro = true;
       this.archiIntroIndex = 0;
@@ -1547,10 +1555,6 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   }
 
   iniciarTourCrearPresupuesto(): void {
-    if (!this.tareasAgregadas?.length) {
-      this.uiDialog.info({ title: 'Se necesitan tareas', text: 'Para este tour necesitás tener al menos una tarea agregada al catálogo.' });
-      return;
-    }
     this.dashboardTourFlow = 'crear';
     this.cerrarComoUsarMetro();
     setTimeout(() => {
@@ -1739,6 +1743,23 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       this.avanzarTourCrearManualmente();
       return;
     }
+
+    if (this.dashboardTourFlow === 'crear') {
+      if (this.dashboardTourIndex === 1) {
+        this.cerrarModalDashboardTour('listaEmpresasModal', 0);
+        return;
+      }
+      if (this.dashboardTourIndex === 3) {
+        this.cerrarModalDashboardTour('listaClientesModal', 2);
+        return;
+      }
+      if (this.dashboardTourIndex === 7) {
+        this.closeSaveBudgetModal();
+        this.mostrarPasoDashboardTour(6);
+        return;
+      }
+    }
+
     this.dashboardTourIndex = Math.max(0, this.dashboardTourIndex - 1);
     this.updateDashboardTourTarget();
   }
@@ -1752,6 +1773,8 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
       this.demoTourAutomationTimer = null;
     }
     this.closeSaveBudgetModal();
+    this.ocultarModalDashboardTour('listaEmpresasModal');
+    this.ocultarModalDashboardTour('listaClientesModal');
     if (this.showSavedBudgetsPanel) this.toggleSavedBudgetsPanel();
     this.dashboardTourBubbleStyle = {};
     this.dashboardTourSpotlightStyle = {};
@@ -1776,9 +1799,15 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   private avanzarTourCrearManualmente(): void {
     switch (this.dashboardTourIndex) {
       case 0: this.abrirEmpresaParaTour(1); return;
-      case 1: this.abrirClienteParaTour(2); return;
-      case 3: this.abrirPanelParaTour(4);   return;
-      case 4: this.abrirGuardarParaTour(5); return;
+      case 1: this.cerrarModalDashboardTour('listaEmpresasModal', 2); return;
+      case 2: this.abrirClienteParaTour(3); return;
+      case 3: this.cerrarModalDashboardTour('listaClientesModal', 4); return;
+      case 5: this.abrirPanelParaTour(6); return;
+      case 6: this.abrirGuardarParaTour(7); return;
+      case 7:
+        this.closeSaveBudgetModal();
+        this.mostrarPasoDashboardTour(8);
+        return;
       default:
         this.dashboardTourIndex = Math.min(this.crearTourSteps.length - 1, this.dashboardTourIndex + 1);
         this.updateDashboardTourTarget();
@@ -1824,12 +1853,8 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     button.click();
     this.demoTourAutomationTimer = setTimeout(() => {
       this.demoTourAutomationTimer = null;
-      const modal = document.getElementById('listaEmpresasModal');
-      (window as any).bootstrap?.Modal?.getInstance(modal)?.hide();
-      setTimeout(() => {
-        this.demoTourAutomationInProgress = false;
-        this.mostrarPasoDashboardTour(nextStep);
-      }, 400);
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoDashboardTour(nextStep);
     }, 800);
   }
 
@@ -1841,13 +1866,26 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     button.click();
     this.demoTourAutomationTimer = setTimeout(() => {
       this.demoTourAutomationTimer = null;
-      const modal = document.getElementById('listaClientesModal');
-      (window as any).bootstrap?.Modal?.getInstance(modal)?.hide();
-      setTimeout(() => {
-        this.demoTourAutomationInProgress = false;
-        this.mostrarPasoDashboardTour(nextStep);
-      }, 400);
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoDashboardTour(nextStep);
     }, 800);
+  }
+
+  private cerrarModalDashboardTour(modalId: string, nextStep: number): void {
+    this.demoTourAutomationInProgress = true;
+    this.showDashboardTour = false;
+    const modal = document.getElementById(modalId);
+    (window as any).bootstrap?.Modal?.getInstance(modal)?.hide();
+    this.demoTourAutomationTimer = setTimeout(() => {
+      this.demoTourAutomationTimer = null;
+      this.demoTourAutomationInProgress = false;
+      this.mostrarPasoDashboardTour(nextStep);
+    }, 400);
+  }
+
+  private ocultarModalDashboardTour(modalId: string): void {
+    const modal = document.getElementById(modalId);
+    (window as any).bootstrap?.Modal?.getInstance(modal)?.hide();
   }
 
   private abrirPanelParaTour(nextStep: number): void {
@@ -1867,7 +1905,11 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   private abrirGuardarParaTour(nextStep: number): void {
     this.demoTourAutomationInProgress = true;
     this.showDashboardTour = false;
-    this.openSaveBudgetModal();
+    // El tutorial solo muestra la ventana; nunca debe depender de las
+    // validaciones ni ejecutar una operación real de guardado.
+    this.nombrePresupuestoModal = '';
+    this._presupuestoGuardadoExitosamente = false;
+    this.showSaveBudgetModal = true;
     this.demoTourAutomationTimer = setTimeout(() => {
       this.demoTourAutomationTimer = null;
       this.demoTourAutomationInProgress = false;

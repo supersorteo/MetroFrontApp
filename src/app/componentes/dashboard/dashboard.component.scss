@@ -5094,6 +5094,14 @@ button.btn-outline-danger.rounded-circle[aria-label="Eliminar tarea"] {
   z-index: 9020; padding: 16px;
 }
 
+.save-budget-modal-backdrop--tour {
+  z-index: 12000;
+}
+
+.dashboard-tour-modal-layer {
+  z-index: 12000 !important;
+}
+
 .save-budget-modal {
   background: #fff; width: 100%; max-width: 460px;
   border-radius: 20px;
@@ -7678,6 +7686,7 @@ button.btn-outline-danger.rounded-circle[aria-label="Eliminar tarea"] {
 .demo-tour-spotlight {
   position: fixed;
   z-index: 12001;
+  pointer-events: none;
   visibility: hidden;
   opacity: 0;
   border: 3px solid #54b5ff;

@@ -1891,7 +1891,7 @@
 
         </button>
 
-        <button class="tareas-panel__action" type="button" (click)="openSaveBudgetModal()" aria-label="Guardar presupuesto" title="Guardar presupuesto">
+        <button id="demoTourPanelSaveButton" class="tareas-panel__action" type="button" (click)="openSaveBudgetModal()" aria-label="Guardar presupuesto" title="Guardar presupuesto">
 
           <i class="bi bi-floppy" aria-hidden="true"></i>
 
@@ -2344,7 +2344,8 @@
 
 </div>
 
-<div class="modal fade" id="listaClientesModal" aria-hidden="true" aria-labelledby="listaClientesLabel" tabindex="-1">
+<div class="modal fade" id="listaClientesModal" aria-hidden="true" aria-labelledby="listaClientesLabel" tabindex="-1"
+     [class.dashboard-tour-modal-layer]="showDashboardTour && dashboardTourFlow === 'crear' && dashboardTourIndex === 3">
 
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg lista-clientes-modal__dialog">
 
@@ -2748,11 +2749,12 @@
 
 </div>
 
-<div class="modal fade" id="listaEmpresasModal" aria-hidden="true" aria-labelledby="listaEmpresasLabel" tabindex="-1">
+<div class="modal fade" id="listaEmpresasModal" aria-hidden="true" aria-labelledby="listaEmpresasLabel" tabindex="-1"
+     [class.dashboard-tour-modal-layer]="showDashboardTour && dashboardTourFlow === 'crear' && dashboardTourIndex === 1">
 
   <div class="modal-dialog modal-lg">
 
-    <div class="modal-content modal-zona">
+    <div id="demoTourCompanyListModal" class="modal-content modal-zona">
 
       <div class="modal-header">
 
@@ -3246,8 +3248,8 @@
 
 
 
-<div class="save-budget-modal-backdrop" *ngIf="showSaveBudgetModal" (click)="closeSaveBudgetModal()">
-  <div class="save-budget-modal" role="dialog" aria-modal="true"
+<div class="save-budget-modal-backdrop" *ngIf="showSaveBudgetModal" [class.save-budget-modal-backdrop--tour]="showDashboardTour && dashboardTourFlow === 'crear' && dashboardTourIndex === 7" (click)="closeSaveBudgetModal()">
+  <div id="demoTourSaveBudgetModal" class="save-budget-modal" role="dialog" aria-modal="true"
        aria-labelledby="saveBudgetModalTitle" (click)="$event.stopPropagation()">
 
     <div class="save-budget-modal__header">
