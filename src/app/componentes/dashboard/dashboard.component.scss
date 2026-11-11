@@ -2896,6 +2896,54 @@ p {
   padding: 10px;
 }
 
+.demo-exit-button {
+  position: fixed;
+  right: max(16px, calc(50% - 280px));
+  bottom: calc(86px + env(safe-area-inset-bottom));
+  z-index: 1200;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0b3b75 0%, #1769c2 100%);
+  color: #fff;
+  box-shadow: 0 12px 28px rgba(6, 46, 96, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+.demo-exit-button i {
+  font-size: 1.05rem;
+}
+
+.demo-exit-button:hover {
+  filter: brightness(1.08);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px rgba(6, 46, 96, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.demo-exit-button:focus-visible {
+  outline: 3px solid rgba(75, 166, 255, 0.5);
+  outline-offset: 3px;
+}
+
+@media (max-width: 576px) {
+  .demo-exit-button {
+    right: 16px;
+    bottom: calc(88px + env(safe-area-inset-bottom));
+    min-height: 42px;
+    padding: 0 14px;
+    font-size: 0.66rem;
+  }
+}
+
 
 
 .mt-3 {

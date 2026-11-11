@@ -4676,6 +4676,12 @@ calcularCostoTotal(): number {
     });
   }
 
+  salirModoDemo(): void {
+    cleanupBootstrapModals();
+    this.authService.logout();
+    void this.route.navigate(['/login']);
+  }
+
 
 
 

@@ -16,6 +16,16 @@
 
 <app-terminos-condiciones *ngIf="!trialMode" [userCode]="userCode"></app-terminos-condiciones>
 
+<button
+  *ngIf="trialMode"
+  type="button"
+  class="demo-exit-button"
+  aria-label="Salir de modo demo y volver a la pantalla de login"
+  (click)="salirModoDemo()">
+  <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+  <span>SALIR DE MODO DEMO</span>
+</button>
+
 <div class="archi-intro-backdrop" *ngIf="showArchiIntro" aria-hidden="true"></div>
 
 <section class="archi-intro" *ngIf="showArchiIntro" role="dialog" aria-modal="true" aria-labelledby="archi-intro-title">
