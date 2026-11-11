@@ -1,5 +1,8 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
+# Assets fuera del build (referencia local, no entran en Firebase)
+/promo-assets
+
 # Compiled output
 /dist
 /tmp
