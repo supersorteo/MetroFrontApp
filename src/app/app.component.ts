@@ -21,7 +21,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit {
-  title = 'pruebaw';
+  title = 'metro';
   showConnectionIndicator = false;
   private readonly destroyRef = inject(DestroyRef);
   private readonly swUpdate = inject(SwUpdate);
