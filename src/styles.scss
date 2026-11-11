@@ -287,6 +287,43 @@ body.modal-open app-dashboard .floating-toolbar-container {
   }
 }
 
+.toast-app-update {
+  background:
+    radial-gradient(circle at top right, rgba(20, 121, 233, 0.22), transparent 50%),
+    linear-gradient(160deg, rgba(10, 40, 90, 0.97) 0%, rgba(10, 55, 120, 0.97) 100%) !important;
+  border: 1px solid rgba(100, 170, 255, 0.25) !important;
+  box-shadow: 0 8px 32px rgba(10, 40, 100, 0.35), 0 0 0 1px rgba(100, 170, 255, 0.1) !important;
+  border-left: 3px solid #1479e9 !important;
+  cursor: pointer;
+
+  .toast-title {
+    color: #e8f1ff !important;
+    font-size: 0.88rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em;
+  }
+
+  .toast-message {
+    color: rgba(180, 210, 255, 0.85) !important;
+    font-size: 0.8rem !important;
+    margin-top: 2px;
+  }
+
+  .toast-update__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 10px;
+    padding: 5px 12px;
+    background: #1479e9;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+  }
+}
+
 .app-confirm-toast-container {
   position: fixed;
   top: 1rem;

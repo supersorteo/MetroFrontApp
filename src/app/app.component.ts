@@ -7,6 +7,8 @@ import { OfflineStatusService } from './servicios/offline-status.service';
 import { OfflineSyncService } from './servicios/offline-sync.service';
 import { AppToastService } from './servicios/app-toast.service';
 import { AuthService } from './servicios/auth.service';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { ToastrService } from 'ngx-toastr';
 import { fromEvent, interval, of } from 'rxjs';
 import { catchError, filter, switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -22,6 +24,8 @@ export class AppComponent implements OnInit {
   title = 'pruebaw';
   showConnectionIndicator = false;
   private readonly destroyRef = inject(DestroyRef);
+  private readonly swUpdate = inject(SwUpdate);
+  private readonly toastr = inject(ToastrService);
 
   private readonly ADMIN_SEQ = ['d', 'r', 'l', 'm'];
   private adminKeyBuf: string[] = [];
@@ -39,6 +43,33 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this.startSessionGuard();
     this.registerSessionIfNeeded();
+    this.initUpdateCheck();
+  }
+
+  private initUpdateCheck(): void {
+    if (!this.swUpdate.isEnabled) return;
+
+    this.swUpdate.versionUpdates.pipe(
+      takeUntilDestroyed(this.destroyRef),
+      filter((e): e is VersionReadyEvent => e.type === 'VERSION_READY')
+    ).subscribe(() => {
+      const ref = this.toastr.info(
+        'Se descargó una actualización. <span class="toast-update__cta">Actualizar ahora ↗</span>',
+        '¡Hay una nueva versión!',
+        {
+          disableTimeOut: true,
+          closeButton: false,
+          tapToDismiss: true,
+          enableHtml: true,
+          positionClass: 'toast-bottom-center',
+          toastClass: 'ngx-toastr toast-app-update'
+        }
+      );
+
+      ref.onTap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+        this.swUpdate.activateUpdate().then(() => location.reload());
+      });
+    });
   }
 
   private startSessionGuard(): void {
