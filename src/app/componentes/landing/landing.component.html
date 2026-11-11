@@ -1,20 +1,54 @@
 <header class="site-header" aria-label="Encabezado de Metro">
-  <a class="brand" href="#inicio" aria-label="Metro, inicio">
+  <div class="site-header__inner">
+    <a class="brand" href="#inicio" aria-label="Metro, inicio">
+      <picture>
+        <source [srcset]="'assets/landing/metro-logo.webp' | assetUrl" type="image/webp">
+        <img [src]="'assets/landing/metro-logo.png' | assetUrl" alt="Metro" />
+      </picture>
+    </a>
+    <nav class="site-nav" aria-label="Navegación principal">
+      <a href="#funcionalidades">Funcionalidades</a>
+      <a href="#para-quien">Para quién es</a>
+      <a class="header-link" routerLink="/login" aria-label="Ingresar a Metro">Ingresar <span aria-hidden="true">↗</span></a>
+    </nav>
+    <button class="nav-toggle" (click)="toggleSidebar()" [attr.aria-expanded]="sidebarOpen" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- Overlay y sidebar fuera del header para evitar problemas de stacking context -->
+<div class="nav-overlay" [class.nav-overlay--open]="sidebarOpen" (click)="closeSidebar()"></div>
+<nav class="nav-sidebar" [class.nav-sidebar--open]="sidebarOpen" aria-label="Menú móvil">
+  <div class="nav-sidebar__header">
     <picture>
       <source [srcset]="'assets/landing/metro-logo.webp' | assetUrl" type="image/webp">
       <img [src]="'assets/landing/metro-logo.png' | assetUrl" alt="Metro" />
     </picture>
-  </a>
-  <nav class="site-nav" aria-label="Navegación principal">
-    <a href="#funcionalidades">Funcionalidades</a>
-    <a href="#para-quien">Para quién es</a>
-    <a class="header-link" routerLink="/login" aria-label="Ingresar a Metro">Ingresar <span aria-hidden="true">↗</span></a>
-  </nav>
-</header>
+    <button class="nav-sidebar__close" (click)="closeSidebar()" aria-label="Cerrar menú">&#x2715;</button>
+  </div>
+  <div class="nav-sidebar__links">
+    <a href="#funcionalidades" (click)="closeSidebar()">
+      <span class="nav-sidebar__icon">&#9783;</span>Funcionalidades
+    </a>
+    <a href="#para-quien" (click)="closeSidebar()">
+      <span class="nav-sidebar__icon">&#9825;</span>Para quién es
+    </a>
+  </div>
+  <div class="nav-sidebar__promo">
+    <img [src]="'assets/archi-tour/archi-tour-beneficios.webp' | assetUrl" alt="Archi, tu asistente de obras" loading="lazy" />
+    <p class="nav-sidebar__promo-label">Presupuestá como un profesional</p>
+  </div>
+  <div class="nav-sidebar__footer">
+    <a routerLink="/login" (click)="closeSidebar()" class="nav-sidebar__cta">
+      Ingresar a Metro <span aria-hidden="true">↗</span>
+    </a>
+  </div>
+</nav>
 
 <main id="inicio">
-  <section class="hero section-shell" aria-labelledby="hero-title">
-    <div class="hero-copy">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy section-shell">
       <p class="eyebrow"><span class="eyebrow-dot"></span> La forma más clara de trabajar una obra</p>
       <h1 id="hero-title" class="hero-title">Menos tiempo haciendo cuentas.<br /><em>Más tiempo haciendo crecer tu trabajo.</em></h1>
       <p class="hero-description">

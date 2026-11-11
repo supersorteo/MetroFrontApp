@@ -240,7 +240,7 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.uiDialog.confirmLogout().then(confirmed => {
       if (confirmed) {
         this.adminService.logout();
-        this.router.navigate(['/'], { queryParams: { admin: '1' } });
+        this.router.navigate(['/login'], { queryParams: { admin: '1' } });
       }
     });
   }

@@ -14,8 +14,12 @@ import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
 export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private doc = inject(DOCUMENT);
   private scrollObserver?: IntersectionObserver;
+  sidebarOpen = false;
 
   constructor(private seo: SeoService) {}
+
+  toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
+  closeSidebar(): void { this.sidebarOpen = false; }
 
   ngOnInit(): void {
     this.seo.setPage({

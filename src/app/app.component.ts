@@ -126,7 +126,7 @@ export class AppComponent implements OnInit {
       this.router.navigate(['/admin-generate-code']);
       return;
     }
-    this.router.navigate(['/'], { queryParams: { admin: '1' } });
+    this.router.navigate(['/login'], { queryParams: { admin: '1' } });
   }
 
   @HostListener('document:keydown.control.alt.c', ['$event'])
