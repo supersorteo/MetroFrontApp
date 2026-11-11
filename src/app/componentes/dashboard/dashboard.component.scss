@@ -3803,11 +3803,14 @@ button.btn-outline-danger.rounded-circle[aria-label="Eliminar tarea"] {
 
 /* Slot empresa (izquierda) */
 .tareas-agregadas__empresa-slot {
-  flex: 0 0 auto;
+  flex: 0 0 56px;
   display: flex;
   align-items: center;
   cursor: pointer;
-  max-width: 48px;
+  width: 56px;
+  max-width: 56px;
+  height: 56px;
+  overflow: hidden;
   border: 2px solid #bfc2cb;
   border-radius: 4px;
 }
@@ -6587,7 +6590,48 @@ button.btn-outline-danger.rounded-circle[aria-label="Eliminar tarea"] {
   font-size: 0.875rem;
 
   &--warning { border-left: 4px solid #f59e0b; }
-  &--expired  { border-left: 4px solid #ef4444; }
+  &--expired {
+    border-left: 4px solid #b91c1c;
+    background: linear-gradient(135deg, #991b1b 0%, #dc2626 58%, #ef4444 100%);
+    box-shadow: 0 12px 30px rgba(153, 27, 27, 0.3), 0 3px 8px rgba(127, 29, 29, 0.2);
+
+    .expiry-banner__icon,
+    .expiry-banner__title,
+    .expiry-banner__title strong {
+      color: #fff;
+    }
+
+    .expiry-banner__cta--expired {
+      color: #991b1b;
+      background: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 8px;
+      padding: 0.42rem 0.7rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      text-decoration: none;
+      box-shadow: 0 4px 10px rgba(127, 29, 29, 0.2);
+      transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+
+      &:hover {
+        opacity: 1;
+        background: #fff7f7;
+        box-shadow: 0 6px 14px rgba(127, 29, 29, 0.28);
+        transform: translateY(-1px);
+      }
+    }
+
+    .expiry-banner__close {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.16);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.28);
+        color: #fff;
+      }
+    }
+  }
 
   &__body {
     display: flex;
@@ -6601,6 +6645,8 @@ button.btn-outline-danger.rounded-circle[aria-label="Eliminar tarea"] {
     flex-shrink: 0;
     line-height: 1;
     margin-top: 1px;
+
+    i { display: block; }
   }
 
   &__content {
@@ -7777,6 +7823,7 @@ button.btn-outline-danger.rounded-circle[aria-label="Eliminar tarea"] {
 .demo-tour-bubble p {
   margin: 0;
   color: rgba(255, 255, 255, 0.92);
+  font-size: 18px;
   font-weight: 700;
   line-height: 1.55;
 }
@@ -7790,6 +7837,7 @@ button.btn-outline-danger.rounded-circle[aria-label="Eliminar tarea"] {
 .demo-tour-dialog p {
   margin: 0;
   color: #52677c;
+  font-size: 18px;
   line-height: 1.6;
 }
 

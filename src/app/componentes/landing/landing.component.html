@@ -21,56 +21,12 @@
         Metro te ayuda a crear presupuestos profesionales, calcular materiales y organizar clientes y empresas desde un solo lugar.
       </p>
       <div class="hero-actions">
-        <a class="button button-primary" routerLink="/login" [queryParams]="{ step: 'demo' }" aria-label="Probar gratis Metro, software argentino para presupuestos de obra">Probar Metro gratis <span aria-hidden="true">→</span></a>
+        <a class="button button-primary" routerLink="/login" aria-label="Probar gratis Metro, software argentino para presupuestos de obra">Probar Metro gratis <span aria-hidden="true">→</span></a>
         <a class="text-link" href="#funcionalidades">Conocé cómo funciona <span aria-hidden="true">↓</span></a>
       </div>
       <p class="hero-note"><span aria-hidden="true">✓</span> Sin tarjeta de crédito · Acceso desde cualquier dispositivo</p>
     </div>
 
-    <div class="hero-visual" aria-label="Vista ilustrativa de un presupuesto de obra en Metro">
-      <div class="sun-glow"></div>
-      <div class="blueprint blueprint-back"></div>
-      <div class="app-window">
-        <div class="window-topbar">
-          <div class="window-dots"><i></i><i></i><i></i></div>
-          <span>metroapp.site</span>
-          <b>•••</b>
-        </div>
-        <div class="window-content">
-          <div class="mock-sidebar">
-            <div class="mock-logo"><span>M</span> Metro</div>
-            <div class="side-line active"></div>
-            <div class="side-line"></div>
-            <div class="side-line"></div>
-            <div class="side-line short"></div>
-            <div class="side-spacer"></div>
-            <div class="side-line short"></div>
-          </div>
-          <div class="mock-main">
-            <div class="mock-heading">
-              <div><small>MI ESPACIO</small><h3>Mis presupuestos</h3></div>
-              <span class="mock-avatar">A</span>
-            </div>
-            <div class="mock-stats">
-              <div><small>Presupuestos activos</small><strong>24</strong></div>
-              <div><small>Este mes</small><strong>$ 4.850.000</strong></div>
-            </div>
-            <div class="mock-table">
-              <div class="table-heading"><span>Proyecto</span><span>Cliente</span><span>Total</span></div>
-              <div class="table-row"><b>Casa Los Álamos</b><span>Mariana Gómez</span><strong>$ 2.450.000</strong></div>
-              <div class="table-row"><b>Reforma cocina</b><span>Julián Pérez</span><strong>$ 980.000</strong></div>
-              <div class="table-row"><b>Local comercial</b><span>Estudio Norte</span><strong>$ 1.420.000</strong></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="floating-tag tag-materials"><span>▦</span><b>Materiales calculados</b><strong>✓</strong></div>
-      <div class="floating-tag tag-saved"><span>↗</span><b>Presupuesto guardado</b><small>Hace un momento</small></div>
-      <div class="archi-badge" aria-label="Archi, tu compañero de trabajo en Metro">
-        <div class="archi-sprite archi-expressive" role="img" aria-label="Archi saludando"></div>
-        <div class="archi-badge__copy"><strong>Archi</strong><span>Tu compañero de obra</span></div>
-      </div>
-    </div>
   </section>
 
   <section class="trust-strip" aria-label="Beneficios principales de Metro">
@@ -82,6 +38,58 @@
       <span>Decisiones más rápidas</span>
       <i></i>
       <span>Obras más ordenadas</span>
+    </div>
+  </section>
+
+  <section id="experiencia-movil" class="mobile-showcase" aria-labelledby="mobile-showcase-title">
+    <div class="section-shell">
+      <div class="mobile-showcase__intro">
+        <div class="section-heading">
+          <p class="eyebrow">METRO EN TU BOLSILLO</p>
+          <h2 id="mobile-showcase-title">Tu obra también se mueve.<br /><em>Trabajá desde cualquier lugar.</em></h2>
+        </div>
+        <p>Revisá presupuestos, clientes, empresas y materiales desde una experiencia pensada para acompañarte en cada visita a obra.</p>
+      </div>
+
+      <div class="mobile-showcase__featured">
+        <article class="mobile-photo-feature mobile-photo-sprite-feature mobile-photo-sprite-feature--dashboard">
+          <div class="mobile-photo-feature__foreground">
+            <img [src]="'assets/landing/mobile/dashboard-foreground-v2.png' | assetUrl" alt="Metro abierto en un celular durante una visita a obra" loading="lazy" />
+          </div>
+          <span class="mobile-photo-feature__label"><strong>Metro en obra</strong><small>Todo lo importante, siempre a mano.</small></span>
+        </article>
+        <article class="mobile-photo-feature mobile-photo-sprite-feature">
+          <div class="mobile-photo-feature__foreground">
+            <img [src]="'assets/landing/mobile/presupuestos-sprite.png' | assetUrl" alt="Mano mostrando el gestor de presupuestos de Metro en primer plano" loading="lazy" />
+          </div>
+          <span class="mobile-photo-feature__label"><strong>Presupuestos profesionales</strong><small>Creá y compartí cotizaciones en minutos.</small></span>
+        </article>
+        <article class="mobile-photo-feature mobile-photo-sprite-feature mobile-photo-sprite-feature--materials">
+          <div class="mobile-photo-feature__foreground">
+            <img [src]="'assets/landing/mobile/materiales-sprite.png' | assetUrl" alt="Mano con guante mostrando la calculadora de materiales de Metro" loading="lazy" />
+          </div>
+          <span class="mobile-photo-feature__label"><strong>Materiales calculados</strong><small>Estimá cantidades antes de comprar.</small></span>
+        </article>
+      </div>
+
+      <div class="mobile-showcase__rail" aria-label="Más vistas de Metro en el celular">
+        <article class="mobile-photo-feature mobile-photo-sprite-feature mobile-photo-sprite-feature--clients">
+          <div class="mobile-photo-feature__foreground"><img [src]="'assets/landing/mobile/clientes-sprite.png' | assetUrl" alt="Mano mostrando la gestión de clientes de Metro" loading="lazy" /></div>
+          <span class="mobile-photo-feature__label"><strong>Clientes organizados</strong><small>Encontrá cada contacto cuando lo necesitás.</small></span>
+        </article>
+        <article class="mobile-photo-feature mobile-photo-sprite-feature mobile-photo-sprite-feature--tasks">
+          <div class="mobile-photo-feature__foreground"><img [src]="'assets/landing/mobile/tareas-sprite.png' | assetUrl" alt="Mano mostrando las tareas personalizadas de Metro" loading="lazy" /></div>
+          <span class="mobile-photo-feature__label"><strong>Tareas personalizadas</strong><small>Convertí cada trabajo en una acción clara.</small></span>
+        </article>
+        <article class="mobile-photo-feature mobile-photo-sprite-feature mobile-photo-sprite-feature--companies">
+          <div class="mobile-photo-feature__foreground"><img [src]="'assets/landing/mobile/empresas-sprite.png' | assetUrl" alt="Mano mostrando la gestión de empresas de Metro" loading="lazy" /></div>
+          <span class="mobile-photo-feature__label"><strong>Empresas bajo control</strong><small>Gestioná equipos y colaboradores desde un lugar.</small></span>
+        </article>
+        <article class="mobile-photo-feature mobile-photo-sprite-feature mobile-photo-sprite-feature--management">
+          <div class="mobile-photo-feature__foreground"><img [src]="'assets/landing/mobile/gestion-sprite.png' | assetUrl" alt="Mano mostrando la gestión de presupuestos de Metro" loading="lazy" /></div>
+          <span class="mobile-photo-feature__label"><strong>Gestión de presupuestos</strong><small>Seguimiento simple de clientes, tareas y avances.</small></span>
+        </article>
+      </div>
     </div>
   </section>
 
@@ -163,7 +171,7 @@
         <p class="eyebrow">TU PRÓXIMA OBRA EMPIEZA ACÁ</p>
         <h2 id="cta-title">Hacé que cada presupuesto<br /><em>hable bien de tu trabajo.</em></h2>
       </div>
-      <a class="button button-primary" routerLink="/login" [queryParams]="{ step: 'demo' }" aria-label="Probar gratis Metro ahora">Probar Metro gratis <span aria-hidden="true">→</span></a>
+      <a class="button button-primary" routerLink="/login" aria-label="Probar gratis Metro ahora">Probar Metro gratis <span aria-hidden="true">→</span></a>
     </div>
   </section>
 </main>

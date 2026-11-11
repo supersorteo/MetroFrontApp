@@ -1268,7 +1268,7 @@
 
   <div class="expiry-banner expiry-banner--expired" *ngIf="codeExpired && !bannerDismissed">
     <div class="expiry-banner__body">
-      <span class="expiry-banner__icon">🔒</span>
+      <span class="expiry-banner__icon" aria-hidden="true"><i class="bi bi-lock-fill"></i></span>
       <div class="expiry-banner__content">
         <p class="expiry-banner__title">Tu código <strong>venció</strong>. Las funciones de edición están deshabilitadas.</p>
         <button class="expiry-banner__cta expiry-banner__cta--expired" (click)="abrirModalPlanesRenovar()">Renovar membresía <span aria-hidden="true">→</span></button>
@@ -1410,7 +1410,7 @@
 
               </button>
 
-              <button type="button" class="task-help-btn task-help-btn--compact task-help-btn--metro" (click)="abrirComoUsarMetro()" aria-haspopup="dialog" aria-controls="comoUsarMetroModal">
+              <button type="button" class="task-help-btn task-help-btn--compact" (click)="abrirComoUsarMetro()" aria-haspopup="dialog" aria-controls="comoUsarMetroModal">
 
                 <i class="bi bi-question-circle" aria-hidden="true"></i>
 

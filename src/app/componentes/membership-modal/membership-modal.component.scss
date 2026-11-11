@@ -257,6 +257,14 @@
     text-align: center;
   }
 
+  &__detail-card-payment-note {
+    color: rgba(15, 28, 63, .72);
+    font-size: .76rem;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: center;
+  }
+
   &__detail-list {
     display: flex;
     flex-direction: column;

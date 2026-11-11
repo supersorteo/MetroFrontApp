@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { AfterViewInit, Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { SeoService } from '../../core/services/seo.service';
@@ -11,7 +11,7 @@ import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.scss'
 })
-export class LandingComponent implements OnInit, OnDestroy {
+export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private doc = inject(DOCUMENT);
   private scrollObserver?: IntersectionObserver;
 
@@ -25,6 +25,9 @@ export class LandingComponent implements OnInit, OnDestroy {
     });
     this.injectFonts();
     this.injectSchemas();
+  }
+
+  ngAfterViewInit(): void {
     this.initScrollReveal();
   }
 
@@ -37,7 +40,7 @@ export class LandingComponent implements OnInit, OnDestroy {
 
   private initScrollReveal(): void {
     if (!('IntersectionObserver' in window)) {
-      this.doc.querySelectorAll('.audience-inner,.faq-list,.cta-card').forEach(
+      this.doc.querySelectorAll('.audience-inner,.faq-list,.cta-card,.mobile-photo-sprite-feature').forEach(
         el => el.classList.add('is-visible')
       );
       return;
@@ -50,7 +53,7 @@ export class LandingComponent implements OnInit, OnDestroy {
         }
       });
     }, { threshold: 0.12 });
-    this.doc.querySelectorAll('.audience-inner,.faq-list,.cta-card').forEach(
+    this.doc.querySelectorAll('.audience-inner,.faq-list,.cta-card,.mobile-photo-sprite-feature').forEach(
       el => this.scrollObserver!.observe(el)
     );
   }

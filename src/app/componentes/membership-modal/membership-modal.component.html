@@ -37,7 +37,6 @@
             <button class="planes-modal__card" [disabled]="!selectedPlanMeses" (click)="irAlCheckout()">
               <div class="planes-modal__card-icon"><i class="bi bi-credit-card-2-front-fill"></i></div>
               <h4 class="planes-modal__card-title">Pagar en línea</h4>
-              <p class="planes-modal__card-desc">Recibí tu código automáticamente</p>
               <div class="planes-modal__card-badges">
                 <span><i class="bi bi-bag-check-fill me-1"></i>Mercado Pago</span>
                 <span><i class="bi bi-paypal me-1"></i>PayPal</span>
@@ -46,8 +45,7 @@
             </button>
             <button class="planes-modal__card" [disabled]="!selectedPlanMeses" (click)="pagarPorWhatsApp()">
               <div class="planes-modal__card-icon planes-modal__card-icon--ws"><i class="bi bi-whatsapp"></i></div>
-              <h4 class="planes-modal__card-title">Pagar por WhatsApp</h4>
-              <p class="planes-modal__card-desc">Pagá en efectivo y recibí tu código</p>
+              <h4 class="planes-modal__card-title">PAGAR POR TRANSFERENCIA</h4>
               <div class="planes-modal__card-badges planes-modal__card-badges--ws">
                 <span><i class="bi bi-cash-coin me-1"></i>Efectivo</span>
                 <span><i class="bi bi-chat-dots-fill me-1"></i>Entrega manual</span>
@@ -68,6 +66,7 @@
                   <div class="planes-modal__detail-card-head">
                     <span class="planes-modal__detail-card-months">Plan {{ plan.months }} meses</span>
                     <span class="planes-modal__detail-card-price">{{ plan.amount | number:'1.0-0' }} {{ planesPais.currency }}</span>
+                    <span class="planes-modal__detail-card-payment-note">Pago único · Sin renovación automática · Sin costos sorpresa</span>
                   </div>
                   <ul class="planes-modal__detail-list">
                     <li><i class="bi bi-check-circle-fill"></i> Calculadora de materiales</li>
