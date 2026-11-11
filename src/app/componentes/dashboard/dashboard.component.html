@@ -36,7 +36,7 @@
     <img
       *ngIf="archiIntroSceneVisible"
       class="archi-intro__sprite"
-      [src]="archiIntroScenes[archiIntroIndex].image"
+      [src]="archiIntroScenes[archiIntroIndex].image | assetUrl"
       alt="">
   </div>
 
