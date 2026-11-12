@@ -9,6 +9,7 @@
   background: transparent;
   animation: fadeIn 0.3s ease both;
   transform: none !important;
+  overflow-x: hidden;
 }
 
 .admin-back-fab {
@@ -530,6 +531,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 4px;
   margin-top: 1rem;
 }
@@ -555,7 +557,18 @@
   border-color: #2563eb;
 }
 
-.pg-info { font-size: 0.8rem; color: rgba(15,28,63,0.45); margin-left: 6px; }
+.pg-info {
+  font-size: 0.8rem;
+  color: rgba(15,28,63,0.45);
+  margin-left: 6px;
+
+  @media (max-width: 600px) {
+    width: 100%;
+    text-align: center;
+    margin-left: 0;
+    margin-top: 4px;
+  }
+}
 
 /* ── Password toggle ──────────────────────────── */
 .pw-wrap--panel {
