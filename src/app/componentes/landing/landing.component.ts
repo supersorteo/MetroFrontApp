@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { SeoService } from '../../core/services/seo.service';
 import { AssetUrlPipe } from '../../pipes/asset-url.pipe';
@@ -16,12 +16,16 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private scrollObserver?: IntersectionObserver;
   sidebarOpen = false;
 
-  constructor(private seo: SeoService) {}
+  constructor(private seo: SeoService, private activatedRoute: ActivatedRoute, private router: Router) {}
 
   toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
   closeSidebar(): void { this.sidebarOpen = false; }
 
   ngOnInit(): void {
+    if (this.activatedRoute.snapshot.queryParamMap.get('admin') === '1') {
+      this.router.navigate(['/login'], { queryParams: { admin: '1' }, replaceUrl: true });
+      return;
+    }
     this.seo.setPage({
       title: 'Metro Argentina | Presupuestos de obra simples y profesionales',
       description: 'Software argentino para presupuestos de obra, calcular materiales y organizar clientes. Probalo gratis desde cualquier dispositivo.',
