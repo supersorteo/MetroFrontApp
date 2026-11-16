@@ -2365,3 +2365,199 @@
     &:hover { transform: scale(1.08); box-shadow: 0 6px 22px rgba(37,99,235,0.45); }
   }
 }
+
+/* ── Mensaje Archi — card preview ───────────────── */
+.msg-card {
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(37,99,200,0.14);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(15,28,63,0.07);
+
+  &__preview {
+    padding: 1.4rem 1.5rem 1rem;
+    background: linear-gradient(135deg, rgba(37,99,200,0.04) 0%, rgba(26,82,168,0.02) 100%);
+    display: flex;
+    align-items: center;
+    min-height: 90px;
+  }
+
+  &__bubble {
+    display: inline-flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #fff 0%, #f0f6ff 100%);
+    border: 1.5px solid rgba(37,99,200,0.28);
+    border-radius: 16px;
+    padding: 10px 16px;
+    max-width: 340px;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.12);
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -9px;
+      left: 20px;
+      width: 11px;
+      height: 11px;
+      background: #f0f6ff;
+      border-right: 1.5px solid rgba(37,99,200,0.28);
+      border-bottom: 1.5px solid rgba(37,99,200,0.28);
+      transform: rotate(45deg);
+      border-radius: 0 0 3px 0;
+    }
+  }
+
+  &__bubble-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: rgba(30,58,138,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 3px;
+  }
+
+  &__bubble-text {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #1e3a8a;
+    line-height: 1.4;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 1.2rem;
+    border-top: 1px solid rgba(37,99,200,0.08);
+    gap: 1rem;
+  }
+
+  &__hint {
+    font-size: 0.78rem;
+    color: rgba(15,28,63,0.45);
+    flex: 1;
+  }
+
+  &__edit-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
+/* ── Modal mensaje — variante ancha ─────────────── */
+.at-modal--mensaje {
+  max-width: 540px;
+}
+
+.msg-modal {
+  &__field {
+    margin-bottom: 1.2rem;
+  }
+
+  &__input-wrap {
+    position: relative;
+    margin-top: 0.4rem;
+  }
+
+  &__textarea {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    padding-bottom: 1.6rem;
+    border: 1.5px solid rgba(37,99,200,0.2);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: #0f1c3f;
+    background: rgba(248,251,255,0.8);
+    resize: none;
+    transition: border-color 0.2s;
+    outline: none;
+    box-sizing: border-box;
+
+    &:focus {
+      border-color: rgba(37,99,200,0.5);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,99,200,0.08);
+    }
+  }
+
+  &__counter {
+    position: absolute;
+    bottom: 8px;
+    right: 10px;
+    font-size: 0.72rem;
+    color: rgba(15,28,63,0.35);
+    pointer-events: none;
+
+    &--warn { color: #d97706; font-weight: 600; }
+  }
+
+  &__hint {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    font-size: 0.78rem;
+    color: rgba(15,28,63,0.5);
+    margin-top: 0.5rem;
+    line-height: 1.4;
+
+    svg { flex-shrink: 0; margin-top: 1px; }
+    strong { color: rgba(15,28,63,0.75); }
+  }
+
+  &__preview {
+    background: linear-gradient(135deg, rgba(37,99,200,0.04) 0%, rgba(26,82,168,0.02) 100%);
+    border: 1px dashed rgba(37,99,200,0.2);
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+    min-height: 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  &__preview-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(15,28,63,0.4);
+    margin-bottom: 0.5rem;
+  }
+
+  &__bubble {
+    display: inline-flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #fff 0%, #f0f6ff 100%);
+    border: 1.5px solid rgba(37,99,200,0.25);
+    border-radius: 14px;
+    padding: 8px 14px;
+    max-width: 320px;
+    box-shadow: 0 3px 12px rgba(37,99,235,0.1);
+  }
+
+  &__bubble-icon {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: rgba(30,58,138,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+  }
+
+  &__bubble-text {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #1e3a8a;
+    line-height: 1.4;
+  }
+
+  &__empty {
+    font-size: 0.82rem;
+    color: rgba(15,28,63,0.35);
+    font-style: italic;
+    margin: 0;
+    align-self: center;
+  }
+}

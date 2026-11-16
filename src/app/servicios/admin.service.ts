@@ -181,4 +181,18 @@ export class AdminService {
     );
   }
 
+  getMensajeBurbuja(pais: string): Observable<string> {
+    return this.http.get<{ mensaje: string }>(`${API_URL}/pais/${pais}/mensaje`).pipe(
+      map(res => res.mensaje || ''),
+      catchError(() => of(''))
+    );
+  }
+
+  updateMensajeBurbuja(id: string, mensaje: string): Observable<boolean> {
+    return this.http.put<{ ok: boolean }>(`${API_URL}/${id}/mensaje`, { mensaje }).pipe(
+      map(() => true),
+      catchError(() => of(false))
+    );
+  }
+
 }

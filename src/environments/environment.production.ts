@@ -5,4 +5,5 @@ export const environment = {
   retryGetRequests: true,
   enableServiceWorker: true,
   assetsBase: 'https://res.cloudinary.com/drd37bhg0/image/upload/f_auto,q_auto/metroapp-assets',
+  adminSseToken: 'REEMPLAZAR_CON_TOKEN_RAILWAY',
 };

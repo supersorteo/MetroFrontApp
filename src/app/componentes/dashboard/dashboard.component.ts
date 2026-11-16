@@ -32,6 +32,7 @@ import { PresupuestoStore } from '../../stores/presupuesto.store';
 import { TareaPersonalizadaService, TareaPersonalizada } from '../../servicios/tarea-personalizada.service';
 import { AppToastService } from '../../servicios/app-toast.service';
 import { MembershipLimits, MembershipLimitsService } from '../../servicios/membership-limits.service';
+import { AdminService } from '../../servicios/admin.service';
 import { AjustePrecioService } from '../../servicios/ajuste-precio.service';
 import { PrecioMaterial, PrecioMaterialService } from '../../servicios/precio-material.service';
 import { PHONE_COUNTRIES, PhoneCountry, validatePhone } from '../../core/utils/phone-validation.util';
@@ -756,6 +757,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   currentEmpresaLogoUrl: string = '';
   empresaLogoUrls: Record<string, string> = {};
   trialMode: boolean = false;
+  mensajeBurbuja = '';
+  private publicEventSource: EventSource | null = null;
   showPremiumCta: boolean = false;
   totalClientesUsuario: number = 0;
   membershipLimits: MembershipLimits = {
@@ -1247,7 +1250,8 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     private uiDialog: UiDialogService,
     private budgetService: BudgetService,
     private activatedRoute: ActivatedRoute,
-    private precioMaterialService: PrecioMaterialService
+    private precioMaterialService: PrecioMaterialService,
+    private adminService: AdminService
   ) {
     // Sync empresas IDB → lista local + paginación
     effect(() => {
@@ -1354,6 +1358,8 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
   ngOnInit(): void {
     this.loadLegacyBudgetList();
     this.initSession();
+    this.cargarMensajeDashboard();
+    this.suscribirMensajePublico();
     this.iniciarDemoOnboarding();
     this.initPremiumCtaVisibility();
     this.maybeStartDashboardTour();
@@ -2673,9 +2679,35 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
 
 
 
+  private readonly MESES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+    'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+  private resolverMes(mensaje: string): string {
+    return mensaje.replace('{mes}', this.MESES_ES[new Date().getMonth()]);
+  }
+
+  private cargarMensajeDashboard(): void {
+    this.adminService.getMensajeBurbuja('argentina').subscribe(msg => {
+      this.mensajeBurbuja = this.resolverMes(msg);
+    });
+  }
+
+  private suscribirMensajePublico(): void {
+    this.publicEventSource = this.authService.getPublicEventSource();
+    this.publicEventSource.addEventListener('mensaje-updated', (event: MessageEvent) => {
+      const data = JSON.parse(event.data);
+      this.mensajeBurbuja = this.resolverMes(data.mensaje || '');
+    });
+    this.publicEventSource.onerror = () => {
+      this.publicEventSource?.close();
+      setTimeout(() => this.suscribirMensajePublico(), 5000);
+    };
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.publicEventSource?.close();
     if (this.premiumCtaTimer) {
       clearTimeout(this.premiumCtaTimer);
       this.premiumCtaTimer = null;

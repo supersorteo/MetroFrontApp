@@ -5,4 +5,5 @@ export const environment = {
   retryGetRequests: true,
   enableServiceWorker: false,
   assetsBase: '',
+  adminSseToken: '',
 };

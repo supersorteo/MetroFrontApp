@@ -1291,6 +1291,13 @@
 
   <div class="card dashboard-card">
 
+  <div class="dashboard-anuncio" *ngIf="mensajeBurbuja">
+    <div class="dashboard-anuncio__icon">
+      <i class="bi bi-megaphone-fill" aria-hidden="true"></i>
+    </div>
+    <p class="dashboard-anuncio__texto">{{ mensajeBurbuja }}</p>
+  </div>
+
 <div class="card table-card mt-2 mb-3">
 
   <div class="card-body">

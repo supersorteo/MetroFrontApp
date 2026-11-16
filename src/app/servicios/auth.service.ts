@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { AUTH_API_URL } from '../core/api/api.config';
+import { environment } from '../../environments/environment';
 import { extractApiErrorMessage } from '../core/http/api-error.util';
 import { metroDB } from './metro-db.service';
 
@@ -333,7 +334,13 @@ export class AuthService {
   }
 
   getAdminEventSource(): EventSource {
-    return new EventSource(`${this.apiUrl}/admin/events`);
+    const token = environment.adminSseToken;
+    const url = token ? `${this.apiUrl}/admin/events?token=${encodeURIComponent(token)}` : `${this.apiUrl}/admin/events`;
+    return new EventSource(url);
+  }
+
+  getPublicEventSource(): EventSource {
+    return new EventSource(`${this.apiUrl}/public/events`);
   }
 
   terminateAllSessions(code: string): Observable<void> {

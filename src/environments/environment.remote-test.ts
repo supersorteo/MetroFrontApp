@@ -5,4 +5,5 @@ export const environment = {
   requestTimeoutMs: 15000,
   retryGetRequests: true,
   enableServiceWorker: false,
+  adminSseToken: 'REEMPLAZAR_CON_TOKEN_RAILWAY',
 };

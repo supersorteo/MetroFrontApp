@@ -115,6 +115,11 @@ export class LoginComponent implements OnInit, OnDestroy {
   adminLoginError = '';
   showAdminPassword = false;
 
+  archiBubbleMessage = '';
+  private readonly MESES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+    'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  private publicEventSource: EventSource | null = null;
+
   @ViewChild('exampleModal') exampleModal!: ElementRef;
 
 constructor(private authService: AuthService,
@@ -144,6 +149,30 @@ constructor(private authService: AuthService,
    * La cookie solo puede leerse cuando la nueva versión está publicada en
    * el mismo origen que www.metroapp.site.
    */
+  cargarMensajeBurbuja(): void {
+    this.adminService.getMensajeBurbuja('argentina').subscribe(mensaje => {
+      this.archiBubbleMessage = this.resolverMes(mensaje);
+    });
+  }
+
+  resolverMes(mensaje: string): string {
+    const mes = this.MESES_ES[new Date().getMonth()];
+    return (mensaje || '').replace('{mes}', mes);
+  }
+
+  private suscribirEventosPublicos(): void {
+    this.publicEventSource?.close();
+    this.publicEventSource = this.authService.getPublicEventSource();
+    this.publicEventSource.addEventListener('mensaje-updated', (event: MessageEvent) => {
+      const data = JSON.parse(event.data);
+      this.archiBubbleMessage = this.resolverMes(data.mensaje || '');
+    });
+    this.publicEventSource.onerror = () => {
+      this.publicEventSource?.close();
+      setTimeout(() => this.suscribirEventosPublicos(), 5000);
+    };
+  }
+
   private getLegacyAccessCodeFromCookie(): string {
     if (typeof document === 'undefined') {
       return '';
@@ -220,6 +249,7 @@ constructor(private authService: AuthService,
   ngOnDestroy(): void {
     this.restoreManifest();
     if (this.codeInputDebounceTimer) clearTimeout(this.codeInputDebounceTimer);
+    this.publicEventSource?.close();
   }
 
   ngOnInit(): void {
@@ -229,6 +259,8 @@ constructor(private authService: AuthService,
       url: 'https://metroapp.site/'
     });
     this.loadMembershipCatalog();
+    this.cargarMensajeBurbuja();
+    this.suscribirEventosPublicos();
     const legacyCode = this.getLegacyAccessCodeFromCookie();
     const lastCode = localStorage.getItem('lastLoginCode');
     if (legacyCode) {

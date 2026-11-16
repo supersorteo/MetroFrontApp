@@ -98,6 +98,10 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
   limitsDraft: AdminMembershipLimits | null = null;
   limitsSaving = false;
 
+  mensajeBurbuja = '';
+  showMensajeModal = false;
+  mensajeBurbujaEdit = '';
+
   totalCodes = 0;
   activeCodes = 0;
   expiredCodes = 0;
@@ -148,6 +152,7 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
       { id: 'sec-generate',        label: 'Generar',       icon: '⊕' },
       { id: 'sec-codes',           label: 'Códigos',       icon: '▤' },
       ...(this.admin?.pais === 'argentina' ? [{ id: 'sec-legacy', label: 'Legacy', icon: '◷' }] : []),
+      { id: 'sec-mensaje',          label: 'Mensaje',       icon: '💬' },
       { id: 'tarea-form-section',  label: 'Tareas',        icon: '✓' },
       { id: 'precio-form-section', label: 'Materiales',    icon: '◫' },
     ];
@@ -214,11 +219,12 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.timer = setInterval(() => this.updateRemainingTimes(), 1000);
     this.sessionPollInterval = setInterval(() => this.loadActiveSessions(), 10000);
     this.subscribeToAdminEvents();
+    this.cargarMensajeBurbuja();
   }
 
   ngAfterViewInit(): void {
     const ids = ['sec-stats', 'sec-limits', 'sec-generate', 'sec-codes',
-                 'sec-legacy', 'tarea-form-section', 'precio-form-section'];
+                 'sec-legacy', 'sec-mensaje', 'tarea-form-section', 'precio-form-section'];
     this.sectionObserver = new IntersectionObserver(entries => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
@@ -590,6 +596,33 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
         this.membershipLimits = limits;
       },
       error: () => this.uiDialog.error({ title: 'Error', text: 'No se pudieron cargar los límites de membresía.' })
+    });
+  }
+
+  cargarMensajeBurbuja(): void {
+    this.adminService.getMensajeBurbuja(this.admin.pais).subscribe(msg => {
+      this.mensajeBurbuja = msg;
+    });
+  }
+
+  abrirMensajeModal(): void {
+    this.mensajeBurbujaEdit = this.mensajeBurbuja;
+    this.showMensajeModal = true;
+  }
+
+  cerrarMensajeModal(): void {
+    this.showMensajeModal = false;
+  }
+
+  guardarMensajeBurbuja(): void {
+    this.adminService.updateMensajeBurbuja(this.admin.id, this.mensajeBurbujaEdit).subscribe(ok => {
+      if (ok) {
+        this.mensajeBurbuja = this.mensajeBurbujaEdit;
+        this.showMensajeModal = false;
+        this.uiDialog.success({ title: 'Guardado', text: 'Mensaje actualizado correctamente.' });
+      } else {
+        this.uiDialog.error({ title: 'Error', text: 'No se pudo guardar el mensaje.' });
+      }
     });
   }
 

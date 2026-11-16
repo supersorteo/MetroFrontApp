@@ -199,7 +199,7 @@
   align-items: center;
   gap: 24px;
   text-align: left;
-  overflow: hidden;
+  overflow: visible;
 
   .login-card__visual {
     align-self: stretch;
@@ -210,7 +210,8 @@
     align-items: flex-end;
     justify-content: center;
     order: 1;
-    overflow: hidden;
+    overflow: visible;
+    position: relative;
 
     img {
       display: block;
@@ -223,6 +224,52 @@
       transform: none;
       opacity: 0;
       animation: archiSpriteFadeIn 0.8s ease-out forwards;
+    }
+
+    .archi-bubble {
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #ffffff 0%, #eef4ff 100%);
+      border: 1.5px solid rgba(37, 99, 200, 0.28);
+      border-radius: 22px;
+      padding: 20px 26px;
+      min-width: 240px;
+      max-width: 320px;
+      min-height: 68px;
+      width: max-content;
+      text-align: center;
+      animation: archiBubbleFloat 3.5s ease-in-out infinite;
+      z-index: 10;
+      box-shadow:
+        0 8px 28px rgba(37, 99, 235, 0.18),
+        0 2px 6px rgba(37, 99, 235, 0.08),
+        inset 0 1px 0 rgba(255,255,255,0.95);
+
+      &__text {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #1e3a8a;
+        line-height: 1.5;
+        display: block;
+        letter-spacing: -0.01em;
+        white-space: normal;
+        word-break: break-word;
+      }
+
+      &__tail {
+        position: absolute;
+        bottom: -12px;
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        width: 13px;
+        height: 13px;
+        background: #eef4ff;
+        border-right: 1.5px solid rgba(37, 99, 200, 0.28);
+        border-bottom: 1.5px solid rgba(37, 99, 200, 0.28);
+        border-radius: 0 0 3px 0;
+      }
     }
   }
 
@@ -243,6 +290,11 @@
 @keyframes archiSpriteFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes archiBubbleFloat {
+  0%, 100% { transform: translateX(-50%) translateY(0px); }
+  50%       { transform: translateX(-50%) translateY(-6px); }
 }
 
 /* Cadena: cada sprite comienza un segundo después del anterior. */
@@ -283,6 +335,16 @@
         height: 340px;
         transform: none;
       }
+
+      .archi-bubble {
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        min-width: 200px;
+        max-width: calc(100vw - 56px);
+        width: max-content;
+        animation-name: archiBubbleFloatMobile;
+      }
     }
 
     .login-card__content {
@@ -291,6 +353,11 @@
     }
 
     .login-card__desc { max-width: none; }
+  }
+
+  @keyframes archiBubbleFloatMobile {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%       { transform: translateX(-50%) translateY(-6px); }
   }
 
   .login-cards--home .login-card:nth-child(2) .login-card__visual {
@@ -305,6 +372,7 @@
   text-align: left;
   gap: 0;
   padding: 22px 28px;
+  overflow: visible;
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.14) 0%, rgba(59, 130, 246, 0.1) 100%);
   border-color: rgba(37, 99, 235, 0.36);
   box-shadow: 0 4px 20px rgba(37, 99, 235, 0.14);

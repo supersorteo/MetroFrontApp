@@ -16,6 +16,10 @@
       <div class="login-card login-card--trial">
         <div class="login-card__glow"></div>
         <div class="login-card__visual">
+          <div class="archi-bubble" *ngIf="archiBubbleMessage">
+            <span class="archi-bubble__text">{{ archiBubbleMessage }}</span>
+            <div class="archi-bubble__tail"></div>
+          </div>
           <img [src]="'assets/archi-probar-sistema-v2.png' | assetUrl" alt="Archi probando el sistema" />
         </div>
         <div class="login-card__content">
