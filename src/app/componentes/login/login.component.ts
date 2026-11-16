@@ -118,7 +118,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   archiBubbleMessage = '';
   private readonly MESES_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
     'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  private publicEventSource: EventSource | null = null;
+  private mensajeInterval: ReturnType<typeof setInterval> | null = null;
 
   @ViewChild('exampleModal') exampleModal!: ElementRef;
 
@@ -160,17 +160,8 @@ constructor(private authService: AuthService,
     return (mensaje || '').replace('{mes}', mes);
   }
 
-  private suscribirEventosPublicos(): void {
-    this.publicEventSource?.close();
-    this.publicEventSource = this.authService.getPublicEventSource();
-    this.publicEventSource.addEventListener('mensaje-updated', (event: MessageEvent) => {
-      const data = JSON.parse(event.data);
-      this.archiBubbleMessage = this.resolverMes(data.mensaje || '');
-    });
-    this.publicEventSource.onerror = () => {
-      this.publicEventSource?.close();
-      setTimeout(() => this.suscribirEventosPublicos(), 5000);
-    };
+  private iniciarPollingMensaje(): void {
+    this.mensajeInterval = setInterval(() => this.cargarMensajeBurbuja(), 60_000);
   }
 
   private getLegacyAccessCodeFromCookie(): string {
@@ -249,7 +240,7 @@ constructor(private authService: AuthService,
   ngOnDestroy(): void {
     this.restoreManifest();
     if (this.codeInputDebounceTimer) clearTimeout(this.codeInputDebounceTimer);
-    this.publicEventSource?.close();
+    if (this.mensajeInterval) clearInterval(this.mensajeInterval);
   }
 
   ngOnInit(): void {
@@ -260,7 +251,8 @@ constructor(private authService: AuthService,
     });
     this.loadMembershipCatalog();
     this.cargarMensajeBurbuja();
-    this.suscribirEventosPublicos();
+    // this.suscribirEventosPublicos(); // SSE reemplazado por polling
+    this.iniciarPollingMensaje();
     const legacyCode = this.getLegacyAccessCodeFromCookie();
     const lastCode = localStorage.getItem('lastLoginCode');
     if (legacyCode) {

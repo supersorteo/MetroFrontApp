@@ -758,7 +758,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   empresaLogoUrls: Record<string, string> = {};
   trialMode: boolean = false;
   mensajeBurbuja = '';
-  private publicEventSource: EventSource | null = null;
+  // private publicEventSource: EventSource | null = null; // SSE reemplazado por polling
+  private mensajeInterval: ReturnType<typeof setInterval> | null = null;
   showPremiumCta: boolean = false;
   totalClientesUsuario: number = 0;
   membershipLimits: MembershipLimits = {
@@ -1359,7 +1360,8 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     this.loadLegacyBudgetList();
     this.initSession();
     this.cargarMensajeDashboard();
-    this.suscribirMensajePublico();
+    // this.suscribirMensajePublico(); // SSE reemplazado por polling
+    this.iniciarPollingMensaje();
     this.iniciarDemoOnboarding();
     this.initPremiumCtaVisibility();
     this.maybeStartDashboardTour();
@@ -2692,22 +2694,27 @@ private async resolveEmpresaLogoUrl(empresa: any): Promise<string> {
     });
   }
 
-  private suscribirMensajePublico(): void {
-    this.publicEventSource = this.authService.getPublicEventSource();
-    this.publicEventSource.addEventListener('mensaje-updated', (event: MessageEvent) => {
-      const data = JSON.parse(event.data);
-      this.mensajeBurbuja = this.resolverMes(data.mensaje || '');
-    });
-    this.publicEventSource.onerror = () => {
-      this.publicEventSource?.close();
-      setTimeout(() => this.suscribirMensajePublico(), 5000);
-    };
+  // private suscribirMensajePublico(): void { // SSE reemplazado por polling
+  //   this.publicEventSource = this.authService.getPublicEventSource();
+  //   this.publicEventSource.addEventListener('mensaje-updated', (event: MessageEvent) => {
+  //     const data = JSON.parse(event.data);
+  //     this.mensajeBurbuja = this.resolverMes(data.mensaje || '');
+  //   });
+  //   this.publicEventSource.onerror = () => {
+  //     this.publicEventSource?.close();
+  //     setTimeout(() => this.suscribirMensajePublico(), 5000);
+  //   };
+  // }
+
+  private iniciarPollingMensaje(): void {
+    this.mensajeInterval = setInterval(() => this.cargarMensajeDashboard(), 60_000);
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    this.publicEventSource?.close();
+    // this.publicEventSource?.close(); // SSE reemplazado por polling
+    if (this.mensajeInterval) clearInterval(this.mensajeInterval);
     if (this.premiumCtaTimer) {
       clearTimeout(this.premiumCtaTimer);
       this.premiumCtaTimer = null;
