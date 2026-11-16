@@ -297,7 +297,8 @@
       <p class="login-form-card__sub">
         Tu código <strong>{{ code }}</strong> corresponde al sistema anterior.
         Completá tus datos para activarlo.
-        Vence: <strong>{{ legacyData?.fechaVencimiento }}</strong>
+        <span *ngIf="legacyData?.expired; else fechaVigente">Estado: <strong>Vencido</strong></span>
+        <ng-template #fechaVigente>Vence: <strong>{{ legacyData?.fechaVencimiento }}</strong></ng-template>
       </p>
 
       <!-- Fila 1: Código + País -->

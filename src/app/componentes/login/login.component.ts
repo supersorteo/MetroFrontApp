@@ -342,6 +342,12 @@ login(): void {
       if (serverMsg === 'Código no encontrado') {
         this.legacyCodeService.checkCode(this.code).subscribe(legacy => {
           if (legacy) {
+            if (legacy.expired) {
+              this.uiDialog.info({
+                title: 'Código vencido',
+                text: 'Tu código MetroApp está vencido. Al activarlo, tu cuenta quedará activa pero con acceso limitado. Algunas funciones no estarán disponibles hasta renovar tu suscripción.'
+              });
+            }
             this.legacyData = legacy;
             this.email = '';
             this.telefono = '';
@@ -475,7 +481,10 @@ registerLegacy(): void {
         }).subscribe({
           next: response => {
             this.uiDialog.success({ title: '¡Éxito!', text: response.message });
+            const registeredCode = this.code;
             this.clearForm();
+            this.code = registeredCode;
+            localStorage.setItem('lastLoginCode', registeredCode);
             this.loginStep = 'login';
           },
           error: err => {
@@ -660,6 +669,12 @@ registerLegacy(): void {
         // No existe en la tabla regular → verificar si es legacy
         this.legacyCodeService.checkCode(normalized).subscribe(legacy => {
           if (legacy) {
+            if (legacy.expired) {
+              this.uiDialog.info({
+                title: 'Código vencido',
+                text: 'Tu código MetroApp está vencido. Al activarlo, tu cuenta quedará activa pero con acceso limitado. Algunas funciones no estarán disponibles hasta renovar tu suscripción.'
+              });
+            }
             this.legacyData = legacy;
             this.email = '';
             this.registerPhonePrefix = '+549';

@@ -282,6 +282,11 @@ export class AuthService {
       .pipe(catchError(this.handleError1));
   }
 
+  updateCodeEmail(code: string, email: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/codes/${code}`, { email })
+      .pipe(catchError(this.handleError1));
+  }
+
   registerSession(code: string): Observable<{ sessionToken: string | null }> {
     const deviceId = this.getOrCreateDeviceId();
     return this.http.post<{ sessionToken: string }>(
@@ -325,6 +330,10 @@ export class AuthService {
   getLastPresupuesto(userCode: string): Observable<{ id: number } | null> {
     return this.http.get<{ id: number }>(`${this.apiUrl}/last-presupuesto/${userCode}`)
       .pipe(catchError(() => of(null)));
+  }
+
+  getAdminEventSource(): EventSource {
+    return new EventSource(`${this.apiUrl}/admin/events`);
   }
 
   terminateAllSessions(code: string): Observable<void> {

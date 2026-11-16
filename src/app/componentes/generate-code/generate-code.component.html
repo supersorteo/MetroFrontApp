@@ -335,6 +335,12 @@
                       <path d="M4 0a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h1v1H2.5A1.5 1.5 0 0 0 1 7.5v1A1.5 1.5 0 0 0 2.5 10H4v1H2a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h5a2 2 0 0 0 2-2v-1h1.5A1.5 1.5 0 0 0 12 11.5v-1A1.5 1.5 0 0 0 10.5 9H9V8h1.5A1.5 1.5 0 0 0 12 6.5v-1A1.5 1.5 0 0 0 10.5 4H9V3a2 2 0 0 0 2-2V0H4zm1 3V0h5v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zm-1 5V5h5v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zm0 5v-3h5v1a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/>
                     </svg>
                   </button>
+                  <button *ngIf="item.email" class="ra-btn ra-btn--edit" title="Editar email y provincia"
+                          (click)="openEmailEdit(item)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+                    </svg>
+                  </button>
                   <button class="ra-btn" [class.ra-btn--disable]="!item.disabled" [class.ra-btn--enable]="item.disabled"
                     [title]="item.disabled ? 'Activar código' : 'Desactivar código'"
                     (click)="toggleDisableCode(item)">
@@ -1445,6 +1451,47 @@
           Aplicar
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal: editar email -->
+  <div class="admin-overlay" *ngIf="editingEmailCode" (click)="closeEmailEdit()">
+    <div class="expiry-modal" (click)="$event.stopPropagation()">
+
+      <div class="expiry-modal__header">
+        <div class="at-modal__header-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1zm13 2.383-4.708 2.825L15 11.105zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741M1 11.105l4.708-2.897L1 5.383z"/>
+          </svg>
+        </div>
+        <div class="at-modal__header-text">
+          <h3 class="at-modal__title">Editar email</h3>
+          <span class="at-modal__subtitle">Código: {{ editingEmailCode }}</span>
+        </div>
+        <button class="at-modal__close" type="button" (click)="closeEmailEdit()">&#x00D7;</button>
+      </div>
+
+      <div class="expiry-modal__body">
+        <div class="expiry-modal__field">
+          <label class="expiry-modal__label">Nuevo Gmail / email</label>
+          <input class="expiry-modal__input"
+                 type="email"
+                 [(ngModel)]="emailDraft"
+                 placeholder="usuario@gmail.com"
+                 (keydown.enter)="applyEmailEdit()" />
+        </div>
+      </div>
+
+      <div class="expiry-modal__footer">
+        <button class="ea-btn ea-btn--cancel" type="button" (click)="closeEmailEdit()">Cancelar</button>
+        <button class="ea-btn expiry-modal__save-btn" type="button" (click)="applyEmailEdit()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+          </svg>
+          Guardar
+        </button>
+      </div>
+
     </div>
   </div>
 

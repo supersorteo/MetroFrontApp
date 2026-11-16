@@ -124,6 +124,9 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
   editingMaxDevicesCode: string | null = null;
   maxDevicesDraft: number = 2;
 
+  editingEmailCode: string | null = null;
+  emailDraft = '';
+
   activeSessions: Map<string, number> = new Map();
   sessionLimits: Map<string, number> = new Map();
   readonly today = new Date().toISOString().split('T')[0];
@@ -162,6 +165,7 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private timer: any;
   private sessionPollInterval: any;
+  private adminEventSource: EventSource | null = null;
   private preciosBuscarTimer: any;
 
   constructor(
@@ -209,6 +213,7 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadAdminPreciosCategorias();
     this.timer = setInterval(() => this.updateRemainingTimes(), 1000);
     this.sessionPollInterval = setInterval(() => this.loadActiveSessions(), 10000);
+    this.subscribeToAdminEvents();
   }
 
   ngAfterViewInit(): void {
@@ -231,6 +236,7 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.timer) clearInterval(this.timer);
     if (this.sessionPollInterval) clearInterval(this.sessionPollInterval);
+    this.adminEventSource?.close();
     if (this.preciosBuscarTimer) clearTimeout(this.preciosBuscarTimer);
     this.sectionObserver?.disconnect();
     this.restoreManifest();
@@ -252,6 +258,27 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     this.router.navigate(['/']);
+  }
+
+  private subscribeToAdminEvents(): void {
+    this.adminEventSource?.close();
+    this.adminEventSource = this.authService.getAdminEventSource();
+    this.adminEventSource.addEventListener('code-registered', (event: MessageEvent) => {
+      const data = JSON.parse(event.data);
+      if (data.pais.toLowerCase() === this.admin.pais.toLowerCase()) {
+        this.loadCodes();
+      }
+    });
+    this.adminEventSource.addEventListener('legacy-claimed', (event: MessageEvent) => {
+      const data = JSON.parse(event.data);
+      if (data.pais.toLowerCase() === this.admin.pais.toLowerCase()) {
+        this.loadLegacyCodes();
+      }
+    });
+    this.adminEventSource.onerror = () => {
+      this.adminEventSource?.close();
+      setTimeout(() => this.subscribeToAdminEvents(), 5000);
+    };
   }
 
   loadCodes(): void {
@@ -1430,6 +1457,36 @@ export class GenerateCodeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   closeMaxDevicesEdit(): void {
     this.editingMaxDevicesCode = null;
+  }
+
+  openEmailEdit(item: AccessCode): void {
+    this.editingEmailCode = item.code;
+    this.emailDraft = item.email ?? '';
+  }
+
+  closeEmailEdit(): void {
+    this.editingEmailCode = null;
+    this.emailDraft = '';
+  }
+
+  applyEmailEdit(): void {
+    const code = this.editingEmailCode;
+    if (!code || !this.emailDraft.trim()) {
+      this.uiDialog.warning({ title: 'Campo requerido', text: 'El email no puede estar vacío.' });
+      return;
+    }
+    this.authService.updateCodeEmail(code, this.emailDraft.trim()).subscribe({
+      next: (res: any) => {
+        this.editingEmailCode = null;
+        const item = this.codes.find(c => c.code === code);
+        if (item) item.email = res.email;
+        this.uiDialog.success({ title: 'Email actualizado', text: `Código ${code} → ${res.email}` });
+      },
+      error: (err: any) => {
+        const msg = err?.error?.error ?? err?.message ?? 'Error al actualizar el email.';
+        this.uiDialog.error({ title: 'No se pudo actualizar', text: msg });
+      }
+    });
   }
 
   applyMaxDevices(): void {

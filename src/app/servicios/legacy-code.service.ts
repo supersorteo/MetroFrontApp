@@ -13,6 +13,7 @@ export interface LegacyCodeDTO {
   claimed: boolean;
   claimedByEmail: string | null;
   claimedAt: string | null;
+  expired?: boolean;
   disabled?: boolean;
   maxDevices?: number | null;
 }
