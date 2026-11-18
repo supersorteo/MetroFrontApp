@@ -30,6 +30,8 @@
               "src/assets",
               "src/manifest.webmanifest",
               "src/manifest.admin.webmanifest",
+              { "glob": "_redirects", "input": "src", "output": "/" },
+              { "glob": "_headers", "input": "src", "output": "/" },
               "src/robots.txt",
               "src/sitemap.xml",
               "src/googlef420c3cb60619710.html",

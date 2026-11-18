@@ -1,0 +1,16 @@
+/**.js
+  Cache-Control: max-age=31536000, immutable
+/**.css
+  Cache-Control: max-age=31536000, immutable
+/**.woff2
+  Cache-Control: max-age=31536000, immutable
+/**.woff
+  Cache-Control: max-age=31536000, immutable
+/**.ttf
+  Cache-Control: max-age=31536000, immutable
+/**.otf
+  Cache-Control: max-age=31536000, immutable
+/ngsw.json
+  Cache-Control: no-cache, no-store, must-revalidate
+/*.webmanifest
+  Cache-Control: no-cache
